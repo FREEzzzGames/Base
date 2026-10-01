@@ -92,6 +92,32 @@ function editorLabel(screen:View,id:string,fallback:string){
 function editorSchema(){
   return {version:"0.0.1",type:"FREEzzz portal layout",screens:editorLayout};
 }
+function syncEditorBlocksFromDOM():boolean{
+  const layout=app.querySelector<HTMLElement>("[data-portal-layout]");
+  if(!layout)return false;
+  const screen=layout.dataset.portalLayout as View;
+  const known=new Set(editorLayout[screen].map(b=>b.id));
+  let changed=false;
+  layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(element=>{
+    const id=element.dataset.portalBlock?.trim();
+    if(!id||known.has(id))return;
+    const label=element.dataset.portalLabel?.trim()
+      ||element.querySelector<HTMLElement>("h1,h2,h3,strong")?.textContent?.trim()
+      ||id;
+    editorLayout[screen].push({
+      id,
+      label:label.slice(0,80),
+      span:element.dataset.portalSpan==="1"?1:2,
+      order:editorLayout[screen].length
+    });
+    known.add(id);
+    changed=true;
+  });
+  if(changed){
+    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));}catch{}
+  }
+  return changed;
+}
 function renderEditor(){
   const screens:Array<[View,string]>=[["home","HOME"],["live","LIVE"],["chat","CHAT"],["game","GAME"],["radio","RADIO"],["library","LIBRARY"]];
   const blocks=orderedBlocks(editorScreen);
@@ -149,8 +175,7 @@ function render(){
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-        
-          ${card("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),"Стримеры и каналы")}
+            ${card("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),"Стримеры и каналы")}
           ${card("chat","💬",editorLabel("home","chat","CHAT — Общение"),"Общение")}
           ${card("game","🛸",editorLabel("home","game","GAME — Игровая зона"),"Игровая зона")}
           ${card("radio","📻",editorLabel("home","radio","RADIO — Музыка"),"Музыка")}
@@ -312,6 +337,11 @@ function render(){
         </div>
       </aside>`:""}
     </div>`;
+  const editorBlocksChanged=syncEditorBlocksFromDOM();
+  if(editorBlocksChanged&&interfaceMode==="editor"){
+    app.querySelector(".editor-overlay")?.remove();
+    app.querySelector(".app-shell")?.insertAdjacentHTML("beforeend",renderEditor());
+  }
   bind();
   applySavedPortalLayout();
   if(view==="game")startGame();
@@ -415,7 +445,9 @@ function bind(){
 }
 
 function escapeHtml(s:string){
-  return s.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]||c;});
+  return s.replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c;
+  });
 }
 
 function startGame(){
