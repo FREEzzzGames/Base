@@ -149,13 +149,12 @@ function render(){
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-        <div class="home-grid portal-block" data-portal-block="cards">
+        
           ${card("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),"Стримеры и каналы")}
           ${card("chat","💬",editorLabel("home","chat","CHAT — Общение"),"Общение")}
           ${card("game","🛸",editorLabel("home","game","GAME — Игровая зона"),"Игровая зона")}
           ${card("radio","📻",editorLabel("home","radio","RADIO — Музыка"),"Музыка")}
           ${card("library","🗂️",editorLabel("home","library","LIBRARY — Библиотека"),"Твоя библиотека")}
-        </div>
       </div>`;
   }
 
@@ -319,7 +318,7 @@ function render(){
 }
 
 function card(v:View,e:string,t:string,d:string){
-  return `<button class="card" data-view="${v}" data-portal-card="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
+  return `<button class="card portal-block" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
 }
 
 async function loadRadioStations(){
@@ -356,27 +355,11 @@ function applySavedPortalLayout(){
   const blocks=orderedBlocks(screen);
   const byId=new Map<string,HTMLElement>();
   layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
-  // HOME has a dedicated card grid; map its five module cards to their saved positions.
-  if(screen==="home"){
-    const grid=layout.querySelector<HTMLElement>(".home-grid");
-    const cards=[...layout.querySelectorAll<HTMLElement>("[data-portal-card]")];
-    const cardMap=new Map(cards.map(card=>[card.dataset.portalCard||"",card]));
-    const orderedCards=blocks.filter(b=>cardMap.has(b.id));
-    orderedCards.forEach((b,index)=>{
-      const card=cardMap.get(b.id)!;
-      card.style.order=String(index);
-      card.style.gridColumn=b.span===2?"span 2":"span 1";
-    });
-    const hero=byId.get("hero");
-    if(hero)hero.style.order=String(Math.max(0,blocks.findIndex(b=>b.id==="hero")));
-    if(grid)grid.style.order=String(Math.max(0,blocks.findIndex(b=>["live","chat","game","radio","library"].includes(b.id))));
-    return;
-  }
   blocks.forEach((block,index)=>{
     const el=byId.get(block.id);
     if(!el)return;
     el.style.order=String(index);
-    if(block.span===2)el.classList.add("portal-block-full");else el.classList.remove("portal-block-full");
+    el.style.gridColumn=block.span===2?"1 / -1":"span 1";
   });
 }
 
