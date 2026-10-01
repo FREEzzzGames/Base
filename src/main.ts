@@ -416,9 +416,9 @@ function render(){
         </nav>
 
         <div class="top-actions" aria-label="Portal navigation">
-          <button class="icon-button" data-view="chat" aria-label="Chat"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span></button>
-          <button class="icon-button radio-button" data-view="radio" aria-label="Radio"><span class="radio-glyph">📻</span></button>
-          <button class="icon-button" data-view="home" aria-label="Home"><span class="nav-icon home-icon"></span></button>
+          <button class="icon-button nav-action ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span class="nav-label">CHAT</span></button>
+          <button class="icon-button nav-action radio-button ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO"><span class="radio-glyph" aria-hidden="true"></span><span class="nav-label">RADIO</span></button>
+          <button class="icon-button nav-action ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME"><span class="nav-icon home-icon"></span><span class="nav-label">HOME</span></button>
           ${constructorEnabled?`<button class="icon-button interface-mode-button" data-interface-toggle aria-label="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}"><span class="nav-icon settings-icon"></span></button>`:""}
         </div>
       </header>
