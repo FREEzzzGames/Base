@@ -27,7 +27,7 @@ let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 
-type EditorBlock={id:string;label:string;span:1|2;order:number};
+type EditorBlock={id:string;label:string;span:1|2;order:number;x?:number;y?:number;w?:number;h?:number};
 const TELEGRAM_CANVAS={width:360,height:640};
 type EditorLayout=Record<View,EditorBlock[]>;
 const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
@@ -77,7 +77,7 @@ function loadEditorLayout():EditorLayout{
     const base=cloneEditorDefaults();
     for(const key of Object.keys(base) as View[]){
       if(Array.isArray(saved[key])&&saved[key]!.length){
-        base[key]=saved[key]!.map((b,i)=>({id:String(b.id),label:String(b.label||b.id),span:b.span===2?2:1,order:i}));
+        base[key]=saved[key]!.map((b,i)=>({id:String(b.id),label:String(b.label||b.id),span:b.span===2?2:1,order:i,x:Number.isFinite(Number(b.x))?Math.max(0,Math.min(100,Number(b.x))):undefined,y:Number.isFinite(Number(b.y))?Math.max(0,Math.min(100,Number(b.y))):undefined,w:Number.isFinite(Number(b.w))?Math.max(10,Math.min(100,Number(b.w))):undefined,h:Number.isFinite(Number(b.h))?Math.max(4,Math.min(100,Number(b.h))):undefined}));
       }
     }
     return base;
@@ -111,7 +111,8 @@ function syncEditorBlocksFromDOM():boolean{
       id,
       label:label.slice(0,80),
       span:element.dataset.portalSpan==="1"?1:2,
-      order:editorLayout[screen].length
+      order:editorLayout[screen].length,
+      x:undefined,y:undefined,w:element.dataset.portalSpan==="1"?50:100,h:undefined
     });
     known.add(id);
     changed=true;
@@ -151,7 +152,7 @@ function renderEditor(){
             <div class="editor-sheet-grid" aria-hidden="true"></div>
             <div class="editor-canvas" data-editor-canvas>
           ${blocks.map((block,index)=>`
-            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}">
+            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}">
               <div class="editor-block-drag" title="Перетащить">⠿</div>
               <div class="editor-block-preview">
                 <span class="editor-block-type">${escapeHtml(block.id)}</span>
@@ -439,6 +440,23 @@ function bind(){
     x.addEventListener("dragend",()=>{delete x.dataset.dragging;});
     x.addEventListener("dragover",e=>e.preventDefault());
     x.addEventListener("drop",e=>{e.preventDefault();const from=Number(document.querySelector<HTMLElement>("[data-editor-block][data-dragging='true']")?.dataset.editorIndex??-1);const to=Number(x.dataset.editorIndex??-1);if(from<0||to<0||from===to)return;const list=orderedBlocks(editorScreen);const [moved]=list.splice(from,1);list.splice(to,0,moved);list.forEach((b,i)=>b.order=i);editorLayout[editorScreen]=list;render();});
+  });
+  document.querySelectorAll<HTMLElement>("[data-editor-drag]").forEach(function(x){
+    x.addEventListener("pointerdown",function(e){
+      if((e.target as HTMLElement).closest("input,button"))return;
+      const sheet=document.querySelector<HTMLElement>(".editor-sheet"); if(!sheet)return;
+      const id=x.dataset.editorDrag!; const block=editorLayout[editorScreen].find(b=>b.id===id); if(!block)return;
+      const rect=sheet.getBoundingClientRect(); const startX=e.clientX,startY=e.clientY;
+      const ox=block.x??Math.max(0,Math.min(100,(x.offsetLeft/rect.width)*100));
+      const oy=block.y??Math.max(0,Math.min(100,(x.offsetTop/rect.height)*100));
+      const move=(ev:PointerEvent)=>{
+        block.x=Math.max(0,Math.min(100-(block.w??(block.span===2?100:50)),ox+((ev.clientX-startX)/rect.width)*100));
+        block.y=Math.max(0,Math.min(100-(block.h??10),oy+((ev.clientY-startY)/rect.height)*100));
+        x.style.left=block.x+"%"; x.style.top=block.y+"%"; x.style.position="absolute";
+      };
+      const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
+      window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);
+    });
   });
   document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально на этом устройстве.";}catch{editorMessage="Не удалось сохранить схему."; }render();});
   document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов — его можно скопировать и прислать мне.";});
