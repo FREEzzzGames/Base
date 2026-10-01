@@ -3,7 +3,27 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 
 initPortalPalette();
-\ninterface TelegramWebAppBridge{\n  ready?:()=>void;\n  expand?:()=>void;\n  openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;\n  openTelegramLink?:(url:string)=>void;\n  disableVerticalSwipes?:()=>void;\n}\nfunction getTelegramWebApp():TelegramWebAppBridge|null{\n  const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;\n  return candidate||null;\n}\nfunction initTelegramBridge(){\n  const tg=getTelegramWebApp();\n  if(!tg)return;\n  tg.ready?.();\n  tg.expand?.();\n  tg.disableVerticalSwipes?.();\n}\ninitTelegramBridge();\n
+
+interface TelegramWebAppBridge{
+  ready?:()=>void;
+  expand?:()=>void;
+  openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;
+  openTelegramLink?:(url:string)=>void;
+  disableVerticalSwipes?:()=>void;
+}
+function getTelegramWebApp():TelegramWebAppBridge|null{
+  const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;
+  return candidate||null;
+}
+function initTelegramBridge(){
+  const tg=getTelegramWebApp();
+  if(!tg)return;
+  tg.ready?.();
+  tg.expand?.();
+  tg.disableVerticalSwipes?.();
+}
+initTelegramBridge();
+
 type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
@@ -14,7 +34,9 @@ const INTERFACE_MODE_KEY = "freezzz:interface-mode";
 const CONSTRUCTOR_ENABLED_KEY = "freezzz:constructor-enabled";
 let constructorEnabled=(()=>{try{return localStorage.getItem(CONSTRUCTOR_ENABLED_KEY)!=="disabled";}catch{return true;}})();
 let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_MODE_KEY)==="editor"?"editor":"user";}catch{return "user";}})();
-let dev=interfaceMode==="editor";\nlet profileOpen=false;\nlet liveSelected="";
+let dev=interfaceMode==="editor";
+let profileOpen=false;
+let liveSelected="";
 let score=0;
 let player=.5;
 const radioBrowser=new RadioBrowserClient();
@@ -158,7 +180,8 @@ function renderEditor(){
         </div>
         <div class="editor-screen-tabs">${screens.map(([id,label])=>'<button type="button" data-editor-screen="'+id+'" class="'+(editorScreen===id?"active":"")+'">'+label+'</button>').join("")}</div>
         <div class="editor-toolbar">
-          <button class="tg-button" data-editor-add type="button">＋ Добавить блок</button>\n          <button class="tg-button" data-editor-save type="button">Сохранить</button>
+          <button class="tg-button" data-editor-add type="button">＋ Добавить блок</button>
+          <button class="tg-button" data-editor-save type="button">Сохранить</button>
           <button class="tg-button secondary" data-editor-export type="button">JSON</button>
           <button class="tg-button secondary" data-editor-reset type="button">Сбросить</button>
         </div>
@@ -375,7 +398,8 @@ function render(){
         </div>
       </header>
       <main>${body}</main>
-      ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" onclick="event.stopPropagation()"><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}\n      ${dev?renderEditor():""}
+      ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
+      ${dev?renderEditor():""}
       ${false?`<aside class="dev">
         <div class="dev-panel">
           <button class="tg-button secondary" data-interface-toggle>Перейти в режим пользователя</button>
@@ -483,9 +507,40 @@ function bind(){
     const host=document.querySelector("#radio-audio-host");
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const next=x.dataset.view as View;\n      if(!next)return;\n      view=next;\n      render();\n    };\n  });
-  document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){\n    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){\n    x.onclick=function(){profileOpen=false;render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-live-select]").forEach(function(x){\n    x.onclick=function(){liveSelected=x.dataset.liveSelect||"";render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
-  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const url=x.dataset.url;\n      if(!url)return;\n      const tg=getTelegramWebApp();\n      if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}\n      else{window.open(url,"_blank","noopener,noreferrer");}\n    };\n  });
+  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
+    x.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const next=x.dataset.view as View;
+      if(!next)return;
+      view=next;
+      render();
+    };
+  });
+  document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
+    x.onclick=function(){profileOpen=false;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-profile-card]").forEach(function(x){
+    x.onclick=function(e){e.stopPropagation();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-live-select]").forEach(function(x){
+    x.onclick=function(){liveSelected=x.dataset.liveSelect||"";render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
+  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
+    x.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const url=x.dataset.url;
+      if(!url)return;
+      const tg=getTelegramWebApp();
+      if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}
+      else{window.open(url,"_blank","noopener,noreferrer");}
+    };
+  });
   document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){
     x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";view=editorScreen;render();};
   });
@@ -539,7 +594,18 @@ function bind(){
       window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
     },{passive:false});
   });
-  document.querySelector("[data-editor-add]")?.addEventListener("click",()=>{\n    const list=orderedBlocks(editorScreen);\n    const used=new Set(list.map(b=>b.id));\n    let number=list.length+1;\n    let id="custom-"+number;\n    while(used.has(id)){number++;id="custom-"+number;}\n    const block:EditorBlock={id,label:"Новый блок",span:1,order:list.length,x:5,y:Math.min(88,8+list.length*10),w:90,h:9};\n    editorLayout[editorScreen]=[...list,block];\n    editorMessage="Новый визуальный блок добавлен.";\n    render();\n  });\n  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
+  document.querySelector("[data-editor-add]")?.addEventListener("click",()=>{
+    const list=orderedBlocks(editorScreen);
+    const used=new Set(list.map(b=>b.id));
+    let number=list.length+1;
+    let id="custom-"+number;
+    while(used.has(id)){number++;id="custom-"+number;}
+    const block:EditorBlock={id,label:"Новый блок",span:1,order:list.length,x:5,y:Math.min(88,8+list.length*10),w:90,h:9};
+    editorLayout[editorScreen]=[...list,block];
+    editorMessage="Новый визуальный блок добавлен.";
+    render();
+  });
+  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
     try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально.";}
     catch{editorMessage="Не удалось сохранить схему."}
     render();
