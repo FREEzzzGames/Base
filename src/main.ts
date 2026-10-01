@@ -122,6 +122,22 @@ function syncEditorBlocksFromDOM():boolean{
   }
   return changed;
 }
+function editorBlockMarkup(block:EditorBlock,index:number){
+  const style=[
+    block.x!==undefined?"left:"+block.x+"%;":"",
+    block.y!==undefined?"top:"+block.y+"%;":"",
+    block.w!==undefined?"width:"+block.w+"%;":"",
+    block.h!==undefined?"height:"+block.h+"%;":""
+  ].join("");
+  return '<article class="editor-block block-color-'+(index%8)+'" data-editor-block="'+escapeHtml(block.id)+'" data-editor-index="'+index+'" data-editor-drag="'+escapeHtml(block.id)+'" style="'+style+'">'+
+    '<div class="editor-block-drag" data-editor-drag-handle="'+escapeHtml(block.id)+'" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>'+
+    '<div class="editor-block-preview"><span class="editor-block-type">'+escapeHtml(block.id)+'</span>'+
+    '<input class="editor-block-label" data-editor-label="'+escapeHtml(block.id)+'" value="'+escapeHtml(block.label)+'" maxlength="80" aria-label="Подпись блока"></div>'+
+    '<div class="editor-block-actions"><button type="button" class="editor-move" data-editor-move="-1" data-editor-id="'+escapeHtml(block.id)+'" aria-label="Выше">▲</button>'+
+    '<button type="button" class="editor-move" data-editor-move="1" data-editor-id="'+escapeHtml(block.id)+'" aria-label="Ниже">▼</button></div>'+
+    '<span class="editor-resize-handle" data-editor-resize="'+escapeHtml(block.id)+'" title="Изменить размер" aria-label="Изменить размер"></span></article>';
+}
+
 function renderEditor(){
   const screens:Array<[View,string]>=[["home","HOME"],["live","LIVE"],["chat","CHAT"],["game","GAME"],["radio","RADIO"],["library","LIBRARY"]];
   const blocks=orderedBlocks(editorScreen);
@@ -133,45 +149,23 @@ function renderEditor(){
       </div>
       <div class="dev-panel editor-panel">
         <div class="editor-head">
-          <div>
-            <span class="radio-kicker">FREEzzz EDITOR</span>
-            <h2>Конструктор интерфейса</h2>
-            <p>Сенсор: удерживай блок и перемещай. Нижний правый маркер меняет размер. Все изменения сразу отражаются в пользовательском интерфейсе и в окне USER UI LIVE.</p>
-          </div>
+          <div><span class="radio-kicker">FREEzzz EDITOR</span><h2>Конструктор интерфейса</h2>
+          <p>Сенсор: удерживай блок и перемещай. Маркер внизу справа меняет размер. Изменения сразу видны в пользовательском интерфейсе и в USER UI LIVE.</p></div>
           <div class="editor-head-actions">
             <button class="tg-button secondary" data-interface-toggle type="button">Пользователь</button>
             <button class="tg-button secondary editor-delete-button" data-constructor-remove type="button">Удалить конструктор</button>
           </div>
         </div>
-        <div class="editor-screen-tabs">
-          ${screens.map(([id,label])=>`<button type="button" data-editor-screen="${id}" class="${editorScreen===id?"active":""}">${label}</button>`).join("")}
-        </div>
+        <div class="editor-screen-tabs">${screens.map(([id,label])=>'<button type="button" data-editor-screen="'+id+'" class="'+(editorScreen===id?"active":"")+'">'+label+'</button>').join("")}</div>
         <div class="editor-toolbar">
           <button class="tg-button" data-editor-save type="button">Сохранить</button>
           <button class="tg-button secondary" data-editor-export type="button">JSON</button>
           <button class="tg-button secondary" data-editor-reset type="button">Сбросить</button>
         </div>
-        <div class="editor-workspace" data-editor-workspace>
-          <div class="editor-sheet">
-            <div class="editor-sheet-grid" aria-hidden="true"></div>
-            <div class="editor-canvas" data-editor-canvas>
-              ${blocks.map((block,index)=>`
-                <article class="editor-block block-color-${index%8}" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}">
-                  <div class="editor-block-drag" data-editor-drag-handle="${escapeHtml(block.id)}" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>
-                  <div class="editor-block-preview">
-                    <span class="editor-block-type">${escapeHtml(block.id)}</span>
-                    <input class="editor-block-label" data-editor-label="${escapeHtml(block.id)}" value="${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
-                  </div>
-                  <div class="editor-block-actions">
-                    <button type="button" class="editor-move" data-editor-move="-1" data-editor-id="${escapeHtml(block.id)}" aria-label="Выше">▲</button>
-                    <button type="button" class="editor-move" data-editor-move="1" data-editor-id="${escapeHtml(block.id)}" aria-label="Ниже">▼</button>
-                  </div>
-                  <span class="editor-resize-handle" data-editor-resize="${escapeHtml(block.id)}" title="Изменить размер" aria-label="Изменить размер"></span>
-                </article>`).join("")}
-            </div>
-          </div>
-        </div>
-        <div class="editor-status">${escapeHtml(editorMessage||"LIVE: изменения конструктора применяются сразу. «Сохранить» записывает их на устройство.")}</div>
+        <div class="editor-workspace" data-editor-workspace><div class="editor-sheet"><div class="editor-sheet-grid" aria-hidden="true"></div>
+          <div class="editor-canvas" data-editor-canvas>${blocks.map(editorBlockMarkup).join("")}</div>
+        </div></div>
+        <div class="editor-status">${escapeHtml(editorMessage||"LIVE: изменения применяются сразу. «Сохранить» записывает их на устройство.")}</div>
         <textarea class="editor-json" id="editor-json" placeholder="JSON схемы"></textarea>
       </div>
     </aside>`;
