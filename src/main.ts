@@ -1,3 +1,5 @@
+import { WebMidiController, midiNoteName } from "./midi-controller";
+import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 
 type View = "home"|"live"|"chat"|"game"|"radio"|"library";
@@ -8,6 +10,18 @@ let lang="RU";
 let dev=false;
 let score=0;
 let player=.5;
+const radioBrowser=new RadioBrowserClient();
+const midiController=new WebMidiController();
+let radioStations:readonly RadioBrowserStation[]=[];
+let radioGenre="pop";
+let radioQuery="";
+let radioLoading=false;
+let radioError="";
+let radioAudio:HTMLAudioElement|null=null;
+let midiOutputs:readonly {id:string;name:string;manufacturer?:string}[]=[];
+let midiError="";
+let midiOctave=4;
+let midiActiveNotes=new Set<number>();
 
 const streams=[
   ["🦆","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
@@ -91,10 +105,14 @@ function render(){
   if(view==="radio"){
     body=`
       <div class="content">
-        <section class="hero">
-          <h2>RADIO</h2>
-          <p>Музыкальный слой FREEzzz.</p>
-          <button class="tg-button" data-url="https://techno.fm/">Open Techno.FM</button>
+        <div class="section-head"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
+        <section class="radio-panel">
+          <div class="radio-heading"><div><span class="radio-kicker">PUBLIC RADIO</span><h3>Station Browser</h3><p>Выбери станцию и запусти её прямо внутри портала.</p></div><button id="open-midi" class="tg-button" type="button">♫ MIDI Controller</button></div>
+          <div class="radio-player" id="radio-now"><strong>READY</strong><span>Выбери станцию ниже</span></div>
+          <form id="radio-search-form" class="inline-form"><input id="radio-search-input" value="${radioQuery}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
+          <div class="radio-genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${g}" class="${radioGenre===g?"active":""}">${g}</button>`).join("")}</div>
+          <div class="radio-status">${radioLoading?"Loading stations…":radioError?escapeHtml(radioError):radioStations.length+" stations"}</div>
+          <div class="radio-stations">${radioStations.map(s=>`<article class="radio-station"><div><strong>${escapeHtml(s.name)}</strong><small>${escapeHtml(s.country||"International")} · ${escapeHtml(s.codec||"stream")} · ${s.bitrate||0} kbps</small></div><button class="tg-button secondary" data-radio-station="${s.stationuuid}" type="button">Play</button></article>`).join("")}</div>
         </section>
       </div>`;
   }
