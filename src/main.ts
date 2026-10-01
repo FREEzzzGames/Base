@@ -174,6 +174,32 @@ function card(v:View,e:string,t:string,d:string){
   return `<button class="card" data-view="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
 }
 
+async function loadRadioStations(){
+  radioLoading=true; radioError=""; render();
+  try{radioStations=await radioBrowser.searchStations(radioGenre,radioQuery,30);}
+  catch(error){radioStations=[];radioError=error instanceof Error?error.message:String(error);}
+  finally{radioLoading=false;render();}
+}
+function playRadioStation(id:string){
+  const station=radioStations.find(s=>s.stationuuid===id); if(!station)return;
+  radioAudio?.pause(); radioAudio=new Audio(station.url_resolved||station.url);
+  radioAudio.dataset.station=station.name; radioAudio.controls=true; radioAudio.autoplay=true;
+  radioAudio.play().catch(()=>{radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";render();}); render();
+}
+function renderMidiOverlay(){
+  const existing=document.querySelector("#midi-overlay"); if(existing){existing.remove();return;}
+  const overlay=document.createElement("div"); overlay.id="midi-overlay"; overlay.className="midi-overlay";
+  const notes=Array.from({length:24},(_,i)=>midiOctave*12+i);
+  overlay.innerHTML="<div class=\"midi-controller\"><header class=\"midi-header\"><div><span>FREEzzz AUDIO LAB</span><h2>MIDI Controller</h2></div><button id=\"midi-close\" type=\"button\">Close</button></header><div class=\"midi-toolbar\"><button id=\"midi-connect\" type=\"button\">Connect MIDI</button><select id=\"midi-output\"><option value=\"\">Virtual / no hardware</option>"+midiOutputs.map(o=>"<option value=\""+escapeHtml(o.id)+"\">"+escapeHtml(o.name)+"</option>").join("")+"</select><button id=\"midi-down\" type=\"button\">− Octave</button><strong>Oct "+midiOctave+"</strong><button id=\"midi-up\" type=\"button\">+ Octave</button></div><div class=\"midi-status\">"+(midiError?escapeHtml(midiError):midiController.getOutput()?"MIDI output connected":"Virtual controller ready")+"</div><section class=\"midi-surface\"><div class=\"midi-pads\">"+Array.from({length:16},(_,i)=>"<button class=\"midi-pad\" data-midi-pad=\""+i+"\" type=\"button\"><span>"+String(i+1).padStart(2,"0")+"</span><strong>PAD</strong></button>").join("")+"</div><div class=\"midi-knobs\">"+[21,22,23,24].map((cc,i)=>"<label class=\"midi-knob\"><span>CC "+cc+"</span><input data-midi-cc=\""+cc+"\" type=\"range\" min=\"0\" max=\"127\" value=\""+midiController.getCC(cc)+"\"><output>"+midiController.getCC(cc)+"</output><b>K"+(i+1)+"</b></label>").join("")+"</div></section><section class=\"midi-keyboard\"><div class=\"midi-keyboard-label\">KEYBOARD</div><div class=\"midi-keys\">"+notes.map(n=>"<button class=\"midi-key "+([1,3,6,8,10].includes(n%12)?"black":"")+"\" data-midi-note=\""+n+"\" type=\"button\"><span>"+midiNoteName(n)+"</span></button>").join("")+"</div></section></div>";
+  document.body.append(overlay);
+  overlay.querySelector("#midi-close")?.addEventListener("click",()=>overlay.remove());
+  overlay.querySelector("#midi-connect")?.addEventListener("click",async()=>{try{midiError="";midiOutputs=await midiController.connect();renderMidiOverlay();}catch(e){midiError=e instanceof Error?e.message:String(e);renderMidiOverlay();}});
+  overlay.querySelector("#midi-down")?.addEventListener("click",()=>{midiOctave=Math.max(1,midiOctave-1);midiController.setOctave(midiOctave);renderMidiOverlay();});
+  overlay.querySelector("#midi-up")?.addEventListener("click",()=>{midiOctave=Math.min(7,midiOctave+1);midiController.setOctave(midiOctave);renderMidiOverlay();});
+  overlay.querySelectorAll<HTMLInputElement>("[data-midi-cc]").forEach(input=>input.addEventListener("input",()=>{midiController.controlChange(Number(input.dataset.midiCc),Number(input.value));const o=input.parentElement?.querySelector("output");if(o)o.textContent=input.value;}));
+  overlay.querySelectorAll<HTMLButtonElement>("[data-midi-note]").forEach(b=>{const n=Number(b.dataset.midiNote);const down=()=>{midiActiveNotes.add(n);midiController.noteOn(n,100);b.classList.add("active")};const up=()=>{if(midiActiveNotes.delete(n))midiController.noteOff(n);b.classList.remove("active")};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);});
+}
+
 function bind(){
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
     x.onclick=function(){view=x.dataset.view as View;render();};
