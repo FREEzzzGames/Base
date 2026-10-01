@@ -107,7 +107,7 @@ function render(){
       <div class="content">
         <div class="section-head"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
         <section class="radio-panel">
-          <div class="radio-heading"><div><span class="radio-kicker">PUBLIC RADIO</span><h3>Station Browser</h3><p>Выбери станцию и запусти её прямо внутри портала.</p></div><button id="open-midi" class="tg-button" type="button">♫ MIDI Controller</button></div>
+          <div class="radio-heading"><div><span class="radio-kicker">PUBLIC RADIO</span><h3>Station Browser</h3><p>Выбери станцию и запусти её прямо внутри портала.</p></div><button id="open-midi" class="tg-button" type="button"><span class="play-icon" aria-hidden="true"></span>MIDI Controller</button></div>
           <div class="radio-player" id="radio-now"><strong>READY</strong><span>Выбери станцию ниже</span></div>
           <form id="radio-search-form" class="inline-form"><input id="radio-search-input" value="${radioQuery}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
           <div class="radio-genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${g}" class="${radioGenre===g?"active":""}">${g}</button>`).join("")}</div>
