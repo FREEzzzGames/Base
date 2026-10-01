@@ -12,5 +12,10 @@ jobs:
         with:
           node-version: 20
       - run: npm install
+      - name: Stamp portal build
+        shell: bash
+        run: |
+          mkdir -p src/public
+          node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("src/build-info.ts", "export const PORTAL_VERSION = \"" + p.version + "\";\nexport const PORTAL_BUILD_ID = \"" + b + "\";\n"); fs.writeFileSync("src/public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
       - run: npm run typecheck
       - run: npm run build
