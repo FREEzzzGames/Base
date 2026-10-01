@@ -25,6 +25,112 @@ let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 
+type EditorBlock={id:string;label:string;span:1|2;order:number};
+type EditorLayout=Record<View,EditorBlock[]>;
+const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
+const EDITOR_DEFAULTS:EditorLayout={
+  home:[
+    {id:"hero",label:"Главный экран / приветствие",span:2,order:0},
+    {id:"live",label:"LIVE — Стримеры и каналы",span:1,order:1},
+    {id:"chat",label:"CHAT — Общение",span:1,order:2},
+    {id:"game",label:"GAME — Игровая зона",span:1,order:3},
+    {id:"radio",label:"RADIO — Музыка",span:1,order:4},
+    {id:"library",label:"LIBRARY — Библиотека",span:1,order:5}
+  ],
+  live:[
+    {id:"header",label:"LIVE — Заголовок",span:2,order:0},
+    {id:"streams",label:"Список стримеров",span:2,order:1},
+    {id:"player",label:"Окно трансляции",span:2,order:2}
+  ],
+  chat:[
+    {id:"header",label:"CHAT — Заголовок",span:2,order:0},
+    {id:"messages",label:"Лента сообщений",span:2,order:1},
+    {id:"composer",label:"Поле сообщения",span:2,order:2}
+  ],
+  game:[
+    {id:"header",label:"GAME — Заголовок",span:2,order:0},
+    {id:"game",label:"Игровое окно",span:2,order:1},
+    {id:"controls",label:"Игровое управление",span:2,order:2}
+  ],
+  radio:[
+    {id:"header",label:"RADIO — Заголовок",span:2,order:0},
+    {id:"carousel",label:"Карусель станций",span:2,order:1},
+    {id:"nowplaying",label:"NOW PLAYING",span:2,order:2},
+    {id:"search",label:"Поиск станции",span:2,order:3},
+    {id:"genres",label:"Жанры",span:2,order:4}
+  ],
+  library:[
+    {id:"content",label:"LIBRARY — Библиотека",span:2,order:0}
+  ]
+};
+function cloneEditorDefaults():EditorLayout{
+  return JSON.parse(JSON.stringify(EDITOR_DEFAULTS)) as EditorLayout;
+}
+function loadEditorLayout():EditorLayout{
+  try{
+    const raw=localStorage.getItem(EDITOR_LAYOUT_KEY);
+    if(!raw)return cloneEditorDefaults();
+    const saved=JSON.parse(raw) as Partial<EditorLayout>;
+    const base=cloneEditorDefaults();
+    for(const key of Object.keys(base) as View[]){
+      if(Array.isArray(saved[key])&&saved[key]!.length){
+        base[key]=saved[key]!.map((b,i)=>({id:String(b.id),label:String(b.label||b.id),span:b.span===2?2:1,order:i}));
+      }
+    }
+    return base;
+  }catch{return cloneEditorDefaults();}
+}
+let editorLayout:EditorLayout=loadEditorLayout();
+let editorScreen:View="home";
+let editorMessage="";
+function orderedBlocks(screen:View){
+  return [...editorLayout[screen]].sort((a,b)=>a.order-b.order);
+}
+function editorLabel(screen:View,id:string,fallback:string){
+  return editorLayout[screen].find(b=>b.id===id)?.label||fallback;
+}
+function editorSchema(){
+  return {version:"0.0.1",type:"FREEzzz portal layout",screens:editorLayout};
+}
+function renderEditor(){
+  const screens:Array<[View,string]>=[["home","HOME"],["live","LIVE"],["chat","CHAT"],["game","GAME"],["radio","RADIO"],["library","LIBRARY"]];
+  const blocks=orderedBlocks(editorScreen);
+  return `
+    <aside class="dev editor-overlay">
+      <div class="dev-panel editor-panel">
+        <div class="editor-head">
+          <div>
+            <span class="radio-kicker">FREEzzz EDITOR</span>
+            <h2>Редакторская схема интерфейса</h2>
+            <p>Перетаскивай готовые блоки, меняй подписи и ширину. Схема сохраняется отдельно от механики модулей.</p>
+          </div>
+          <button class="tg-button secondary" data-interface-toggle>Пользователь</button>
+        </div>
+        <div class="editor-screen-tabs">
+          ${screens.map(([id,label])=>`<button type="button" data-editor-screen="${id}" class="${editorScreen===id?"active":""}">${label}</button>`).join("")}
+        </div>
+        <div class="editor-toolbar">
+          <button class="tg-button" data-editor-save>Сохранить схему</button>
+          <button class="tg-button secondary" data-editor-export>Показать JSON</button>
+          <button class="tg-button secondary" data-editor-reset>Сбросить экран</button>
+        </div>
+        <div class="editor-canvas" data-editor-canvas>
+          ${blocks.map((block,index)=>`
+            <article class="editor-block span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}">
+              <div class="editor-block-drag" title="Перетащить">⠿</div>
+              <div class="editor-block-preview">
+                <span class="editor-block-type">${escapeHtml(block.id)}</span>
+                <input class="editor-block-label" data-editor-label="${escapeHtml(block.id)}" value="${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
+              </div>
+              <button type="button" class="editor-span" data-editor-span="${escapeHtml(block.id)}">${block.span===2?"↔ 100%":"↔ 50%"}</button>
+            </article>`).join("")}
+        </div>
+        <div class="editor-status">${escapeHtml(editorMessage||"Изменения пока только в редакторе. Нажми «Сохранить схему», когда план готов.")}</div>
+        <textarea class="editor-json" id="editor-json" placeholder="Здесь появится JSON схемы. Его можно скопировать и прислать мне для анализа."></textarea>
+      </div>
+    </aside>`;
+}
+
 const streams=[
   ["🦆","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
   ["🎮","Dendi","YouTube","https://www.youtube.com/@Dendi"],
@@ -198,7 +304,8 @@ function render(){
         </div>
       </header>
       <main>${body}</main>
-      ${dev?`<aside class="dev">
+      ${dev?renderEditor():""}
+      ${false?`<aside class="dev">
         <div class="dev-panel">
           <button class="tg-button secondary" data-interface-toggle>Перейти в режим пользователя</button>
           <h2>Редакторская схема интерфейса</h2>
@@ -268,6 +375,18 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){x.onclick=function(){view=x.dataset.view as View;render();};});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};});
+  document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";render();};});
+  document.querySelectorAll<HTMLElement>("[data-editor-span]").forEach(function(x){x.onclick=function(){const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorSpan);if(b){b.span=b.span===2?1:2;render();}};});
+  document.querySelectorAll<HTMLInputElement>("[data-editor-label]").forEach(function(x){x.oninput=function(){const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorLabel);if(b)b.label=x.value;};});
+  document.querySelectorAll<HTMLElement>("[data-editor-block]").forEach(function(x){
+    x.addEventListener("dragstart",()=>{x.dataset.dragging="true";});
+    x.addEventListener("dragend",()=>{delete x.dataset.dragging;});
+    x.addEventListener("dragover",e=>e.preventDefault());
+    x.addEventListener("drop",e=>{e.preventDefault();const from=Number(document.querySelector<HTMLElement>("[data-editor-block][data-dragging='true']")?.dataset.editorIndex??-1);const to=Number(x.dataset.editorIndex??-1);if(from<0||to<0||from===to)return;const list=orderedBlocks(editorScreen);const [moved]=list.splice(from,1);list.splice(to,0,moved);list.forEach((b,i)=>b.order=i);editorLayout[editorScreen]=list;render();});
+  });
+  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально на этом устройстве.";}catch{editorMessage="Не удалось сохранить схему."; }render();});
+  document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов — его можно скопировать и прислать мне.";});
+  document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];editorMessage="Экран возвращён к исходной схеме.";render();});
   document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){x.onclick=function(){interfaceMode=interfaceMode==="editor"?"user":"editor";dev=interfaceMode==="editor";try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}if(interfaceMode==="user")view="home";render();};});
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
