@@ -201,6 +201,14 @@ function renderMidiOverlay(){
 }
 
 function bind(){
+  if(view==="radio"){
+    document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
+    document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
+    document.querySelectorAll<HTMLElement>("[data-radio-station]").forEach(x=>x.onclick=()=>playRadioStation(x.dataset.radioStation||""));
+    document.querySelector("#open-midi")?.addEventListener("click",()=>renderMidiOverlay());
+    if(!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
+    const host=document.querySelector("#radio-now"); if(host&&radioAudio){host.innerHTML="";host.append(radioAudio);radioAudio.style.width="100%";}
+  }
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
     x.onclick=function(){view=x.dataset.view as View;render();};
   });
