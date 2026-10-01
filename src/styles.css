@@ -521,3 +521,35 @@ form input{
   .editor-block{grid-template-columns:24px minmax(0,1fr);grid-template-rows:auto auto}
   .editor-span{grid-column:2;justify-self:start}
 }
+
+
+/* Saved portal layout is the actual runtime layout */
+.portal-layout{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  align-items:start;
+}
+.portal-layout > .portal-block{min-width:0}
+.portal-layout[data-portal-layout="home"] .hero{margin-bottom:0}
+.portal-layout[data-portal-layout="home"] .card{margin:0}
+.portal-layout[data-portal-layout="radio"]{
+  padding:14px;
+  border:1px solid var(--ds-border);
+  border-radius:var(--ds-radius);
+  background:var(--ds-panel);
+}
+.portal-layout[data-portal-layout="radio"] .radio-panel{
+  display:contents;
+}
+.portal-layout[data-portal-layout="radio"] .radio-now-playing,
+.portal-layout[data-portal-layout="radio"] .radio-carousel,
+.portal-layout[data-portal-layout="radio"] #radio-search-form,
+.portal-layout[data-portal-layout="radio"] .radio-genres{
+  width:100%;
+}
+.portal-layout[data-portal-layout="radio"] .radio-heading{min-width:0}
+@media(max-width:520px){
+  .portal-layout{grid-template-columns:1fr}
+  .portal-layout > .portal-block{grid-column:1 / -1!important}
+}
