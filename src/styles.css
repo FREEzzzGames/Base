@@ -553,3 +553,23 @@ form input{
   .portal-layout{grid-template-columns:1fr}
   .portal-layout > .portal-block{grid-column:1 / -1!important}
 }
+
+
+.editor-head-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.editor-delete-button{
+  border-color:var(--ds-border-strong);
+  color:var(--ds-muted);
+}
+.editor-delete-button:hover{
+  border-color:var(--ds-accent);
+  color:var(--ds-accent);
+}
+@media(max-width:620px){
+  .editor-head-actions{width:100%;justify-content:flex-start}
+}
