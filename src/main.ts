@@ -418,6 +418,7 @@ function render(){
           <button class="icon-button nav-action ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span class="nav-label">CHAT</span></button>
           <button class="icon-button nav-action radio-button ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO"><span class="radio-glyph" aria-hidden="true"></span><span class="nav-label">RADIO</span></button>
           <button class="icon-button nav-action ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME"><span class="nav-icon home-icon"></span><span class="nav-label">HOME</span></button>
+          ${constructorEnabled?`<button class="icon-button nav-action interface-mode-button" data-interface-toggle type="button" aria-label="${interfaceMode==="editor"?"Показать пользовательский интерфейс":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"USER UI":"DEV UI"}"><span class="nav-icon settings-icon"></span><span class="nav-label">DEV</span></button>`:""}
         </div>
       </header>
       <main>${body}</main>
@@ -545,6 +546,16 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){
+    x.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      interfaceMode=interfaceMode==="editor"?"user":"editor";
+      dev=interfaceMode==="editor";
+      try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}
+      render();
+    };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
     x.onclick=function(){profileOpen=false;render();};
