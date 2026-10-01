@@ -28,6 +28,7 @@ let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selecte
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 
 type EditorBlock={id:string;label:string;span:1|2;order:number};
+const TELEGRAM_CANVAS={width:360,height:640};
 type EditorLayout=Record<View,EditorBlock[]>;
 const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
 const EDITOR_DEFAULTS:EditorLayout={
@@ -145,9 +146,12 @@ function renderEditor(){
           <button class="tg-button secondary" data-editor-export>Показать JSON</button>
           <button class="tg-button secondary" data-editor-reset>Сбросить экран</button>
         </div>
-        <div class="editor-canvas" data-editor-canvas>
+        <div class="editor-workspace" data-editor-workspace style="--telegram-width:360px;--telegram-height:640px;">
+          <div class="editor-sheet">
+            <div class="editor-sheet-grid" aria-hidden="true"></div>
+            <div class="editor-canvas" data-editor-canvas>
           ${blocks.map((block,index)=>`
-            <article class="editor-block span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}">
+            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}">
               <div class="editor-block-drag" title="Перетащить">⠿</div>
               <div class="editor-block-preview">
                 <span class="editor-block-type">${escapeHtml(block.id)}</span>
@@ -155,6 +159,8 @@ function renderEditor(){
               </div>
               <button type="button" class="editor-span" data-editor-span="${escapeHtml(block.id)}">${block.span===2?"↔ 100%":"↔ 50%"}</button>
             </article>`).join("")}
+        </div>
+          </div>
         </div>
         <div class="editor-status">${escapeHtml(editorMessage||"Изменения пока только в редакторе. Нажми «Сохранить схему», когда план готов.")}</div>
         <textarea class="editor-json" id="editor-json" placeholder="Здесь появится JSON схемы. Его можно скопировать и прислать мне для анализа."></textarea>
