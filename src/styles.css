@@ -449,3 +449,22 @@ form input{
   .radio-now-playing{align-items:flex-start;flex-direction:column}
   .radio-player-controls{width:100%}
 }
+
+
+/* Persistent editor interface mode */
+.editor-mode .interface-mode-button{
+  background:var(--ds-card-hover);
+  border:1px solid var(--ds-accent);
+  color:var(--ds-accent);
+}
+.editor-mode .interface-mode-button .settings-icon:before{
+  border-color:var(--ds-accent);
+}
+.editor-mode .interface-mode-button .settings-icon:after{
+  border-color:var(--ds-accent);
+  box-shadow:
+    0 -11px 0 -8px var(--ds-accent),
+    0 11px 0 -8px var(--ds-accent),
+    11px 0 0 -8px var(--ds-accent),
+    -11px 0 0 -8px var(--ds-accent);
+}
