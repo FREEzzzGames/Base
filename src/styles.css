@@ -996,3 +996,31 @@ form input{
   .top-actions{max-width:140px}
   .lang-switch{min-width:105px;width:105px}
 }
+
+
+/* Final navigation icon scale: fixed vector bounds for Telegram/Web/TV. */
+.top-actions .icon-button{
+  width:40px;height:40px;min-width:40px;
+  padding:0;display:grid;place-items:center;
+}
+.top-actions .nav-icon{width:24px;height:24px;transform:none}
+.top-actions .chat-icon{width:24px;height:18px;margin:0;border:2px solid currentColor;border-radius:50%}
+.top-actions .chat-icon:after{left:2px;bottom:-6px;width:7px;height:7px}
+.top-actions .chat-icon i{top:5px;width:3px;height:3px}
+.top-actions .chat-icon i:nth-child(1){left:4px}
+.top-actions .chat-icon i:nth-child(2){left:10px}
+.top-actions .chat-icon i:nth-child(3){left:16px}
+.top-actions .home-icon:before{left:3px;top:8px;width:18px;height:13px;border-width:2px}
+.top-actions .home-icon:after{left:3px;top:3px;width:15px;height:15px;border-width:2px}
+.top-actions .radio-glyph{width:24px;height:21px}
+.top-actions .radio-glyph:before{left:2px;right:1px;bottom:1px;height:13px;border-width:2px}
+.top-actions .radio-glyph:after{left:8px;top:0;width:13px;height:2px}
+.top-actions .radio-button:before{width:4px;height:4px;transform:translate(-5px,5px);box-shadow:7px 0 0 currentColor}
+@media(max-width:520px){
+  .top-actions .icon-button{width:36px;height:36px;min-width:36px}
+  .top-actions .nav-icon{width:22px;height:22px}
+  .top-actions .chat-icon{width:22px;height:17px}
+  .top-actions .home-icon:before{width:17px;height:12px}
+  .top-actions .home-icon:after{width:14px;height:14px}
+  .top-actions .radio-glyph{width:22px;height:20px}
+}
