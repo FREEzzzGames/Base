@@ -127,47 +127,88 @@ function renderEditor(){
   const blocks=orderedBlocks(editorScreen);
   return `
     <aside class="dev editor-overlay">
+      <div class="editor-live-preview" data-editor-live-preview>
+        <div class="editor-preview-title"><span>USER UI</span><b>LIVE</b></div>
+        <div class="editor-preview-device"><div class="editor-preview-screen" data-editor-preview-screen></div></div>
+      </div>
       <div class="dev-panel editor-panel">
         <div class="editor-head">
           <div>
             <span class="radio-kicker">FREEzzz EDITOR</span>
-            <h2>Редакторская схема интерфейса</h2>
-            <p>Перетаскивай готовые блоки, меняй подписи и ширину. Схема сохраняется отдельно от механики модулей.</p>
+            <h2>Конструктор интерфейса</h2>
+            <p>Сенсор: удерживай блок и перемещай. Нижний правый маркер меняет размер. Все изменения сразу отражаются в пользовательском интерфейсе и в окне USER UI LIVE.</p>
           </div>
           <div class="editor-head-actions">
-            <button class="tg-button secondary" data-interface-toggle>Пользователь</button>
+            <button class="tg-button secondary" data-interface-toggle type="button">Пользователь</button>
             <button class="tg-button secondary editor-delete-button" data-constructor-remove type="button">Удалить конструктор</button>
           </div>
         </div>
         <div class="editor-screen-tabs">
-          ${screens.map(([id,label])=>`<button type="button" data-editor-screen="${id}" class="${editorScreen===id?"active":""}">${label}</button>`).join("")}
+          \${screens.map(([id,label])=>`<button type="button" data-editor-screen="\${id}" class="\${editorScreen===id?"active":""}">\${label}</button>`).join("")}
         </div>
         <div class="editor-toolbar">
-          <button class="tg-button" data-editor-save>Сохранить схему</button>
-          <button class="tg-button secondary" data-editor-export>Показать JSON</button>
-          <button class="tg-button secondary" data-editor-reset>Сбросить экран</button>
+          <button class="tg-button" data-editor-save type="button">Сохранить</button>
+          <button class="tg-button secondary" data-editor-export type="button">JSON</button>
+          <button class="tg-button secondary" data-editor-reset type="button">Сбросить</button>
         </div>
-        <div class="editor-workspace" data-editor-workspace style="--telegram-width:360px;--telegram-height:640px;">
+        <div class="editor-workspace" data-editor-workspace>
           <div class="editor-sheet">
             <div class="editor-sheet-grid" aria-hidden="true"></div>
             <div class="editor-canvas" data-editor-canvas>
-          ${blocks.map((block,index)=>`
-            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}"><span class="editor-resize-handle" data-editor-resize="${escapeHtml(block.id)}" title="Изменить размер"></span>
-              <div class="editor-block-drag" title="Перетащить">⠿</div>
-              <div class="editor-block-preview">
-                <span class="editor-block-type">${escapeHtml(block.id)}</span>
-                <input class="editor-block-label" data-editor-label="${escapeHtml(block.id)}" value="${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
-              </div>
-              <button type="button" class="editor-span" data-editor-span="${escapeHtml(block.id)}">${block.span===2?"↔ 100%":"↔ 50%"}</button>
-            </article>`).join("")}
-        </div>
+              \${blocks.map((block,index)=>`
+                <article class="editor-block block-color-\${index%8}" data-editor-block="\${escapeHtml(block.id)}" data-editor-index="\${index}" data-editor-drag="\${escapeHtml(block.id)}" style="\${block.x!==undefined?`left:\${block.x}%;`:``}\${block.y!==undefined?`top:\${block.y}%;`:``}\${block.w!==undefined?`width:\${block.w}%;`:``}\${block.h!==undefined?`height:\${block.h}%;`:``}">
+                  <div class="editor-block-drag" data-editor-drag-handle="\${escapeHtml(block.id)}" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>
+                  <div class="editor-block-preview">
+                    <span class="editor-block-type">\${escapeHtml(block.id)}</span>
+                    <input class="editor-block-label" data-editor-label="\${escapeHtml(block.id)}" value="\${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
+                  </div>
+                  <div class="editor-block-actions">
+                    <button type="button" class="editor-move" data-editor-move="-1" data-editor-id="\${escapeHtml(block.id)}" aria-label="Выше">▲</button>
+                    <button type="button" class="editor-move" data-editor-move="1" data-editor-id="\${escapeHtml(block.id)}" aria-label="Ниже">▼</button>
+                  </div>
+                  <span class="editor-resize-handle" data-editor-resize="\${escapeHtml(block.id)}" title="Изменить размер" aria-label="Изменить размер"></span>
+                </article>`).join("")}
+            </div>
           </div>
         </div>
-        <div class="editor-status">${escapeHtml(editorMessage||"Изменения пока только в редакторе. Нажми «Сохранить схему», когда план готов.")}</div>
-        <textarea class="editor-json" id="editor-json" placeholder="Здесь появится JSON схемы. Его можно скопировать и прислать мне для анализа."></textarea>
+        <div class="editor-status">\${escapeHtml(editorMessage||"LIVE: изменения конструктора применяются сразу. «Сохранить» записывает их на устройство.")}</div>
+        <textarea class="editor-json" id="editor-json" placeholder="JSON схемы"></textarea>
       </div>
     </aside>`;
 }
+
+function updateEditorPreview(){
+  const preview=document.querySelector<HTMLElement>("[data-editor-preview-screen]");
+  if(!preview)return;
+  const source=document.querySelector<HTMLElement>("main .content[data-portal-layout]");
+  preview.innerHTML="";
+  if(!source){
+    preview.innerHTML="<div class="editor-preview-empty">Нет экрана</div>";
+    return;
+  }
+  const clone=source.cloneNode(true) as HTMLElement;
+  clone.removeAttribute("id");
+  clone.classList.add("editor-preview-content");
+  applyLayoutToRoot(clone,editorScreen);
+  clone.querySelectorAll<HTMLElement>("[data-url]").forEach(el=>el.removeAttribute("data-url"));
+  clone.querySelectorAll("button,input,textarea").forEach(el=>el.setAttribute("tabindex","-1"));
+  preview.appendChild(clone);
+}
+
+function syncEditorRuntime(){
+  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
+  if(layout&&layout.dataset.portalLayout===editorScreen){
+    applyLayoutToRoot(layout,editorScreen);
+    for(const block of editorLayout[editorScreen]){
+      const target=layout.querySelector<HTMLElement>("[data-portal-block='"+CSS.escape(block.id)+"']");
+      if(!target)continue;
+      const textTarget=target.querySelector<HTMLElement>("h1,h2,h3,strong");
+      if(textTarget&&block.label)textTarget.textContent=block.label;
+    }
+  }
+  updateEditorPreview();
+}
+
 
 const streams=[
   ["🦆","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
@@ -357,6 +398,7 @@ function render(){
   bind();
   applySavedPortalLayout();
   if(view==="game")startGame();
+  if(dev)updateEditorPreview();
 }
 
 function card(v:View,e:string,t:string,d:string){
@@ -390,11 +432,11 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
-function applySavedPortalLayout(){
-  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
+function applyLayoutToRoot(root:HTMLElement,screen:View){
+  const layout=root.matches("[data-portal-layout]")?root:root.querySelector<HTMLElement>("[data-portal-layout]");
   if(!layout)return;
-  const screen=layout.dataset.portalLayout as View;
   const blocks=orderedBlocks(screen);
+  layout.style.position="relative";
   const byId=new Map<string,HTMLElement>();
   layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
   blocks.forEach((block,index)=>{
@@ -402,14 +444,25 @@ function applySavedPortalLayout(){
     if(!el)return;
     el.style.order=String(index);
     el.style.gridColumn=block.span===2?"1 / -1":"span 1";
-    if(block.x!==undefined||block.y!==undefined){
+    if(block.x!==undefined||block.y!==undefined||block.w!==undefined||block.h!==undefined){
       el.style.position="absolute";
       el.style.left=(block.x??0)+"%";
       el.style.top=(block.y??0)+"%";
       el.style.width=(block.w??(block.span===2?100:50))+"%";
       if(block.h!==undefined)el.style.height=block.h+"%";
+    }else{
+      el.style.position="";
+      el.style.left="";
+      el.style.top="";
+      el.style.width="";
+      el.style.height="";
     }
   });
+}
+
+function applySavedPortalLayout(){
+  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
+  if(layout)applyLayoutToRoot(layout,layout.dataset.portalLayout as View);
 }
 
 function bind(){
@@ -439,55 +492,70 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){x.onclick=function(){view=x.dataset.view as View;render();};});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};});
-  document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";render();};});
-  document.querySelectorAll<HTMLElement>("[data-editor-span]").forEach(function(x){x.onclick=function(){const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorSpan);if(b){b.span=b.span===2?1:2;render();}};});
-  document.querySelectorAll<HTMLInputElement>("[data-editor-label]").forEach(function(x){x.oninput=function(){const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorLabel);if(b)b.label=x.value;};});
-  document.querySelectorAll<HTMLElement>("[data-editor-block]").forEach(function(x){
-    x.addEventListener("dragstart",()=>{x.dataset.dragging="true";});
-    x.addEventListener("dragend",()=>{delete x.dataset.dragging;});
-    x.addEventListener("dragover",e=>e.preventDefault());
-    x.addEventListener("drop",e=>{e.preventDefault();const from=Number(document.querySelector<HTMLElement>("[data-editor-block][data-dragging='true']")?.dataset.editorIndex??-1);const to=Number(x.dataset.editorIndex??-1);if(from<0||to<0||from===to)return;const list=orderedBlocks(editorScreen);const [moved]=list.splice(from,1);list.splice(to,0,moved);list.forEach((b,i)=>b.order=i);editorLayout[editorScreen]=list;render();});
+  document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){
+    x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";view=editorScreen;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-editor-move]").forEach(function(x){
+    x.onclick=function(){
+      const id=x.dataset.editorId!, direction=Number(x.dataset.editorMove||0);
+      const list=orderedBlocks(editorScreen), index=list.findIndex(b=>b.id===id), next=index+direction;
+      if(index<0||next<0||next>=list.length)return;
+      const [moved]=list.splice(index,1); list.splice(next,0,moved); list.forEach((b,i)=>b.order=i);
+      editorLayout[editorScreen]=list; render();
+    };
+  });
+  document.querySelectorAll<HTMLInputElement>("[data-editor-label]").forEach(function(x){
+    x.oninput=function(){
+      const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorLabel);
+      if(b){b.label=x.value;syncEditorRuntime();}
+    };
   });
   document.querySelectorAll<HTMLElement>("[data-editor-resize]").forEach(function(handle){
     handle.addEventListener("pointerdown",function(e){
-      e.preventDefault(); e.stopPropagation();
-      const id=handle.dataset.editorResize!; const block=editorLayout[editorScreen].find(b=>b.id===id);
-      const sheet=document.querySelector<HTMLElement>(".editor-sheet"); const el=handle.closest<HTMLElement>(".editor-block");
+      e.preventDefault();e.stopPropagation();
+      const id=handle.dataset.editorResize!, block=editorLayout[editorScreen].find(b=>b.id===id);
+      const sheet=document.querySelector<HTMLElement>(".editor-sheet"), el=handle.closest<HTMLElement>(".editor-block");
       if(!block||!sheet||!el)return;
-      const rect=sheet.getBoundingClientRect();
-      const startX=e.clientX,startY=e.clientY;
-      const startW=block.w??(block.span===2?100:50);
-      const startH=block.h??Math.max(8,(el.getBoundingClientRect().height/rect.height)*100);
+      const rect=sheet.getBoundingClientRect(), startX=e.clientX,startY=e.clientY;
+      const startW=block.w??(block.span===2?100:50), startH=block.h??Math.max(8,(el.getBoundingClientRect().height/rect.height)*100);
       const move=(ev:PointerEvent)=>{
         block.w=Math.max(10,Math.min(100-(block.x??0),startW+((ev.clientX-startX)/rect.width)*100));
         block.h=Math.max(6,Math.min(100-(block.y??0),startH+((ev.clientY-startY)/rect.height)*100));
-        el.style.width=block.w+"%"; el.style.height=block.h+"%"; el.style.position="absolute";
+        el.style.width=block.w+"%";el.style.height=block.h+"%";syncEditorRuntime();
       };
       const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
-      window.addEventListener("pointermove",move); window.addEventListener("pointerup",up);
-    });
+      window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
+    },{passive:false});
   });
   document.querySelectorAll<HTMLElement>("[data-editor-drag]").forEach(function(x){
     x.addEventListener("pointerdown",function(e){
-      if((e.target as HTMLElement).closest("input,button"))return;
-      const sheet=document.querySelector<HTMLElement>(".editor-sheet"); if(!sheet)return;
-      const id=x.dataset.editorDrag!; const block=editorLayout[editorScreen].find(b=>b.id===id); if(!block)return;
-      const rect=sheet.getBoundingClientRect(); const startX=e.clientX,startY=e.clientY;
+      if((e.target as HTMLElement).closest("input,button,[data-editor-resize]"))return;
+      e.preventDefault();
+      const sheet=document.querySelector<HTMLElement>(".editor-sheet"),id=x.dataset.editorDrag!,block=editorLayout[editorScreen].find(b=>b.id===id);
+      if(!sheet||!block)return;
+      const rect=sheet.getBoundingClientRect(),startX=e.clientX,startY=e.clientY;
       const ox=block.x??Math.max(0,Math.min(100,(x.offsetLeft/rect.width)*100));
       const oy=block.y??Math.max(0,Math.min(100,(x.offsetTop/rect.height)*100));
       const move=(ev:PointerEvent)=>{
         block.x=Math.max(0,Math.min(100-(block.w??(block.span===2?100:50)),ox+((ev.clientX-startX)/rect.width)*100));
         block.y=Math.max(0,Math.min(100-(block.h??10),oy+((ev.clientY-startY)/rect.height)*100));
-        x.style.left=block.x+"%"; x.style.top=block.y+"%"; x.style.position="absolute";
+        x.style.left=block.x+"%";x.style.top=block.y+"%";syncEditorRuntime();
       };
       const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
-      window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);
-    });
+      window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
+    },{passive:false});
   });
-  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально на этом устройстве.";}catch{editorMessage="Не удалось сохранить схему."; }render();});
-  document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов — его можно скопировать и прислать мне.";});
-  document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];editorMessage="Экран возвращён к исходной схеме.";render();});
-  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){x.onclick=function(){interfaceMode=interfaceMode==="editor"?"user":"editor";dev=interfaceMode==="editor";try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}if(interfaceMode==="user")view="home";render();};});
+  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
+    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально.";}
+    catch{editorMessage="Не удалось сохранить схему."}
+    render();
+  });
+  document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{
+    const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов.";
+  });
+  document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{
+    editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];editorMessage="Экран сброшен.";render();
+  });
   document.querySelector("[data-constructor-remove]")?.addEventListener("click",function(){
     constructorEnabled=false;
     interfaceMode="user";
