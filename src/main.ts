@@ -158,7 +158,7 @@ function renderEditor(){
         </div>
         <div class="editor-screen-tabs">${screens.map(([id,label])=>'<button type="button" data-editor-screen="'+id+'" class="'+(editorScreen===id?"active":"")+'">'+label+'</button>').join("")}</div>
         <div class="editor-toolbar">
-          <button class="tg-button" data-editor-save type="button">Сохранить</button>
+          <button class="tg-button" data-editor-add type="button">＋ Добавить блок</button>\n          <button class="tg-button" data-editor-save type="button">Сохранить</button>
           <button class="tg-button secondary" data-editor-export type="button">JSON</button>
           <button class="tg-button secondary" data-editor-reset type="button">Сбросить</button>
         </div>
@@ -539,7 +539,7 @@ function bind(){
       window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
     },{passive:false});
   });
-  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
+  document.querySelector("[data-editor-add]")?.addEventListener("click",()=>{\n    const list=orderedBlocks(editorScreen);\n    const used=new Set(list.map(b=>b.id));\n    let number=list.length+1;\n    let id="custom-"+number;\n    while(used.has(id)){number++;id="custom-"+number;}\n    const block:EditorBlock={id,label:"Новый блок",span:1,order:list.length,x:5,y:Math.min(88,8+list.length*10),w:90,h:9};\n    editorLayout[editorScreen]=[...list,block];\n    editorMessage="Новый визуальный блок добавлен.";\n    render();\n  });\n  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
     try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально.";}
     catch{editorMessage="Не удалось сохранить схему."}
     render();
