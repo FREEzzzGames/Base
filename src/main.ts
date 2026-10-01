@@ -199,7 +199,6 @@ function renderEditor(){
           <div><span class="radio-kicker">FREEzzz EDITOR</span><h2>Конструктор интерфейса</h2>
           <p>Сенсор: удерживай блок и перемещай. Маркер внизу справа меняет размер. Изменения сразу видны в пользовательском интерфейсе и в USER UI LIVE.</p></div>
           <div class="editor-head-actions">
-            <button class="tg-button secondary" data-interface-toggle type="button">Пользователь</button>
             <button class="tg-button secondary editor-delete-button" data-constructor-remove type="button">Удалить конструктор</button>
           </div>
         </div>
@@ -419,7 +418,6 @@ function render(){
           <button class="icon-button nav-action ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span class="nav-label">CHAT</span></button>
           <button class="icon-button nav-action radio-button ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO"><span class="radio-glyph" aria-hidden="true"></span><span class="nav-label">RADIO</span></button>
           <button class="icon-button nav-action ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME"><span class="nav-icon home-icon"></span><span class="nav-label">HOME</span></button>
-          ${constructorEnabled?`<button class="icon-button interface-mode-button" data-interface-toggle aria-label="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}"><span class="nav-icon settings-icon"></span></button>`:""}
         </div>
       </header>
       <main>${body}</main>
@@ -427,7 +425,6 @@ function render(){
       ${dev?renderEditor():""}
       ${false?`<aside class="dev">
         <div class="dev-panel">
-          <button class="tg-button secondary" data-interface-toggle>Перейти в режим пользователя</button>
           <h2>Редакторская схема интерфейса</h2>
           <pre>${JSON.stringify({version:"0.0.1",view:view,language:lang,stage21:"EXCLUDED",modules:["LIVE","CHAT","GAME","RADIO","LIBRARY"]},null,2)}</pre>
         </div>
@@ -548,16 +545,6 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){
-    x.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      interfaceMode=interfaceMode==="editor"?"user":"editor";
-      dev=interfaceMode==="editor";
-      try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}
-      render();
-    };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
     x.onclick=function(){profileOpen=false;render();};
