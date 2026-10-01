@@ -152,7 +152,7 @@ function renderEditor(){
             <div class="editor-sheet-grid" aria-hidden="true"></div>
             <div class="editor-canvas" data-editor-canvas>
           ${blocks.map((block,index)=>`
-            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}">
+            <article class="editor-block block-color-${index%8} span-${block.span}" draggable="true" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}"><span class="editor-resize-handle" data-editor-resize="${escapeHtml(block.id)}" title="Изменить размер"></span>
               <div class="editor-block-drag" title="Перетащить">⠿</div>
               <div class="editor-block-preview">
                 <span class="editor-block-type">${escapeHtml(block.id)}</span>
@@ -447,6 +447,25 @@ function bind(){
     x.addEventListener("dragend",()=>{delete x.dataset.dragging;});
     x.addEventListener("dragover",e=>e.preventDefault());
     x.addEventListener("drop",e=>{e.preventDefault();const from=Number(document.querySelector<HTMLElement>("[data-editor-block][data-dragging='true']")?.dataset.editorIndex??-1);const to=Number(x.dataset.editorIndex??-1);if(from<0||to<0||from===to)return;const list=orderedBlocks(editorScreen);const [moved]=list.splice(from,1);list.splice(to,0,moved);list.forEach((b,i)=>b.order=i);editorLayout[editorScreen]=list;render();});
+  });
+  document.querySelectorAll<HTMLElement>("[data-editor-resize]").forEach(function(handle){
+    handle.addEventListener("pointerdown",function(e){
+      e.preventDefault(); e.stopPropagation();
+      const id=handle.dataset.editorResize!; const block=editorLayout[editorScreen].find(b=>b.id===id);
+      const sheet=document.querySelector<HTMLElement>(".editor-sheet"); const el=handle.closest<HTMLElement>(".editor-block");
+      if(!block||!sheet||!el)return;
+      const rect=sheet.getBoundingClientRect();
+      const startX=e.clientX,startY=e.clientY;
+      const startW=block.w??(block.span===2?100:50);
+      const startH=block.h??Math.max(8,(el.getBoundingClientRect().height/rect.height)*100);
+      const move=(ev:PointerEvent)=>{
+        block.w=Math.max(10,Math.min(100-(block.x??0),startW+((ev.clientX-startX)/rect.width)*100));
+        block.h=Math.max(6,Math.min(100-(block.y??0),startH+((ev.clientY-startY)/rect.height)*100));
+        el.style.width=block.w+"%"; el.style.height=block.h+"%"; el.style.position="absolute";
+      };
+      const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
+      window.addEventListener("pointermove",move); window.addEventListener("pointerup",up);
+    });
   });
   document.querySelectorAll<HTMLElement>("[data-editor-drag]").forEach(function(x){
     x.addEventListener("pointerdown",function(e){
