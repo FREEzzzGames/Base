@@ -14,6 +14,13 @@
   --ds-player:#0f171f;
   --ds-game:#080d12;
   --ds-radius:14px;
+  --ds-radius-sm:10px;
+  --ds-overlay:rgba(3,7,11,.90);
+  --ds-shadow:0 24px 80px rgba(0,0,0,.50);
+  --ds-focus:2px solid var(--ds-accent);
+  --ds-key:#e8ebee;
+  --ds-key-text:#27303a;
+  --ds-key-black:#202731;
 }
 
 /* Every palette is a token set. Modules must consume semantic tokens, never palette hex values. */
