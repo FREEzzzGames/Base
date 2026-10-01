@@ -392,3 +392,38 @@ header{background:var(--tg-secondary);border-bottom:1px solid var(--tg-line)}
 form input{background:var(--tg-card);border-color:var(--tg-line)}
 .avatar{background:#202d3a;border:1px solid var(--tg-line)}
 .game{background:#080d12;border-color:var(--tg-line)}
+
+/* PORTAL RADIO SKIN v2 */
+:root{
+  --tg-bg:#0b1118;
+  --tg-secondary:#111a23;
+  --tg-section:#111a23;
+  --tg-card:#111a23;
+  --tg-card-hover:#18222d;
+  --tg-line:#334454;
+  --tg-muted:#8f9eae;
+  --tg-text:#f2f5f8;
+  --tg-accent:#64b5f6;
+}
+.app,.app-shell,main{background:#0b1118}
+header,.hero,.card,.stream,.radio-panel,.player,.chat,.game,.dev-panel,
+.controls button,.tg-button.secondary,form input{
+  background:#111a23;
+  border:1px solid #334454;
+}
+.hero,.card,.stream,.radio-panel,.player,.chat,.game,.dev-panel{border-radius:14px}
+.card:hover,.stream:hover,.controls button:hover,.tg-button.secondary:hover{
+  background:#18222d;
+}
+.card:active,.stream:active,.controls button:active,.tg-button.secondary:active{
+  background:#18222d;
+}
+.player,.chat,.dev pre{background:#0f171f;border-color:#334454}
+.chat p{background:#111a23;border:1px solid #334454}
+.avatar{background:#18222d;border:1px solid #334454}
+.radio-genres button{
+  border:1px solid #334454;
+  background:#111a23;
+  color:#8f9eae;
+}
+.radio-station{background:#111a23;border-color:#334454}
