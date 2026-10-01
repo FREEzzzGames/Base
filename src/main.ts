@@ -199,6 +199,7 @@ function renderEditor(){
           <div><span class="radio-kicker">FREEzzz EDITOR</span><h2>Конструктор интерфейса</h2>
           <p>Сенсор: удерживай блок и перемещай. Маркер внизу справа меняет размер. Изменения сразу видны в пользовательском интерфейсе и в USER UI LIVE.</p></div>
           <div class="editor-head-actions">
+            <button class="tg-button secondary" data-editor-exit type="button">Выйти в меню</button>
             <button class="tg-button secondary editor-delete-button" data-constructor-remove type="button">Удалить конструктор</button>
           </div>
         </div>
@@ -546,6 +547,15 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
+  });
+  document.querySelector("[data-editor-exit]")?.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    interfaceMode="user";
+    dev=false;
+    view="home";
+    try{localStorage.setItem(INTERFACE_MODE_KEY,"user");}catch{}
+    render();
   });
   document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){
     x.onclick=function(e){
