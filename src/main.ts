@@ -402,6 +402,13 @@ function applySavedPortalLayout(){
     if(!el)return;
     el.style.order=String(index);
     el.style.gridColumn=block.span===2?"1 / -1":"span 1";
+    if(block.x!==undefined||block.y!==undefined){
+      el.style.position="absolute";
+      el.style.left=(block.x??0)+"%";
+      el.style.top=(block.y??0)+"%";
+      el.style.width=(block.w??(block.span===2?100:50))+"%";
+      if(block.h!==undefined)el.style.height=block.h+"%";
+    }
   });
 }
 
