@@ -549,6 +549,16 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
   });
+  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){
+    x.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      interfaceMode=interfaceMode==="editor"?"user":"editor";
+      dev=interfaceMode==="editor";
+      try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}
+      render();
+    };
+  });
   document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
     x.onclick=function(){profileOpen=false;render();};
   });
