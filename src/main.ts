@@ -11,6 +11,7 @@ interface TelegramWebAppBridge{
   openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;
   openTelegramLink?:(url:string)=>void;
   disableVerticalSwipes?:()=>void;
+  platform?:string;
 }
 function getTelegramWebApp():TelegramWebAppBridge|null{
   const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;
