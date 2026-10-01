@@ -9,7 +9,10 @@ type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 const app=document.querySelector<HTMLDivElement>("#app")!;
 let view:View="home";
 let lang="RU";
-let dev=false;
+type InterfaceMode = "user"|"editor";
+const INTERFACE_MODE_KEY = "freezzz:interface-mode";
+let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_MODE_KEY)==="editor"?"editor":"user";}catch{return "user";}})();
+let dev=interfaceMode==="editor";
 let score=0;
 let player=.5;
 const radioBrowser=new RadioBrowserClient();
@@ -170,7 +173,7 @@ function render(){
   }
 
   app.innerHTML=`
-    <div class="app-shell">
+    <div class="app-shell ${interfaceMode==="editor"?"editor-mode":""}">
       <header class="topbar">
         <div class="topbar-left">
           <button class="profile-button" aria-label="Profile"><span class="profile-glyph"></span></button>
@@ -191,14 +194,14 @@ function render(){
           <button class="icon-button" data-view="chat" aria-label="Chat"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span></button>
           <button class="icon-button radio-button" data-view="radio" aria-label="Radio"><span class="radio-glyph">📻</span></button>
           <button class="icon-button" data-view="home" aria-label="Home"><span class="nav-icon home-icon"></span></button>
-          <button class="icon-button" data-dev aria-label="Developer"><span class="nav-icon settings-icon"></span></button>
+          <button class="icon-button interface-mode-button" data-interface-toggle aria-label="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"Перейти в режим пользователя":"Показать интерфейс разработчика"}"><span class="nav-icon settings-icon"></span></button>
         </div>
       </header>
       <main>${body}</main>
       ${dev?`<aside class="dev">
         <div class="dev-panel">
-          <button class="tg-button secondary" data-dev>Закрыть</button>
-          <h2>Developer interface</h2>
+          <button class="tg-button secondary" data-interface-toggle>Перейти в режим пользователя</button>
+          <h2>Редакторская схема интерфейса</h2>
           <pre>${JSON.stringify({version:"0.0.1",view:view,language:lang,stage21:"EXCLUDED",modules:["LIVE","CHAT","GAME","RADIO","LIBRARY"]},null,2)}</pre>
         </div>
       </aside>`:""}
@@ -265,7 +268,7 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){x.onclick=function(){view=x.dataset.view as View;render();};});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};});
-  document.querySelectorAll<HTMLElement>("[data-dev]").forEach(function(x){x.onclick=function(){dev=!dev;render();};});
+  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){x.onclick=function(){interfaceMode=interfaceMode==="editor"?"user":"editor";dev=interfaceMode==="editor";try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}if(interfaceMode==="user")view="home";render();};});
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
     const i=document.querySelector<HTMLInputElement>("#chatinput")!;
