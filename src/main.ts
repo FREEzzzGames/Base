@@ -144,7 +144,7 @@ function renderEditor(){
           </div>
         </div>
         <div class="editor-screen-tabs">
-          \${screens.map(([id,label])=>`<button type="button" data-editor-screen="\${id}" class="\${editorScreen===id?"active":""}">\${label}</button>`).join("")}
+          ${screens.map(([id,label])=>`<button type="button" data-editor-screen="${id}" class="${editorScreen===id?"active":""}">${label}</button>`).join("")}
         </div>
         <div class="editor-toolbar">
           <button class="tg-button" data-editor-save type="button">Сохранить</button>
@@ -155,23 +155,23 @@ function renderEditor(){
           <div class="editor-sheet">
             <div class="editor-sheet-grid" aria-hidden="true"></div>
             <div class="editor-canvas" data-editor-canvas>
-              \${blocks.map((block,index)=>`
-                <article class="editor-block block-color-\${index%8}" data-editor-block="\${escapeHtml(block.id)}" data-editor-index="\${index}" data-editor-drag="\${escapeHtml(block.id)}" style="\${block.x!==undefined?`left:\${block.x}%;`:``}\${block.y!==undefined?`top:\${block.y}%;`:``}\${block.w!==undefined?`width:\${block.w}%;`:``}\${block.h!==undefined?`height:\${block.h}%;`:``}">
-                  <div class="editor-block-drag" data-editor-drag-handle="\${escapeHtml(block.id)}" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>
+              ${blocks.map((block,index)=>`
+                <article class="editor-block block-color-${index%8}" data-editor-block="${escapeHtml(block.id)}" data-editor-index="${index}" data-editor-drag="${escapeHtml(block.id)}" style="${block.x!==undefined?`left:${block.x}%;`:``}${block.y!==undefined?`top:${block.y}%;`:``}${block.w!==undefined?`width:${block.w}%;`:``}${block.h!==undefined?`height:${block.h}%;`:``}">
+                  <div class="editor-block-drag" data-editor-drag-handle="${escapeHtml(block.id)}" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>
                   <div class="editor-block-preview">
-                    <span class="editor-block-type">\${escapeHtml(block.id)}</span>
-                    <input class="editor-block-label" data-editor-label="\${escapeHtml(block.id)}" value="\${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
+                    <span class="editor-block-type">${escapeHtml(block.id)}</span>
+                    <input class="editor-block-label" data-editor-label="${escapeHtml(block.id)}" value="${escapeHtml(block.label)}" maxlength="80" aria-label="Подпись блока">
                   </div>
                   <div class="editor-block-actions">
-                    <button type="button" class="editor-move" data-editor-move="-1" data-editor-id="\${escapeHtml(block.id)}" aria-label="Выше">▲</button>
-                    <button type="button" class="editor-move" data-editor-move="1" data-editor-id="\${escapeHtml(block.id)}" aria-label="Ниже">▼</button>
+                    <button type="button" class="editor-move" data-editor-move="-1" data-editor-id="${escapeHtml(block.id)}" aria-label="Выше">▲</button>
+                    <button type="button" class="editor-move" data-editor-move="1" data-editor-id="${escapeHtml(block.id)}" aria-label="Ниже">▼</button>
                   </div>
-                  <span class="editor-resize-handle" data-editor-resize="\${escapeHtml(block.id)}" title="Изменить размер" aria-label="Изменить размер"></span>
+                  <span class="editor-resize-handle" data-editor-resize="${escapeHtml(block.id)}" title="Изменить размер" aria-label="Изменить размер"></span>
                 </article>`).join("")}
             </div>
           </div>
         </div>
-        <div class="editor-status">\${escapeHtml(editorMessage||"LIVE: изменения конструктора применяются сразу. «Сохранить» записывает их на устройство.")}</div>
+        <div class="editor-status">${escapeHtml(editorMessage||"LIVE: изменения конструктора применяются сразу. «Сохранить» записывает их на устройство.")}</div>
         <textarea class="editor-json" id="editor-json" placeholder="JSON схемы"></textarea>
       </div>
     </aside>`;
@@ -183,7 +183,7 @@ function updateEditorPreview(){
   const source=document.querySelector<HTMLElement>("main .content[data-portal-layout]");
   preview.innerHTML="";
   if(!source){
-    preview.innerHTML="<div class="editor-preview-empty">Нет экрана</div>";
+    preview.innerHTML='<div class="editor-preview-empty">Нет экрана</div>';
     return;
   }
   const clone=source.cloneNode(true) as HTMLElement;
