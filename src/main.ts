@@ -144,29 +144,29 @@ function render(){
 
   if(view==="home"){
     body=`
-      <div class="content">
-        <section class="hero">
+      <div class="content portal-layout" data-portal-layout="home">
+        <section class="hero portal-block" data-portal-block="hero">
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-        <div class="home-grid">
-          ${card("live","📺","LIVE","Стримеры и каналы")}
-          ${card("chat","💬","CHAT","Общение")}
-          ${card("game","🛸","GAME","Игровая зона")}
-          ${card("radio","📻","RADIO","Музыка")}
-          ${card("library","🗂️","LIBRARY","Твоя библиотека")}
+        <div class="home-grid portal-block" data-portal-block="cards">
+          ${card("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),"Стримеры и каналы")}
+          ${card("chat","💬",editorLabel("home","chat","CHAT — Общение"),"Общение")}
+          ${card("game","🛸",editorLabel("home","game","GAME — Игровая зона"),"Игровая зона")}
+          ${card("radio","📻",editorLabel("home","radio","RADIO — Музыка"),"Музыка")}
+          ${card("library","🗂️",editorLabel("home","library","LIBRARY — Библиотека"),"Твоя библиотека")}
         </div>
       </div>`;
   }
 
   if(view==="live"){
     body=`
-      <div class="content">
-        <div class="section-head">
+      <div class="content portal-layout" data-portal-layout="live">
+        <div class="section-head portal-block" data-portal-block="header">
           <div><h2>LIVE</h2><p>Стримеры и трансляции</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="list">
+        <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
             return `<article class="stream">
               <div class="avatar">${s[0]}</div>
@@ -175,19 +175,19 @@ function render(){
             </article>`;
           }).join("")}
         </div>
-        <div class="player"><p>Окно трансляции<br>Здесь будет воспроизводиться выбранный канал.</p></div>
+        <div class="player portal-block" data-portal-block="player"><p>Окно трансляции<br>Здесь будет воспроизводиться выбранный канал.</p></div>
       </div>`;
   }
 
   if(view==="chat"){
     body=`
-      <div class="content">
-        <div class="section-head">
+      <div class="content portal-layout" data-portal-layout="chat">
+        <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>Общение FREEzzz</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="chat"><p><b>FREEzzzBot</b><br>Добро пожаловать в FREEzzz.</p></div>
-        <form id="chatform">
+        <div class="chat portal-block" data-portal-block="messages"><p><b>FREEzzzBot</b><br>Добро пожаловать в FREEzzz.</p></div>
+        <form id="chatform" class="portal-block" data-portal-block="composer">
           <input id="chatinput" placeholder="Сообщение…" autocomplete="off">
           <button class="tg-button">Отправить</button>
         </form>
@@ -196,13 +196,13 @@ function render(){
 
   if(view==="game"){
     body=`
-      <div class="content">
-        <div class="section-head">
+      <div class="content portal-layout" data-portal-layout="game">
+        <div class="section-head portal-block" data-portal-block="header">
           <div><h2>GAME</h2><p>DUCK BLAST</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="game"><canvas id="canvas"></canvas><b id="score">SCORE ${score}</b></div>
-        <div class="controls">
+        <div class="game portal-block" data-portal-block="game"><canvas id="canvas"></canvas><b id="score">SCORE ${score}</b></div>
+        <div class="controls portal-block" data-portal-block="controls">
           <button data-move="-0.1">◀</button>
           <button data-fire>🚀 FIRE</button>
           <button data-move="0.1">▶</button>
@@ -221,13 +221,13 @@ function render(){
         })
       : [];
     body=`
-      <div class="content">
-        <div class="section-head"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
+      <div class="content portal-layout" data-portal-layout="radio">
+        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
         <section class="radio-panel">
           <div class="radio-heading">
             <div><span class="radio-kicker">FREEzzz RADIO</span><h3>Internet Radio</h3><p>Выбери станцию по логотипу и запусти её прямо внутри портала.</p></div>
           </div>
-          <div class="radio-carousel" id="radio-carousel" aria-label="Radio station carousel">
+          <div class="radio-carousel portal-block" data-portal-block="carousel" id="radio-carousel" aria-label="Radio station carousel">
             <div class="radio-carousel-track" id="radio-carousel-track">
               ${carouselCards.map(station=>{
                 const active=station.stationuuid===selectedStation?.stationuuid;
@@ -240,7 +240,7 @@ function render(){
               }).join("")}
             </div>
           </div>
-          <div class="radio-now-playing">
+          <div class="radio-now-playing portal-block" data-portal-block="nowplaying">
             <div>
               <span class="radio-kicker">NOW PLAYING</span>
               <h3>${selectedStation?escapeHtml(selectedStation.name):"Choose a station"}</h3>
@@ -256,8 +256,8 @@ function render(){
             </div>
           </div>
           <div id="radio-audio-host" class="radio-audio-host"></div>
-          <form id="radio-search-form" class="inline-form"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
-          <div class="radio-genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${escapeHtml(g)}" class="${radioGenre===g?"active":""}">${escapeHtml(g)}</button>`).join("")}</div>
+          <form id="radio-search-form" class="inline-form portal-block" data-portal-block="search" class="inline-form"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
+          <div class="radio-genres portal-block" data-portal-block="genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${escapeHtml(g)}" class="${radioGenre===g?"active":""}">${escapeHtml(g)}</button>`).join("")}</div>
           ${radioError?`<div class="radio-status">${escapeHtml(radioError)}</div>`:""}
         </section>
       </div>`;
@@ -265,8 +265,8 @@ function render(){
 
   if(view==="library"){
     body=`
-      <div class="content">
-        <section class="hero">
+      <div class="content portal-layout" data-portal-layout="library">
+        <section class="hero portal-block" data-portal-block="content">
           <h2>LIBRARY</h2>
           <p>Локальная библиотека портала.</p>
           <div class="top-actions" style="justify-content:flex-start;margin-top:12px">
@@ -314,11 +314,12 @@ function render(){
       </aside>`:""}
     </div>`;
   bind();
+  applySavedPortalLayout();
   if(view==="game")startGame();
 }
 
 function card(v:View,e:string,t:string,d:string){
-  return `<button class="card" data-view="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
+  return `<button class="card" data-view="${v}" data-portal-card="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
 }
 
 async function loadRadioStations(){
@@ -348,6 +349,37 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
+function applySavedPortalLayout(){
+  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
+  if(!layout)return;
+  const screen=layout.dataset.portalLayout as View;
+  const blocks=orderedBlocks(screen);
+  const byId=new Map<string,HTMLElement>();
+  layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
+  // HOME has a dedicated card grid; map its five module cards to their saved positions.
+  if(screen==="home"){
+    const grid=layout.querySelector<HTMLElement>(".home-grid");
+    const cards=[...layout.querySelectorAll<HTMLElement>("[data-portal-card]")];
+    const cardMap=new Map(cards.map(card=>[card.dataset.portalCard||"",card]));
+    const orderedCards=blocks.filter(b=>cardMap.has(b.id));
+    orderedCards.forEach((b,index)=>{
+      const card=cardMap.get(b.id)!;
+      card.style.order=String(index);
+      card.style.gridColumn=b.span===2?"span 2":"span 1";
+    });
+    const hero=byId.get("hero");
+    if(hero)hero.style.order=String(Math.max(0,blocks.findIndex(b=>b.id==="hero")));
+    if(grid)grid.style.order=String(Math.max(0,blocks.findIndex(b=>["live","chat","game","radio","library"].includes(b.id))));
+    return;
+  }
+  blocks.forEach((block,index)=>{
+    const el=byId.get(block.id);
+    if(!el)return;
+    el.style.order=String(index);
+    if(block.span===2)el.classList.add("portal-block-full");else el.classList.remove("portal-block-full");
+  });
+}
+
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
