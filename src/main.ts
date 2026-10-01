@@ -14,7 +14,7 @@ const INTERFACE_MODE_KEY = "freezzz:interface-mode";
 const CONSTRUCTOR_ENABLED_KEY = "freezzz:constructor-enabled";
 let constructorEnabled=(()=>{try{return localStorage.getItem(CONSTRUCTOR_ENABLED_KEY)!=="disabled";}catch{return true;}})();
 let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_MODE_KEY)==="editor"?"editor":"user";}catch{return "user";}})();
-let dev=interfaceMode==="editor";
+let dev=interfaceMode==="editor";\nlet profileOpen=false;\nlet liveSelected="";
 let score=0;
 let player=.5;
 const radioBrowser=new RadioBrowserClient();
@@ -242,11 +242,11 @@ function render(){
             return `<article class="stream">
               <div class="avatar">${s[0]}</div>
               <div><b>${s[1]}</b><small>● OFFLINE · ${s[2]}</small></div>
-              <button class="tg-button secondary" data-url="${s[3]}">Открыть</button>
+              <button class="tg-button secondary" data-live-select="${escapeHtml(s[1])}" data-url="${s[3]}">Открыть</button>
             </article>`;
           }).join("")}
         </div>
-        <div class="player portal-block" data-portal-block="player"><p>Окно трансляции<br>Здесь будет воспроизводиться выбранный канал.</p></div>
+        <div class="player portal-block" data-portal-block="player"><p>${liveSelected?`Выбран: <b>${escapeHtml(liveSelected)}</b><br>Канал открыт через Telegram WebApp.`:"Окно трансляции<br>Выбери канал выше."}</p></div>
       </div>`;
   }
 
@@ -353,7 +353,7 @@ function render(){
     <div class="app-shell ${interfaceMode==="editor"?"editor-mode":""}">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="profile-button" aria-label="Profile"><span class="profile-glyph"></span></button>
+          <button class="profile-button" data-profile-toggle type="button" aria-label="Profile"><span class="profile-glyph"></span></button>
           <div class="brand-avatar" aria-hidden="true">F</div>
           <div class="brand-title">
             <strong>FREEzzz</strong>
@@ -375,7 +375,7 @@ function render(){
         </div>
       </header>
       <main>${body}</main>
-      ${dev?renderEditor():""}
+      ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" onclick="event.stopPropagation()"><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}\n      ${dev?renderEditor():""}
       ${false?`<aside class="dev">
         <div class="dev-panel">
           <button class="tg-button secondary" data-interface-toggle>Перейти в режим пользователя</button>
@@ -484,7 +484,7 @@ function bind(){
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const next=x.dataset.view as View;\n      if(!next)return;\n      view=next;\n      render();\n    };\n  });
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
+  document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){\n    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){\n    x.onclick=function(){profileOpen=false;render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-live-select]").forEach(function(x){\n    x.onclick=function(){liveSelected=x.dataset.liveSelect||"";render();};\n  });\n  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const url=x.dataset.url;\n      if(!url)return;\n      const tg=getTelegramWebApp();\n      if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}\n      else{window.open(url,"_blank","noopener,noreferrer");}\n    };\n  });
   document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){
     x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";view=editorScreen;render();};
