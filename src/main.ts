@@ -438,6 +438,17 @@ function bind(){
   document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов — его можно скопировать и прислать мне.";});
   document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];editorMessage="Экран возвращён к исходной схеме.";render();});
   document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){x.onclick=function(){interfaceMode=interfaceMode==="editor"?"user":"editor";dev=interfaceMode==="editor";try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}if(interfaceMode==="user")view="home";render();};});
+  document.querySelector("[data-constructor-remove]")?.addEventListener("click",function(){
+    constructorEnabled=false;
+    interfaceMode="user";
+    dev=false;
+    try{
+      localStorage.setItem(CONSTRUCTOR_ENABLED_KEY,"disabled");
+      localStorage.setItem(INTERFACE_MODE_KEY,"user");
+    }catch{}
+    view="home";
+    render();
+  });
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
     const i=document.querySelector<HTMLInputElement>("#chatinput")!;
