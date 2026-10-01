@@ -1,6 +1,9 @@
 import { WebMidiController, midiNoteName } from "./midi-controller";
 import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
+import { initPortalPalette } from "./design-system/theme";
+
+initPortalPalette();
 
 type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 
