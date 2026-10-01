@@ -314,8 +314,13 @@ form input{
   content:"";position:absolute;inset:4px;border:3px solid var(--tg-text);border-radius:50%;
 }
 .settings-icon:after{
-  content:"⚙";position:absolute;inset:-3px;display:grid;place-items:center;
-  color:var(--tg-text);font-size:29px;line-height:1;
+  content:"";position:absolute;left:8px;top:8px;width:11px;height:11px;
+  border:3px solid var(--tg-text);border-radius:50%;
+  box-shadow:
+    0 -11px 0 -8px var(--tg-text),
+    0 11px 0 -8px var(--tg-text),
+    11px 0 0 -8px var(--tg-text),
+    -11px 0 0 -8px var(--tg-text);
 }
 @media(max-width:700px){
   .topbar{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4px}
