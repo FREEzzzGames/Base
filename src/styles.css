@@ -925,3 +925,74 @@ form input{
 .profile-avatar{width:64px;height:64px;margin:4px auto 12px;display:grid;place-items:center;border-radius:50%;background:var(--ds-accent);color:#fff;font-size:30px;font-weight:800}
 .profile-card h2{margin:0 0 5px}.profile-card p{margin:0;color:var(--ds-muted)}
 .profile-actions{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+
+
+/* Modern responsive top navigation — text + CSS vector icons only. */
+.topbar{
+  min-height:64px;
+  padding:calc(8px + var(--safe-top)) 10px 8px;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  gap:10px;
+  background:color-mix(in srgb,var(--tg-secondary) 94%,black 6%);
+  border-bottom:1px solid color-mix(in srgb,var(--tg-line) 82%,transparent);
+}
+.topbar-left{gap:7px;min-width:0}
+.profile-button,.icon-button{
+  flex:0 0 40px;width:40px;height:40px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:transparent;
+  transition:background .16s ease,border-color .16s ease,transform .12s ease;
+}
+.profile-button:hover,.icon-button:hover{background:var(--tg-card-hover);border-color:var(--tg-line)}
+.profile-button:active,.icon-button:active{transform:scale(.95)}
+.brand-avatar{flex:0 0 40px;width:40px;height:40px;font-size:20px}
+.lang-switch{
+  min-width:138px;height:40px;padding:3px;gap:2px;
+  border:1px solid var(--tg-line);
+  border-radius:12px;
+  background:var(--ds-control);
+  box-shadow:none;
+}
+.lang-switch button{
+  min-width:40px;height:32px;padding:0 8px;border-radius:9px;
+  font-size:14px;font-weight:600;letter-spacing:.02em;
+}
+.lang-switch button.active{box-shadow:none}
+.top-actions{
+  justify-self:end;min-width:0;gap:3px;
+  display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;
+}
+.top-actions::-webkit-scrollbar{display:none}
+.nav-action{position:relative;display:grid;place-items:center}
+.nav-action.active{background:color-mix(in srgb,var(--tg-accent) 18%,transparent);border-color:color-mix(in srgb,var(--tg-accent) 45%,transparent)}
+.nav-label{display:none}
+.radio-glyph{position:relative;width:25px;height:22px;display:block}
+.radio-glyph:before{content:"";position:absolute;left:3px;right:2px;bottom:1px;height:14px;border:2px solid currentColor;border-radius:4px}
+.radio-glyph:after{content:"";position:absolute;left:9px;top:0;width:13px;height:2px;background:currentColor;transform:rotate(-25deg);transform-origin:left center;border-radius:2px}
+.radio-button:before{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:currentColor;transform:translate(-6px,5px);box-shadow:8px 0 0 currentColor}
+.chat-icon{border-width:2px;height:20px;width:27px}
+.home-icon:before,.home-icon:after{border-width:2px}
+.settings-icon:before,.settings-icon:after{border-width:2px}
+@media(max-width:520px){
+  .topbar{min-height:58px;padding:calc(6px + var(--safe-top)) 7px 6px;gap:6px}
+  .topbar-left{gap:4px}
+  .profile-button,.icon-button{flex-basis:36px;width:36px;height:36px;border-radius:10px}
+  .brand-avatar{flex-basis:36px;width:36px;height:36px;font-size:18px}
+  .lang-switch{min-width:116px;width:116px;height:36px;padding:2px;border-radius:10px}
+  .lang-switch button{min-width:34px;height:30px;padding:0 5px;font-size:13px}
+  .top-actions{gap:2px}
+}
+@media(max-width:390px){
+  .topbar{grid-template-columns:auto minmax(0,1fr) auto;gap:4px}
+  .profile-button,.icon-button{flex-basis:34px;width:34px;height:34px}
+  .brand-avatar{flex-basis:34px;width:34px;height:34px}
+  .lang-switch{min-width:108px;width:108px}
+  .lang-switch button{min-width:31px;font-size:12px}
+  .top-actions{max-width:144px}
+}
+@media(max-width:340px){
+  .brand-avatar{display:none}
+  .top-actions{max-width:140px}
+  .lang-switch{min-width:105px;width:105px}
+}
