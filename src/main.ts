@@ -1,6 +1,7 @@
 import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
+import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 
 initPortalPalette();
 
@@ -21,8 +22,31 @@ function initTelegramBridge(){
   tg.ready?.();
   tg.expand?.();
   tg.disableVerticalSwipes?.();
+  document.documentElement.dataset.telegram="true";
+  if(tg.platform)document.documentElement.dataset.telegramPlatform=tg.platform;
 }
 initTelegramBridge();
+
+async function checkForPortalUpdate(){
+  try{
+    const response=await fetch("./version.json?ts="+Date.now(),{
+      cache:"no-store",
+      headers:{Accept:"application/json"}
+    });
+    if(!response.ok)return;
+    const remote=await response.json() as {version?:string;build?:string};
+    if(!remote.build||remote.build===PORTAL_BUILD_ID)return;
+    const seenKey="freezzz:update-reload";
+    if(sessionStorage.getItem(seenKey)===remote.build)return;
+    sessionStorage.setItem(seenKey,remote.build);
+    localStorage.setItem("freezzz:build",remote.build);
+    const url=new URL(window.location.href);
+    url.searchParams.set("freezzz_build",remote.build);
+    url.searchParams.set("freezzz_refresh",String(Date.now()));
+    window.location.replace(url.toString());
+  }catch{}
+}
+void checkForPortalUpdate();
 
 type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 
@@ -214,7 +238,7 @@ function updateEditorPreview(){
 
 function syncEditorRuntime(){
   const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
-  if(layout&&layout.dataset.portalLayout===editorScreen){
+  if(layout&&layout.dataset.portalLayout===editorScreen&&editorScreen!=="home"){
     applyLayoutToRoot(layout,editorScreen);
     for(const block of editorLayout[editorScreen]){
       const target=layout.querySelector<HTMLElement>("[data-portal-block='"+CSS.escape(block.id)+"']");
@@ -451,6 +475,7 @@ function playRadioStation(id:string){
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
 function applyLayoutToRoot(root:HTMLElement,screen:View){
+  if(screen==="home")return;
   const layout=root.matches("[data-portal-layout]")?root:root.querySelector<HTMLElement>("[data-portal-layout]");
   if(!layout)return;
   const blocks=orderedBlocks(screen);
@@ -480,7 +505,10 @@ function applyLayoutToRoot(root:HTMLElement,screen:View){
 
 function applySavedPortalLayout(){
   const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
-  if(layout)applyLayoutToRoot(layout,layout.dataset.portalLayout as View);
+  if(!layout)return;
+  const screen=layout.dataset.portalLayout as View;
+  if(screen==="home")return;
+  applyLayoutToRoot(layout,screen);
 }
 
 function bind(){
