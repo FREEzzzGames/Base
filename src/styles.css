@@ -615,7 +615,7 @@ form input{
   top:0;
   width:50%;
   min-height:46px;
-  border:1px solid rgba(255,255,255,.32);
+  border:1px solid rgba(255,255,255,.48);
   border-radius:7px;
   padding:7px 8px;
   display:grid;
@@ -625,6 +625,7 @@ form input{
   cursor:grab;
   box-sizing:border-box;
   box-shadow:none;
+  overflow:visible;
 }
 .editor-block:active{cursor:grabbing}
 .editor-block.span-2{grid-column:1 / -1}
@@ -678,4 +679,22 @@ form input{
   .editor-canvas{inset:10px}
   .editor-block{grid-template-columns:18px minmax(0,1fr);padding:5px}
   .editor-span{grid-column:2}
+}
+
+
+.editor-resize-handle{
+  position:absolute;
+  right:-3px;
+  bottom:-3px;
+  width:9px;
+  height:9px;
+  border-right:1px solid rgba(255,255,255,.8);
+  border-bottom:1px solid rgba(255,255,255,.8);
+  cursor:nwse-resize;
+  touch-action:none;
+  z-index:3;
+}
+.editor-block:hover,
+.editor-block:focus-within{
+  border-color:rgba(255,255,255,.72);
 }
