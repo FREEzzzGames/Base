@@ -3,7 +3,7 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 
 initPortalPalette();
-
+\ninterface TelegramWebAppBridge{\n  ready?:()=>void;\n  expand?:()=>void;\n  openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;\n  openTelegramLink?:(url:string)=>void;\n  disableVerticalSwipes?:()=>void;\n}\nfunction getTelegramWebApp():TelegramWebAppBridge|null{\n  const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;\n  return candidate||null;\n}\nfunction initTelegramBridge(){\n  const tg=getTelegramWebApp();\n  if(!tg)return;\n  tg.ready?.();\n  tg.expand?.();\n  tg.disableVerticalSwipes?.();\n}\ninitTelegramBridge();\n
 type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
@@ -483,9 +483,9 @@ function bind(){
     const host=document.querySelector("#radio-audio-host");
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){x.onclick=function(){view=x.dataset.view as View;render();};});
+  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const next=x.dataset.view as View;\n      if(!next)return;\n      view=next;\n      render();\n    };\n  });
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
-  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};});
+  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){\n    x.onclick=function(e){\n      e.preventDefault();\n      e.stopPropagation();\n      const url=x.dataset.url;\n      if(!url)return;\n      const tg=getTelegramWebApp();\n      if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}\n      else{window.open(url,"_blank","noopener,noreferrer");}\n    };\n  });
   document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){
     x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";view=editorScreen;render();};
   });
