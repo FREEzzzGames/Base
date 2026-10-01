@@ -1,4 +1,3 @@
-import { WebMidiController, midiNoteName } from "./midi-controller";
 import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
@@ -14,17 +13,14 @@ let dev=false;
 let score=0;
 let player=.5;
 const radioBrowser=new RadioBrowserClient();
-const midiController=new WebMidiController();
 let radioStations:readonly RadioBrowserStation[]=[];
 let radioGenre="pop";
 let radioQuery="";
 let radioLoading=false;
 let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
-let midiOutputs:readonly {id:string;name:string;manufacturer?:string}[]=[];
-let midiError="";
-let midiOctave=4;
-let midiActiveNotes=new Set<number>();
+let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
+let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 
 const streams=[
   ["🦆","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
@@ -106,16 +102,54 @@ function render(){
   }
 
   if(view==="radio"){
+    const selectedStation=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
+    const selectedIndex=selectedStation?radioStations.findIndex(s=>s.stationuuid===selectedStation.stationuuid):-1;
+    const count=Math.min(3,radioStations.length);
+    const carouselCards=selectedStation&&selectedIndex>=0
+      ? Array.from({length:count},(_,offset)=>{
+          const half=Math.floor(count/2);
+          return radioStations[(selectedIndex+offset-half+radioStations.length)%radioStations.length];
+        })
+      : [];
     body=`
       <div class="content">
         <div class="section-head"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
         <section class="radio-panel">
-          <div class="radio-heading"><div><span class="radio-kicker">PUBLIC RADIO</span><h3>Station Browser</h3><p>Выбери станцию и запусти её прямо внутри портала.</p></div><button id="open-midi" class="tg-button" type="button"><span class="play-icon" aria-hidden="true"></span>MIDI Controller</button></div>
-          <div class="radio-player" id="radio-now"><strong>READY</strong><span>Выбери станцию ниже</span></div>
-          <form id="radio-search-form" class="inline-form"><input id="radio-search-input" value="${radioQuery}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
-          <div class="radio-genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${g}" class="${radioGenre===g?"active":""}">${g}</button>`).join("")}</div>
-          <div class="radio-status">${radioLoading?"Loading stations…":radioError?escapeHtml(radioError):radioStations.length+" stations"}</div>
-          <div class="radio-stations">${radioStations.map(s=>`<article class="radio-station"><div><strong>${escapeHtml(s.name)}</strong><small>${escapeHtml(s.country||"International")} · ${escapeHtml(s.codec||"stream")} · ${s.bitrate||0} kbps</small></div><button class="tg-button secondary" data-radio-station="${s.stationuuid}" type="button">Play</button></article>`).join("")}</div>
+          <div class="radio-heading">
+            <div><span class="radio-kicker">FREEzzz RADIO</span><h3>Internet Radio</h3><p>Выбери станцию по логотипу и запусти её прямо внутри портала.</p></div>
+          </div>
+          <div class="radio-carousel" id="radio-carousel" aria-label="Radio station carousel">
+            <div class="radio-carousel-track" id="radio-carousel-track">
+              ${carouselCards.map(station=>{
+                const active=station.stationuuid===selectedStation?.stationuuid;
+                const logo=station.favicon?.trim()||"";
+                return `<button class="radio-carousel-card ${active?"active":""}" data-radio-carousel-id="${escapeHtml(station.stationuuid)}" type="button" title="${escapeHtml(station.name)}" aria-label="${escapeHtml(station.name)}">
+                  ${logo
+                    ? `<img class="radio-card-logo" src="${escapeHtml(logo)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+                    : `<span class="radio-card-logo-fallback" aria-hidden="true">◉</span>`}
+                </button>`;
+              }).join("")}
+            </div>
+          </div>
+          <div class="radio-now-playing">
+            <div>
+              <span class="radio-kicker">NOW PLAYING</span>
+              <h3>${selectedStation?escapeHtml(selectedStation.name):"Choose a station"}</h3>
+              <p>${selectedStation
+                ? [selectedStation.country||"International",selectedStation.tags||"radio",selectedStation.language||"",selectedStation.codec?`${selectedStation.codec} · ${selectedStation.bitrate||0} kbps`:""].filter(Boolean).map(escapeHtml).join(" · ")
+                : "Загрузка станций…"}
+              </p>
+            </div>
+            <div class="radio-player-controls">
+              <button id="radio-play" class="tg-button" type="button" ${selectedStation?"":"disabled"}>${radioPlaybackStatus==="playing"?"Playing":"Play"}</button>
+              <button id="radio-pause" class="tg-button secondary" type="button" ${radioPlaybackStatus==="playing"?"":"disabled"}>Pause</button>
+              <button id="radio-stop" class="tg-button secondary" type="button" ${radioPlaybackStatus!=="idle"&&radioPlaybackStatus!=="stopped"?"":"disabled"}>Stop</button>
+            </div>
+          </div>
+          <div id="radio-audio-host" class="radio-audio-host"></div>
+          <form id="radio-search-form" class="inline-form"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
+          <div class="radio-genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${escapeHtml(g)}" class="${radioGenre===g?"active":""}">${escapeHtml(g)}</button>`).join("")}</div>
+          ${radioError?`<div class="radio-status">${escapeHtml(radioError)}</div>`:""}
         </section>
       </div>`;
   }
@@ -179,76 +213,68 @@ function card(v:View,e:string,t:string,d:string){
 
 async function loadRadioStations(){
   radioLoading=true; radioError=""; render();
-  try{radioStations=await radioBrowser.searchStations(radioGenre,radioQuery,30);}
-  catch(error){radioStations=[];radioError=error instanceof Error?error.message:String(error);}
+  try{
+    radioStations=await radioBrowser.searchStations(radioGenre,radioQuery,30);
+    if(radioSelectedId&&radioStations.some(s=>s.stationuuid===radioSelectedId)){
+      // keep the saved station when it is still present
+    }else if(radioStations[0]){
+      radioSelectedId=radioStations[0].stationuuid;
+      try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
+    }
+  }catch(error){radioStations=[];radioError=error instanceof Error?error.message:String(error);}
   finally{radioLoading=false;render();}
 }
 function playRadioStation(id:string){
   const station=radioStations.find(s=>s.stationuuid===id); if(!station)return;
-  radioAudio?.pause(); radioAudio=new Audio(station.url_resolved||station.url);
-  radioAudio.dataset.station=station.name; radioAudio.controls=true; radioAudio.autoplay=true;
-  radioAudio.play().catch(()=>{radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";render();}); render();
+  radioSelectedId=station.stationuuid;
+  try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
+  radioAudio?.pause();
+  radioAudio=new Audio(station.url_resolved||station.url);
+  radioAudio.dataset.station=station.name;
+  radioAudio.controls=true;
+  radioPlaybackStatus="loading";
+  radioAudio.addEventListener("playing",()=>{radioPlaybackStatus="playing";render();},{once:true});
+  radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")radioPlaybackStatus="paused";});
+  radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
+  void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
-function renderMidiOverlay(){
-  const existing=document.querySelector("#midi-overlay"); if(existing){existing.remove();return;}
-  const overlay=document.createElement("div"); overlay.id="midi-overlay"; overlay.className="midi-overlay";
-  const notes=Array.from({length:24},(_,i)=>midiOctave*12+i);
-  overlay.innerHTML="<div class=\"midi-controller\"><header class=\"midi-header\"><div><span>FREEzzz AUDIO LAB</span><h2>MIDI Controller</h2></div><button id=\"midi-close\" type=\"button\">Close</button></header><div class=\"midi-toolbar\"><button id=\"midi-connect\" type=\"button\">Connect MIDI</button><select id=\"midi-output\"><option value=\"\">Virtual / no hardware</option>"+midiOutputs.map(o=>"<option value=\""+escapeHtml(o.id)+"\">"+escapeHtml(o.name)+"</option>").join("")+"</select><button id=\"midi-down\" type=\"button\">− Octave</button><strong>Oct "+midiOctave+"</strong><button id=\"midi-up\" type=\"button\">+ Octave</button></div><div class=\"midi-status\">"+(midiError?escapeHtml(midiError):midiController.getOutput()?"MIDI output connected":"Virtual controller ready")+"</div><section class=\"midi-surface\"><div class=\"midi-pads\">"+Array.from({length:16},(_,i)=>"<button class=\"midi-pad\" data-midi-pad=\""+i+"\" type=\"button\"><span>"+String(i+1).padStart(2,"0")+"</span><strong>PAD</strong></button>").join("")+"</div><div class=\"midi-knobs\">"+[21,22,23,24].map((cc,i)=>"<label class=\"midi-knob\"><span>CC "+cc+"</span><input data-midi-cc=\""+cc+"\" type=\"range\" min=\"0\" max=\"127\" value=\""+midiController.getCC(cc)+"\"><output>"+midiController.getCC(cc)+"</output><b>K"+(i+1)+"</b></label>").join("")+"</div></section><section class=\"midi-keyboard\"><div class=\"midi-keyboard-label\">KEYBOARD</div><div class=\"midi-keys\">"+notes.map(n=>"<button class=\"midi-key "+([1,3,6,8,10].includes(n%12)?"black":"")+"\" data-midi-note=\""+n+"\" type=\"button\"><span>"+midiNoteName(n)+"</span></button>").join("")+"</div></section></div>";
-  document.body.append(overlay);
-  overlay.querySelector("#midi-close")?.addEventListener("click",()=>overlay.remove());
-  overlay.querySelector("#midi-connect")?.addEventListener("click",async()=>{try{midiError="";midiOutputs=await midiController.connect();renderMidiOverlay();}catch(e){midiError=e instanceof Error?e.message:String(e);renderMidiOverlay();}});
-  overlay.querySelector("#midi-down")?.addEventListener("click",()=>{midiOctave=Math.max(1,midiOctave-1);midiController.setOctave(midiOctave);renderMidiOverlay();});
-  overlay.querySelector("#midi-up")?.addEventListener("click",()=>{midiOctave=Math.min(7,midiOctave+1);midiController.setOctave(midiOctave);renderMidiOverlay();});
-  overlay.querySelectorAll<HTMLInputElement>("[data-midi-cc]").forEach(input=>input.addEventListener("input",()=>{midiController.controlChange(Number(input.dataset.midiCc),Number(input.value));const o=input.parentElement?.querySelector("output");if(o)o.textContent=input.value;}));
-  overlay.querySelectorAll<HTMLButtonElement>("[data-midi-note]").forEach(b=>{const n=Number(b.dataset.midiNote);const down=()=>{midiActiveNotes.add(n);midiController.noteOn(n,100);b.classList.add("active")};const up=()=>{if(midiActiveNotes.delete(n))midiController.noteOff(n);b.classList.remove("active")};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);});
-}
-
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
-    document.querySelectorAll<HTMLElement>("[data-radio-station]").forEach(x=>x.onclick=()=>playRadioStation(x.dataset.radioStation||""));
-    document.querySelector("#open-midi")?.addEventListener("click",()=>renderMidiOverlay());
+    document.querySelectorAll<HTMLButtonElement>("[data-radio-carousel-id]").forEach(x=>x.onclick=()=>{radioSelectedId=x.dataset.radioCarouselId||"";try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{};render();});
+    document.querySelector("#radio-play")?.addEventListener("click",()=>void playRadioStation(radioSelectedId));
+    document.querySelector("#radio-pause")?.addEventListener("click",()=>{radioAudio?.pause();radioPlaybackStatus="paused";render();});
+    document.querySelector("#radio-stop")?.addEventListener("click",()=>{if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();});
+    const carousel=document.querySelector<HTMLElement>("#radio-carousel-track");
+    let startX=0;
+    carousel?.addEventListener("pointerdown",e=>{startX=e.clientX;});
+    carousel?.addEventListener("pointerup",e=>{
+      const dx=e.clientX-startX;
+      if(Math.abs(dx)<45||radioStations.length<2)return;
+      const current=Math.max(0,radioStations.findIndex(s=>s.stationuuid===radioSelectedId));
+      const next=(current+(dx<0?1:-1)+radioStations.length)%radioStations.length;
+      radioSelectedId=radioStations[next].stationuuid;
+      try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
+      render();
+    });
     if(!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
-    const host=document.querySelector("#radio-now"); if(host&&radioAudio){host.innerHTML="";host.append(radioAudio);radioAudio.style.width="100%";}
+    const host=document.querySelector("#radio-audio-host");
+    if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
-    x.onclick=function(){view=x.dataset.view as View;render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){
-    x.onclick=function(){lang=x.dataset.lang||"RU";render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
-    x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};
-  });
-  document.querySelectorAll<HTMLElement>("[data-dev]").forEach(function(x){
-    x.onclick=function(){dev=!dev;render();};
-  });
+  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){x.onclick=function(){view=x.dataset.view as View;render();};});
+  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
+  document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){x.onclick=function(){window.open(x.dataset.url!,"_blank","noopener,noreferrer");};});
+  document.querySelectorAll<HTMLElement>("[data-dev]").forEach(function(x){x.onclick=function(){dev=!dev;render();};});
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
     const i=document.querySelector<HTMLInputElement>("#chatinput")!;
-    if(i.value.trim()){
-      const box=document.querySelector(".chat")!;
-      box.innerHTML+="<p><b>You</b><br>"+escapeHtml(i.value)+"</p>";
-      i.value="";
-    }
+    if(i.value.trim()){const box=document.querySelector(".chat")!;box.innerHTML+="<p><b>You</b><br>"+escapeHtml(i.value)+"</p>";i.value="";}
   });
-  document.querySelector("#save")?.addEventListener("click",function(){
-    localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));
-    render();
-  });
-  document.querySelector("#clear")?.addEventListener("click",function(){
-    localStorage.removeItem("freezzz-library");
-    render();
-  });
-  document.querySelectorAll<HTMLElement>("[data-move]").forEach(function(x){
-    x.onclick=function(){player=Math.max(0,Math.min(1,player+Number(x.dataset.move)));};
-  });
-  document.querySelector("[data-fire]")?.addEventListener("click",function(){
-    score++;
-    const s=document.querySelector("#score");
-    if(s)s.textContent="SCORE "+score;
-  });
+  document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
+  document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
+  document.querySelectorAll<HTMLElement>("[data-move]").forEach(function(x){x.onclick=function(){player=Math.max(0,Math.min(1,player+Number(x.dataset.move)));};});
+  document.querySelector("[data-fire]")?.addEventListener("click",function(){score++;const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;});
 }
 
 function escapeHtml(s:string){
