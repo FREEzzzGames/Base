@@ -362,3 +362,33 @@ form input{
 @media(max-width:650px){.radio-heading{flex-direction:column}.radio-stations{max-height:380px}.midi-overlay{padding:5px}.midi-controller{padding:10px}.midi-surface{grid-template-columns:1fr}.midi-pads{grid-template-columns:repeat(4,1fr)}.midi-knobs{grid-template-columns:repeat(2,1fr)}.midi-toolbar select{width:100%}}
 
 .play-icon{display:inline-block;width:0;height:0;margin-right:7px;vertical-align:-1px;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:9px solid currentColor}
+
+
+/* Global FREEzzz RADIO palette: the approved RADIO surface becomes the portal-wide visual language. */
+:root{
+  --tg-bg:#0b1118;
+  --tg-secondary:#111a23;
+  --tg-section:#111a23;
+  --tg-card:#18222d;
+  --tg-card-hover:#202d3a;
+  --tg-line:#334454;
+  --tg-muted:#8f9eae;
+  --tg-text:#f2f5f8;
+  --tg-accent:#64b5f6;
+}
+.app,.app-shell,html,body,#app{background:var(--tg-bg)}
+header{background:var(--tg-secondary);border-bottom:1px solid var(--tg-line)}
+.lang-switch{background:#0b141d;border:1px solid var(--tg-line)}
+.hero,.card,.stream,.radio-panel,.dev-panel,.chat,.controls button,.tg-button.secondary{
+  background:var(--tg-card);
+  border-color:var(--tg-line);
+}
+.hero,.card,.stream,.radio-panel,.player,.chat,.game,.dev-panel{
+  border:1px solid var(--tg-line);
+}
+.card:hover,.stream:hover,.controls button:hover,.tg-button.secondary:hover{background:var(--tg-card-hover)}
+.player,.chat,.dev pre{background:#101820;border-color:var(--tg-line)}
+.chat p{background:var(--tg-card);border:1px solid var(--tg-line)}
+form input{background:var(--tg-card);border-color:var(--tg-line)}
+.avatar{background:#202d3a;border:1px solid var(--tg-line)}
+.game{background:#080d12;border-color:var(--tg-line)}
