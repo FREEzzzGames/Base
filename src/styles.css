@@ -2352,3 +2352,114 @@ main{
   .game-font-toggle{width:32px;height:32px}
   .game-font-toolbar button{min-width:35px}
 }
+
+
+/* PROFILE — Telegram identity + unified activity statistics */
+.profile-card-expanded{
+  width:min(100%,560px);
+  max-height:min(88dvh,760px);
+  overflow:auto;
+  text-align:left;
+  box-sizing:border-box;
+}
+.profile-identity{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  padding:4px 34px 14px 0;
+  border-bottom:1px solid var(--ds-border);
+}
+.profile-identity>div{min-width:0}
+.profile-identity h2{
+  margin:0;
+  font-size:22px;
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+.profile-identity p{
+  margin:4px 0 2px;
+  color:var(--ds-accent);
+  font-size:13px;
+}
+.profile-identity small{
+  color:var(--ds-muted);
+  font-size:10px;
+  overflow-wrap:anywhere;
+}
+.profile-avatar-photo{
+  object-fit:cover;
+  display:block;
+}
+.profile-stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:12px 0;
+}
+.profile-stat-grid>div{
+  min-width:0;
+  padding:10px 7px;
+  border:1px solid var(--ds-border);
+  border-radius:10px;
+  background:var(--ds-panel);
+  text-align:center;
+}
+.profile-stat-grid b{
+  display:block;
+  font-size:16px;
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+.profile-stat-grid small{
+  display:block;
+  margin-top:4px;
+  color:var(--ds-muted);
+  font-size:9px;
+  line-height:1.2;
+  overflow-wrap:anywhere;
+}
+.profile-section{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid var(--ds-border);
+  border-radius:11px;
+  background:var(--ds-panel);
+}
+.profile-section h3{
+  margin:0 0 7px;
+  color:var(--ds-accent);
+  font-size:11px;
+  letter-spacing:.12em;
+}
+.profile-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-width:0;
+  padding:6px 0;
+  border-top:1px solid color-mix(in srgb,var(--ds-border) 65%,transparent);
+}
+.profile-row:first-of-type{border-top:0}
+.profile-row span{
+  min-width:0;
+  overflow-wrap:anywhere;
+  font-size:12px;
+}
+.profile-row small{
+  flex:0 0 auto;
+  color:var(--ds-muted);
+  font-size:9px;
+  text-align:right;
+}
+.profile-empty{
+  margin:0;
+  color:var(--ds-muted);
+  font-size:11px;
+}
+@media(max-width:420px){
+  .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .profile-card-expanded{max-height:84dvh}
+  .profile-identity h2{font-size:20px}
+}
