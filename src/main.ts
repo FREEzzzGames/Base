@@ -116,6 +116,50 @@ const streams:LiveStream[]=[
   {icon:"video",name:"ZUBAREFFF",twitch:"https://www.twitch.tv/zubarefff",youtube:"https://www.youtube.com/@zubarefff11",twitchChannel:"zubarefff"}
 ];
 
+function currentLayoutOverride(key:string):LayoutOverride{
+  const value=layoutOverrides[key];
+  return value?{width:100,height:0,x:0,y:0,order:0,...value}:{width:100,height:0,x:0,y:0,order:0};
+}
+function saveDeveloperLayout(){try{localStorage.setItem(DEV_LAYOUT_KEY,JSON.stringify(layoutOverrides));}catch{}}
+function portalBlockInfos(){
+  const seen=new Set<string>();
+  return Array.from(document.querySelectorAll<HTMLElement>("[data-portal-block]")).map((el,index)=>{
+    const block=el.dataset.portalBlock||String(index);
+    const key=view+":"+block;
+    if(seen.has(key))return null;
+    seen.add(key);
+    const value=currentLayoutOverride(key);
+    return {key,label:block.toUpperCase(),view,width:value.width,height:value.height,x:value.x,y:value.y,order:value.order};
+  }).filter(Boolean) as Array<{key:string;label:string;view:string;width:number;height:number;x:number;y:number;order:number}>;
+}
+function applyDeveloperLayout(){
+  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach((el,index)=>{
+    const block=el.dataset.portalBlock||String(index);
+    const value=currentLayoutOverride(view+":"+block);
+    if(!developerMode){
+      el.style.removeProperty("width");el.style.removeProperty("height");el.style.removeProperty("transform");el.style.removeProperty("order");
+      return;
+    }
+    el.dataset.devEditable="true";
+    el.style.width=value.width===100?"":value.width+"%";
+    el.style.height=value.height>0?value.height+"px":"";
+    el.style.transform=(value.x||value.y)?"translate("+value.x+"px,"+value.y+"px)":"";
+    el.style.order=String(value.order);
+  });
+}
+function updateDeveloperControl(name:keyof LayoutOverride,value:number){
+  if(!developerSelectedBlock)return;
+  const current=currentLayoutOverride(developerSelectedBlock);
+  layoutOverrides[developerSelectedBlock]={...current,[name]:value};
+  saveDeveloperLayout();
+  applyDeveloperLayout();
+  const output=document.querySelector<HTMLOutputElement>("[data-dev-output=\""+name+"\"]");
+  if(output)output.textContent=name==="width"?value+"%":name==="height"?(value?value+"px":"AUTO"):name==="order"?String(value):value+"px";
+}
+function resetDeveloperBlock(){if(!developerSelectedBlock)return;delete layoutOverrides[developerSelectedBlock];saveDeveloperLayout();render();}
+function resetDeveloperLayout(){layoutOverrides={};saveDeveloperLayout();render();}
+function renderDeveloperPanel(){return renderDeveloperDiagnostics({version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,telegram:portalState.telegram,online:portalState.online,modules:PORTAL_MODULES,developerMode,selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()});}
+function toggleDeveloperMode(){developerMode=!developerMode;developerOpen=developerMode;try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{};render();}
 function render(){
   let body="";
 
