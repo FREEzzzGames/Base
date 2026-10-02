@@ -53,7 +53,9 @@ function emptyStats():PortalActivityStats{
   };
 }
 
-export function getTelegramIdentity():TelegramProfileIdentity{
+export function getTelegramIdentity(verified?:TelegramProfileIdentity):TelegramProfileIdentity{
+  if(verified)return {...verified};
+
   try{
     const tg=(window as Window&{Telegram?:{WebApp?:{initDataUnsafe?:{user?:{
       id?:number;
@@ -75,14 +77,14 @@ export function getTelegramIdentity():TelegramProfileIdentity{
   }catch{return {};}
 }
 
-export function loadPortalProfile():PortalProfile{
-  const identity=getTelegramIdentity();
+export function loadPortalProfile(verifiedIdentity?:TelegramProfileIdentity):PortalProfile{
+  const identity=verifiedIdentity||{languageCode:getTelegramIdentity().languageCode};
   try{
     const raw=localStorage.getItem(storageKey(identity));
     if(raw){
       const saved=JSON.parse(raw) as PortalProfile;
       return {
-        identity:{...getTelegramIdentity(),...(saved.identity||{})},
+        identity:verifiedIdentity?{...verifiedIdentity}:{...saved.identity},
         language:saved.language||"RU",
         stats:{
           ...emptyStats(),...(saved.stats||{}),
@@ -101,9 +103,8 @@ export function savePortalProfile(profile:PortalProfile):void{
   try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}catch{}
 }
 
-export function syncPortalIdentity(profile:PortalProfile):PortalProfile{
-  const tg=getTelegramIdentity();
-  profile.identity={...profile.identity,...tg};
+export function syncPortalIdentity(profile:PortalProfile,verifiedIdentity?:TelegramProfileIdentity):PortalProfile{
+  if(verifiedIdentity)profile.identity={...profile.identity,...verifiedIdentity};
   profile.stats.lastSeenAt=nowIso();
   savePortalProfile(profile);
   return profile;
