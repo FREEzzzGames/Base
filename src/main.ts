@@ -9,7 +9,7 @@ import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverride
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
-import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace } from "./game-system";
+import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
@@ -43,6 +43,7 @@ const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolea
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
 let lang:Language=portalState.language;
+try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}catch{}
 type Language="RU"|"DE"|"EN";
 const DEVELOPER_TOOLS_ENABLED = true;
 let developerOpen=false;
@@ -322,7 +323,7 @@ function render(){
           <div><h2>GAME</h2><p>FREEzzz STORY · FOUR RACES</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
-        <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab)}</div>
+        <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab,lang as GameLanguage)}</div>
       </div>`;
   }
   if(view==="radio"){
