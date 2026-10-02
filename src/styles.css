@@ -3608,3 +3608,170 @@ main{
     grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
   }
 }
+
+/* ================================================================
+   PORTAL MASTER GRID — HUD + HOME SHARE ONE WORK AREA
+   Layout: LEFT HUD | HOME 2 / 2 / 1
+   Rhythm: 1px everywhere
+   ================================================================ */
+:root{
+  --portal-hud-width:56px;
+  --portal-grid-gap:1px;
+}
+
+/* One coordinate system below the Telegram/browser header. */
+main{
+  position:relative!important;
+  width:100%!important;
+  height:calc(100dvh - var(--tg-content-safe-area-inset-top,0px) - var(--tg-content-safe-area-inset-bottom,0px))!important;
+  min-height:0!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  padding-top:1px!important;
+  padding-bottom:1px!important;
+  padding-left:calc(var(--portal-hud-width) + 1px + var(--tg-content-safe-area-inset-left,0px))!important;
+  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+}
+
+/* HOME is the master 2 / 2 / 1 grid. */
+.home-portal{
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+  grid-template-areas:
+    "hero hero"
+    "live chat"
+    "game radio"
+    "library library"!important;
+  gap:var(--portal-grid-gap)!important;
+  overflow:hidden!important;
+}
+
+/* Every block occupies exactly its grid cell. */
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+
+/* HUD occupies the exact same vertical work area as HOME. */
+.portal-toolbar{
+  position:absolute!important;
+  left:0!important;
+  top:1px!important;
+  bottom:1px!important;
+  width:var(--portal-hud-width)!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  z-index:120!important;
+}
+.portal-toolbar-main{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:6px 5px!important;
+  box-sizing:border-box!important;
+}
+.portal-toolbar-nav{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:repeat(7,minmax(0,1fr))!important;
+  gap:1px!important;
+  padding:0!important;
+  margin:0!important;
+  align-items:stretch!important;
+  justify-items:center!important;
+}
+.portal-toolbar-nav > .portal-toolbar-item,
+.portal-toolbar-nav > .portal-toolbar-language-wrap{
+  width:44px!important;
+  min-width:44px!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  align-self:stretch!important;
+  justify-self:center!important;
+  box-sizing:border-box!important;
+}
+.portal-toolbar-nav > .portal-toolbar-item{
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:10px!important;
+}
+.portal-toolbar-language-wrap{
+  display:grid!important;
+  place-items:stretch!important;
+  position:relative!important;
+}
+.portal-toolbar-language-button{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:10px!important;
+}
+
+/* Preserve the approved bottom-up order. */
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(1){order:7!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(2){order:5!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(3){order:4!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4){order:3!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(5){order:2!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(6){order:1!important}
+.portal-toolbar-nav > .portal-toolbar-language-wrap{order:6!important}
+
+/* No extra viewport padding on narrow Telegram screens. */
+@media(max-width:699px){
+  main{
+    width:100%!important;
+    height:calc(100dvh - var(--tg-content-safe-area-inset-top,0px) - var(--tg-content-safe-area-inset-bottom,0px))!important;
+    padding-top:1px!important;
+    padding-bottom:1px!important;
+    padding-left:calc(var(--portal-hud-width) + 1px + var(--tg-content-safe-area-inset-left,0px))!important;
+    padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+  }
+  .home-portal{
+    height:100%!important;
+    grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+    gap:1px!important;
+  }
+  .portal-toolbar{
+    top:1px!important;
+    bottom:1px!important;
+  }
+}
