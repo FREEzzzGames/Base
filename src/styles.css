@@ -601,13 +601,6 @@ main{
   object-position:center;
   pointer-events:none;
 }
-.home-card-background-overlay{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  background:rgba(8,14,22,.50);
-  pointer-events:none;
-}
 .home-card-content{
   position:relative;
   z-index:2;
@@ -2995,13 +2988,6 @@ main::-webkit-scrollbar{display:none}
   display:block;
   object-fit:cover;
   object-position:center;
-  pointer-events:none;
-}
-.home-hero-overlay{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  background:linear-gradient(180deg,rgba(15,23,32,.48),rgba(15,23,32,.72));
   pointer-events:none;
 }
 .home-hero-content{
