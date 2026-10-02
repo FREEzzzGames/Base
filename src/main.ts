@@ -515,6 +515,15 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
+    if(x.getAttribute("role")==="button"){
+      x.onkeydown=function(e){
+        if(e.key!=="Enter"&&e.key!==" ")return;
+        e.preventDefault();
+        e.stopPropagation();
+        profileOpen=!profileOpen;
+        render();
+      };
+    }
   });
   document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
     x.onclick=function(){profileOpen=false;render();};
