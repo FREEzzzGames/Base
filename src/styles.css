@@ -2671,6 +2671,12 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 
 
 
+/* HOME CARD HEADER ICONS — scoped visibility only.
+   Keep original markup; do not affect toolbar or global SVG/icon styles. */
+.home-portal > .home-card .home-card-head > .home-card-icon{
+  display:none!important;
+}
+
 /* ================================================================
    HOME CARD VISUAL LAYERS — AUTHORITATIVE
    Video background -> soft dimming -> content -> inner edge shadow.
