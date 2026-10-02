@@ -351,7 +351,16 @@ function render(){
   }
 
   app.innerHTML=`
-    <div class="app-shell">\n      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}">\n        ${renderPortalToolbar()}\n        <main>${body}</main>\n      </div>\n      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}\n      ${profileOpen?renderProfileCard():""}\n\n    </div>;
+    <div class="app-shell">
+      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}">
+        ${renderPortalToolbar()}
+        <main>${body}</main>
+      </div>
+      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
+      ${profileOpen?renderProfileCard():""}
+
+    </div>`;
+
   bind();
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
