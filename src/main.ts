@@ -193,6 +193,34 @@ function savePortalSessionSnapshot(){
     } satisfies PortalSessionSnapshot));
   }catch{}
 }
+
+function renderPortalToolbar(){
+  const items:Array<[View,string,string]>=[
+    ["home","home","HOME"],
+    ["live","video","LIVE"],
+    ["chat","chat","CHAT"],
+    ["game","game","GAME"],
+    ["radio","radio","RADIO"],
+    ["library","library","LIBRARY"]
+  ];
+  return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
+    <div class="portal-toolbar-main">
+      <button class="portal-toolbar-home ${view==="home"?"active":""}" data-view="home" type="button" aria-label="HOME" title="HOME">${icon("home","portal-toolbar-icon")}</button>
+      <div class="portal-toolbar-nav" role="tablist">
+        ${items.slice(1).map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span>${label}</span></button>`).join("")}
+      </div>
+      <div class="portal-toolbar-actions">
+        <div class="portal-toolbar-language" role="group" aria-label="${T("language")}">
+          <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
+          <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
+          <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+        </div>
+        <button class="portal-toolbar-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","portal-toolbar-icon")}</button>
+      </div>
+    </div>
+  </nav>`;
+}
+
 function render(){
   savePortalSessionSnapshot();
   let body="";
@@ -206,15 +234,9 @@ function render(){
               <span class="home-hero-kicker">FREEzzzyPORTAL</span>
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
-            <button class="profile-button home-profile-button" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","profile-icon")}</button>
           </div>
           <h1>FREEzzzY</h1>
           <p>${T("homeDescription")}</p>
-          <nav class="home-language-switch" aria-label="${T("language")}">
-            <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
-            <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
-            <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
-          </nav>
         </section>
         ${homeCard("live",icon("video","home-card-icon"),T("liveCard"),'<div class="home-live-preview" data-home-live-content></div>')}
         ${homeCard("chat",icon("chat","home-card-icon"),T("chatCard"),'<div class="home-chat-preview" data-home-chat-content></div>')}
