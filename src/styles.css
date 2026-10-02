@@ -2019,20 +2019,6 @@ main::-webkit-scrollbar{display:none}
   font-size:14px;
   line-height:1.35;
 }
-.home-profile-button{
-  width:40px!important;
-  min-width:40px!important;
-  height:40px!important;
-  min-height:40px!important;
-  padding:0!important;
-  flex:0 0 40px;
-  border-radius:50%!important;
-  display:grid!important;
-  place-items:center;
-  background:transparent!important;
-  border:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.12))!important;
-  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec))!important;
-}
 
 .home-card{
   display:block;
