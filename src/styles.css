@@ -3709,11 +3709,11 @@ main{
 .home-hero-clock{font-size:clamp(21px,6vw,28px)!important;line-height:1!important;font-weight:600!important;letter-spacing:.02em!important;opacity:.86!important}
 .home-hero h1.home-hero-profile-trigger{
   display:block!important;width:auto!important;max-width:100%!important;margin:0 0 6px!important;padding:0!important;
-  font-size:clamp(26px,7.5vw,34px)!important;line-height:1!important;font-weight:700!important;letter-spacing:0!important;
+  font-size:clamp(20px,2.4vw,34px)!important;line-height:1.05!important;font-weight:700!important;letter-spacing:0!important;
   white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-shadow:0 2px 10px rgba(0,0,0,.5)!important;
 }
 .home-hero p{
-  max-width:82%!important;margin:0!important;font-size:clamp(12px,3.2vw,16px)!important;line-height:1.18!important;
+  max-width:82%!important;margin:0!important;font-size:clamp(12px,1.2vw,16px)!important;line-height:1.25!important;
   font-weight:400!important;letter-spacing:0!important;opacity:.9!important;text-shadow:0 1px 7px rgba(0,0,0,.55)!important;
 }
 .home-portal > .home-hero,
