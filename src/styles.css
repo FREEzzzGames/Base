@@ -3397,3 +3397,45 @@ main{
     padding-right:max(8px,var(--tg-content-safe-area-inset-right,0px))!important;
   }
 }
+
+/* HOME SCREEN FIT — FINAL 1PX GRID */
+.home-portal{
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  gap:1px!important;
+  grid-template-rows:minmax(0,10fr) minmax(0,31fr) minmax(0,20fr) minmax(0,39fr)!important;
+  overflow:hidden!important;
+}
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  min-height:0!important;
+  height:100%!important;
+  margin:0!important;
+}
+.home-portal > .home-library{
+  min-height:0!important;
+}
+.home-portal > .home-hero{
+  aspect-ratio:auto!important;
+}
+@media(max-width:699px){
+  .home-portal{
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    gap:1px!important;
+    grid-template-rows:minmax(0,10fr) minmax(0,31fr) minmax(0,20fr) minmax(0,39fr)!important;
+  }
+  .home-portal > .home-library{
+    min-height:0!important;
+    height:100%!important;
+  }
+}
+
+/* SIDEBAR — same 1PX grid rhythm as HOME */
+.portal-toolbar-nav{
+  gap:1px!important;
+  grid-template-rows:repeat(7,minmax(0,1fr))!important;
+}
