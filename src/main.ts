@@ -436,6 +436,12 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
   });
+  document.querySelectorAll<HTMLElement>("[data-dev-size]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();if(!developerSelectedBlock)return;const current=currentLayoutOverride(developerSelectedBlock);const next=Math.max(20,Math.min(100,current.width+Number(x.dataset.devSize||0)));updateDeveloperControl("width",next);render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-dev-nudge]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();if(!developerSelectedBlock)return;const current=currentLayoutOverride(developerSelectedBlock);const action=x.dataset.devNudge||"";const step=8;let nx=current.x,ny=current.y;if(action==="up")ny-=step;else if(action==="down")ny+=step;else if(action==="left")nx-=step;else if(action==="right")nx+=step;else if(action==="center"){nx=0;ny=0;}updateDeveloperControl("x",Math.max(-240,Math.min(240,nx)));updateDeveloperControl("y",Math.max(-400,Math.min(400,ny)));render();};
+  });
   document.querySelectorAll<HTMLInputElement>("[data-dev-control]").forEach(function(x){
     x.oninput=function(){
       const name=x.dataset.devControl as keyof LayoutOverride;
