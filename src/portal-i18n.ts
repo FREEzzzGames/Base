@@ -14,7 +14,7 @@ RU:{
  savedGames:"сохранённых игр",localLibrary:"Локальная библиотека",historyContinues:"история продолжается",chooseHero:"Выбери героя и начни приключение",
  gameStory:"FREEzzz STORY",fourRaces:"4 RACES",radioLoadingShort:"Загрузка станции…",stream:"стрим",radio:"радио",thanks:"спасибо",
  playError:"Не удалось воспроизвести поток этой станции.",autoplayError:"Нажми Play ещё раз — браузер заблокировал автозапуск.",
- profile:"Профиль",language:"Язык",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",edit:"EDIT",
+ profile:"Профиль",language:"Язык",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",
  telegramProfile:"Профиль Telegram",telegramIdentityUnavailable:"Идентификатор Telegram недоступен"
 },
 DE:{
