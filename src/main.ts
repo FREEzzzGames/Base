@@ -315,6 +315,7 @@ function render(){
           <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
           <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
         </nav>
+        ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?"РАЗРАБ":"ПОЛЬЗ."}</small></button>`:""}
       </header>
       <nav class="bottom-nav" aria-label="Portal navigation">
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
@@ -329,13 +330,14 @@ function render(){
         <button class="bottom-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
           ${icon("radio","nav-icon")}<span>RADIO</span>
         </button>
-        ${DEVELOPER_TOOLS_ENABLED?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Инструменты разработчика" title="DEV">${icon("settings","nav-icon")}<span>DEV</span></button>`:""}
+        ${DEVELOPER_TOOLS_ENABLED&&developerMode?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Конструктор" title="LAYOUT">${icon("settings","nav-icon")}<span>EDIT</span></button>`:""}
         <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
           ${icon("home","nav-icon")}<span>HOME</span>
         </button>
       </nav>
       <main>${body}</main>
       ${livePopupMarkup()}
+      ${developerOpen&&developerMode?renderDeveloperPanel():""}
       ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
 
     </div>`;
