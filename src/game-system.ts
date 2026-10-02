@@ -145,8 +145,8 @@ const SCENES:Record<GameRace,Scene[]>={
   ]}
 ]};
 
-function bars(s:GameState,lang:GameLanguage){const labels=GAME_EXTRA[lang].stats;return [[labels[0],"rocket",s.stats.strength],[labels[1],"success",s.stats.endurance],[labels[2],"game",s.stats.mind],[labels[3],"video",s.stats.awareness],[labels[4],"message",s.stats.influence]].map(x=>'<div class="game-stat"><span>'+gameIcon(x[1])+x[0]+'</span><b>'+x[2]+'</b><em><u style="width:'+Math.min(100,(x[2] as number)*10)+'%"></u></em></div>').join("")}
-function tabs(t:GameTab,lang:GameLanguage){const labels=GAME_EXTRA[lang].tabs;return [["story","library",labels.story],["character","user",labels.character],["skills","rocket",labels.skills],["quests","search",labels.quests],["shop","archive",labels.shop],["achievements","success",labels.achievements],["journal","library",labels.journal]].map(x=>'<button class="'+(t===x[0]?"active":"")+'" data-game-tab="'+x[0]+'" type="button" aria-label="'+x[2]+'" title="'+x[2]+'">'+gameIcon(x[1])+'<small>'+x[2]+'</small></button>').join("")}
+function bars(s:GameState,lang:GameLanguage){const labels=GAME_EXTRA[lang].stats;const rows:Array<[string,string,number]>=[[labels[0],"rocket",s.stats.strength],[labels[1],"success",s.stats.endurance],[labels[2],"game",s.stats.mind],[labels[3],"video",s.stats.awareness],[labels[4],"message",s.stats.influence]];return rows.map(x=>'<div class="game-stat"><span>'+gameIcon(x[1])+x[0]+'</span><b>'+x[2]+'</b><em><u style="width:'+Math.min(100,(x[2] as number)*10)+'%"></u></em></div>').join("")}
+function tabs(t:GameTab,lang:GameLanguage){const labels=GAME_EXTRA[lang].tabs;const rows:Array<[GameTab,string,string]>=[["story","library",labels.story],["character","user",labels.character],["skills","rocket",labels.skills],["quests","search",labels.quests],["shop","archive",labels.shop],["achievements","success",labels.achievements],["journal","library",labels.journal]];return rows.map(x=>'<button class="'+(t===x[0]?"active":"")+'" data-game-tab="'+x[0]+'" type="button" aria-label="'+x[2]+'" title="'+x[2]+'">'+gameIcon(x[1])+'<small>'+x[2]+'</small></button>').join("")}
 function racePicker(lang:GameLanguage){
  const title={RU:"КТО ТЫ?",DE:"WER BIST DU?",EN:"WHO ARE YOU?"}[lang];
  const desc={RU:"У каждого персонажа своя история, система развития навыков и способы открытия способностей.",DE:"Jede Figur hat ihre eigene Geschichte, Entwicklung und eigene Wege, Fähigkeiten freizuschalten.",EN:"Each character has a distinct story, progression system and ways to unlock abilities."}[lang];
@@ -191,6 +191,32 @@ function shopPanel(s:GameState,lang:GameLanguage){
  return '<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.shop+'</span><small>'+ui.actions.coins+' '+s.coins+'</small></div><p class="game-thought">'+shop.note+'</p>'+SHOP_ITEMS.map((x,i)=>'<div class="game-shop-item"><div><b>'+shop.names[i]+'</b><small>'+shop.descriptions[i]+'</small></div><button type="button" data-game-buy="'+x.id+'" '+(s.coins<x.price?"disabled":"")+'>'+x.price+' '+gameIcon("success","game-price-icon")+'</button></div>').join("")+'</section>';
 }
 function abilityPanel(s:GameState,lang:GameLanguage){const list=ABILITIES[s.race!],loc=ABILITY_LOCALE[lang];return '<div class="game-abilities"><div class="game-panel-title"><span>'+GAME_EXTRA[lang].actions.abilities+'</span><small>'+GAME_EXTRA[lang].actions.points+' '+s.abilityPoints+'</small></div>'+list.map(a=>{const x=loc[a.name]||loc["Искра маны"];return '<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'">'+gameIcon(s.abilities.includes(a.name)?"success":"waiting","game-status-icon")+'<div><b>'+x.name+'</b><small>'+x.desc+'</small></div></div>'}).join("")+'</div>';}
+const MYSTERY_CLUES:Record<GameRace,string[]>={
+ human:[
+  "На полях старой карты повторяется знак четырёх лучей. Рядом нет объяснения, только стёртая дата.",
+  "Один из древних текстов откликается на магию, но в нём намеренно отсутствует последняя строка.",
+  "На камне у дальней дороги найден тот же знак. Он старше местных поселений, хотя никто не помнит, кто его оставил.",
+  "Четвёртый фрагмент показывает: твои странные находки были частями одной записи, разделённой между четырьмя народами."
+ ],
+ elf:[
+  "В лесу птицы замолкают у дерева с четырьмя тонкими зарубками. Причина неизвестна.",
+  "В забытом саду найден серебряный лист с тем же знаком, который не принадлежит ни одному известному роду.",
+  "Старая тропа ведёт к каменной арке, но её символы намеренно повреждены так, будто кто-то скрывал имена.",
+  "Последний след подтверждает: лес хранил не отдельную тайну, а часть общей истории, которую четыре народа когда-то скрыли."
+ ],
+ orc:[
+  "Старейшины узнают знак четырёх лучей, но каждый раз замолкают, когда речь заходит о его происхождении.",
+  "На горном пути найден камень с древней зарубкой. Она сделана тем же способом, что и знак на оружии предков, но смысл забыт.",
+  "В руинах крепости обнаружено имя, которое выскоблено из всех сохранившихся списков. Рядом стоят четыре одинаковых метки.",
+  "Последняя улика показывает: запрет старейшин был не тайной одного племени, а частью общего решения четырёх народов."
+ ],
+ dwarf:[
+  "В старой мастерской найден чертёж без названия. В углах стоят четыре одинаковых знака, будто это части одного механизма.",
+  "Механизм открывает только один фрагмент схемы. Кто его создал и зачем, мастерская не говорит.",
+  "В тайном проходе обнаружен тот же узор и дата, совпадающая с записями из других земель.",
+  "Последний чертёж собирает всё воедино: мастерская была частью хранилища общей памяти, которую четыре народа сознательно разделили."
+ ]
+};
 function mysteryFor(s:GameState){return MYSTERY_CLUES[s.race!][Math.min(3,Math.max(0,s.step-1))]}
 function addMysteryClue(n:GameState){const clue=mysteryFor(n);if(clue&&!n.mysteryClues.includes(clue))n.mysteryClues.push(clue)}
 function localizeStateText(lang:GameLanguage,value:string){
