@@ -202,9 +202,20 @@ function render(){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
-          <div class="home-hero-meta"><span>FREEzzzyPORTAL</span><span data-home-clock>--:--:--</span></div>
+          <div class="home-hero-top">
+            <div class="home-hero-brand">
+              <span class="home-hero-kicker">FREEzzzyPORTAL</span>
+              <span class="home-hero-clock" data-home-clock>--:--:--</span>
+            </div>
+            <button class="profile-button home-profile-button" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","profile-icon")}</button>
+          </div>
           <h1>FREEzzzY</h1>
           <p>${T("homeDescription")}</p>
+          <nav class="home-language-switch" aria-label="${T("language")}">
+            <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
+            <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
+            <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
+          </nav>
         </section>
         ${homeCard("live",icon("video","home-card-icon"),T("liveCard"),'<div class="home-live-preview" data-home-live-content></div>')}
         ${homeCard("chat",icon("chat","home-card-icon"),T("chatCard"),'<div class="home-chat-preview" data-home-chat-content></div>')}
@@ -330,28 +341,6 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
-      <header class="topbar portal-topbar">
-        <div class="topbar-main">
-          <div class="topbar-left">
-            <button class="profile-button" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","profile-icon")}</button>
-          </div>
-          <nav class="topbar-nav" aria-label="Portal navigation">
-            <button class="topbar-nav-item ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">${icon("home","nav-icon")}<span>HOME</span></button>
-            <button class="topbar-nav-item ${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">${icon("video","nav-icon")}<span>LIVE</span></button>
-            <button class="topbar-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">${icon("chat","nav-icon")}<span>CHAT</span></button>
-            <button class="topbar-nav-item ${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">${icon("game","nav-icon")}<span>GAME</span></button>
-            <button class="topbar-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">${icon("radio","nav-icon")}<span>RADIO</span></button>
-            <button class="topbar-nav-item ${view==="library"?"active":""}" data-view="library" aria-label="Library" title="LIBRARY">${icon("library","nav-icon")}<span>LIBRARY</span></button>
-          </nav>
-          <div class="topbar-right">
-            <nav class="lang-switch" aria-label="${T("language")}">
-              <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
-              <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
-              <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
-            </nav>
-          </div>
-        </div>
-      </header>
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
