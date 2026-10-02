@@ -9,7 +9,7 @@ import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverride
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
-import { renderGame, loadGameState, chooseRace, applyGameChoice, type GameTab, type GameRace } from "./game-system";
+import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
@@ -560,6 +560,9 @@ function bind(){
     });
     document.querySelectorAll<HTMLElement>("[data-game-race]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=chooseRace(gameState,(x.dataset.gameRace as GameRace)||"human");gameTab="story";render();};
+    });
+    document.querySelectorAll<HTMLElement>("[data-game-restart]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=restartGame();gameTab="story";render();};
     });
     document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
