@@ -62,6 +62,8 @@ let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_
 let dev=interfaceMode==="editor";
 let profileOpen=false;
 let liveSelected="";
+let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
+let homeRefreshTimer:number|null=null;
 let score=0;
 let player=.5;
 const radioBrowser=new RadioBrowserClient();
@@ -298,16 +300,17 @@ function render(){
 
   if(view==="home"){
     body=`
-      <div class="content portal-layout" data-portal-layout="home">
-        <section class="hero portal-block" data-portal-block="hero">
+      <div class="content portal-layout home-portal" data-portal-layout="home">
+        <section class="hero portal-block home-hero" data-portal-block="hero">
+          <div class="home-hero-meta"><span>FREEzzz PORTAL</span><span data-home-clock>--:--:--</span></div>
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-            ${card("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),"Стримеры и каналы")}
-          ${card("chat","💬",editorLabel("home","chat","CHAT — Общение"),"Общение")}
-          ${card("game","🛸",editorLabel("home","game","GAME — Игровая зона"),"Игровая зона")}
-          ${card("radio","📻",editorLabel("home","radio","RADIO — Музыка"),"Музыка")}
-          ${card("library","🗂️",editorLabel("home","library","LIBRARY — Библиотека"),"Твоя библиотека")}
+        ${homeCard("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),'<div class="home-live-preview" data-home-live-content></div>')}
+        ${homeCard("chat","💬",editorLabel("home","chat","CHAT — Общение"),'<div class="home-chat-preview" data-home-chat-content></div>')}
+        ${homeCard("game","🛸",editorLabel("home","game","GAME — Игровая зона"),'<div class="home-game-preview" data-home-game-content></div>')}
+        ${homeCard("radio","📻",editorLabel("home","radio","RADIO — Музыка"),'<div class="home-radio-preview" data-home-radio-content></div>')}
+        ${homeCard("library","🗂️",editorLabel("home","library","LIBRARY — Библиотека"),'<div class="home-library-preview" data-home-library-content></div>')}
       </div>`;
   }
 
@@ -338,7 +341,7 @@ function render(){
           <div><h2>CHAT</h2><p>Общение FREEzzz</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="chat portal-block" data-portal-block="messages"><p><b>FREEzzzBot</b><br>Добро пожаловать в FREEzzz.</p></div>
+        <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
           <input id="chatinput" placeholder="Сообщение…" autocomplete="off">
           <button class="tg-button">Отправить</button>
@@ -473,11 +476,47 @@ function render(){
   bind();
   applySavedPortalLayout();
   if(view==="game")startGame();
+  if(view==="home")ensureHomeRefresh();
   if(dev)updateEditorPreview();
 }
 
-function card(v:View,e:string,t:string,d:string){
-  return `<button class="card portal-block" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}"><b>${e}</b><strong>${t}</strong><span>${d}</span></button>`;
+function homeCard(v:View,e:string,t:string,content:string){
+  return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
+    <div class="home-card-head"><b class="home-card-icon">${e}</b><strong>${t}</strong></div>
+    ${content}
+  </button>`;
+}
+function refreshHomeContent(){
+  if(view!=="home")return;
+  const clock=document.querySelector<HTMLElement>("[data-home-clock]");
+  if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const live=document.querySelector<HTMLElement>("[data-home-live-content]");
+  if(live){
+    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${escapeHtml(s[0])}</i><b>${escapeHtml(s[1])}</b><small>● OFFLINE · ${escapeHtml(s[2])}</small></span>`).join("");
+  }
+  const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
+  if(chat){
+    const last=chatMessages[chatMessages.length-1];
+    chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:"Нет сообщений";
+  }
+  const game=document.querySelector<HTMLElement>("[data-home-game-content]");
+  if(game)game.innerHTML=`<span>SCORE <b>${score}</b></span><span>PLAYER ${Math.round(player*100)}%</span><small>DUCK BLAST · готов к запуску</small>`;
+  const radio=document.querySelector<HTMLElement>("[data-home-radio-content]");
+  if(radio){
+    const station=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
+    radio.innerHTML=station?`<b>${escapeHtml(station.name)}</b><span>${radioPlaybackStatus==="playing"?"● PLAYING":"○ "+(radioPlaybackStatus==="paused"?"PAUSED":"READY")}</span>`:radioLoading?"Загрузка станции…":"RADIO готово";
+  }
+  const library=document.querySelector<HTMLElement>("[data-home-library-content]");
+  if(library){
+    let count=0;
+    try{const saved=JSON.parse(localStorage.getItem("freezzz-library")||"[]");count=Array.isArray(saved)?saved.length:0;}catch{}
+    library.innerHTML=`<b>${count}</b><span>сохранённых игр</span><small>Локальная библиотека</small>`;
+  }
+}
+function ensureHomeRefresh(){
+  if(homeRefreshTimer!==null)return;
+  homeRefreshTimer=window.setInterval(refreshHomeContent,500);
+  refreshHomeContent();
 }
 
 async function loadRadioStations(){
@@ -704,7 +743,13 @@ function bind(){
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
     const i=document.querySelector<HTMLInputElement>("#chatinput")!;
-    if(i.value.trim()){const box=document.querySelector(".chat")!;box.innerHTML+="<p><b>You</b><br>"+escapeHtml(i.value)+"</p>";i.value="";}
+    const message=i.value.trim();
+    if(message){
+      chatMessages.push({author:"You",message});
+      if(chatMessages.length>50)chatMessages=chatMessages.slice(-50);
+      i.value="";
+      render();
+    }
   });
   document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
@@ -741,3 +786,4 @@ function startGame(){
 }
 
 render();
+if(view==="home"&&!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
