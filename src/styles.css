@@ -2277,3 +2277,78 @@ main{
   .topbar-left .lang-switch{gap:11px}
   .topbar-left .lang-switch button{height:36px;font-size:15px}
 }
+
+
+/* GAME TEXT SIZE CONTROL — compact popover, contained by the GAME window only */
+.game-story-block{
+  position:relative;
+  min-width:0;
+}
+.game-font-control{
+  position:absolute;
+  top:8px;
+  right:8px;
+  z-index:30;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+}
+.game-font-toggle{
+  width:34px;
+  height:34px;
+  padding:0;
+  border:1px solid var(--ds-border);
+  border-radius:9px;
+  background:rgba(7,13,20,.88);
+  color:var(--ds-text);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:900;
+  line-height:1;
+  box-shadow:0 4px 14px rgba(0,0,0,.2);
+  touch-action:manipulation;
+}
+.game-font-toggle:active{transform:scale(.95)}
+.game-font-toggle:focus-visible{
+  outline:2px solid var(--ds-accent);
+  outline-offset:2px;
+}
+.game-font-toolbar{
+  display:none;
+  width:auto;
+  min-height:34px;
+  margin:0 5px 0 0;
+  padding:3px;
+  gap:3px;
+  border:1px solid var(--ds-border);
+  border-radius:9px;
+  background:rgba(7,13,20,.94);
+  box-shadow:0 5px 18px rgba(0,0,0,.28);
+}
+.game-font-control.is-open .game-font-toolbar{
+  display:flex;
+}
+.game-font-toolbar button{
+  min-width:38px;
+  min-height:30px;
+  height:30px;
+  padding:2px 7px;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:var(--ds-muted);
+  font-family:inherit;
+  font-size:11px;
+  font-weight:900;
+  line-height:1;
+}
+.game-font-toolbar button.active{
+  background:var(--ds-accent);
+  color:var(--ds-accent-text);
+}
+.game-font-toolbar button:active{transform:scale(.95)}
+@media(max-width:380px){
+  .game-font-control{top:6px;right:6px}
+  .game-font-toggle{width:32px;height:32px}
+  .game-font-toolbar button{min-width:35px}
+}
