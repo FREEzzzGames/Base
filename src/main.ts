@@ -472,22 +472,27 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 function bindHudTouchGesture(){
   if(hudGestureBound)return;
   hudGestureBound=true;
-  let startX=0,startY=0,tracking=false,triggered=false;
+  let startX=0,startY=0,tracking=false,triggered=false,pointerId=-1;
+  const workspace=()=>document.querySelector<HTMLElement>(".portal-workspace");
   document.addEventListener("pointerdown",e=>{
     if(e.pointerType==="mouse"&&e.button!==0)return;
-    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;
+    startX=e.clientX;startY=e.clientY;pointerId=e.pointerId;tracking=true;triggered=false;
+    (e.currentTarget as Document).documentElement.style.setProperty("--freezzz-hud-gesture-x",String(startX));
   },{passive:true});
   document.addEventListener("pointermove",e=>{
-    if(!tracking||triggered)return;
+    if(!tracking||triggered||e.pointerId!==pointerId)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.abs(dy)>Math.abs(dx)+8)return;
-    if(!hudHidden&&startX<=64&&dx<-44){
-      triggered=true;hudHidden=true;document.querySelector<HTMLElement>(".portal-workspace")?.classList.add("portal-hud-hidden");
-    }else if(hudHidden&&startX<=28&&dx>44){
-      triggered=true;hudHidden=false;document.querySelector<HTMLElement>(".portal-workspace")?.classList.remove("portal-hud-hidden");
+    if(Math.abs(dx)<24)return;
+    if(Math.abs(dy)>Math.abs(dx)*1.15)return;
+    if(!hudHidden&&startX<=88&&dx<=-42){
+      triggered=true;hudHidden=true;workspace()?.classList.add("portal-hud-hidden");
+    }else if(hudHidden&&startX<=48&&dx>=42){
+      triggered=true;hudHidden=false;workspace()?.classList.remove("portal-hud-hidden");
     }
   },{passive:true});
-  const end=()=>{tracking=false;};
+  const end=(e:PointerEvent)=>{
+    if(e.pointerId===pointerId){tracking=false;pointerId=-1;}
+  };
   document.addEventListener("pointerup",end,{passive:true});
   document.addEventListener("pointercancel",end,{passive:true});
 }
