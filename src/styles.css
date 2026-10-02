@@ -2731,3 +2731,20 @@ main{
   .dev-mode-toggle{width:52px;min-width:52px}
   .dev-mode-toggle small{font-size:6.5px}
 }
+
+
+/* TABLER ILLUSTRATION SYSTEM — unified portal visual language */
+.portal-illustration{display:block;width:24px;height:24px;object-fit:contain;flex:0 0 auto;pointer-events:none;user-select:none}
+.ui-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;line-height:0;overflow:hidden}
+.ui-icon .portal-illustration{width:100%;height:100%}
+.home-card-icon .portal-illustration{width:42px;height:42px}
+.profile-button .portal-illustration{width:30px;height:30px}
+.live-popup-icon .portal-illustration{width:72px;height:72px}
+.dev-orb .portal-illustration{width:42px;height:42px}
+.dev-gesture-hint .portal-illustration{width:22px;height:22px}
+.dev-block-icon .portal-illustration,.dev-selected-icon .portal-illustration{width:30px;height:30px}
+.dev-pad button .portal-illustration{width:22px;height:22px}
+.dev-precision-grid label>span .portal-illustration{width:18px;height:18px}
+.dev-mini-action .portal-illustration,.dev-editor-actions .portal-illustration{width:18px;height:18px}
+[data-ambient-mute] .portal-illustration,[data-ambient-play] .portal-illustration{width:20px;height:20px}
+.portal-illustration{filter:drop-shadow(0 1px 3px rgba(0,0,0,.18))}
