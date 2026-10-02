@@ -225,7 +225,7 @@ function render(){
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
-          <h1>FREEzzzY</h1>
+          <h1>${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
           <p>${T("homeDescription")}</p>
           </div>
         </section>
