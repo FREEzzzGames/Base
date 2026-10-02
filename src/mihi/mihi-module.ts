@@ -65,8 +65,8 @@ export class MihiModule{
     const main=document.querySelector<HTMLElement>(".portal-workspace > main");
     if(!main)return;
     const rect=main.getBoundingClientRect();
-    const width=Math.max(84,Math.min(150,rect.width*0.15));
-    const height=Math.min(248,width*1.65);
+    const width=Math.max(120,Math.min(170,rect.width*0.18));
+    const height=Math.min(380,Math.max(320,width*2.15));
     this.root.style.width=width+"px";
     this.root.style.height=height+"px";
     this.root.style.left=(rect.left+rect.width/2)+"px";
