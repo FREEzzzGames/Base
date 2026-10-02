@@ -451,6 +451,7 @@ function playRadioStation(id:string){
   const station=radioStations.find(s=>s.stationuuid===id); if(!station)return;
   radioSelectedId=station.stationuuid;
   try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
+  endRadioActivity();
   radioAudio?.pause();
   radioAudio=new Audio(station.url_resolved||station.url);
   radioAudio.dataset.station=station.name;
