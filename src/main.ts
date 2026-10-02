@@ -10,6 +10,7 @@ import { renderLivePopup } from "./live-runtime";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
+import { createMihiModule } from "./mihi/mihi-module";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 
 initTelegramBridge();
@@ -52,6 +53,7 @@ function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
 const portalSession=loadPortalSessionSnapshot();
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
+const mihi=createMihiModule(portalEvents);
 let view:View=portalState.view;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 const T=(key:string)=>pt(lang,key);
