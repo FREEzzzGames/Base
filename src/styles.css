@@ -875,28 +875,6 @@ main{
   }
 }
 
-/* Local developer diagnostics — intentionally absent from production builds. */
-
-
-
-
-
-
-
-@media(max-width:520px){.dev-tools-panel{padding:12px}.dev-tools-grid{grid-template-columns:1fr}.dev-tools-head h2{font-size:18px}}
-
-
-
-/* FINAL bottom navigation sizing: compact 1.5x baseline width, complete module set, responsive touch targets. */
-
-
-
-
-
-
-
-
-
 /* FINAL home scaling audit: prevent intrinsic-width cards and keep one stable responsive column. */
 .home-portal{
   width:min(100%,680px);
@@ -3211,7 +3189,3 @@ main{
   }
 }
 
-/* Unified top navigation is the only portal navigation surface. */
-.bottom-nav,.game-nav-reveal,.dev-tools-overlay,.dev-layout-panel,[data-developer-overlay]{
-  display:none!important;
-}
