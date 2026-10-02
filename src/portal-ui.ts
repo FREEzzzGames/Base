@@ -10,7 +10,7 @@ export const LUCIDE_ICONS:Record<string,string>={
   rocket:'<path d="M14 4c3-1 6-1 7-1 0 1 0 4-1 7l-7 7-4-1-1-4 7-7Z"/><path d="m8 16-4 4M5 12l-3 1 4 4M12 19l1 3 4-4"/><circle cx="16.5" cy="7.5" r="1.5"/>',
   zap:'<path d="m13 2-9 12h7l-1 8 9-12h-7z"/>'
 };
-function icon(name:string,className=""){
+export function icon(name:string,className=""){
   const path=LUCIDE_ICONS[name]||LUCIDE_ICONS.video;
   return `<svg class="ui-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 }
