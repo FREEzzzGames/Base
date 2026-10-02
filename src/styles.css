@@ -1612,3 +1612,59 @@ main{
 .game-quest>span{font-size:.72rem;opacity:.55;white-space:nowrap}
 .game-quest.done{border-color:color-mix(in srgb,var(--ds-accent) 35%,transparent)}
 .game-shop-item>button:disabled{opacity:.35;cursor:not-allowed}
+
+
+/* GAME NAVIGATION — immersive hide/reveal mechanic */
+.bottom-nav{
+  transition:transform .58s cubic-bezier(.22,.72,.2,1),opacity .38s ease,filter .38s ease;
+  will-change:transform,opacity;
+}
+.bottom-nav.bottom-nav-game{
+  transform:translate(-50%,calc(100% + max(8px,var(--safe-bottom))));
+  opacity:.04;
+  filter:blur(1px);
+  pointer-events:none;
+}
+.bottom-nav.bottom-nav-game.game-nav-revealed{
+  transform:translateX(-50%);
+  opacity:1;
+  filter:none;
+  pointer-events:auto;
+}
+.game-nav-reveal{
+  position:fixed;
+  left:50%;
+  bottom:max(5px,var(--safe-bottom));
+  transform:translate(-50%,0);
+  width:54px;
+  height:22px;
+  padding:0;
+  z-index:24;
+  border:1px solid color-mix(in srgb,var(--ds-border) 85%,transparent);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--ds-panel) 92%,transparent);
+  color:var(--ds-muted);
+  box-shadow:0 5px 18px rgba(0,0,0,.28);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  font:inherit;
+  font-size:15px;
+  line-height:1;
+  opacity:.72;
+  transition:transform .45s cubic-bezier(.22,.72,.2,1),opacity .35s ease,bottom .45s ease;
+  touch-action:manipulation;
+}
+.game-nav-reveal:hover{opacity:1}
+.game-nav-reveal.is-active{
+  bottom:calc(74px + var(--safe-bottom));
+  opacity:.22;
+  transform:translate(-50%,2px);
+}
+.game-nav-reveal:active{transform:translate(-50%,2px) scale(.94)}
+@media(max-width:520px){
+  .game-nav-reveal{width:50px;height:20px;font-size:14px}
+  .game-nav-reveal.is-active{bottom:calc(70px + var(--safe-bottom))}
+}
+@media(prefers-reduced-motion:reduce){
+  .bottom-nav,.game-nav-reveal{transition-duration:.01ms}
+}
