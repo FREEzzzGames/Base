@@ -1504,3 +1504,19 @@ main{
   .race-card small{font-size:11px}
   .game-dialog p{font-size:14px}
 }
+
+/* GAME restart control */
+.game-restart{
+  min-height:30px;
+  padding:4px 8px;
+  border:1px solid var(--ds-border);
+  border-radius:8px;
+  background:var(--ds-control);
+  color:var(--ds-text);
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.game-restart:active{transform:scale(.97);background:var(--ds-card-hover)}
+@media(max-width:520px){.game-restart{font-size:10px;padding:4px 7px}}
