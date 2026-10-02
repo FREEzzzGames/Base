@@ -57,6 +57,10 @@ let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",mes
 let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
 let gameTab:GameTab="story";
+type GameFontSize="normal"|"large"|"largest";
+let gameFontSize:GameFontSize=(()=>{try{const v=localStorage.getItem("freezzz:game-font-size");return v==="large"||v==="largest"?v:"normal";}catch{return "normal";}})();
+function setGameFontSize(size:GameFontSize){gameFontSize=size;try{localStorage.setItem("freezzz:game-font-size",size);}catch{}render();}
+function renderGameFontToolbar(){return '<div class="game-font-toolbar" role="group" aria-label="Размер текста в игре"><span>ТЕКСТ</span><button type="button" class="'+(gameFontSize==="normal"?"active":"")+'" data-game-font-size="normal" aria-label="Обычный размер" title="Обычный">A</button><button type="button" class="'+(gameFontSize==="large"?"active":"")+'" data-game-font-size="large" aria-label="Большой размер" title="Больше">A+</button><button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label="Самый большой размер" title="Самый большой">A++</button></div>';}
 let gameNavRevealed=false;
 let gameNavHideTimer:number|null=null;
 let gameAmbientHost:HTMLDivElement|null=null;
@@ -318,7 +322,7 @@ function render(){
           <div><h2>GAME</h2><p>FREEzzz STORY · FOUR RACES</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
-        <div class="portal-block game-story-block" data-portal-block="game">${renderGame(gameState,gameTab)}</div>
+        <div class="portal-block game-story-block" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab)}</div>
       </div>`;
   }
   if(view==="radio"){
