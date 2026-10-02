@@ -3111,3 +3111,16 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .portal-toolbar-language-button:active{
   background:rgba(255,255,255,.08)!important;
 }
+
+/* HOME HERO BACKGROUND DIM — 30% black overlay. */
+.home-portal > .home-hero::after{
+  content:"";
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  background:rgba(0,0,0,.30)!important;
+  pointer-events:none!important;
+}
+.home-portal > .home-hero .home-hero-content{
+  z-index:2!important;
+}
