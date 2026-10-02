@@ -21,5 +21,5 @@ export const PORTAL_VIDEO_REMOTE_SOURCES:Record<PortalVideoId,string>={
 };
 
 export function portalVideoUrl(id:PortalVideoId):string{
-  return new URL("videos/"+PORTAL_VIDEO_ASSETS[id],window.location.href).toString();
+  return new URL(import.meta.env.BASE_URL+"videos/"+PORTAL_VIDEO_ASSETS[id],window.location.href).toString();
 }
