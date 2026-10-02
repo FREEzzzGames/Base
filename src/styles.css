@@ -3974,3 +3974,98 @@ main{
     font-size:clamp(12px,3.1vw,17px)!important;
   }
 }
+
+/* ================================================================
+   HERO FINAL MOBILE RESET — NO DECORATIVE LINE
+   Keep the HERO clean: brand / profile / clock / tagline only.
+   ================================================================ */
+.home-hero{
+  overflow:hidden!important;
+}
+.home-hero-content{
+  padding:10px 12px!important;
+  justify-content:flex-end!important;
+  align-items:stretch!important;
+}
+.home-hero-top{
+  top:9px!important;
+  left:12px!important;
+  right:12px!important;
+  min-height:0!important;
+}
+.home-hero-kicker{
+  display:block!important;
+  font-size:11px!important;
+  line-height:1!important;
+  letter-spacing:.14em!important;
+  font-weight:500!important;
+  opacity:.72!important;
+}
+.home-hero-clock{
+  font-size:clamp(22px,6vw,30px)!important;
+  line-height:1!important;
+  font-weight:600!important;
+  letter-spacing:.02em!important;
+  opacity:.86!important;
+}
+.home-hero h1.home-hero-profile-trigger{
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:0 0 7px!important;
+  padding:0!important;
+  font-size:clamp(27px,8vw,38px)!important;
+  line-height:1!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.5)!important;
+}
+/* Explicitly disable the previously introduced decorative line. */
+.home-hero h1.home-hero-profile-trigger::after{
+  content:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  margin:0!important;
+  box-shadow:none!important;
+  background:none!important;
+}
+.home-hero p{
+  max-width:78%!important;
+  margin:0!important;
+  font-size:clamp(13px,3.5vw,17px)!important;
+  line-height:1.18!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+  opacity:.9!important;
+  text-shadow:0 1px 7px rgba(0,0,0,.55)!important;
+}
+@media(max-width:699px){
+  .home-hero-content{
+    padding:9px 10px!important;
+  }
+  .home-hero-top{
+    top:9px!important;
+    left:10px!important;
+    right:10px!important;
+  }
+  .home-hero-kicker{
+    font-size:10px!important;
+  }
+  .home-hero-clock{
+    font-size:clamp(21px,6vw,28px)!important;
+  }
+  .home-hero h1.home-hero-profile-trigger{
+    max-width:82%!important;
+    margin-bottom:6px!important;
+    font-size:clamp(26px,7.5vw,34px)!important;
+  }
+  .home-hero p{
+    max-width:82%!important;
+    font-size:clamp(12px,3.2vw,16px)!important;
+    line-height:1.18!important;
+  }
+}
