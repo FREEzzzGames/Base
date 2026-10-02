@@ -79,7 +79,7 @@ function bindGameAmbientControls(){
     gameAmbientMuted=!gameAmbientMuted;
     gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
     const b=e.currentTarget as HTMLButtonElement;
-    b.textContent=gameAmbientMuted?"🔇":"🔊";
+    b.textContent=gameAmbientMuted?"⊘":"◉";
     b.setAttribute("aria-label",gameAmbientMuted?"Включить звук":"Выключить звук");
   });
   gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
@@ -101,7 +101,7 @@ function syncGameAmbient(){
   if(!gameAmbientHost){
     gameAmbientHost=document.createElement("div");
     gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="Лесной костёр — атмосфера игры" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="Включить звук">🔇</button><button type="button" data-ambient-play aria-label="Остановить видео">Ⅱ</button></div>';
+    gameAmbientHost.innerHTML='<iframe title="Лесной костёр — атмосфера игры" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="Включить звук">⊘</button><button type="button" data-ambient-play aria-label="Остановить видео">Ⅱ</button></div>';
     bindGameAmbientControls();
   }
   if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
@@ -666,6 +666,9 @@ function bind(){
     });
     document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
+    });
+    document.querySelectorAll<HTMLButtonElement>("[data-game-font-size]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();setGameFontSize((x.dataset.gameFontSize as GameFontSize)||"normal");};
     });
   }
     bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
