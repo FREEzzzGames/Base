@@ -1302,3 +1302,7 @@ main{
   .editor-block-label{font-size:11px}
   .editor-move{min-width:28px;min-height:17px;font-size:9px}
 }
+
+/* Final bottom navigation override: legacy top navigation styles stay inert. */
+.topbar .top-actions{display:none!important}
+.bottom-nav{display:grid!important}
