@@ -8,6 +8,8 @@ import { icon, streams, type LiveStream } from "./portal-ui";
 import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
+
+initTelegramBridge();
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
