@@ -219,7 +219,7 @@ function render(){
           <div><h2>CHAT</h2><p>Общение FREEzzz</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</p>`).join("")}</div>
+        <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
           <input id="chatinput" placeholder="Сообщение…" autocomplete="off">
           <button class="tg-button">Отправить</button>
@@ -568,6 +568,15 @@ function bind(){
     bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
 }
 
+function chatEmoji(m:{author:string;message:string}):string{
+  if(m.author==="FREEzzzBot")return "🤖";
+  const text=m.message.toLowerCase();
+  if(text.includes("игр")||text.includes("game"))return "🎮";
+  if(text.includes("стрим")||text.includes("live"))return "📺";
+  if(text.includes("радио")||text.includes("music"))return "🎵";
+  if(text.includes("спасибо"))return "🙏";
+  return "💬";
+}
 function escapeHtml(s:string){
   return s.replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c;
