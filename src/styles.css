@@ -3039,3 +3039,25 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   position:relative!important;
   z-index:1!important;
 }
+
+
+/* TOOLBAR ICON HALO — 80% dark surround; neon glow reduced by 30%. */
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item,
+.portal-toolbar-language-button{
+  background:rgba(0,0,0,.80)!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child{
+  background:rgba(0,0,0,.80)!important;
+}
+.portal-toolbar-icon{
+  filter:drop-shadow(0 0 3px rgba(255,32,32,.686)) drop-shadow(0 0 9px rgba(255,32,32,.504))!important;
+}
+.portal-toolbar-item.active .portal-toolbar-icon{
+  filter:drop-shadow(0 0 4px rgba(255,32,32,.70)) drop-shadow(0 0 12px rgba(255,32,32,.546))!important;
+}
+.portal-toolbar-language-button .portal-toolbar-icon{
+  filter:drop-shadow(0 0 3px rgba(255,32,32,.686)) drop-shadow(0 0 9px rgba(255,32,32,.504))!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child .portal-toolbar-icon{
+  filter:drop-shadow(0 0 4px rgba(255,32,32,.70)) drop-shadow(0 0 12px rgba(255,32,32,.546))!important;
+}
