@@ -550,7 +550,8 @@ function bind(){
     const url=stream?(livePopupSource==="youtube"?stream.youtube:stream.twitch):"";if(!url)return;
     openExternalUrl(url);
   });
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
+  document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
+  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
     x.onclick=function(e){
       e.preventDefault();
