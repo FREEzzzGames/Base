@@ -1532,3 +1532,9 @@ main{
 .game-ability.unlocked>span{background:var(--ds-accent);color:var(--ds-accent-text)}
 .game-ability.unlocked b{color:var(--ds-accent)}
 .game-ability.locked{opacity:.62}
+
+/* GAME PART I FINALE */
+.game-finale .game-scene{background:radial-gradient(circle at 50% 48%,rgba(120,160,255,.2),transparent 28%),linear-gradient(180deg,#111b2a 0%,#090e15 60%,#06090d 100%)}
+.game-finale .scene-silhouette{font-size:34px;letter-spacing:9px;white-space:nowrap}
+.game-finale .game-dialog{border-color:var(--ds-accent)}
+.game-finale .game-dialog .game-thought{color:var(--ds-text);font-weight:700}
