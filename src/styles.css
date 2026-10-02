@@ -2748,3 +2748,274 @@ main{
 .dev-mini-action .portal-illustration,.dev-editor-actions .portal-illustration{width:18px;height:18px}
 [data-ambient-mute] .portal-illustration,[data-ambient-play] .portal-illustration{width:20px;height:20px}
 .portal-illustration{filter:drop-shadow(0 1px 3px rgba(0,0,0,.18))}
+
+
+/* FINAL ICON SCALE AUDIT — all Tabler portal illustrations are enlarged 3x proportionally. */
+:root{--portal-icon-scale:3}
+
+.portal-illustration{
+  width:72px;
+  height:72px;
+  flex:0 0 72px;
+}
+
+.ui-icon{
+  width:72px;
+  height:72px;
+  flex:0 0 72px;
+  overflow:visible;
+}
+
+.ui-icon .portal-illustration{
+  width:100%;
+  height:100%;
+  flex:0 0 100%;
+}
+
+.home-card-icon .ui-icon,
+.home-card-icon{
+  min-width:126px;
+  min-height:126px;
+}
+.home-card-icon .portal-illustration{
+  width:126px;
+  height:126px;
+  flex-basis:126px;
+}
+
+.profile-button{
+  width:90px;
+  height:90px;
+  min-width:90px;
+  min-height:90px;
+}
+.profile-button .ui-icon,
+.profile-button .portal-illustration{
+  width:90px;
+  height:90px;
+  flex-basis:90px;
+}
+
+.stream{
+  grid-template-columns:80px minmax(0,1fr) auto;
+  gap:14px;
+  min-height:108px;
+}
+.stream .stream-icon{
+  width:72px;
+  height:72px;
+  flex-basis:72px;
+}
+.stream-icon .portal-illustration{
+  width:72px;
+  height:72px;
+}
+.avatar{
+  width:80px;
+  height:80px;
+  font-size:23px;
+}
+
+.home-live-row i{
+  width:72px;
+  height:72px;
+}
+.home-stream-icon{
+  width:60px;
+  height:60px;
+}
+.home-stream-icon .portal-illustration{
+  width:60px;
+  height:60px;
+}
+
+.bottom-nav{
+  min-height:104px;
+  padding:8px;
+}
+.bottom-nav-item{
+  min-height:88px;
+  gap:6px;
+  padding:7px 4px;
+}
+.bottom-nav-item .ui-icon,
+.bottom-nav-item .nav-icon{
+  width:66px;
+  height:66px;
+  flex-basis:66px;
+}
+.bottom-nav-home .ui-icon,
+.bottom-nav-home .nav-icon{
+  width:75px;
+  height:75px;
+  flex-basis:75px;
+}
+
+.top-actions .ui-icon{
+  width:72px;
+  height:72px;
+  flex-basis:72px;
+}
+
+.live-popup-icon{
+  min-width:216px;
+  min-height:216px;
+}
+.live-popup-icon .ui-icon,
+.live-popup-icon .portal-illustration{
+  width:216px;
+  height:216px;
+  flex-basis:216px;
+}
+
+.dev-orb{
+  width:126px;
+  height:126px;
+}
+.dev-orb .portal-illustration{
+  width:126px;
+  height:126px;
+}
+.dev-gesture-hint{
+  min-width:66px;
+  min-height:66px;
+}
+.dev-gesture-hint .portal-illustration{
+  width:66px;
+  height:66px;
+}
+.dev-block-icon,
+.dev-selected-icon{
+  width:90px;
+  height:90px;
+  flex-basis:90px;
+}
+.dev-block-icon .portal-illustration,
+.dev-selected-icon .portal-illustration{
+  width:90px;
+  height:90px;
+}
+.dev-pad button{
+  min-width:78px;
+  min-height:78px;
+}
+.dev-pad button .portal-illustration{
+  width:66px;
+  height:66px;
+}
+.dev-precision-grid label>span .portal-illustration{
+  width:54px;
+  height:54px;
+}
+.dev-mini-action .portal-illustration,
+.dev-editor-actions .portal-illustration{
+  width:54px;
+  height:54px;
+}
+[data-ambient-mute] .portal-illustration,
+[data-ambient-play] .portal-illustration{
+  width:60px;
+  height:60px;
+}
+
+.radio-card-logo-fallback-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.radio-card-logo-fallback-icon .portal-illustration{
+  width:72px;
+  height:72px;
+}
+
+@media(max-width:520px){
+  .profile-button{
+    width:72px;
+    height:72px;
+    min-width:72px;
+    min-height:72px;
+  }
+  .profile-button .ui-icon,
+  .profile-button .portal-illustration{
+    width:72px;
+    height:72px;
+    flex-basis:72px;
+  }
+  .home-card-icon .ui-icon,
+  .home-card-icon{
+    min-width:96px;
+    min-height:96px;
+  }
+  .home-card-icon .portal-illustration{
+    width:96px;
+    height:96px;
+    flex-basis:96px;
+  }
+  .stream{
+    grid-template-columns:72px minmax(0,1fr) auto;
+    min-height:96px;
+  }
+  .stream .stream-icon,
+  .stream-icon .portal-illustration{
+    width:66px;
+    height:66px;
+    flex-basis:66px;
+  }
+  .avatar{
+    width:72px;
+    height:72px;
+  }
+  .bottom-nav{
+    min-height:94px;
+    padding:7px;
+  }
+  .bottom-nav-item{
+    min-height:78px;
+  }
+  .bottom-nav-item .ui-icon,
+  .bottom-nav-item .nav-icon{
+    width:54px;
+    height:54px;
+    flex-basis:54px;
+  }
+  .bottom-nav-home .ui-icon,
+  .bottom-nav-home .nav-icon{
+    width:60px;
+    height:60px;
+    flex-basis:60px;
+  }
+  main{
+    padding-bottom:calc(122px + var(--safe-bottom));
+  }
+}
+
+@media(max-width:390px){
+  .home-card-icon .ui-icon,
+  .home-card-icon{
+    min-width:78px;
+    min-height:78px;
+  }
+  .home-card-icon .portal-illustration{
+    width:78px;
+    height:78px;
+    flex-basis:78px;
+  }
+  .bottom-nav{
+    min-height:86px;
+  }
+  .bottom-nav-item{
+    min-height:70px;
+  }
+  .bottom-nav-item .ui-icon,
+  .bottom-nav-item .nav-icon{
+    width:48px;
+    height:48px;
+    flex-basis:48px;
+  }
+  .bottom-nav-home .ui-icon,
+  .bottom-nav-home .nav-icon{
+    width:54px;
+    height:54px;
+    flex-basis:54px;
+  }
+}
