@@ -1246,3 +1246,85 @@ main{
   .dev-layout-panel{width:100%}
   .dev-editor-actions{grid-template-columns:1fr}
 }
+
+
+/* DEV direct manipulation — keep the portal visible while editing. */
+.dev-tools-overlay{
+  align-items:flex-end;
+  padding:calc(8px + var(--safe-top)) 8px calc(8px + var(--safe-bottom));
+  background:rgba(3,7,11,.34);
+}
+.dev-layout-panel{
+  width:min(640px,100%);
+  max-height:min(58dvh,720px);
+  overflow:auto;
+  border-radius:18px 18px 14px 14px;
+  padding:12px;
+  box-shadow:0 -12px 44px rgba(0,0,0,.42),0 0 0 1px rgba(100,181,246,.04);
+}
+.dev-tools-head{
+  padding-bottom:9px;
+}
+.dev-tools-head h2{font-size:18px}
+.dev-mode-switch{
+  margin:8px 0;
+  padding:7px 9px;
+}
+.dev-gesture-hint{
+  margin-left:auto;
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border:1px solid var(--ds-border);
+  border-radius:9px;
+  background:var(--ds-card-hover);
+  font-size:15px;
+}
+[data-portal-block][data-dev-selected="true"]{
+  position:relative;
+  outline:2px solid var(--ds-accent);
+  outline-offset:4px;
+  box-shadow:0 0 0 5px rgba(100,181,246,.10),0 0 28px rgba(100,181,246,.16);
+  z-index:35;
+  touch-action:none;
+  cursor:grab;
+}
+[data-portal-block][data-dev-selected="true"]::after{
+  content:"✋";
+  position:absolute;
+  right:8px;
+  top:8px;
+  width:28px;height:28px;
+  display:grid;place-items:center;
+  border-radius:8px;
+  background:var(--ds-accent);
+  color:var(--ds-accent-text);
+  font-size:13px;
+  box-shadow:0 4px 14px rgba(0,0,0,.28);
+  pointer-events:none;
+}
+[data-portal-block][data-dev-selected="true"]:active{cursor:grabbing}
+.dev-position-readout{
+  padding:5px 8px;
+  border:1px solid var(--ds-border);
+  border-radius:8px;
+  background:var(--ds-control);
+}
+.dev-precision{margin-top:7px}
+.dev-editor-actions{margin-top:8px}
+.dev-diagnostics{margin-top:7px}
+@media(max-width:520px){
+  .dev-tools-overlay{
+    padding-left:6px;
+    padding-right:6px;
+  }
+  .dev-layout-panel{
+    max-height:56dvh;
+    padding:10px;
+  }
+  .dev-block-list{
+    max-height:none;
+  }
+  .dev-selected-block{
+    margin-top:8px;
+  }
+}
