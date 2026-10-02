@@ -3956,3 +3956,64 @@ main{
   }
 }
 
+
+
+/* ================================================================
+   ROUTE VIEWPORT FILL — Telegram Mini App
+   ================================================================ */
+.portal-route-workspace{
+  height:100dvh!important;
+  min-height:100dvh!important;
+}
+.portal-route-workspace > main{
+  height:100%!important;
+  min-height:0!important;
+}
+.portal-route-workspace > main > .portal-layout{
+  height:100%!important;
+  min-height:0!important;
+}
+
+/* Route views fill the same working viewport as HOME.
+   GAME is intentionally excluded from this rule set. */
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"],
+.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"],
+.portal-route-workspace > main > .portal-layout[data-portal-layout="library"],
+.portal-route-workspace > main > .portal-layout[data-portal-layout="radio"]{
+  height:100%!important;
+  min-height:0!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"]{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .list{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:auto!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"]{
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  min-height:0!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"] > .chat{
+  min-height:0!important;
+  overflow:auto!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="library"] > .hero{
+  min-height:100%!important;
+  margin-bottom:0!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="radio"]{
+  overflow:auto!important;
+}
+
+/* Keep the language popup fully visible without extending below its HUD row. */
+.portal-route-workspace > .portal-toolbar .portal-toolbar-language-menu,
+.portal-home-workspace > .portal-toolbar .portal-toolbar-language-menu{
+  top:auto!important;
+  bottom:0!important;
+  left:52px!important;
+  right:auto!important;
+}
