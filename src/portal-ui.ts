@@ -14,12 +14,21 @@ export function icon(name:string,className=""){
 
 export type LiveStream={icon:string;name:string;twitch:string;youtube:string;twitchChannel:string;youtubeChannel?:string};
 export function streamAvatarSources(stream:LiveStream):{youtube:string;twitch:string}{
-  const youtube=stream.youtubeChannel||stream.youtube;
+  const youtube=stream.youtubeChannel||youtubeHandle(stream.youtube);
   const twitch=stream.twitchChannel||"";
   return {
     youtube:youtube?avatarSource("youtube",youtube):"",
     twitch:twitch?avatarSource("twitch",twitch):""
   };
+}
+function youtubeHandle(url:string):string{
+  try{
+    const parts=new URL(url).pathname.split("/").filter(Boolean);
+    const handle=parts.find(part=>part.startsWith("@"));
+    if(handle)return handle.slice(1);
+    const channel=parts.findIndex(part=>part==="channel");
+    return channel>=0?parts[channel+1]||"":parts[0]||"";
+  }catch{return "";}
 }
 function avatarSource(provider:"youtube"|"twitch",key:string):string{
   const host=["https","unavatar","io"].join(".").replace("https.","https://");
