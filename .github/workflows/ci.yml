@@ -11,12 +11,17 @@ permissions:
   pages: write
   id-token: write
 
+# RELEASE RULE:
+# Never cancel an earlier validation run just because a newer commit arrived.
+# Every main commit gets a deterministic validation; only the current main SHA
+# is allowed through the production gate below.
+concurrency:
+  group: freezzz-pages-${{ github.workflow }}-${{ github.ref }}
+  queue: max
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    concurrency:
-      group: pages-build-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +30,43 @@ jobs:
           node-version: 20
 
       - run: npm install
+
+      - name: Source integrity preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f src/main.ts
+          test -f src/portal-ui.ts
+          test -f src/live-runtime.ts
+          test -f src/developer-layout.ts
+          test -f src/platform-bridge.ts
+          test -f src/portal-navigation.ts
+          test -f src/game-runtime.ts
+          test -f src/radio-config.ts
+
+          # Catch the exact class of regressions that previously appeared during
+          # the main.ts extraction: missing shared exports and missing local handlers.
+          grep -Eq '^export[[:space:]]+function icon\(' src/portal-ui.ts
+          grep -Eq '^export const streams' src/portal-ui.ts
+          grep -Eq '^function openLivePopup\(' src/main.ts
+          grep -Eq '^function closeLivePopup\(' src/main.ts
+
+          # There must be one Pages deployment workflow, not competing pipelines.
+          deploy_count="$(grep -RIl 'actions/deploy-pages@' .github/workflows 2>/dev/null | wc -l | tr -d ' ')"
+          upload_count="$(grep -RIl 'actions/upload-pages-artifact@' .github/workflows 2>/dev/null | wc -l | tr -d ' ')"
+          if [ "$deploy_count" != "1" ] || [ "$upload_count" != "1" ]; then
+            echo "Expected exactly one Pages deploy workflow and one Pages artifact workflow."
+            echo "deploy_count=$deploy_count upload_count=$upload_count"
+            exit 1
+          fi
+
+          grep -q 'npm run typecheck' .github/workflows/ci.yml
+          grep -q 'npm run build' .github/workflows/ci.yml
+          grep -q 'node scripts/release-smoke.mjs' .github/workflows/ci.yml
+          grep -q 'needs: build' .github/workflows/ci.yml
+
+          echo "SOURCE_PREFLIGHT_OK"
 
       - name: Stamp portal build
         shell: bash
@@ -38,8 +80,12 @@ jobs:
           node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("src/public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
           node -e 'const fs=require("fs"); const s=fs.readFileSync("src/build-info.ts","utf8"); if(!s.includes(process.env.GITHUB_SHA)) throw new Error("build-info.ts was not stamped with GITHUB_SHA");'
 
-      - run: npm run typecheck
-      - run: npm run build
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
       - name: Release smoke
         env:
           EXPECTED_BUILD: ${{ github.sha }}
