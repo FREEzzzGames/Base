@@ -3387,11 +3387,11 @@ main::-webkit-scrollbar{display:none}
   height:100%!important;
 }
 
-/* HOME: one-column mobile layout with compact, equal-density cards. */
+/* HOME: 2 / 2 / 1 block layout. Hero stays full-width; five portal cards form two pairs plus one full-width card. */
 .home-portal{
   display:grid;
-  grid-template-columns:minmax(0,1fr);
-  grid-template-areas:"hero" "live" "chat" "game" "radio" "library";
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-areas:"hero hero" "live chat" "game radio" "library library";
   gap:8px;
   width:100%;
   max-width:680px;
