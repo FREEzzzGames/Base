@@ -17,6 +17,7 @@ export function renderLivePopup(options:{
   source:"twitch"|"youtube";
   streams:readonly LiveStream[];
   escapeHtml:(value:string)=>string;
+  lang?:"RU"|"DE"|"EN";
 }):string{
   if(!options.open||!options.selected)return "";
   const stream=options.streams.find(s=>s.name===options.selected);
@@ -25,11 +26,12 @@ export function renderLivePopup(options:{
   const embed=liveEmbedUrl(stream,source,window.location.hostname);
   const external=source==="youtube"?stream.youtube:stream.twitch;
   const e=options.escapeHtml;
+  const tr={RU:{close:"Закрыть",unavailable:"${tr.unavailable}",channel:"Канал доступен на",open:"Открыть"},DE:{close:"Schließen",unavailable:"Eingebetteter Player nicht verfügbar",channel:"Kanal verfügbar auf",open:"Öffnen"},EN:{close:"Close",unavailable:"Embedded player unavailable",channel:"Channel available on",open:"Open"}}[options.lang||"RU"];
   return `<div class="live-popup-overlay" data-live-popup-overlay>
     <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
       <header class="live-popup-header">
         <div><span class="live-popup-kicker">LIVE</span><strong>${e(stream.name)}</strong><small>${source==="youtube"?"YouTube":"Twitch"}</small></div>
-        <button class="live-popup-close" data-live-popup-close type="button" aria-label="Закрыть">×</button>
+        <button class="live-popup-close" data-live-popup-close type="button" aria-label="${tr.close}">×</button>
       </header>
       <div class="live-popup-source-tabs">
         <button class="tg-button ${source==="twitch"?"":"secondary"}" data-live-popup-source="twitch" type="button">Twitch</button>
@@ -38,7 +40,7 @@ export function renderLivePopup(options:{
       <div class="live-popup-video">
         ${embed
           ? `<iframe src="${e(embed)}" title="${e(stream.name)} — ${source}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
-          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер недоступен</strong><span>Канал доступен на ${source}, но универсальный embed для него не задан.</span><button class="tg-button" data-live-external type="button">Открыть ${source}</button></div>`}
+          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер недоступен</strong><span>${tr.channel} ${source}, but no universal embed is configured for it.</span><button class="tg-button" data-live-external type="button">${tr.open} ${source}</button></div>`}
       </div>
     </section>
   </div>`;
