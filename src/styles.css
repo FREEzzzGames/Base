@@ -3019,3 +3019,139 @@ main{
     flex-basis:54px;
   }
 }
+
+
+
+/* GAME — unified Tabler illustration language.
+   All decorative glyphs inside GAME are rendered through the same illustration
+   family as HOME/LIVE/DEV. Sizes stay compact so the game remains information-dense. */
+.game-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  min-width:22px;
+  flex:0 0 22px;
+  vertical-align:middle;
+  line-height:0;
+  color:var(--game-accent,var(--ds-accent));
+}
+.game-icon .portal-illustration{
+  width:100%;
+  height:100%;
+  flex:0 0 100%;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.2));
+}
+.game-avatar-icon{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  flex-basis:30px;
+}
+.game-vital-icon{
+  width:16px;
+  height:16px;
+  min-width:16px;
+  flex-basis:16px;
+}
+.game-tabs button .game-icon{
+  width:24px;
+  height:24px;
+  min-width:24px;
+  flex-basis:24px;
+}
+.game-tabs button.active .game-icon{
+  filter:brightness(1.05);
+}
+.game-stat .game-icon,
+.game-skill .game-icon{
+  width:18px;
+  height:18px;
+  min-width:18px;
+  flex-basis:18px;
+  margin-right:5px;
+}
+.game-stat span,
+.game-skill span{
+  display:flex;
+  align-items:center;
+  min-width:0;
+}
+.game-race-icon{
+  width:42px;
+  height:42px;
+  min-width:42px;
+  flex-basis:42px;
+  margin:0 auto 5px;
+}
+.race-card .game-race-icon .portal-illustration{
+  width:100%;
+  height:100%;
+}
+.game-status-icon{
+  width:28px;
+  height:28px;
+  min-width:28px;
+  flex-basis:28px;
+}
+.game-ability .game-status-icon{
+  width:24px;
+  height:24px;
+  min-width:24px;
+  flex-basis:24px;
+}
+.game-inline-icon{
+  width:16px;
+  height:16px;
+  min-width:16px;
+  flex-basis:16px;
+  margin-right:5px;
+}
+.game-price-icon{
+  width:16px;
+  height:16px;
+  min-width:16px;
+  flex-basis:16px;
+}
+.game-choice-icon{
+  width:20px;
+  height:20px;
+  min-width:20px;
+  flex-basis:20px;
+  margin-right:3px;
+}
+.game-choices button>.game-choice-icon{
+  display:inline-flex;
+  grid-column:1;
+  grid-row:1;
+  max-width:none;
+  overflow:visible;
+}
+.game-choices button>.game-choice-icon + *{
+  grid-column:2;
+}
+.game-rpg .game-achievement .game-status-icon{
+  border-radius:9px;
+  background:var(--ds-control);
+}
+.game-rpg .game-achievement:not(.locked) .game-status-icon{
+  background:var(--game-accent,var(--ds-accent));
+  color:var(--ds-accent-text);
+}
+.game-rpg .game-ability .game-status-icon{
+  border-radius:7px;
+  padding:3px;
+  box-sizing:border-box;
+  background:var(--ds-control);
+}
+.game-rpg .game-ability.unlocked .game-status-icon{
+  background:var(--game-accent,var(--ds-accent));
+  color:var(--ds-accent-text);
+}
+@media(max-width:520px){
+  .game-tabs button .game-icon{width:22px;height:22px;min-width:22px;flex-basis:22px}
+  .game-race-icon{width:36px;height:36px;min-width:36px;flex-basis:36px}
+  .game-avatar-icon{width:26px;height:26px;min-width:26px;flex-basis:26px}
+}
+
