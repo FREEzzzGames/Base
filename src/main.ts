@@ -260,7 +260,11 @@ function render(){
   }
   if(view==="chat"){
     body=`
-      <div class="content portal-layout" data-portal-layout="chat">
+      <div class="content portal-layout chat-portal" data-portal-layout="chat">
+        <video class="chat-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+          <source src="https://cdn.pixabay.com/video/2022/04/25/115036-703067759_large.mp4" type="video/mp4">
+        </video>
+        <div class="chat-background-overlay" aria-hidden="true"></div>
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
         </div>
