@@ -84,7 +84,7 @@ main{
   overflow:auto;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
-  padding:12px 10px calc(18px + var(--safe-bottom));
+  padding:8px max(8px,var(--tg-content-safe-area-inset-right,var(--tg-safe-right,0px))) max(16px,var(--tg-content-safe-area-inset-bottom,var(--tg-safe-bottom,0px))) max(8px,var(--tg-content-safe-area-inset-left,var(--tg-safe-left,0px)));
   scrollbar-width:none;
 }
 main::-webkit-scrollbar{display:none}
@@ -115,7 +115,7 @@ main::-webkit-scrollbar{display:none}
   transition:background .15s ease,transform .15s ease;
 }
 .card:active{transform:scale(.985);background:var(--tg-theme-secondary-bg-color)}
-.card b{font-size:25px;line-height:1}
+.card > b{font-size:15px;line-height:1.2}
 .card strong{display:block;margin-top:auto;font-size:15px}
 .card span{display:block;color:var(--tg-theme-hint-color);margin-top:4px;font-size:12px;line-height:1.3}
 
@@ -948,75 +948,6 @@ main{
     width:100%;
   }
 }
-
-
-/* FINAL developer mode + layout editor */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[data-dev-editable="true"]{
-  outline:1px dashed color-mix(in srgb,var(--tg-theme-button-color, #3390ec) 65%,transparent);
-  outline-offset:2px;
-}
-
-
-
-/* DEV direct manipulation — keep the portal visible while editing. */
-
-
-
-
-
-
-[data-portal-block][data-dev-selected="true"]{
-  position:relative;
-  outline:2px solid var(--tg-theme-button-color, #3390ec);
-  outline-offset:4px;
-  box-shadow:0 0 0 5px rgba(100,181,246,.10),0 0 28px rgba(100,181,246,.16);
-  z-index:35;
-  touch-action:none;
-  cursor:grab;
-}
-[data-portal-block][data-dev-selected="true"]::after{
-  content:"✣";
-  position:absolute;
-  right:8px;
-  top:8px;
-  width:28px;height:28px;
-  display:grid;place-items:center;
-  border-radius:8px;
-  background:var(--tg-theme-button-color, #3390ec);
-  color:var(--tg-theme-button-text-color, #ffffff);
-  font-size:13px;
-  box-shadow:0 4px 14px rgba(0,0,0,.28);
-  pointer-events:none;
-}
-[data-portal-block][data-dev-selected="true"]:active{cursor:grabbing}
-
-
-
-
 
 
 /* GAME RPG — stable portal implementation */
@@ -2943,378 +2874,6 @@ button,[role="button"]{
   touch-action:manipulation;
 }
 
-/* ========================================================================
-   UNIFIED TOP BAR v1
-   Top navigation replaces the former bottom navigation. The bar is one
-   logical control surface: identity/utilities on row 1, portal sections on
-   row 2. Mobile keeps every primary section reachable without shrinking
-   touch targets below the 44px enhanced target guidance.
-   ======================================================================== */
-
-.portal-topbar{
-  display:block;
-  width:100%;
-  min-height:112px;
-  padding:calc(6px + var(--safe-top)) var(--portal-gutter) 7px;
-  box-sizing:border-box;
-  background:var(--tg-theme-bg-color);
-  border-bottom:1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,.12));
-  overflow:hidden;
-  z-index:20;
-}
-
-.portal-topbar .topbar-main{
-  width:100%;
-  min-width:0;
-  display:grid;
-  grid-template-columns:44px minmax(0,1fr) auto;
-  grid-template-rows:44px 48px;
-  align-items:center;
-  column-gap:10px;
-  row-gap:6px;
-}
-
-.portal-topbar .topbar-left{
-  grid-column:1;
-  grid-row:1;
-  min-width:44px;
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-}
-
-.portal-topbar .topbar-left .profile-button{
-  width:44px;
-  height:44px;
-  min-width:44px;
-  min-height:44px;
-  padding:2px;
-  border-radius:12px;
-}
-
-.portal-topbar .topbar-left .profile-button .ui-icon,
-.portal-topbar .topbar-left .profile-button .portal-illustration{
-  width:38px;
-  height:38px;
-  flex-basis:38px;
-}
-
-.portal-topbar .topbar-nav{
-  grid-column:1 / -1;
-  grid-row:2;
-  min-width:0;
-  width:100%;
-  height:48px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:5px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-x;
-  overscroll-behavior-x:contain;
-  padding:2px 0;
-  box-sizing:border-box;
-}
-.portal-topbar .topbar-nav::-webkit-scrollbar{display:none}
-
-.portal-topbar .topbar-nav-item{
-  flex:0 0 auto;
-  width:clamp(58px,10vw,92px);
-  min-width:58px;
-  min-height:44px;
-  height:44px;
-  padding:3px 7px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:1px;
-  border:1px solid transparent;
-  border-radius:12px;
-  background:transparent;
-  color:var(--tg-theme-hint-color, #707579);
-  font:inherit;
-  font-size:10px;
-  font-weight:700;
-  line-height:1;
-  letter-spacing:.02em;
-  touch-action:manipulation;
-}
-.portal-topbar .topbar-nav-item:hover{
-  background:color-mix(in srgb, var(--tg-theme-section-bg-color, var(--tg-theme-secondary-bg-color, #f1f1f1)) 88%, var(--tg-theme-text-color, #222222));
-  border-color:var(--tg-theme-section-separator-color, rgba(0,0,0,.12));
-  color:var(--tg-theme-text-color, #222222);
-}
-.portal-topbar .topbar-nav-item.active{
-  background:var(--tg-theme-button-color, #3390ec);
-  color:var(--tg-theme-button-text-color, #ffffff);
-  border-color:transparent;
-}
-.portal-topbar .topbar-nav-item .ui-icon,
-.portal-topbar .topbar-nav-item .nav-icon{
-  width:28px;
-  height:28px;
-  flex:0 0 28px;
-}
-.portal-topbar .topbar-nav-item .portal-illustration{
-  width:100%;
-  height:100%;
-  flex-basis:100%;
-}
-
-.portal-topbar .topbar-right{
-  grid-column:2 / 4;
-  grid-row:1;
-  min-width:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
-
-.portal-topbar .lang-switch{
-  width:138px;
-  min-width:138px;
-  height:40px;
-  flex:0 0 auto;
-}
-
-
-
-
-
-/* The navigation no longer consumes bottom viewport space. */
-main{
-  padding-bottom:calc(14px + var(--safe-bottom));
-}
-
-
-@media(max-width:520px){
-  .portal-topbar{
-    min-height:108px;
-    padding-left:8px;
-    padding-right:8px;
-  }
-  .portal-topbar .topbar-main{
-    grid-template-columns:44px minmax(0,1fr);
-    grid-template-rows:42px 48px;
-    column-gap:8px;
-  }
-  .portal-topbar .topbar-right{
-    grid-column:2;
-    grid-row:1;
-    justify-content:flex-end;
-    gap:5px;
-  }
-  .portal-topbar .lang-switch{
-    width:126px;
-    min-width:126px;
-    height:40px;
-  }
-
-  .portal-topbar .topbar-nav{
-    gap:3px;
-    justify-content:flex-start;
-  }
-  .portal-topbar .topbar-nav-item{
-    width:48px;
-    min-width:48px;
-    height:44px;
-    padding:3px 2px;
-  }
-  .portal-topbar .topbar-nav-item span{
-    display:none;
-  }
-  .portal-topbar .topbar-nav-item .ui-icon,
-  .portal-topbar .topbar-nav-item .nav-icon{
-    width:30px;
-    height:30px;
-    flex-basis:30px;
-  }
-}
-
-@media(max-width:390px){
-  .portal-topbar{
-    min-height:104px;
-  }
-  .portal-topbar .topbar-main{
-    grid-template-columns:44px minmax(0,1fr);
-    grid-template-rows:40px 46px;
-    gap:4px 6px;
-  }
-  .portal-topbar .topbar-right{
-    gap:4px;
-  }
-  .portal-topbar .lang-switch{
-    width:116px;
-    min-width:116px;
-    height:38px;
-  }
-  .portal-topbar .lang-switch button{
-    min-width:40px;
-    height:32px;
-    padding-inline:5px;
-  }
-
-  .portal-topbar .topbar-nav-item{
-    width:46px;
-    min-width:46px;
-  }
-  .portal-topbar .topbar-nav-item .ui-icon,
-  .portal-topbar .topbar-nav-item .nav-icon{
-    width:29px;
-    height:29px;
-    flex-basis:29px;
-  }
-}
-
-
-
-/* Unified portal top bar: one physical row at every viewport width. */
-.portal-topbar{
-  min-height:56px;
-  height:calc(56px + var(--safe-top));
-  padding:var(--safe-top) var(--portal-gutter) 0;
-  display:flex;
-  align-items:center;
-  box-sizing:border-box;
-  overflow:hidden;
-}
-.portal-topbar .topbar-main{
-  width:100%;
-  min-width:0;
-  height:56px;
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  gap:8px;
-}
-.portal-topbar .topbar-left{
-  order:1;
-  flex:0 0 44px;
-  width:44px;
-  min-width:44px;
-  height:44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.portal-topbar .topbar-right{
-  order:3;
-  flex:0 0 auto;
-  width:auto;
-  min-width:0;
-  height:44px;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-}
-.portal-topbar .topbar-nav{
-  order:2;
-  flex:1 1 auto;
-  width:auto;
-  min-width:0;
-  height:48px;
-  display:flex;
-  flex-direction:row;
-  flex-wrap:nowrap;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-x;
-  overscroll-behavior-x:contain;
-}
-.portal-topbar .topbar-nav::-webkit-scrollbar{display:none}
-.portal-topbar .lang-switch{
-  width:126px;
-  min-width:126px;
-  height:40px;
-}
-.portal-topbar .topbar-nav-item{
-  flex:0 0 clamp(48px,7vw,78px);
-  width:clamp(48px,7vw,78px);
-  min-width:48px;
-  height:44px;
-  min-height:44px;
-}
-@media(max-width:520px){
-  .portal-topbar{
-    min-height:54px;
-    height:calc(54px + var(--safe-top));
-    padding-left:8px;
-    padding-right:8px;
-  }
-  .portal-topbar .topbar-main{height:54px;gap:6px}
-  .portal-topbar .topbar-left{
-    flex-basis:44px;
-    width:44px;
-    min-width:44px;
-  }
-  .portal-topbar .topbar-right{
-    height:42px;
-  }
-  .portal-topbar .lang-switch{
-    width:116px;
-    min-width:116px;
-    height:38px;
-  }
-  .portal-topbar .topbar-nav{
-    justify-content:flex-start;
-    gap:3px;
-    height:46px;
-  }
-  .portal-topbar .topbar-nav-item{
-    flex:0 0 46px;
-    width:46px;
-    min-width:46px;
-    height:44px;
-    padding:3px 2px;
-  }
-  .portal-topbar .topbar-nav-item span{display:none}
-  .portal-topbar .topbar-nav-item .ui-icon,
-  .portal-topbar .topbar-nav-item .nav-icon{
-    width:30px;
-    height:30px;
-    flex-basis:30px;
-  }
-}
-@media(max-width:390px){
-  .portal-topbar{
-    min-height:52px;
-    height:calc(52px + var(--safe-top));
-  }
-  .portal-topbar .topbar-main{height:52px;gap:4px}
-  .portal-topbar .topbar-left,
-  .portal-topbar .topbar-left .profile-button{
-    width:42px;
-    min-width:42px;
-    height:42px;
-  }
-  .portal-topbar .lang-switch{
-    width:108px;
-    min-width:108px;
-    height:36px;
-  }
-  .portal-topbar .lang-switch button{
-    min-width:36px;
-    height:30px;
-    padding-inline:3px;
-  }
-  .portal-topbar .topbar-nav-item{
-    flex-basis:44px;
-    width:44px;
-    min-width:44px;
-  }
-}
-
-
 /* FINAL TELEGRAM THEME + RESPONSIVE AUDIT */
 html,body,#app,.app,.app-shell{background:var(--tg-theme-bg-color,#fff);color:var(--tg-theme-text-color,#222)}
 .game-rpg{--game-accent:var(--tg-theme-button-color,#3390ec);--game-glow:transparent;background:var(--tg-theme-secondary-bg-color,var(--tg-theme-bg-color,#fff));color:var(--tg-theme-text-color,#222);border-color:var(--tg-theme-section-separator-color,rgba(0,0,0,.12));box-shadow:none}
@@ -3387,3 +2946,274 @@ main::-webkit-scrollbar{display:none}
   .home-live-row small{display:none}
 }
 @media(min-width:700px){main{padding-left:16px;padding-right:16px}.home-portal{gap:10px}.home-card{padding:14px!important}}
+
+/* ================================================================
+   AUTHORITATIVE MOBILE UI SYSTEM
+   One responsive layer for HOME. No legacy topbar/dev/layout overrides.
+   ================================================================ */
+:root{
+  --freezzz-space-1:4px;
+  --freezzz-space-2:8px;
+  --freezzz-space-3:12px;
+  --freezzz-space-4:16px;
+  --freezzz-radius:14px;
+  --freezzz-control:44px;
+}
+.home-portal{
+  width:100%;
+  max-width:680px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
+}
+.home-hero,.home-card{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+.home-hero{
+  padding:14px;
+  margin:0!important;
+  border-radius:var(--freezzz-radius);
+  background:var(--tg-theme-section-bg-color,var(--tg-theme-secondary-bg-color,#f1f1f1));
+  border:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.12));
+  box-shadow:none;
+}
+.home-hero-top{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.home-hero-brand{min-width:0;display:flex;align-items:center;gap:8px}
+.home-hero-kicker,.home-hero-clock{
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:12px;
+  line-height:1.2;
+}
+.home-hero-clock{font-variant-numeric:tabular-nums}
+.home-hero h1{
+  margin:6px 0 3px;
+  font-size:clamp(25px,7vw,30px);
+  line-height:1.1;
+}
+.home-hero p{
+  margin:0;
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:14px;
+  line-height:1.35;
+}
+.home-profile-button{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  flex:0 0 40px;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center;
+  background:transparent!important;
+  border:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.12))!important;
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec))!important;
+}
+.home-profile-button .profile-icon{width:25px;height:25px}
+.home-language-switch{
+  display:flex;
+  width:max-content;
+  margin-top:10px;
+  padding:2px;
+  gap:2px;
+  border-radius:9px;
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+  border:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.12));
+}
+.home-language-switch button{
+  min-width:42px;
+  min-height:32px;
+  padding:0 8px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:var(--tg-theme-hint-color,#707579);
+  font:inherit;
+  font-size:12px;
+  font-weight:700;
+}
+.home-language-switch button.active{
+  background:var(--tg-theme-button-color,#3390ec);
+  color:var(--tg-theme-button-text-color,#fff);
+}
+
+.home-card{
+  display:block;
+  min-height:0!important;
+  margin:0!important;
+  padding:12px!important;
+  border-radius:var(--freezzz-radius)!important;
+  border:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.12))!important;
+  background:var(--tg-theme-section-bg-color,var(--tg-theme-secondary-bg-color,#f1f1f1))!important;
+  color:var(--tg-theme-text-color,#222)!important;
+  box-shadow:none!important;
+  text-align:left;
+  overflow:hidden;
+}
+.home-card:active{transform:none!important}
+.home-card-head{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0;
+}
+.home-card-head strong{
+  margin:0!important;
+  min-width:0;
+  color:var(--tg-theme-text-color,#222);
+  font-size:16px!important;
+  font-weight:700;
+  line-height:1.2;
+}
+.home-card-icon{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  min-height:28px!important;
+  flex:0 0 28px;
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec));
+}
+.home-card-icon .ui-icon{width:24px!important;height:24px!important}
+
+/* HOME previews are information rows, never headings. */
+.home-live-preview{
+  display:grid!important;
+  gap:0!important;
+  padding:4px 0 0!important;
+}
+.home-live-row{
+  min-height:48px;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  padding:5px 0;
+  border-top:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.08));
+}
+.home-live-row:first-child{border-top:0}
+.home-live-row i{
+  width:40px!important;
+  height:40px!important;
+  display:grid!important;
+  place-items:center;
+  overflow:hidden;
+  border-radius:50%;
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+}
+.home-live-row .home-stream-avatar{
+  width:40px!important;
+  height:40px!important;
+  object-fit:cover;
+  border-radius:50%;
+}
+.home-live-row b{
+  min-width:0;
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--tg-theme-text-color,#222);
+  font-size:14px!important;
+  font-weight:700;
+  line-height:1.2;
+}
+.home-live-row small{
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:11px;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.home-chat-preview,.home-game-preview,.home-radio-preview,.home-library-preview{
+  min-height:28px;
+  display:flex!important;
+  align-items:baseline;
+  gap:8px;
+  margin-top:4px!important;
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:13px!important;
+  line-height:1.25;
+  overflow:hidden;
+}
+.home-chat-preview b,.home-game-preview b,.home-radio-preview b,.home-library-preview b{
+  color:var(--tg-theme-text-color,#222);
+  font-size:16px!important;
+  font-weight:700;
+  line-height:1.2;
+}
+.home-chat-preview span,.home-game-preview span,.home-radio-preview span,.home-library-preview span,
+.home-game-preview small,.home-radio-preview small,.home-library-preview small{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:13px!important;
+}
+
+/* Section shell: same rhythm everywhere outside HOME. */
+.portal-layout{width:100%;max-width:680px;margin:0 auto;min-width:0}
+.section-head{
+  min-height:44px;
+  margin:0 0 8px;
+  padding:0 2px;
+}
+.section-head h1,.section-head h2{font-size:20px;line-height:1.2}
+.section-head p{font-size:13px;line-height:1.3}
+.tg-button{
+  min-width:44px;
+  min-height:44px;
+  border-radius:10px;
+  padding:0 12px;
+  box-shadow:none!important;
+}
+.stream{
+  grid-template-columns:44px minmax(0,1fr) auto;
+  gap:10px;
+  padding:8px;
+  border-radius:12px;
+}
+.avatar,.stream-avatar-image{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px;
+  border-radius:50%;
+}
+.stream b{font-size:14px}
+.stream small{font-size:12px}
+.stream-actions{gap:6px}
+.stream-actions .tg-button{min-width:44px}
+
+@media(max-width:380px){
+  main{
+    padding-left:6px!important;
+    padding-right:6px!important;
+  }
+  .home-hero{padding:12px}
+  .home-hero h1{font-size:25px}
+  .home-card{padding:10px!important}
+  .home-card-head strong{font-size:15px!important}
+  .home-live-row{
+    grid-template-columns:38px minmax(0,1fr) auto;
+    gap:8px;
+  }
+  .home-live-row i,.home-live-row .home-stream-avatar{
+    width:38px!important;
+    height:38px!important;
+  }
+  .home-live-row small{display:none}
+}
+@media(min-width:700px){
+  main{padding-left:16px!important;padding-right:16px!important}
+  .home-portal{gap:10px}
+  .home-card{padding:14px!important}
+}
