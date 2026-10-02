@@ -629,7 +629,7 @@ function liveEmbedUrl(stream:readonly string[]):string{
     return "https://player.twitch.tv/?"+new URLSearchParams({channel,parent,autoplay:"false",muted:"false"}).toString();
   }
   if(stream[2]==="YouTube"){
-    const channelIdMatch=url.match(/youtube\.com\\/channel\\/([^/?#]+)/i);
+    const channelIdMatch=url.match(/youtube\.com\/channel\/([^/?#]+)/i);
     if(channelIdMatch?.[1]){
       return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:channelIdMatch[1],autoplay:"0",rel:"0",playsinline:"1"}).toString();
     }
