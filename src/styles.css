@@ -2997,3 +2997,73 @@ main::-webkit-scrollbar{display:none}
 }
 
 
+
+/* ================================================================
+   HOME CARD VISUAL LAYERS — AUTHORITATIVE
+   Video background -> soft dimming -> content -> inner edge shadow.
+   All layers are clipped to the individual HOME card.
+   ================================================================ */
+.home-portal > .home-card{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  contain:paint!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+.home-portal > .home-card .home-card-background-video{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:inherit!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  pointer-events:none!important;
+}
+
+/* Soft readable dimming. The frame extends 1px beyond the video but is clipped by the card. */
+.home-portal > .home-card .home-card-background-overlay{
+  position:absolute!important;
+  inset:-1px!important;
+  z-index:1!important;
+  display:block!important;
+  background:rgba(0,0,0,.28)!important;
+  border:0!important;
+  border-radius:inherit!important;
+  pointer-events:none!important;
+}
+
+.home-portal > .home-card .home-card-content{
+  position:relative!important;
+  z-index:2!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+
+/* Soft black inner edge. Kept above content so the shadow remains visible, without intercepting taps. */
+.home-portal > .home-card::after{
+  content:"";
+  position:absolute!important;
+  inset:0!important;
+  z-index:3!important;
+  border-radius:inherit!important;
+  box-shadow:inset 0 0 32px rgba(0,0,0,.12)!important;
+  pointer-events:none!important;
+}
