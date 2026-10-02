@@ -228,7 +228,7 @@ form input{
 /* Approved FREEzzz top bar: geometric icons, compact Telegram proportions. */
 .topbar{
   min-height:58px;
-  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  grid-template-columns:auto minmax(0,1fr) auto;
 }
 .topbar-left{
   min-width:0;
@@ -236,6 +236,14 @@ form input{
   align-items:center;
   gap:8px;
   justify-self:start;
+}
+.topbar-right{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  justify-self:end;
 }
 .profile-button{
   width:38px;height:38px;padding:0;border:0;border-radius:50%;
@@ -262,7 +270,6 @@ form input{
 .lang-switch{
   position:static;
   transform:none;
-  justify-self:center;
   z-index:2;
   padding:4px;
   min-width:174px;
