@@ -62,6 +62,7 @@ let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_
 let dev=interfaceMode==="editor";
 let profileOpen=false;
 let liveSelected="";
+let livePopupOpen=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 let homeRefreshTimer:number|null=null;
 let score=0;
@@ -350,19 +351,18 @@ function render(){
     body=`
       <div class="content portal-layout" data-portal-layout="live">
         <div class="section-head portal-block" data-portal-block="header">
-          <div><h2>LIVE</h2><p>Стримеры и трансляции</p></div>
-          <button class="tg-button secondary" data-view="home">⌂</button>
+          <div><h2>LIVE</h2><p>Стримеры и трансляции · встроенное окно</p></div>
+          <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
             return `<article class="stream">
-              <div class="avatar">${s[0]}</div>
-              <div><b>${s[1]}</b><small>● OFFLINE · ${s[2]}</small></div>
-              <button class="tg-button secondary" data-live-select="${escapeHtml(s[1])}" data-url="${s[3]}">Открыть</button>
+              <div class="avatar">${icon(s[0],"stream-icon")}</div>
+              <div><b>${escapeHtml(s[1])}</b><small><span class="live-status-dot"></span> ${escapeHtml(s[2])}</small></div>
+              <button class="tg-button secondary" data-live-open="${escapeHtml(s[1])}" type="button">Смотреть</button>
             </article>`;
           }).join("")}
         </div>
-        <div class="player portal-block" data-portal-block="player"><p>${liveSelected?`Выбран: <b>${escapeHtml(liveSelected)}</b><br>Канал открыт через Telegram WebApp.`:"Окно трансляции<br>Выбери канал выше."}</p></div>
       </div>`;
   }
 
@@ -497,6 +497,7 @@ function render(){
         </button>`:""}
       </nav>
       <main>${body}</main>
+      ${livePopupMarkup()}
       ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
       ${dev?renderEditor():""}
       ${false?`<aside class="dev">
@@ -620,6 +621,49 @@ function applySavedPortalLayout(){
   applyLayoutToRoot(layout,screen);
 }
 
+function liveEmbedUrl(stream:readonly string[]):string{
+  const url=stream[3];
+  if(stream[2]==="Twitch"){
+    const channel=url.split("/").filter(Boolean).pop()||"";
+    const parent=window.location.hostname||"freezzgames.github.io";
+    return "https://player.twitch.tv/?"+new URLSearchParams({channel,parent,autoplay:"false",muted:"false"}).toString();
+  }
+  if(stream[2]==="YouTube"){
+    const channelIdMatch=url.match(/youtube\.com\\/channel\\/([^/?#]+)/i);
+    if(channelIdMatch?.[1]){
+      return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:channelIdMatch[1],autoplay:"0",rel:"0",playsinline:"1"}).toString();
+    }
+  }
+  return "";
+}
+function openLivePopup(name:string):void{
+  liveSelected=name;
+  livePopupOpen=true;
+  render();
+}
+function closeLivePopup():void{
+  livePopupOpen=false;
+  render();
+}
+function livePopupMarkup():string{
+  if(!livePopupOpen||!liveSelected)return "";
+  const stream=streams.find(s=>s[1]===liveSelected);
+  if(!stream)return "";
+  const embed=liveEmbedUrl(stream);
+  return `<div class="live-popup-overlay" data-live-popup-overlay>
+    <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
+      <header class="live-popup-header">
+        <div><span class="live-popup-kicker">LIVE</span><strong>${escapeHtml(stream[1])}</strong><small>${escapeHtml(stream[2])}</small></div>
+        <button class="live-popup-close" data-live-popup-close type="button" aria-label="Закрыть">×</button>
+      </header>
+      <div class="live-popup-video">
+        ${embed
+          ? `<iframe src="${escapeHtml(embed)}" title="${escapeHtml(stream[1])}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
+          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер пока недоступен</strong><span>Этот канал не предоставляет универсальный embed без идентификатора канала.</span><button class="tg-button" data-live-external type="button">Открыть канал</button></div>`}
+      </div>
+    </section>
+  </div>`;
+}
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
@@ -682,8 +726,20 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-profile-card]").forEach(function(x){
     x.onclick=function(e){e.stopPropagation();};
   });
-  document.querySelectorAll<HTMLElement>("[data-live-select]").forEach(function(x){
-    x.onclick=function(){liveSelected=x.dataset.liveSelect||"";render();};
+  document.querySelectorAll<HTMLElement>("[data-live-open]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"");};
+  });
+  document.querySelectorAll<HTMLElement>("[data-live-popup-close]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();closeLivePopup();};
+  });
+  document.querySelector("[data-live-popup-overlay]")?.addEventListener("click",function(e){
+    if(e.target===e.currentTarget)closeLivePopup();
+  });
+  document.querySelector("[data-live-external]")?.addEventListener("click",function(){
+    const stream=streams.find(s=>s[1]===liveSelected);
+    const url=stream?.[3];if(!url)return;
+    const tg=getTelegramWebApp();
+    if(tg?.openLink)tg.openLink(url,{try_instant_view:false});else window.open(url,"_blank","noopener,noreferrer");
   });
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
