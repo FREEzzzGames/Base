@@ -302,12 +302,29 @@ function syncEditorRuntime(){
 }
 
 
+const LUCIDE_ICONS:Record<string,string>={
+  user:'<circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>',
+  video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>',
+  chat:'<path d="M21 11.5a8 8 0 0 1-8.5 8A9.4 9.4 0 0 1 8 18.3L3 20l1.7-4A8.6 8.6 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/>',
+  game:'<path d="M7 8h10a5 5 0 0 1 4.5 7.2l-1.1 2.2a2.5 2.5 0 0 1-4.2.4L14.8 16H9.2l-1.4 1.8a2.5 2.5 0 0 1-4.2-.4l-1.1-2.2A5 5 0 0 1 7 8Z"/><path d="M7 11v4M5 13h4"/><path d="M16 12h.01M18 14h.01"/>',
+  radio:'<rect x="4" y="7" width="16" height="13" rx="2"/><path d="m7 7 10-4"/><circle cx="9" cy="14" r="2"/><path d="M13 12h4M13 16h3"/>',
+  library:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21Z"/><path d="M4 5.5v15"/><path d="M8 7h8M8 11h8"/>',
+  home:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>',
+  settings:'<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="m19.4 15 .1.1a2 2 0 0 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.2a2 2 0 0 1-4 0v-.2a2 2 0 0 0-3.4-1.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A2 2 0 0 0 3.7 12a2 2 0 0 0-1.7-2 2 2 0 0 1 0-4h.2A2 2 0 0 0 3.6 2.6l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A2 2 0 0 0 10 1.2V1a2 2 0 0 1 4 0v.2a2 2 0 0 0 3.4 1.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A2 2 0 0 0 21.3 9h.2a2 2 0 0 1 0 4h-.2a2 2 0 0 0-1.9 2Z"/>',
+  rocket:'<path d="M14 4c3-1 6-1 7-1 0 1 0 4-1 7l-7 7-4-1-1-4 7-7Z"/><path d="m8 16-4 4M5 12l-3 1 4 4M12 19l1 3 4-4"/><circle cx="16.5" cy="7.5" r="1.5"/>',
+  zap:'<path d="m13 2-9 12h7l-1 8 9-12h-7z"/>'
+};
+function icon(name:string,className=""){
+  const path=LUCIDE_ICONS[name]||LUCIDE_ICONS.video;
+  return `<svg class="ui-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+}
+
 const streams=[
-  ["🦆","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
-  ["🎮","Dendi","YouTube","https://www.youtube.com/@Dendi"],
-  ["⚡","Papaplatte","YouTube","https://www.youtube.com/@papaplatte"],
-  ["🕹️","Marmok","YouTube","https://www.youtube.com/@Marmok"],
-  ["🚀","Trymacs","Twitch","https://www.twitch.tv/trymacs"]
+  ["video","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
+  ["game","Dendi","YouTube","https://www.youtube.com/@Dendi"],
+  ["zap","Papaplatte","YouTube","https://www.youtube.com/@papaplatte"],
+  ["game","Marmok","YouTube","https://www.youtube.com/@Marmok"],
+  ["rocket","Trymacs","Twitch","https://www.twitch.tv/trymacs"]
 ];
 
 function render(){
@@ -321,11 +338,11 @@ function render(){
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-        ${homeCard("live","📺",editorLabel("home","live","LIVE — Стримеры и каналы"),'<div class="home-live-preview" data-home-live-content></div>')}
-        ${homeCard("chat","💬",editorLabel("home","chat","CHAT — Общение"),'<div class="home-chat-preview" data-home-chat-content></div>')}
-        ${homeCard("game","🛸",editorLabel("home","game","GAME — Игровая зона"),'<div class="home-game-preview" data-home-game-content></div>')}
-        ${homeCard("radio","📻",editorLabel("home","radio","RADIO — Музыка"),'<div class="home-radio-preview" data-home-radio-content></div>')}
-        ${homeCard("library","🗂️",editorLabel("home","library","LIBRARY — Библиотека"),'<div class="home-library-preview" data-home-library-content></div>')}
+        ${homeCard("live",icon("video","home-card-icon"),editorLabel("home","live","LIVE — Стримеры и каналы"),'<div class="home-live-preview" data-home-live-content></div>')}
+        ${homeCard("chat",icon("chat","home-card-icon"),editorLabel("home","chat","CHAT — Общение"),'<div class="home-chat-preview" data-home-chat-content></div>')}
+        ${homeCard("game",icon("game","home-card-icon"),editorLabel("home","game","GAME — Игровая зона"),'<div class="home-game-preview" data-home-game-content></div>')}
+        ${homeCard("radio",icon("radio","home-card-icon"),editorLabel("home","radio","RADIO — Музыка"),'<div class="home-radio-preview" data-home-radio-content></div>')}
+        ${homeCard("library",icon("library","home-card-icon"),editorLabel("home","library","LIBRARY — Библиотека"),'<div class="home-library-preview" data-home-library-content></div>')}
       </div>`;
   }
 
@@ -451,7 +468,7 @@ function render(){
     <div class="app-shell ${interfaceMode==="editor"?"editor-mode":""}">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="profile-button" data-profile-toggle type="button" aria-label="Profile"><span class="profile-glyph"></span></button>
+          <button class="profile-button" data-profile-toggle type="button" aria-label="Profile">${icon("user","profile-icon")}</button>
           <div class="brand-avatar" aria-hidden="true">F</div>
           <div class="brand-title">
             <strong>FREEzzz</strong>
@@ -467,16 +484,16 @@ function render(){
       </header>
       <nav class="bottom-nav" aria-label="Portal navigation">
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
-          <span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span>CHAT</span>
+          ${icon("chat","nav-icon")}<span>CHAT</span>
         </button>
         <button class="bottom-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
-          <span class="bottom-radio-icon" aria-hidden="true"></span><span>RADIO</span>
+          ${icon("radio","nav-icon")}<span>RADIO</span>
         </button>
         <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
-          <span class="nav-icon home-icon"></span><span>HOME</span>
+          ${icon("home","nav-icon")}<span>HOME</span>
         </button>
         ${constructorEnabled?`<button class="bottom-nav-item ${interfaceMode==="editor"?"active":""}" data-interface-toggle type="button" aria-label="${interfaceMode==="editor"?"Показать пользовательский интерфейс":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"USER UI":"DEV UI"}">
-          <span class="nav-icon settings-icon"></span><span>DEV</span>
+          ${icon("settings","nav-icon")}<span>DEV</span>
         </button>`:""}
       </nav>
       <main>${body}</main>
@@ -503,7 +520,7 @@ function render(){
 
 function homeCard(v:View,e:string,t:string,content:string){
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
-    <div class="home-card-head"><b class="home-card-icon">${e}</b><strong>${t}</strong></div>
+    <div class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></div>
     ${content}
   </button>`;
 }
@@ -513,7 +530,7 @@ function refreshHomeContent(){
   if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const live=document.querySelector<HTMLElement>("[data-home-live-content]");
   if(live){
-    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${escapeHtml(s[0])}</i><b>${escapeHtml(s[1])}</b><small>● OFFLINE · ${escapeHtml(s[2])}</small></span>`).join("");
+    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s[0],"home-stream-icon")}</i><b>${escapeHtml(s[1])}</b><small>● OFFLINE · ${escapeHtml(s[2])}</small></span>`).join("");
   }
   const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
   if(chat){
