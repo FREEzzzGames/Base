@@ -89,7 +89,65 @@ function resetDeveloperLayout(){
   render();
 }
 function portalBlockInfos(){return getLayoutBlockInfos(view,layoutOverrides);}
-function applyDeveloperLayout(){applyLayout(view,developerMode,layoutOverrides);}
+function applyDeveloperLayout(){
+  applyLayout(view,developerMode,layoutOverrides);
+  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>{
+    el.dataset.devSelected=developerMode&&el.dataset.portalBlock===developerSelectedBlock.split(":").pop()?"true":"false";
+  });
+}
+let developerDrag:{element:HTMLElement;startX:number;startY:number;originX:number;originY:number;moved:boolean}|null=null;
+function bindDeveloperCanvas(){
+  if(!developerMode)return;
+  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>{
+    const block=el.dataset.portalBlock||"";
+    const key=view+":"+block;
+    el.addEventListener("click",e=>{
+      const target=e.target as HTMLElement;
+      const nested=target.closest("button,input,textarea,select,a");
+      if(nested&&nested!==el)return;
+      e.preventDefault();
+      e.stopPropagation();
+      developerSelectedBlock=key;
+      render();
+    },true);
+    el.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse"&&e.button!==0)return;
+      const target=e.target as HTMLElement;
+      const nested=target.closest("input,textarea,select,a,[data-dev-control],[data-dev-nudge],[data-dev-size]");
+      if(nested)return;
+      developerSelectedBlock=key;
+      const current=currentLayoutOverride(key);
+      developerDrag={element:el,startX:e.clientX,startY:e.clientY,originX:current.x,originY:current.y,moved:false};
+      el.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+      e.stopPropagation();
+      applyDeveloperLayout();
+    },{passive:false});
+    el.addEventListener("pointermove",e=>{
+      if(!developerDrag||developerDrag.element!==el)return;
+      const dx=e.clientX-developerDrag.startX;
+      const dy=e.clientY-developerDrag.startY;
+      if(Math.abs(dx)+Math.abs(dy)<3)return;
+      developerDrag.moved=true;
+      const nx=Math.max(-240,Math.min(240,developerDrag.originX+dx));
+      const ny=Math.max(-400,Math.min(400,developerDrag.originY+dy));
+      updateDeveloperControl("x",Math.round(nx));
+      updateDeveloperControl("y",Math.round(ny));
+      e.preventDefault();
+    },{passive:false});
+    const finish=(e:PointerEvent)=>{
+      if(!developerDrag||developerDrag.element!==el)return;
+      if(developerDrag.moved){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      developerDrag=null;
+    };
+    el.addEventListener("pointerup",finish,{passive:false});
+    el.addEventListener("pointercancel",finish,{passive:false});
+  });
+  applyDeveloperLayout();
+}
 function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
   liveSelected=name;
   livePopupSource=source;
@@ -433,6 +491,7 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-developer-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
   });
+  bindDeveloperCanvas();
   document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
   });
