@@ -78,6 +78,7 @@ type EditorBlock={id:string;label:string;span:1|2;order:number;x?:number;y?:numb
 const TELEGRAM_CANVAS={width:360,height:640};
 type EditorLayout=Record<View,EditorBlock[]>;
 const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
+const EDITOR_GEOMETRY_VERSION_KEY="freezzz:editor-geometry-version";
 const EDITOR_DEFAULTS:EditorLayout={
   home:[
     {id:"hero",label:"Главный экран / приветствие",span:2,order:0},
@@ -122,10 +123,24 @@ function loadEditorLayout():EditorLayout{
     if(!raw)return cloneEditorDefaults();
     const saved=JSON.parse(raw) as Partial<EditorLayout>;
     const base=cloneEditorDefaults();
+    const geometryVersion=localStorage.getItem(EDITOR_GEOMETRY_VERSION_KEY);
+    const migrateGeometry=geometryVersion!=="2";
     for(const key of Object.keys(base) as View[]){
       if(Array.isArray(saved[key])&&saved[key]!.length){
-        base[key]=saved[key]!.map((b,i)=>({id:String(b.id),label:String(b.label||b.id),span:b.span===2?2:1,order:i,x:Number.isFinite(Number(b.x))?Math.max(0,Math.min(100,Number(b.x))):undefined,y:Number.isFinite(Number(b.y))?Math.max(0,Math.min(100,Number(b.y))):undefined,w:Number.isFinite(Number(b.w))?Math.max(10,Math.min(100,Number(b.w))):undefined,h:Number.isFinite(Number(b.h))?Math.max(4,Math.min(100,Number(b.h))):undefined}));
+        base[key]=saved[key]!.map((b,i)=>({
+          id:String(b.id),
+          label:String(b.label||b.id),
+          span:b.span===2?2:1,
+          order:i,
+          x:migrateGeometry?undefined:(Number.isFinite(Number(b.x))?Math.max(0,Math.min(100,Number(b.x))):undefined),
+          y:migrateGeometry?undefined:(Number.isFinite(Number(b.y))?Math.max(0,Math.min(100,Number(b.y))):undefined),
+          w:migrateGeometry?undefined:(Number.isFinite(Number(b.w))?Math.max(10,Math.min(100,Number(b.w))):undefined),
+          h:migrateGeometry?undefined:(Number.isFinite(Number(b.h))?Math.max(4,Math.min(100,Number(b.h))):undefined)
+        }));
       }
+    }
+    if(migrateGeometry){
+      try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");}catch{}
     }
     return base;
   }catch{return cloneEditorDefaults();}
@@ -665,7 +680,7 @@ function bind(){
     render();
   });
   document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
-    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));editorMessage="Схема сохранена локально.";}
+    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");editorMessage="Схема сохранена локально.";}
     catch{editorMessage="Не удалось сохранить схему."}
     render();
   });
@@ -673,7 +688,7 @@ function bind(){
     const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов.";
   });
   document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{
-    editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];editorMessage="Экран сброшен.";render();
+    editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");}catch{};editorMessage="Экран сброшен.";render();
   });
   document.querySelector("[data-constructor-remove]")?.addEventListener("click",function(){
     constructorEnabled=false;
