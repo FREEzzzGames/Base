@@ -610,10 +610,10 @@ function bind(){
     handle.addEventListener("pointerdown",function(e){
       e.preventDefault();e.stopPropagation();
       const id=handle.dataset.editorResize!, block=editorLayout[editorScreen].find(b=>b.id===id);
-      const sheet=document.querySelector<HTMLElement>(".editor-sheet"), el=handle.closest<HTMLElement>(".editor-block");
-      if(!block||!sheet||!el)return;
-      const rect=sheet.getBoundingClientRect(), startX=e.clientX,startY=e.clientY;
-      const startW=block.w??(block.span===2?100:50), startH=block.h??Math.max(8,(el.getBoundingClientRect().height/rect.height)*100);
+      const canvas=document.querySelector<HTMLElement>(".editor-canvas"), el=handle.closest<HTMLElement>(".editor-block");
+      if(!block||!canvas||!el)return;
+      const rect=canvas.getBoundingClientRect(), startX=e.clientX,startY=e.clientY;
+      const startW=block.w??(block.span===2?100:50), startH=block.h??Math.max(6,(el.getBoundingClientRect().height/rect.height)*100);
       const move=(ev:PointerEvent)=>{
         block.w=Math.max(10,Math.min(100-(block.x??0),startW+((ev.clientX-startX)/rect.width)*100));
         block.h=Math.max(6,Math.min(100-(block.y??0),startH+((ev.clientY-startY)/rect.height)*100));
@@ -627,9 +627,9 @@ function bind(){
     x.addEventListener("pointerdown",function(e){
       if((e.target as HTMLElement).closest("input,button,[data-editor-resize]"))return;
       e.preventDefault();
-      const sheet=document.querySelector<HTMLElement>(".editor-sheet"),id=x.dataset.editorDrag!,block=editorLayout[editorScreen].find(b=>b.id===id);
-      if(!sheet||!block)return;
-      const rect=sheet.getBoundingClientRect(),startX=e.clientX,startY=e.clientY;
+      const canvas=document.querySelector<HTMLElement>(".editor-canvas"),id=x.dataset.editorDrag!,block=editorLayout[editorScreen].find(b=>b.id===id);
+      if(!canvas||!block)return;
+      const rect=canvas.getBoundingClientRect(),startX=e.clientX,startY=e.clientY;
       const ox=block.x??Math.max(0,Math.min(100,(x.offsetLeft/rect.width)*100));
       const oy=block.y??Math.max(0,Math.min(100,(x.offsetTop/rect.height)*100));
       const move=(ev:PointerEvent)=>{
