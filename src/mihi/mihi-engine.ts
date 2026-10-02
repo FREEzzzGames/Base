@@ -98,8 +98,16 @@ export class MihiEngine{
   request(actionId:string){
     if(!MIHI_INTERACTIONS.some(x=>x.semanticId===actionId))return false;
     if(this.state.recentInteractionIds.includes(actionId))return false;
-    this.events.emit("mihi:request-action",{actionId,source:"mihi"});
+    this.touch(actionId,"mihi");
     return true;
+  }
+
+  requestContextAction():boolean{
+    const candidate=MIHI_INTERACTIONS.find(x=>
+      !this.state.recentInteractionIds.includes(x.semanticId)&&
+      (x.context===this.state.context||x.context==="system")
+    )??MIHI_INTERACTIONS.find(x=>!this.state.recentInteractionIds.includes(x.semanticId));
+    return candidate?this.request(candidate.semanticId):false;
   }
 
   dispose(){this.unsubscribe();}
