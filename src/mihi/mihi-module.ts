@@ -42,6 +42,7 @@ export class MihiModule{
     root.querySelector("[data-mihi-toggle]")?.addEventListener("click",()=>this.toggle());
     root.querySelector("[data-mihi-close]")?.addEventListener("click",()=>this.close());
     root.querySelector("[data-mihi-help]")?.addEventListener("click",()=>{
+      this.engine.requestContextAction();
       const text=this.engine.nextReply();
       const message=root.querySelector<HTMLElement>("[data-mihi-message]");
       if(message)message.textContent=text;
