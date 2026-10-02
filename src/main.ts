@@ -220,7 +220,7 @@ function render(){
         <div class="section-head portal-block game-section-head" data-portal-block="header">
           <div><h2>GAME</h2><p>${T("gameSub")}</p></div>
         </div>
-        <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGame(gameState,gameTab,lang as GameLanguage)}</div>
+        <div class="portal-block game-story-block" data-portal-block="game">${renderGame(gameState,gameTab,lang as GameLanguage)}</div>
       </div>`;
   }
   if(view==="radio"){
