@@ -846,7 +846,6 @@ main{
   .live-popup-header{min-height:52px}
 }
 
-/* CHAT WINDOW BACKGROUND */
 .chat-portal{
   position:relative;
   isolation:isolate;
@@ -875,7 +874,6 @@ main{
   z-index:2;
 }
 
-/* RADIO WINDOW BACKGROUND */
 .radio-portal{
   position:relative;
   isolation:isolate;
@@ -905,7 +903,6 @@ main{
   z-index:2;
 }
 
-/* LIBRARY WINDOW BACKGROUND */
 .library-portal{
   position:relative;
   isolation:isolate;
