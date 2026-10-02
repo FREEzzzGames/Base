@@ -300,7 +300,7 @@ function renderProfileCard(){
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
     <div class="profile-section"><h3>RADIO</h3>${radioHtml}</div>
     <div class="profile-section"><h3>GAME</h3><div class="profile-row"><span>Игровое время</span><small>${formatDuration(s.game.seconds)}</small></div><div class="profile-row"><span>Запуски</span><small>${s.game.launches}</small></div></div>
-    <div class="profile-actions"><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div>
+    
   </section></div>`;
 }
 function renderDeveloperPanel(){
