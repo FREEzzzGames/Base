@@ -1,3 +1,13 @@
+export const PORTAL_ILLUSTRATIONS:Record<string,string>={
+  user:"boy",profile:"boy",video:"video",chat:"chatbot",game:"game",radio:"music",library:"archive",
+  home:"welcome-on-board",settings:"icons-drawing",rocket:"dart",zap:"electric-scooter",live:"video",
+  message:"message",search:"search",loading:"loading",calendar:"calendar",refresh:"boy-refresh",
+  error:"error",success:"good-news",waiting:"wait"
+};
+export function illustration(name:string,className=""){
+  const file=PORTAL_ILLUSTRATIONS[name]||"neutral-info";
+  return `<img class="portal-illustration ${className}" src="./assets/tabler/${file}.png" alt="" aria-hidden="true" loading="lazy">`;
+}
 export const PORTAL_GLYPHS:Record<string,string>={
   user:"○",
   video:"▣",
