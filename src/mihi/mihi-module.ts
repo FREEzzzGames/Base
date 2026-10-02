@@ -1,5 +1,6 @@
 import type {PortalEventBus} from "../core/portal-core";
 import {MihiEngine} from "./mihi-engine";
+import {MIHI_EASTER_EGGS} from "./mihi-data";
 import "./mihi.css";
 
 let singleton:MihiModule|undefined;
@@ -46,13 +47,7 @@ export class MihiModule{
   }
 
   private findEggText(id:string){
-    const map:Record<string,string>={
-      "mihi.egg.watch":"Ты тоже заметил, что портал иногда смотрит первым?",
-      "mihi.egg.404":"MIHI 404 — я потерялась.",
-      "mihi.egg.layer10":"LAYER 10 // UNKNOWN",
-      "mihi.egg.first-fragment":"Я не появилась здесь впервые."
-    };
-    return map[id]??"Что-то изменилось.";
+    return MIHI_EASTER_EGGS.find(egg=>egg.id===id)?.text??"Что-то изменилось.";
   }
 
   private renderState(visible:boolean){
