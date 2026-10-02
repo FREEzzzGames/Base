@@ -2664,11 +2664,59 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   pointer-events:none;
 }
 .home-hero-content{
-  position:relative;
-  z-index:2;
-  min-width:0;
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:11px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  text-align:left!important;
 }
-
+.home-hero-top{
+  position:absolute!important;
+  top:11px!important;
+  left:11px!important;
+  right:11px!important;
+  min-height:0!important;
+  margin:0!important;
+}
+.home-hero-brand{
+  width:100%!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+}
+.home-hero-kicker{
+  flex:0 1 auto!important;
+  text-align:left!important;
+}
+.home-hero-clock{
+  flex:0 0 auto!important;
+  margin-left:auto!important;
+  text-align:right!important;
+  font-size:clamp(18px,5vw,28px)!important;
+  line-height:1!important;
+  font-weight:700!important;
+  letter-spacing:.02em!important;
+  white-space:nowrap!important;
+}
+.home-hero h1,
+.home-hero p{
+  align-self:flex-start!important;
+  text-align:left!important;
+}
+.home-hero h1{
+  margin:4px 0 3px!important;
+}
+.home-hero p{
+  margin:0!important;
+  max-width:100%!important;
+}
 
 
 /* HOME CARD HEADER ICONS — scoped visibility only.
