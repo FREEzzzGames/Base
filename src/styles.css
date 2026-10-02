@@ -4223,3 +4223,198 @@ main{
     width:min(330px,calc(100vw - 8px))!important;
   }
 }
+
+
+/* ================================================================
+   MULTI-WINDOW / ROUTE VISUAL REPAIR — 2026-10-02
+   HOME/HUD/LIVE/CHAT/RADIO only. LIBRARY and GAME are intentionally
+   excluded from these layout rules.
+   ================================================================ */
+
+/* Full-screen LIVE owns a real scroll viewport; every creator card is
+   self-contained so provider buttons cannot leak into the next card. */
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"]{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  padding:0!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .section-head{
+  flex:0 0 auto!important;
+  min-height:48px!important;
+  margin:0 0 8px!important;
+  padding:0 2px!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .list{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 1px 1px!important;
+  scrollbar-width:none!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .list::-webkit-scrollbar{
+  display:none!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream{
+  flex:0 0 auto!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  width:100%!important;
+  overflow:hidden!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream-actions{
+  min-width:0!important;
+  flex-wrap:nowrap!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream-actions .tg-button{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+@media(max-width:699px){
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .section-head{
+    min-height:44px!important;
+    margin-bottom:7px!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream{
+    display:grid!important;
+    grid-template-columns:42px minmax(0,1fr)!important;
+    grid-template-rows:minmax(48px,auto) 44px!important;
+    grid-template-areas:
+      "avatar info"
+      "actions actions"!important;
+    gap:7px 10px!important;
+    align-items:center!important;
+    padding:9px!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream > .avatar{
+    grid-area:avatar!important;
+    width:42px!important;
+    height:42px!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream > div:nth-child(2){
+    grid-area:info!important;
+    min-width:0!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream-actions{
+    grid-area:actions!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    height:44px!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream-actions .tg-button{
+    width:100%!important;
+    height:44px!important;
+    min-height:44px!important;
+    padding:0 8px!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream b{
+    font-size:15px!important;
+    line-height:1.15!important;
+  }
+  .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] .stream small{
+    margin-top:4px!important;
+    font-size:11px!important;
+    line-height:1.1!important;
+  }
+}
+
+/* The collapse control belongs to the HUD edge, not to the content area. */
+.portal-mw-hud-toggle{
+  right:0!important;
+  width:18px!important;
+  min-width:18px!important;
+  height:44px!important;
+  min-height:44px!important;
+  border-radius:7px 0 0 7px!important;
+  box-shadow:none!important;
+  font-size:18px!important;
+}
+.portal-workspace-hud-collapsed{
+  grid-template-columns:32px minmax(0,1fr)!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar{
+  width:14px!important;
+  min-width:14px!important;
+  overflow:visible!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar .portal-toolbar-main{
+  width:56px!important;
+  transform:translateX(-42px)!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar .portal-mw-hud-toggle{
+  left:14px!important;
+  right:auto!important;
+  width:18px!important;
+  min-width:18px!important;
+  z-index:1600!important;
+}
+.portal-workspace-hud-collapsed > main{
+  grid-column:2!important;
+  min-width:0!important;
+}
+
+/* HOME gets the width released by the collapsed HUD immediately. */
+.portal-home-workspace.portal-workspace-hud-collapsed > main > .home-portal,
+.portal-home-workspace.portal-workspace-hud-collapsed > main > .portal-layout{
+  width:100%!important;
+  max-width:none!important;
+}
+
+/* Preserve the approved HOME video treatment while giving the GAME tile
+   enough contrast to read as a portal block. GAME runtime itself is untouched. */
+.home-portal > .home-game .home-card-background-video{
+  filter:brightness(1.16) contrast(.96)!important;
+}
+.home-portal > .home-game::after{
+  background:rgba(0,0,0,.08)!important;
+  box-shadow:inset 0 0 24px rgba(0,0,0,.10)!important;
+}
+
+/* HOME card content stays clipped to its own block; no preview may create
+   a second visual layer outside the card. */
+.home-portal > .home-card .home-card-content{
+  overflow:hidden!important;
+}
+.home-portal > .home-live .home-live-preview,
+.home-portal > .home-chat .home-chat-preview,
+.home-portal > .home-game .home-game-preview,
+.home-portal > .home-radio .home-radio-preview{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+
+/* Language popup remains attached to the HUD edge and never changes route
+   geometry. It may overlay content, but it cannot clip behind the workspace. */
+.portal-home-workspace > .portal-toolbar .portal-toolbar-language-menu,
+.portal-route-workspace > .portal-toolbar .portal-toolbar-language-menu{
+  z-index:2000!important;
+  max-width:calc(100vw - 64px)!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:699px){
+  .portal-workspace-hud-collapsed{
+    grid-template-columns:32px minmax(0,1fr)!important;
+  }
+  .portal-workspace-hud-collapsed > .portal-toolbar{
+    width:14px!important;
+  }
+  .portal-workspace-hud-collapsed > main{
+    padding-left:1px!important;
+  }
+}
