@@ -175,7 +175,7 @@ function renderProfileCard(){
   const liveHtml=liveItems.length?liveItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} виз.</small></div>`).join(""):`<p class="profile-empty">Пока нет просмотров.</p>`;
   const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
   return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
-    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="${T("close")}">${icon("error","profile-close-icon")}</button>
+    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="${T("close")}">${icon("close","profile-close-icon")}</button>
     <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
     <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
@@ -205,9 +205,8 @@ function renderPortalToolbar(){
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <div class="portal-toolbar-main">
-      <button class="portal-toolbar-home ${view==="home"?"active":""}" data-view="home" type="button" aria-label="HOME" title="HOME">${icon("home","portal-toolbar-icon")}</button>
       <div class="portal-toolbar-nav" role="tablist">
-        ${items.slice(1).map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span>${label}</span></button>`).join("")}
+        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
       </div>
       <div class="portal-toolbar-actions">
         <div class="portal-toolbar-language" role="group" aria-label="${T("language")}">
@@ -251,7 +250,6 @@ function render(){
       <div class="content portal-layout" data-portal-layout="live">
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>LIVE</h2><p>${T("liveSub")}</p></div>
-          <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
@@ -272,7 +270,6 @@ function render(){
       <div class="content portal-layout" data-portal-layout="chat">
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
-          <button class="tg-button secondary" data-view="home" type="button" aria-label="HOME">${icon("home","button-icon")}</button>
         </div>
         <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
@@ -287,7 +284,6 @@ function render(){
       <div class="content portal-layout game-portal" data-portal-layout="game">
         <div class="section-head portal-block game-section-head" data-portal-block="header">
           <div><h2>GAME</h2><p>${T("gameSub")}</p></div>
-          <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab,lang as GameLanguage)}</div>
       </div>`;
