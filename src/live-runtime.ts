@@ -33,7 +33,7 @@ export function renderLivePopup(options:{
   return `<div class="live-popup-overlay" data-live-popup-overlay>
     <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
       <video class="live-popup-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-        <source src="https://cdn.pixabay.com/video/2024/02/12/200281-912370077_large.mp4" type="video/mp4">
+        <source src="https://cdn.pixabay.com/video/2022/02/03/106557-673518279_large.mp4" type="video/mp4">
       </video>
       <div class="live-popup-background-overlay" aria-hidden="true"></div>
       <header class="live-popup-header">
