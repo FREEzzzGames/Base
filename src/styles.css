@@ -3439,3 +3439,62 @@ main{
   gap:1px!important;
   grid-template-rows:repeat(7,minmax(0,1fr))!important;
 }
+
+/* HOME / HUD — FINAL PROPORTION + UNIFORM 1PX RHYTHM */
+.home-portal{
+  gap:1px!important;
+  grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+}
+.home-portal > .home-hero{
+  aspect-ratio:auto!important;
+  min-height:0!important;
+  height:100%!important;
+}
+.home-hero-content{
+  padding:9px!important;
+}
+.home-hero-top{
+  top:9px!important;
+  left:9px!important;
+  right:9px!important;
+}
+.home-hero h1{
+  margin:2px 0 2px!important;
+  font-size:clamp(20px,5.6vw,23px)!important;
+  line-height:1.05!important;
+}
+.home-hero p{
+  margin:0!important;
+  font-size:clamp(11px,3.2vw,14px)!important;
+  line-height:1.2!important;
+}
+.home-portal > .home-card,
+.home-portal > .home-library{
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+}
+
+/* Keep the approved 2 / 2 / 1 structure on narrow Telegram screens. */
+@media(max-width:699px){
+  .home-portal{
+    gap:1px!important;
+    grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+  }
+}
+
+/* The left HUD remains fixed; HOME content sits exactly 1px from it. */
+main{
+  padding-left:calc(63px + var(--tg-content-safe-area-inset-left,0px))!important;
+  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+  padding-top:1px!important;
+  padding-bottom:max(1px,var(--tg-content-safe-area-inset-bottom,0px))!important;
+}
+@media(max-width:699px){
+  main{
+    padding-left:calc(63px + var(--tg-content-safe-area-inset-left,0px))!important;
+    padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+    padding-top:1px!important;
+    padding-bottom:max(1px,var(--tg-content-safe-area-inset-bottom,0px))!important;
+  }
+}
