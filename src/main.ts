@@ -564,6 +564,12 @@ function bind(){
     document.querySelectorAll<HTMLElement>("[data-game-restart]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=restartGame();gameTab="story";render();};
     });
+    document.querySelectorAll<HTMLElement>("[data-game-quest-claim]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,"claim:"+ (x.dataset.gameQuestClaim||""));render();};
+    });
+    document.querySelectorAll<HTMLElement>("[data-game-buy]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,"buy:"+ (x.dataset.gameBuy||""));render();};
+    });
     document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
     });
