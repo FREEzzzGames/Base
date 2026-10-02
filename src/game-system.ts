@@ -15,7 +15,7 @@ export function saveGameState(s:GameState){try{localStorage.setItem(KEY,JSON.str
 export function restartGame():GameState{const n=structuredClone(DEFAULT_STATE);try{localStorage.removeItem(KEY)}catch{}return n}
 export function chooseRace(s:GameState,r:GameRace):GameState{const base=RACES[r];const n={...structuredClone(DEFAULT_STATE),race:r,stats:{...base.stats}};saveGameState(n);return n}
 export function raceInfo(r:GameRace){return RACES[r]}
-const GAME_GLYPHS:Record<string,string>={human:"♙",elf:"❧",orc:"♞",dwarf:"⚒",story:"▤",character:"♙",skills:"✦",quests:"⌖",shop:"♜",achievements:"◆",journal:"▧",exploration:"⌖",negotiation:"◫",survival:"⛨",knowledge:"▤",observation:"◉",will:"◈",strength:"✦",endurance:"⛨",mind:"✧",awareness:"◉",influence:"◎",health:"♥",energy:"ϟ",coin:"◈",locked:"◇",unlocked:"◆",ability:"✦"};
+const GAME_GLYPHS:Record<string,string>={human:"♙",elf:"❧",orc:"♞",dwarf:"⚒",story:"▤",character:"♙",skills:"✦",quests:"⌖",shop:"♜",achievements:"◆",journal:"▧",exploration:"⌖",negotiation:"◫",survival:"⛨",knowledge:"▤",observation:"◉",will:"◈",strength:"✦",endurance:"⛨",mind:"✧",awareness:"◉",influence:"◎",health:"♥",energy:"ϟ",coin:"◈",locked:"◇",unlocked:"◆",ability:"✦",promise:"✧"};
 function gameIcon(name:string){return '<span class="game-icon game-icon-'+name+'" aria-hidden="true">'+(GAME_GLYPHS[name]||"•")+'</span>'}
 const SKILLS=[
  ["exploration","Исследование","◇"],["negotiation","Переговоры","◫"],["survival","Выживание","✦"],
@@ -172,7 +172,7 @@ function questPanel(s:GameState){
 function shopPanel(s:GameState){
  return '<section class="game-panel"><div class="game-panel-title"><span>МАГАЗИН</span><small>Монеты '+s.coins+'</small></div><p class="game-thought">Цены рассчитаны так, чтобы зелья помогали в трудных местах, но не позволяли быстро перескочить несколько уровней.</p>'+SHOP_ITEMS.map(x=>'<div class="game-shop-item"><div><b>'+x.name+'</b><small>'+x.desc+'</small></div><button type="button" data-game-buy="'+x.id+'" '+(s.coins<x.price?"disabled":"")+'>'+gameIcon("coin")+' '+x.price+'</button></div>').join("")+'</section>';
 }
-function abilityPanel(s:GameState){const list=ABILITIES[s.race!];return '<div class="game-abilities"><div class="game-panel-title"><span>СПОСОБНОСТИ</span><small>Очки '+s.abilityPoints+'</small></div>'+list.map(a=>'<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'"><span>'+(s.abilities.includes(a.name)?"◆":"?")+'</span><div><b>'+a.name+'</b><small>'+a.desc+'</small></div></div>').join("")+'</div>'}
+function abilityPanel(s:GameState){const list=ABILITIES[s.race!];return '<div class="game-abilities"><div class="game-panel-title"><span>СПОСОБНОСТИ</span><small>'+gameIcon("ability")+' Очки '+s.abilityPoints+'</small></div>'+list.map(a=>'<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'"><span>'+gameIcon(s.abilities.includes(a.name)?"unlocked":"locked")+'</span><div><b>'+a.name+'</b><small>'+a.desc+'</small></div></div>').join("")+'</div>'}
 const MYSTERY_CLUES:Record<GameRace,string[]>={
  human:[
   "На полях старой карты повторяется знак четырёх лучей. Рядом нет объяснения, только стёртая дата.",
