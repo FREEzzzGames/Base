@@ -3124,3 +3124,138 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .home-portal > .home-hero .home-hero-content{
   z-index:2!important;
 }
+
+
+/* FINAL LEFT SIDEBAR NAV — HOME bottom, LANGUAGE immediately above HOME. */
+.portal-toolbar{
+  position:fixed!important;
+  left:0!important;
+  top:0!important;
+  bottom:0!important;
+  width:56px!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-right:1px solid rgba(255,255,255,.10)!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  z-index:120!important;
+  overflow:visible!important;
+}
+.portal-toolbar-background-video{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:0!important;
+}
+.portal-toolbar-main{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:100dvh!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-end!important;
+  gap:0!important;
+  padding:8px 6px calc(8px + var(--tg-content-safe-area-inset-bottom,0px))!important;
+  box-sizing:border-box!important;
+}
+.portal-toolbar-nav{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column-reverse!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:4px!important;
+  padding:0!important;
+  overflow:visible!important;
+}
+.portal-toolbar-item{
+  flex:0 0 42px!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:10px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.portal-toolbar-item > .portal-toolbar-icon{
+  width:21px!important;
+  height:21px!important;
+  min-width:21px!important;
+  min-height:21px!important;
+}
+.portal-toolbar-language-wrap{
+  position:relative!important;
+  flex:0 0 42px!important;
+  width:44px!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  order:0!important;
+}
+.portal-toolbar-language-button{
+  width:44px!important;
+  min-width:44px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:10px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.portal-toolbar-language-menu{
+  position:absolute!important;
+  left:52px!important;
+  bottom:0!important;
+  top:auto!important;
+  z-index:130!important;
+  min-width:132px!important;
+}
+.portal-toolbar-actions{display:contents!important}
+.portal-toolbar-nav > .portal-toolbar-item:first-child{order:0!important}
+.portal-toolbar-nav > .portal-toolbar-language-wrap{order:0!important}
+.portal-toolbar-nav > .portal-toolbar-item:not(:first-child){order:0!important}
+.portal-toolbar-nav > .portal-toolbar-item:first-child{background:rgba(255,32,32,.15)!important}
+.portal-toolbar-nav > .portal-toolbar-language-wrap + .portal-toolbar-item{margin-top:0!important}
+
+/* Content leaves room for the fixed sidebar. */
+main{
+  padding-left:calc(56px + var(--tg-content-safe-area-inset-left,0px))!important;
+  padding-right:var(--tg-content-safe-area-inset-right,0px)!important;
+  box-sizing:border-box!important;
+}
+
+@media(max-width:699px){
+  main{
+    padding-left:calc(56px + var(--tg-content-safe-area-inset-left,0px))!important;
+    padding-right:max(8px,var(--tg-content-safe-area-inset-right,0px))!important;
+  }
+  .portal-toolbar{
+    width:56px!important;
+  }
+  .portal-toolbar-main{
+    min-height:100dvh!important;
+  }
+}
+
+@media(max-width:360px){
+  .portal-toolbar-language-wrap{display:grid!important}
+  .portal-toolbar-language-button{display:grid!important}
+  .portal-toolbar-nav{display:flex!important}
+}
