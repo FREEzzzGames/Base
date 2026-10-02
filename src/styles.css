@@ -3517,3 +3517,250 @@ button,[role="button"]{
 .stream,.home-live-row,.home-card{
   touch-action:manipulation;
 }
+
+/* ========================================================================
+   UNIFIED TOP BAR v1
+   Top navigation replaces the former bottom navigation. The bar is one
+   logical control surface: identity/utilities on row 1, portal sections on
+   row 2. Mobile keeps every primary section reachable without shrinking
+   touch targets below the 44px enhanced target guidance.
+   ======================================================================== */
+
+.portal-topbar{
+  display:block;
+  width:100%;
+  min-height:112px;
+  padding:calc(6px + var(--safe-top)) var(--portal-gutter) 7px;
+  box-sizing:border-box;
+  background:var(--tg-bg);
+  border-bottom:1px solid var(--ds-border);
+  overflow:hidden;
+  z-index:20;
+}
+
+.portal-topbar .topbar-main{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  grid-template-rows:44px 48px;
+  align-items:center;
+  column-gap:10px;
+  row-gap:6px;
+}
+
+.portal-topbar .topbar-left{
+  grid-column:1;
+  grid-row:1;
+  min-width:44px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.portal-topbar .topbar-left .profile-button{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:2px;
+  border-radius:12px;
+}
+
+.portal-topbar .topbar-left .profile-button .ui-icon,
+.portal-topbar .topbar-left .profile-button .portal-illustration{
+  width:38px;
+  height:38px;
+  flex-basis:38px;
+}
+
+.portal-topbar .topbar-nav{
+  grid-column:1 / -1;
+  grid-row:2;
+  min-width:0;
+  width:100%;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+  overscroll-behavior-x:contain;
+  padding:2px 0;
+  box-sizing:border-box;
+}
+.portal-topbar .topbar-nav::-webkit-scrollbar{display:none}
+
+.portal-topbar .topbar-nav-item{
+  flex:0 0 auto;
+  width:clamp(58px,10vw,92px);
+  min-width:58px;
+  min-height:44px;
+  height:44px;
+  padding:3px 7px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:transparent;
+  color:var(--ds-muted);
+  font:inherit;
+  font-size:10px;
+  font-weight:700;
+  line-height:1;
+  letter-spacing:.02em;
+  touch-action:manipulation;
+}
+.portal-topbar .topbar-nav-item:hover{
+  background:var(--ds-card-hover);
+  border-color:var(--ds-border);
+  color:var(--ds-text);
+}
+.portal-topbar .topbar-nav-item.active{
+  background:var(--ds-accent);
+  color:var(--ds-accent-text);
+  border-color:transparent;
+}
+.portal-topbar .topbar-nav-item .ui-icon,
+.portal-topbar .topbar-nav-item .nav-icon{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+}
+.portal-topbar .topbar-nav-item .portal-illustration{
+  width:100%;
+  height:100%;
+  flex-basis:100%;
+}
+
+.portal-topbar .topbar-right{
+  grid-column:2 / 4;
+  grid-row:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+.portal-topbar .lang-switch{
+  width:138px;
+  min-width:138px;
+  height:40px;
+  flex:0 0 auto;
+}
+
+.portal-topbar .dev-mode-toggle{
+  width:58px;
+  min-width:58px;
+  height:40px;
+  min-height:40px;
+  flex:0 0 auto;
+}
+
+.portal-topbar + .bottom-nav,
+.portal-topbar ~ .bottom-nav{
+  display:none !important;
+}
+
+/* The navigation no longer consumes bottom viewport space. */
+main{
+  padding-bottom:calc(14px + var(--safe-bottom));
+}
+.bottom-nav{
+  display:none !important;
+}
+
+@media(max-width:520px){
+  .portal-topbar{
+    min-height:108px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .portal-topbar .topbar-main{
+    grid-template-columns:44px minmax(0,1fr);
+    grid-template-rows:42px 48px;
+    column-gap:8px;
+  }
+  .portal-topbar .topbar-right{
+    grid-column:2;
+    grid-row:1;
+    justify-content:flex-end;
+    gap:5px;
+  }
+  .portal-topbar .lang-switch{
+    width:126px;
+    min-width:126px;
+    height:40px;
+  }
+  .portal-topbar .dev-mode-toggle{
+    width:54px;
+    min-width:54px;
+    height:40px;
+  }
+  .portal-topbar .topbar-nav{
+    gap:3px;
+    justify-content:flex-start;
+  }
+  .portal-topbar .topbar-nav-item{
+    width:48px;
+    min-width:48px;
+    height:44px;
+    padding:3px 2px;
+  }
+  .portal-topbar .topbar-nav-item span{
+    display:none;
+  }
+  .portal-topbar .topbar-nav-item .ui-icon,
+  .portal-topbar .topbar-nav-item .nav-icon{
+    width:30px;
+    height:30px;
+    flex-basis:30px;
+  }
+}
+
+@media(max-width:390px){
+  .portal-topbar{
+    min-height:104px;
+  }
+  .portal-topbar .topbar-main{
+    grid-template-columns:44px minmax(0,1fr);
+    grid-template-rows:40px 46px;
+    gap:4px 6px;
+  }
+  .portal-topbar .topbar-right{
+    gap:4px;
+  }
+  .portal-topbar .lang-switch{
+    width:116px;
+    min-width:116px;
+    height:38px;
+  }
+  .portal-topbar .lang-switch button{
+    min-width:40px;
+    height:32px;
+    padding-inline:5px;
+  }
+  .portal-topbar .dev-mode-toggle{
+    width:50px;
+    min-width:50px;
+    height:38px;
+  }
+  .portal-topbar .topbar-nav-item{
+    width:46px;
+    min-width:46px;
+  }
+  .portal-topbar .topbar-nav-item .ui-icon,
+  .portal-topbar .topbar-nav-item .nav-icon{
+    width:29px;
+    height:29px;
+    flex-basis:29px;
+  }
+}
