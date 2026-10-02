@@ -4442,3 +4442,25 @@ main{
   touch-action:manipulation!important;
   -webkit-tap-highlight-color:transparent!important;
 }
+
+/* HOME SCREEN-FIT — keep the approved compact portal scale on tall touch screens. */
+.home-portal{
+  height:clamp(300px,52vw,620px)!important;
+  min-height:300px!important;
+  max-height:620px!important;
+  align-self:start!important;
+}
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+@media(max-width:699px){
+  .home-portal{
+    height:clamp(300px,52vw,620px)!important;
+    min-height:300px!important;
+    max-height:620px!important;
+  }
+}
