@@ -187,8 +187,8 @@ function renderPortalToolbar(){
     ["live","video","LIVE"],
     ["chat","chat","CHAT"],
     ["game","game","GAME"],
-    ["radio","radio","RADIO"],
-    ["library","library","LIBRARY"]
+    ["library","library","LIBRARY"],
+    ["radio","radio","RADIO"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="https://cdn.pixabay.com/video/2024/08/18/227152_large.mp4" type="video/mp4"></video>
