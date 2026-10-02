@@ -145,7 +145,7 @@ const SCENES:Record<GameRace,Scene[]>={
   ]}
 ]};
 
-function bars(s:GameState,lang:GameLanguage){const labels=GAME_EXTRA[lang].stats;return [[labels[0],"✦",s.stats.strength],[labels[1],"○",s.stats.endurance],[labels[2],"◇",s.stats.mind],[labels[3],"◉",s.stats.awareness],[labels[4],"●",s.stats.influence]].map(x=>'<div class="game-stat"><span><i>'+x[1]+'</i>'+x[0]+'</span><b>'+x[2]+'</b><em><u style="width:'+Math.min(100,(x[2] as number)*10)+'%"></u></em></div>').join("")}
+function bars(s:GameState,lang:GameLanguage){const labels=GAME_EXTRA[lang].stats;return [[labels[0],"rocket",s.stats.strength],[labels[1],"success",s.stats.endurance],[labels[2],"game",s.stats.mind],[labels[3],"video",s.stats.awareness],[labels[4],"message",s.stats.influence]].map(x=>'<div class="game-stat"><span>'+gameIcon(x[1])+x[0]+'</span><b>'+x[2]+'</b><em><u style="width:'+Math.min(100,(x[2] as number)*10)+'%"></u></em></div>').join("")}
 function tabs(t:GameTab,lang:GameLanguage){const labels=GAME_EXTRA[lang].tabs;return [["story","library",labels.story],["character","user",labels.character],["skills","rocket",labels.skills],["quests","search",labels.quests],["shop","archive",labels.shop],["achievements","success",labels.achievements],["journal","library",labels.journal]].map(x=>'<button class="'+(t===x[0]?"active":"")+'" data-game-tab="'+x[0]+'" type="button" aria-label="'+x[2]+'" title="'+x[2]+'">'+gameIcon(x[1])+'<small>'+x[2]+'</small></button>').join("")
 function racePicker(lang:GameLanguage){
  const title={RU:"КТО ТЫ?",DE:"WER BIST DU?",EN:"WHO ARE YOU?"}[lang];
@@ -188,35 +188,9 @@ function questPanel(s:GameState,lang:GameLanguage){
 }
 function shopPanel(s:GameState,lang:GameLanguage){
  const ui=GAME_EXTRA[lang],shop=GAME_EXTRA[lang].shop;
- return '<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.shop+'</span><small>'+ui.actions.coins+' '+s.coins+'</small></div><p class="game-thought">'+shop.note+'</p>'+SHOP_ITEMS.map((x,i)=>'<div class="game-shop-item"><div><b>'+shop.names[i]+'</b><small>'+shop.descriptions[i]+'</small></div><button type="button" data-game-buy="'+x.id+'" '+(s.coins<x.price?"disabled":"")+'>'+x.price+' ◈</button></div>').join("")+'</section>';
+ return '<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.shop+'</span><small>'+ui.actions.coins+' '+s.coins+'</small></div><p class="game-thought">'+shop.note+'</p>'+SHOP_ITEMS.map((x,i)=>'<div class="game-shop-item"><div><b>'+shop.names[i]+'</b><small>'+shop.descriptions[i]+'</small></div><button type="button" data-game-buy="'+x.id+'" '+(s.coins<x.price?"disabled":"")+'>'+x.price+' '+gameIcon("success","game-price-icon")+'</button></div>').join("")+'</section>';
 }
-function abilityPanel(s:GameState,lang:GameLanguage){const list=ABILITIES[s.race!],loc=ABILITY_LOCALE[lang];return '<div class="game-abilities"><div class="game-panel-title"><span>'+GAME_EXTRA[lang].actions.abilities+'</span><small>'+GAME_EXTRA[lang].actions.points+' '+s.abilityPoints+'</small></div>'+list.map(a=>{const x=loc[a.name]||loc["Искра маны"];return '<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'"><span>'+(s.abilities.includes(a.name)?"◆":"?")+'</span><div><b>'+x.name+'</b><small>'+x.desc+'</small></div></div>'}).join("")+'</div>'}
-const MYSTERY_CLUES:Record<GameRace,string[]>={
- human:[
-  "На полях старой карты повторяется знак четырёх лучей. Рядом нет объяснения, только стёртая дата.",
-  "Один из древних текстов откликается на магию, но в нём намеренно отсутствует последняя строка.",
-  "На камне у дальней дороги найден тот же знак. Он старше местных поселений, хотя никто не помнит, кто его оставил.",
-  "Четвёртый фрагмент показывает: твои странные находки были частями одной записи, разделённой между четырьмя народами."
- ],
- elf:[
-  "В лесу птицы замолкают у дерева с четырьмя тонкими зарубками. Причина неизвестна.",
-  "В забытом саду найден серебряный лист с тем же знаком, который не принадлежит ни одному известному роду.",
-  "Старая тропа ведёт к каменной арке, но её символы намеренно повреждены так, будто кто-то скрывал имена.",
-  "Последний след подтверждает: лес хранил не отдельную тайну, а часть общей истории, которую четыре народа когда-то скрыли."
- ],
- orc:[
-  "Старейшины узнают знак четырёх лучей, но каждый раз замолкают, когда речь заходит о его происхождении.",
-  "На горном пути найден камень с древней зарубкой. Она сделана тем же способом, что и знак на оружии предков, но смысл забыт.",
-  "В руинах крепости обнаружено имя, которое выскоблено из всех сохранившихся списков. Рядом стоят четыре одинаковых метки.",
-  "Последняя улика показывает: запрет старейшин был не тайной одного племени, а частью общего решения четырёх народов."
- ],
- dwarf:[
-  "В старой мастерской найден чертёж без названия. В углах стоят четыре одинаковых знака, будто это части одного механизма.",
-  "Механизм открывает только один фрагмент схемы. Кто его создал и зачем, мастерская не говорит.",
-  "В тайном проходе обнаружен тот же узор и дата, совпадающая с записями из других земель.",
-  "Последний чертёж собирает всё воедино: мастерская была частью хранилища общей памяти, которую четыре народа сознательно разделили."
- ]
-};
+function abilityPanel(s:GameState,lang:GameLanguage){const list=ABILITIES[s.race!],loc=ABILITY_LOCALE[lang];return '<div class="game-abilities"><div class="game-panel-title"><span>'+GAME_EXTRA[lang].actions.abilities+'</span><small>'+GAME_EXTRA[lang].actions.points+' '+s.abilityPoints+'</small></div>'+list.map(a=>{const x=loc[a.name]||loc["Искра маны"];return '<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'">'+gameIcon(s.abilities.includes(a.name)?"success":"waiting","game-status-icon")+'<div><b>'+x.name+'</b><small>'+x.desc+'</small></div></div>'}).join("")+'</div>';}
 function mysteryFor(s:GameState){return MYSTERY_CLUES[s.race!][Math.min(3,Math.max(0,s.step-1))]}
 function addMysteryClue(n:GameState){const clue=mysteryFor(n);if(clue&&!n.mysteryClues.includes(clue))n.mysteryClues.push(clue)}
 function localizeStateText(lang:GameLanguage,value:string){
@@ -244,7 +218,7 @@ function story(s:GameState,lang:GameLanguage){
  const r=s.race!,scenes=SCENES[r],index=Math.min(3,Math.max(0,s.step-1)),scene=sceneFor(lang,r,index),ui=GAME_EXTRA[lang].actions,fin=FINAL_LOCALE[lang];
  if(s.step>scenes.length){
   const resolved=s.mysteryRevealed;
-  const choices=resolved?'<div class="game-ending-seal"><b>'+fin.seal+'</b><small>'+fin.keepMemory+'</small></div>':'<button data-game-choice="convergence" type="button"><b>◆</b> '+({RU:"Соединить четыре улики и узнать правду",DE:"Die vier Hinweise verbinden und die Wahrheit erfahren",EN:"Join the four clues and uncover the truth"}[lang])+'</button>';
+  const choices=resolved?'<div class="game-ending-seal"><b>'+fin.seal+'</b><small>'+fin.keepMemory+'</small></div>':'<button data-game-choice="convergence" type="button">'+gameIcon("success","game-choice-icon")+' '+({RU:"Соединить четыре улики и узнать правду",DE:"Die vier Hinweise verbinden und die Wahrheit erfahren",EN:"Join the four clues and uncover the truth"}[lang])+'</button>';
   return '<section class="game-story game-finale"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+fin.sceneLabel+'</small></div><article class="game-dialog"><span class="game-speaker">'+fin.lastRiddle+'</span><p>'+(resolved?fin.resolved:fin.unresolved)+'</p><span class="game-speaker">'+fin.solution+'</span><p class="game-thought">'+(resolved?fin.thoughtResolved:fin.thoughtUnresolved)+'</p></article><div class="game-choices">'+choices+'</div></section>';
  }
  if(s.outcome){
@@ -333,6 +307,6 @@ export function applyGameChoice(s:GameState,c:string):GameState{
  if(t==="shop")p=shopPanel(s,lang);
  if(t==="skills")p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.skills+'</span><small>'+rl.gender+' · '+rl.role+'</small></div>'+SKILLS.map(x=>'<div class="game-skill"><span>'+x[2]+' '+skills[x[0]]+'</span><b>'+s.skills[x[0]]+'</b><em><u style="width:'+Math.min(100,s.skills[x[0]]*20)+'%"></u></em></div>').join("")+abilityPanel(s,lang)+'</section>';
  if(t==="achievements"){const list=s.achievements.length?s.achievements:["Первый шаг","???","???"];p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.achievements+'</span><small>'+s.achievements.length+' '+ui.actions.openCount+'</small></div>'+list.map(a=>'<div class="game-achievement '+(a==="???"?"locked":"")+'"><span>'+(a==="???"?"?":"◆")+'</span><div><b>'+localizeStateText(lang,a)+'</b><small>'+(a==="???"?ui.actions.hidden:ui.actions.earned)+'</small></div></div>').join("")+'</section>';}
-  if(t==="journal"){const clueCount=s.mysteryClues.length;const clues=clueCount?GAME_EXTRA[lang].mystery.slice(0,clueCount):[];const flags=s.worldFlags.length?s.worldFlags:[];const promises=s.promises.length?s.promises:[];p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.journal+'</span><small>'+ui.actions.chapter+' '+s.step+' · '+rl.name+'</small></div><div class="game-journal"><b>'+ui.actions.clues+'</b>'+(clues.length?clues.map(x=>'<p>✓ '+x+'</p>').join(""):'<p>✓ '+ui.actions.none+'</p>')+'<b>'+ui.actions.remembered+'</b>'+(flags.length?flags.map(x=>'<p>◆ '+localizedFlag(s,lang,x)+'</p>').join(""):'<p>◆ '+ui.actions.none+'</p>')+'<b>'+ui.actions.promises+'</b>'+(promises.length?promises.map(x=>'<p>○ '+localizeStateText(lang,x)+'</p>').join(""):'<p>○ '+ui.actions.none+'</p>')+'</div></section>';}
+  if(t==="journal"){const clueCount=s.mysteryClues.length;const clues=clueCount?GAME_EXTRA[lang].mystery.slice(0,clueCount):[];const flags=s.worldFlags.length?s.worldFlags:[];const promises=s.promises.length?s.promises:[];p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.journal+'</span><small>'+ui.actions.chapter+' '+s.step+' · '+rl.name+'</small></div><div class="game-journal"><b>'+ui.actions.clues+'</b>'+(clues.length?clues.map(x=>'<p>'+gameIcon("success","game-inline-icon")+x+'</p>').join(""):'<p>'+gameIcon("waiting","game-inline-icon")+ui.actions.none+'</p>')+'<b>'+ui.actions.remembered+'</b>'+(flags.length?flags.map(x=>'<p>'+gameIcon("success","game-inline-icon")+localizedFlag(s,lang,x)+'</p>').join(""):'<p>'+gameIcon("waiting","game-inline-icon")+ui.actions.none+'</p>')+'<b>'+ui.actions.promises+'</b>'+(promises.length?promises.map(x=>'<p>'+gameIcon("message","game-inline-icon")+localizeStateText(lang,x)+'</p>').join(""):'<p>'+gameIcon("waiting","game-inline-icon")+ui.actions.none+'</p>')+'</div></section>';}
  return '<div class="game-rpg game-race-'+r+' game-tab-'+t+'" data-game-root data-race="'+r+'" data-game-tab="'+t+'"><header class="game-player-head"><div class="game-avatar">'+gameIcon(RACES[r].icon,"game-avatar-icon")+'</div><div><strong>'+rl.name+' · '+rl.role+'</strong><small>'+rl.gender+' · '+ui.actions.level+' '+s.level+'</small></div><div class="game-vitals"><span>'+gameIcon("success","game-vital-icon")+' '+s.health+'</span><span>'+gameIcon("zap","game-vital-icon")+' '+s.energy+'</span><button class="game-restart" data-game-restart type="button">'+ui.actions.newGame+'</button></div></header><nav class="game-tabs">'+tabs(t,lang)+'</nav>'+p+'</div>';
 }
