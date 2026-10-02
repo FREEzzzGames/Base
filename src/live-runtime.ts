@@ -32,6 +32,10 @@ export function renderLivePopup(options:{
   }[options.lang||"RU"];
   return `<div class="live-popup-overlay" data-live-popup-overlay>
     <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
+      <video class="live-popup-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="https://cdn.pixabay.com/video/2019/01/25/20919-313485347_large.mp4" type="video/mp4">
+      </video>
+      <div class="live-popup-background-overlay" aria-hidden="true"></div>
       <header class="live-popup-header">
         <div><span class="live-popup-kicker">LIVE</span><strong>${e(stream.name)}</strong><small>${source==="youtube"?"YouTube":"Twitch"}</small></div>
         <button class="live-popup-close" data-live-popup-close type="button" aria-label="${tr.close}">×</button>
