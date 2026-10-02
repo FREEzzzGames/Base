@@ -1,7 +1,9 @@
 import type {PortalEventBus} from "../core/portal-core";
-import type {MihiLayer, MihiState} from "./mihi-types";
+import type {MihiLayer} from "./mihi-types";
 
 const MIHI_MODEL_URL="https://static.poly.pizza/46d6db5a-3c9f-4238-8cdf-8eb7194498dc.glb";
+
+type MihiVisualState={layer:MihiLayer};
 
 export class Mihi3DView{
   private readonly root:HTMLElement;
@@ -17,7 +19,6 @@ export class Mihi3DView{
   private loaded=false;
   private disposed=false;
   private loadPromise:Promise<void>|null=null;
-  private currentLayer:MihiLayer=1;
   private offs:(()=>void)[]=[];
 
   constructor(private readonly events:PortalEventBus){
@@ -33,7 +34,7 @@ export class Mihi3DView{
 
   private bind(){
     this.offs=[
-      this.events.on("mihi:state",state=>{this.currentLayer=state.layer;this.selectForState(state);}),
+      this.events.on("mihi:state",state=>{this.selectForState({layer:state.layer as MihiLayer});}),
       this.events.on("mihi:request-action",payload=>{if(payload.source==="mihi")this.play("Interact");})
     ];
   }
@@ -89,7 +90,7 @@ export class Mihi3DView{
 
   private setStatus(text:string){const el=this.root.querySelector<HTMLElement>("[data-mihi-3d-status]");if(el)el.textContent=text;this.root.classList.toggle("mihi-3d-failed",Boolean(text));}
 
-  private selectForState(state:MihiState){
+  private selectForState(state:MihiVisualState){
     if(!this.loaded)return;
     if(state.layer>=10){this.play("Idle_Neutral");return;}
     if(state.layer>=8){this.play("Interact");return;}
