@@ -32,13 +32,15 @@ const phrases=[
 ];
 
 export const MIHI_REPLIES:readonly MihiReply[]=contexts.flatMap((context,ci)=>
-  layers.map((layer,li)=>({
-    id:`mihi.reply.${context}.${layer}`,
-    semanticId:`${context}.status.${(li%10)+1}`,
-    context,
-    layer,
-    text:phrases[(ci+li)%phrases.length]
-  }))
+  layers.flatMap((layer,li)=>
+    phrases.map((phrase,pi)=>({
+      id:`mihi.reply.${context}.${layer}.${pi+1}`,
+      semanticId:`${context}.reply.${layer}.${pi+1}`,
+      context,
+      layer,
+      text:`${phrase} ${context==="mystery"?"Есть ещё кое-что, но пока не сейчас.":""}`
+    }))
+  )
 );
 
 export const MIHI_EASTER_EGGS:readonly MihiEasterEgg[]=[
