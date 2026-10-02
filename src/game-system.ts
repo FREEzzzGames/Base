@@ -145,7 +145,15 @@ const SCENES:Record<GameRace,Scene[]>={
 
 function bars(s:GameState,lang:GameLanguage){const labels=GAME_EXTRA[lang].stats;return [[labels[0],"✦",s.stats.strength],[labels[1],"○",s.stats.endurance],[labels[2],"◇",s.stats.mind],[labels[3],"◉",s.stats.awareness],[labels[4],"●",s.stats.influence]].map(x=>'<div class="game-stat"><span><i>'+x[1]+'</i>'+x[0]+'</span><b>'+x[2]+'</b><em><u style="width:'+Math.min(100,(x[2] as number)*10)+'%"></u></em></div>').join("")}
 function tabs(t:GameTab,lang:GameLanguage){const labels=GAME_EXTRA[lang].tabs;return [["story","▤",labels.story],["character","○",labels.character],["skills","✦",labels.skills],["quests","◇",labels.quests],["shop","□",labels.shop],["achievements","◆",labels.achievements],["journal","▤",labels.journal]].map(x=>'<button class="'+(t===x[0]?"active":"")+'" data-game-tab="'+x[0]+'" type="button" aria-label="'+x[2]+'" title="'+x[2]+'"><span aria-hidden="true">'+x[1]+'</span><small>'+x[2]+'</small></button>').join("")}
-function racePicker(lang:GameLanguage){const title={RU:"КТО ТЫ?",DE:"WER BIST DU?",EN:"WHO ARE YOU?"}[lang];const desc={RU:"У каждого персонажа своя история, система развития навыков и способы открытия способностей.",DE:"Jede Figur hat ihre eigene Geschichte, Entwicklung und eigene Wege, Fähigkeiten freizuschalten.",EN:"Each character has a distinct story, progression system and ways to unlock abilities."}[lang];return '<div class="game-rpg game-race-picker"><div class="game-intro"><span>FREEzzz STORY · FOUR PATHS</span><h2>'+title+'</h2><p>'+desc+'</p></div><div class="race-grid">'+(Object.keys(RACES) as GameRace[]).map(r=>{const x=RACES[r],l=RACE_LOCALE[lang][r];return '<button class="race-card" data-game-race="'+r+'" type="button"><span>'+x.icon+'</span><strong>'+l.name+'</strong><small>'+l.description+'</small><em>'+GAME_EXTRA[lang].stats[0]+' '+x.stats.strength+' · '+GAME_EXTRA[lang].stats[2]+' '+x.stats.mind+' · '+GAME_EXTRA[lang].stats[3]+' '+x.stats.awareness+'</em></button>}).join("")+'</div></div>'}
+function racePicker(lang:GameLanguage){
+ const title={RU:"КТО ТЫ?",DE:"WER BIST DU?",EN:"WHO ARE YOU?"}[lang];
+ const desc={RU:"У каждого персонажа своя история, система развития навыков и способы открытия способностей.",DE:"Jede Figur hat ihre eigene Geschichte, Entwicklung und eigene Wege, Fähigkeiten freizuschalten.",EN:"Each character has a distinct story, progression system and ways to unlock abilities."}[lang];
+ const cards=(Object.keys(RACES) as GameRace[]).map(r=>{
+  const x=RACES[r],l=RACE_LOCALE[lang][r];
+  return ["<button class=\"race-card\" data-game-race=\"",r,"\" type=\"button\"><span>",x.icon,"</span><strong>",l.name,"</strong><small>",l.description,"</small><em>",GAME_EXTRA[lang].stats[0]," ",x.stats.strength," · ",GAME_EXTRA[lang].stats[2]," ",x.stats.mind," · ",GAME_EXTRA[lang].stats[3]," ",x.stats.awareness,"</em></button>"].join("");
+ }).join("");
+ return ["<div class=\"game-rpg game-race-picker\"><div class=\"game-intro\"><span>FREEzzz STORY · FOUR PATHS</span><h2>",title,"</h2><p>",desc,"</p></div><div class=\"race-grid\">",cards,"</div></div>"].join("");
+}
 
 const SHOP_ITEMS=[
  {id:"heal",name:"Зелье восстановления",desc:"Восстанавливает 20 здоровья.",price:32},
