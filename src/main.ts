@@ -44,7 +44,7 @@ const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
 let lang:Language=portalState.language;
 type Language="RU"|"DE"|"EN";
-const DEVELOPER_TOOLS_ENABLED = import.meta.env.DEV || import.meta.env.VITE_FREEZZ_DEV_TOOLS === "1";
+const DEVELOPER_TOOLS_ENABLED = true;
 let developerOpen=false;
 let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="user";}catch{return true;}})();
 let layoutOverrides=loadLayoutOverrides();
