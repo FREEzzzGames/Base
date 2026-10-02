@@ -73,8 +73,8 @@ export class Mihi3DView{
 
       const scene=new THREE.Scene();
       const camera=new THREE.PerspectiveCamera(22,1,0.01,100);
-      camera.position.set(0,1.0,4.8);
-      camera.lookAt(0,0.9,0);
+      camera.position.set(0,0.95,5.6);
+      camera.lookAt(0,0.82,0);
 
       scene.add(new THREE.HemisphereLight(0xffffff,0x182033,2.4));
       const key=new THREE.DirectionalLight(0xffffff,2.5);
@@ -94,12 +94,23 @@ export class Mihi3DView{
       const loader=new loaderModule.GLTFLoader();
       loader.setCrossOrigin("anonymous");
 
+      // Always show a local procedural MIHI immediately. The optional GLB must never
+      // block first paint or leave an empty stage when an external asset is slow.
+      this.attachProceduralModel(THREE);
+      this.loaded=true;
+      this.setStatus("");
+      this.resize();
+      this.animate();
+
       let loadedModel:import("three").Object3D|null=null;
       let animations:import("three").AnimationClip[]=[];
 
       for(const url of [LOCAL_MODEL_URL,REMOTE_MODEL_URL]){
         try{
-          const gltf=await loader.loadAsync(url);
+          const gltf=await Promise.race([
+            loader.loadAsync(url),
+            new Promise<never>((_,reject)=>window.setTimeout(()=>reject(new Error("MIHI asset timeout")),5000))
+          ]);
           if(gltf?.scene){
             loadedModel=gltf.scene;
             animations=gltf.animations||[];
@@ -116,17 +127,15 @@ export class Mihi3DView{
       }
 
       if(loadedModel){
+        this.model?.removeFromParent();
+        this.mixer=null;
+        this.actions.clear();
+        this.activeAction=null;
         this.attachModel(THREE,loadedModel,animations);
-        this.setStatus("");
-      }else{
-        this.attachProceduralModel(THREE);
-        this.setStatus("3D fallback");
       }
 
-      this.loaded=true;
       this.play("Idle_Neutral");
       this.resize();
-      this.animate();
     }catch(error){
       console.warn("MIHI 3D renderer unavailable",error);
       this.setStatus("3D fallback");
@@ -163,7 +172,7 @@ export class Mihi3DView{
     model.position.sub(center);
     model.position.y-=size.y*0.08;
     const targetHeight=Math.max(size.y,0.001);
-    model.scale.setScalar(0.93/targetHeight);
+    model.scale.setScalar(0.78/targetHeight);
     model.rotation.y=0.08;
     this.scene!.add(model);
     this.model=model;
@@ -231,7 +240,7 @@ export class Mihi3DView{
     group.add(badge);
 
     group.position.y=-0.05;
-    group.scale.setScalar(0.63);
+    group.scale.setScalar(0.58);
     const platformMaterial=new THREE.MeshStandardMaterial({color:0x101827,roughness:0.35,metalness:0.55,transparent:true,opacity:0.92});
     const platform=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.62,0.045,48),platformMaterial);
     platform.position.y=0.01;
