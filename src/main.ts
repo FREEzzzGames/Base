@@ -441,10 +441,10 @@ function bindHudTouchGesture(){
   document.addEventListener("pointermove",e=>{
     if(!tracking||triggered)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.abs(dy)>Math.abs(dx)+8)return;
-    if(!hudHidden&&startX<=64&&dx<-44){
+    if(Math.abs(dx)>Math.abs(dy)+8)return;
+    if(!hudHidden&&startY>=window.innerHeight-72&&dy>44){
       triggered=true;hudHidden=true;document.querySelector<HTMLElement>(".portal-workspace")?.classList.add("portal-hud-hidden");
-    }else if(hudHidden&&startX<=28&&dx>44){
+    }else if(hudHidden&&startY>=window.innerHeight-28&&dy<-44){
       triggered=true;hudHidden=false;document.querySelector<HTMLElement>(".portal-workspace")?.classList.remove("portal-hud-hidden");
     }
   },{passive:true});
