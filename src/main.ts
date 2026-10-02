@@ -369,6 +369,7 @@ function render(){
     </div>`;
 
   bind();
+  window.dispatchEvent(new CustomEvent("freezzz:chat-sync",{detail:{messages:chatMessages}}));
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
     portalEvents.emit("navigation:changed",{view:"home"});
