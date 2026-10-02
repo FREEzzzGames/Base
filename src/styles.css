@@ -2463,3 +2463,25 @@ main{
   .profile-card-expanded{max-height:84dvh}
   .profile-identity h2{font-size:20px}
 }
+
+
+/* PROFILE — expanded card content aligned to the left edge */
+.profile-card-expanded{
+  text-align:left;
+}
+.profile-card-expanded .profile-identity{
+  justify-content:flex-start;
+  text-align:left;
+}
+.profile-card-expanded .profile-avatar{
+  margin:4px 0 12px;
+  flex:0 0 auto;
+}
+.profile-card-expanded .profile-stat-grid,
+.profile-card-expanded .profile-section,
+.profile-card-expanded .profile-actions{
+  text-align:left;
+}
+.profile-card-expanded .profile-actions{
+  justify-content:flex-start;
+}
