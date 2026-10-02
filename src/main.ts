@@ -60,8 +60,11 @@ let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language")
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
+const telegramRuntime=Boolean(getTelegramWebApp());
 const telegramAuth=await verifyTelegramSession();
 const verifiedTelegramIdentity:TelegramVerifiedIdentity|undefined=telegramAuth.ok&&telegramAuth.user?telegramAuth.user:undefined;
+const authRequired=telegramRuntime&&import.meta.env.VITE_FREEZZ_DEV_TOOLS!=="1";
+const accessBlocked=authRequired&&!telegramAuth.ok;
 if(!localStorage.getItem("freezzz:language")){
   const code=verifiedTelegramIdentity?.languageCode?.toUpperCase()||"";
   if(code.startsWith("DE"))lang="DE";
@@ -225,6 +228,10 @@ function renderPortalToolbar(){
 }
 
 function render(){
+  if(accessBlocked){
+    app.innerHTML=`<main class="portal-auth-gate"><section class="portal-auth-card"><h1>FREEzzz</h1><p>${T("authRequired")||"Telegram authorization required."}</p><small>${escapeHtml(telegramAuth.error||"AUTH_FAILED")}</small></section></main>`;
+    return;
+  }
   savePortalSessionSnapshot();
   let body="";
 
