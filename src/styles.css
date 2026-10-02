@@ -2876,18 +2876,10 @@ main::-webkit-scrollbar{display:none}
   pointer-events:none!important;
 }
 
-/* Soft readable dimming. The frame extends 1px beyond the video but is clipped by the card. */
+/* Video stays isolated behind content; no separate overlay layer can cover card content. */
 .home-portal > .home-card .home-card-background-overlay{
-  position:absolute!important;
-  inset:-1px!important;
-  z-index:1!important;
-  display:block!important;
-  background:rgba(0,0,0,.28)!important;
-  border:0!important;
-  border-radius:inherit!important;
-  pointer-events:none!important;
+  display:none!important;
 }
-
 .home-portal > .home-card .home-card-content{
   position:relative!important;
   z-index:2!important;
@@ -2908,10 +2900,15 @@ main::-webkit-scrollbar{display:none}
   content:"";
   position:absolute!important;
   inset:0!important;
-  z-index:3!important;
+  z-index:1!important;
   border-radius:inherit!important;
+  background:rgba(0,0,0,.16)!important;
   box-shadow:inset 0 0 32px rgba(0,0,0,.12)!important;
   pointer-events:none!important;
+}
+
+.home-portal > .home-card .home-card-content{
+  z-index:2!important;
 }
 
 /* ================================================================
@@ -2947,7 +2944,14 @@ main::-webkit-scrollbar{display:none}
   box-sizing:border-box!important;
 }
 
+.home-portal > .home-hero{grid-area:hero!important}
+.home-portal > .home-live{grid-area:live!important}
+.home-portal > .home-chat{grid-area:chat!important}
+.home-portal > .home-game{grid-area:game!important}
+.home-portal > .home-radio{grid-area:radio!important}
 .home-portal > .home-library{
+  grid-area:library!important;
+  width:100%!important;
   height:100%!important;
   min-height:220px!important;
 }
