@@ -54,3 +54,10 @@ export function createPlatformState(initial:Partial<PlatformState>={}):PlatformS
     online:initial.online??navigator.onLine
   };
 }
+
+
+export class PortalModuleManager{
+  constructor(private readonly definitions:readonly PortalModuleDefinition[]=PORTAL_MODULES){}
+  has(view:PortalView):boolean{return view==="home"||this.definitions.some(module=>module.view===view);}
+  get(view:Exclude<PortalView,"home">):PortalModuleDefinition|undefined{return this.definitions.find(module=>module.view===view);}
+}
