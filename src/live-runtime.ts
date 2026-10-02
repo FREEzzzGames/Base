@@ -24,9 +24,12 @@ export function renderLivePopup(options:{
   if(!stream)return "";
   const source=options.source;
   const embed=liveEmbedUrl(stream,source,window.location.hostname);
-  const external=source==="youtube"?stream.youtube:stream.twitch;
   const e=options.escapeHtml;
-  const tr={RU:{close:"Закрыть",unavailable:"${tr.unavailable}",channel:"Канал доступен на",open:"Открыть"},DE:{close:"Schließen",unavailable:"Eingebetteter Player nicht verfügbar",channel:"Kanal verfügbar auf",open:"Öffnen"},EN:{close:"Close",unavailable:"Embedded player unavailable",channel:"Channel available on",open:"Open"}}[options.lang||"RU"];
+  const tr={
+    RU:{close:"Закрыть",unavailable:"Встроенный плеер недоступен",channel:"Канал доступен на",open:"Открыть"},
+    DE:{close:"Schließen",unavailable:"Eingebetteter Player nicht verfügbar",channel:"Kanal verfügbar auf",open:"Öffnen"},
+    EN:{close:"Close",unavailable:"Embedded player unavailable",channel:"Channel available on",open:"Open"}
+  }[options.lang||"RU"];
   return `<div class="live-popup-overlay" data-live-popup-overlay>
     <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
       <header class="live-popup-header">
@@ -40,7 +43,7 @@ export function renderLivePopup(options:{
       <div class="live-popup-video">
         ${embed
           ? `<iframe src="${e(embed)}" title="${e(stream.name)} — ${source}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
-          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер недоступен</strong><span>${tr.channel} ${source}, but no universal embed is configured for it.</span><button class="tg-button" data-live-external type="button">${tr.open} ${source}</button></div>`}
+          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>${tr.unavailable}</strong><span>${tr.channel} ${source}.</span><button class="tg-button" data-live-external type="button">${tr.open} ${source}</button></div>`}
       </div>
     </section>
   </div>`;
