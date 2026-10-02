@@ -155,7 +155,7 @@ function orderedBlocks(screen:View){
 }
 function defaultEditorGeometry(screen:View,index:number,count:number,span:1|2){
   const presets:Record<View,Array<[number,number]>>={
-    home:[[0,12],[14,18],[34,18],[54,18],[74,18],[94,6]],
+    home:[[0,10],[11,43],[11,43],[55,33],[89,10],[89,10]],
     live:[[0,12],[14,48],[64,30]],
     chat:[[0,12],[14,58],[74,14]],
     game:[[0,12],[14,64],[80,12]],
@@ -163,6 +163,11 @@ function defaultEditorGeometry(screen:View,index:number,count:number,span:1|2){
     library:[[0,88]]
   };
   const preset=presets[screen][Math.min(index,presets[screen].length-1)]||[Math.min(92,index*12),Math.max(6,Math.floor(82/Math.max(1,count)))];
+  if(screen==="home"){
+    const homePositions=[[5,0,90,10],[5,11,42,43],[53,11,42,43],[5,55,90,33],[5,89,42,10],[53,89,42,10]];
+    const p=homePositions[Math.min(index,homePositions.length-1)];
+    return {x:p[0],y:p[1],w:p[2],h:p[3]};
+  }
   return {x:5,y:preset[0],w:90,h:preset[1]};
 }
 function editorGeometry(screen:View,block:EditorBlock,index:number,count:number){
