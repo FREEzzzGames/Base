@@ -7,6 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "dev:tools": "VITE_FREEZZ_DEV_TOOLS=1 vite --host 0.0.0.0",
     "build": "vite build",
+    "release:smoke": "npm run build && node scripts/release-smoke.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
