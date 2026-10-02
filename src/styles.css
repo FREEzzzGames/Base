@@ -3786,7 +3786,7 @@ main{
   display:grid!important;
   grid-template-columns:56px minmax(0,1fr)!important;
   grid-template-rows:minmax(0,1fr)!important;
-  gap:1px!important;
+  gap:0!important;
   width:100%!important;
   height:100%!important;
   min-width:0!important;
@@ -3863,7 +3863,7 @@ main{
 @media(max-width:699px){
   .portal-home-workspace{
     grid-template-columns:56px minmax(0,1fr)!important;
-    gap:1px!important;
+    gap:0!important;
   }
   .portal-home-workspace > .portal-toolbar{
     width:56px!important;
@@ -3882,7 +3882,7 @@ main{
   display:grid!important;
   grid-template-columns:56px minmax(0,1fr)!important;
   grid-template-rows:minmax(0,1fr)!important;
-  gap:1px!important;
+  gap:0!important;
   width:100%!important;
   height:100%!important;
   min-width:0!important;
@@ -3945,7 +3945,7 @@ main{
 @media(max-width:699px){
   .portal-route-workspace{
     grid-template-columns:56px minmax(0,1fr)!important;
-    gap:1px!important;
+    gap:0!important;
   }
   .portal-route-workspace > .portal-toolbar{
     width:56px!important;
@@ -3956,9 +3956,3 @@ main{
   }
 }
 
-/* Accessibility/functionality only: the existing profile trigger also works
-   with Enter/Space without changing its visual treatment. */
-.home-hero-profile-trigger:focus-visible{
-  outline:2px solid rgba(255,255,255,.9)!important;
-  outline-offset:2px!important;
-}
