@@ -71,8 +71,8 @@ export function getTelegramIdentity():TelegramProfileIdentity{
 }
 
 export function loadPortalProfile():PortalProfile{
+  const identity=getTelegramIdentity();
   try{
-    const identity=getTelegramIdentity();
     const raw=localStorage.getItem(storageKey(identity));
     if(raw){
       const saved=JSON.parse(raw) as PortalProfile;
