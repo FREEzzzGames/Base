@@ -40,7 +40,18 @@ void checkForPortalUpdate();
 type View = PortalView;
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
+type PortalSessionSnapshot={view:View;gameTab:GameTab;profileOpen:boolean;};
+const PORTAL_SESSION_KEY="freezzz:session-state:v1";
+function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
+  try{
+    const raw=sessionStorage.getItem(PORTAL_SESSION_KEY);
+    if(!raw)return {};
+    const parsed=JSON.parse(raw) as Partial<PortalSessionSnapshot>;
+    return parsed&&typeof parsed==="object"?parsed:{};
+  }catch{return {};}
+}
+const portalSession=loadPortalSessionSnapshot();
+const portalState=createPlatformState({view:(portalSession.view||"home") as View,language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
 let lang:Language=portalState.language;
@@ -51,7 +62,7 @@ let developerOpen=false;
 let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="user";}catch{return true;}})();
 let layoutOverrides=loadLayoutOverrides();
 let developerSelectedBlock="";
-let profileOpen=false;
+let profileOpen=Boolean(portalSession.profileOpen);
 let portalProfile:PortalProfile=loadPortalProfile();
 syncPortalIdentity(portalProfile);
 startPortalSession(portalProfile);
@@ -67,7 +78,8 @@ let livePopupSource:"twitch"|"youtube"="twitch";
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
-let gameTab:GameTab="story";
+let gameTab:GameTab=portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?${portalSession.gameTab} as GameTab:"story";
+
 type GameFontSize="normal"|"large"|"largest";
 let gameFontSize:GameFontSize=(()=>{try{const v=localStorage.getItem("freezzz:game-font-size");return v==="large"||v==="largest"?v:"normal";}catch{return "normal";}})();
 let gameFontControlsOpen=false;
@@ -317,7 +329,17 @@ function toggleDeveloperMode(){
   try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{}
   render();
 }
+function savePortalSessionSnapshot(){
+  try{
+    sessionStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({
+      view,
+      gameTab,
+      profileOpen
+    } satisfies PortalSessionSnapshot));
+  }catch{}
+}
 function render(){
+  savePortalSessionSnapshot();
   let body="";
 
   if(view==="home"){
@@ -707,7 +729,7 @@ function bind(){
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
   if(view==="game"){
     document.querySelectorAll<HTMLElement>("[data-game-tab]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameTab=(x.dataset.gameTab as GameTab)||"story";render();};
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameTab=(x.dataset.gameTab as GameTab)||"story";savePortalSessionSnapshot();render();};
     });
     document.querySelectorAll<HTMLElement>("[data-game-race]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=chooseRace(gameState,(x.dataset.gameRace as GameRace)||"human");gameTab="story";render();};
