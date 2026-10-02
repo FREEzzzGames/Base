@@ -2893,3 +2893,31 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .game-portal *{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
+
+/* PORTAL TOOLBAR VIDEO BACKGROUND — background only. */
+.portal-toolbar{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:transparent!important;
+}
+.portal-toolbar-background-video{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:inherit!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  pointer-events:none!important;
+}
+.portal-toolbar-main{
+  position:relative!important;
+  z-index:1!important;
+}
