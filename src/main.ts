@@ -367,7 +367,7 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
-      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}">
+      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}">
         ${renderPortalToolbar()}
         <main>${body}</main>
       </div>
@@ -471,27 +471,25 @@ window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStar
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bindHudTouchGesture(){
   if(hudGestureBound)return;
-  const workspace=document.querySelector<HTMLElement>(".portal-workspace");
-  if(!workspace)return;
   hudGestureBound=true;
   let startX=0,startY=0,tracking=false,triggered=false;
-  workspace.addEventListener("pointerdown",e=>{
+  document.addEventListener("pointerdown",e=>{
     if(e.pointerType==="mouse"&&e.button!==0)return;
     startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;
   },{passive:true});
-  workspace.addEventListener("pointermove",e=>{
+  document.addEventListener("pointermove",e=>{
     if(!tracking||triggered)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
     if(Math.abs(dy)>Math.abs(dx)+8)return;
     if(!hudHidden&&startX<=64&&dx<-44){
-      triggered=true;hudHidden=true;workspace.classList.add("portal-hud-hidden");
+      triggered=true;hudHidden=true;document.querySelector<HTMLElement>(".portal-workspace")?.classList.add("portal-hud-hidden");
     }else if(hudHidden&&startX<=28&&dx>44){
-      triggered=true;hudHidden=false;workspace.classList.remove("portal-hud-hidden");
+      triggered=true;hudHidden=false;document.querySelector<HTMLElement>(".portal-workspace")?.classList.remove("portal-hud-hidden");
     }
   },{passive:true});
   const end=()=>{tracking=false;};
-  workspace.addEventListener("pointerup",end,{passive:true});
-  workspace.addEventListener("pointercancel",end,{passive:true});
+  document.addEventListener("pointerup",end,{passive:true});
+  document.addEventListener("pointercancel",end,{passive:true});
 }
 \nfunction bind(){
   if(view==="radio"){
