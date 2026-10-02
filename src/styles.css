@@ -3474,3 +3474,46 @@ main{
 img,video,iframe,canvas,svg{
   max-width:100%;
 }
+
+
+/* TOUCH INPUT SYSTEM v2
+   One pointer model for touch / pen / mouse. Horizontal portal swipe is
+   application-owned; vertical movement remains native scrolling. */
+html,body{
+  touch-action:pan-y;
+  -webkit-tap-highlight-color:transparent;
+}
+.app-shell,main{
+  touch-action:pan-y;
+  overscroll-behavior-x:contain;
+}
+button,a,[role="button"],input,textarea,select{
+  touch-action:manipulation;
+}
+button,a,[role="button"]{
+  -webkit-user-select:none;
+  user-select:none;
+}
+#radio-carousel-track,[data-horizontal-scroll]{
+  touch-action:pan-y;
+  overscroll-behavior-x:contain;
+}
+button,[role="button"]{
+  min-width:max(24px,44px);
+  min-height:max(24px,44px);
+}
+.icon-button{
+  min-width:44px;
+  min-height:44px;
+}
+.portal-illustration,.ui-icon,.game-icon,.nav-icon{
+  pointer-events:none;
+}
+.bottom-nav-item{
+  min-width:44px;
+  min-height:52px;
+  touch-action:manipulation;
+}
+.stream,.home-live-row,.home-card{
+  touch-action:manipulation;
+}
