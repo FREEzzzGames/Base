@@ -79,6 +79,8 @@ let radioActivityName="";
 let liveSelected="";
 let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
+let hudHidden=false;
+let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
