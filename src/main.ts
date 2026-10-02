@@ -9,7 +9,7 @@ import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverride
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
-import { drawDuckBlast } from "./game-runtime";
+import { renderGame, loadGameState, chooseRace, applyGameChoice, type GameTab, type GameRace } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
@@ -55,8 +55,8 @@ let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 let homeRefreshTimer:number|null=null;
-let score=0;
-let player=.5;
+let gameState=loadGameState();
+let gameTab:GameTab="story";
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
@@ -229,19 +229,14 @@ function render(){
 
   if(view==="game"){
     body=`
-      <div class="content portal-layout" data-portal-layout="game">
-        <div class="section-head portal-block" data-portal-block="header">
-          <div><h2>GAME</h2><p>DUCK BLAST</p></div>
-          <button class="tg-button secondary" data-view="home">⌂</button>
+      <div class="content portal-layout game-portal" data-portal-layout="game">
+        <div class="section-head portal-block game-section-head" data-portal-block="header">
+          <div><h2>GAME</h2><p>FREEzzz STORY · FOUR RACES</p></div>
+          <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
-        <div class="game portal-block" data-portal-block="game" data-game-touch><canvas id="canvas"></canvas><b id="score">SCORE ${score}</b></div>
-        <div class="controls portal-block touch-controls" data-portal-block="controls">
-          <button data-fire type="button">TOUCH / FIRE</button>
-          <span>Проведи пальцем по полю для перемещения</span>
-        </div>
+        <div class="portal-block game-story-block" data-portal-block="game">${renderGame(gameState,gameTab)}</div>
       </div>`;
   }
-
   if(view==="radio"){
     const selectedStation=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
     const selectedIndex=selectedStation?radioStations.findIndex(s=>s.stationuuid===selectedStation.stationuuid):-1;
@@ -355,7 +350,6 @@ function render(){
     </div>`;
   bind();
   applyDeveloperLayout();
-  if(view==="game")drawDuckBlast(document.querySelector<HTMLCanvasElement>('#canvas')!,player);
   if(view==="home")ensureHomeRefresh();
 }
 
@@ -379,7 +373,7 @@ function refreshHomeContent(){
     chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:"Нет сообщений";
   }
   const game=document.querySelector<HTMLElement>("[data-home-game-content]");
-  if(game)game.innerHTML=`<span>SCORE <b>${score}</b></span><span>PLAYER ${Math.round(player*100)}%</span><small>DUCK BLAST · готов к запуску</small>`;
+  if(game)game.innerHTML=gameState.race?`<span>LEVEL <b>${gameState.level}</b></span><span>XP ${gameState.xp}/100</span><small>${escapeHtml(gameState.race.toUpperCase())} · история продолжается</small>`:`<span>FREEzzz STORY</span><span>4 RACES</span><small>Выбери героя и начни приключение</small>`;
   const radio=document.querySelector<HTMLElement>("[data-home-radio-content]");
   if(radio){
     const station=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
@@ -560,32 +554,18 @@ function bind(){
   });
   document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
-  document.querySelector("[data-fire]")?.addEventListener("click",function(){
-    score++;
-    const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;
-  });
-  const gameSurface=document.querySelector<HTMLElement>("[data-game-touch]");
-  if(gameSurface){
-    let gameStartX=0;
-    let gameActive=false;
-    gameSurface.addEventListener("pointerdown",e=>{
-      if((e.target as HTMLElement).closest("button"))return;
-      gameStartX=e.clientX;
-      gameActive=true;
-      gameSurface.setPointerCapture?.(e.pointerId);
-    },{passive:false});
-    gameSurface.addEventListener("pointermove",e=>{
-      if(!gameActive)return;
-      const rect=gameSurface.getBoundingClientRect();
-      player=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-      drawDuckBlast(document.querySelector<HTMLCanvasElement>('#canvas')!,player);
-    },{passive:false});
-    gameSurface.addEventListener("pointerup",()=>{
-      if(gameActive){gameActive=false;score++;const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;}
+  if(view==="game"){
+    document.querySelectorAll<HTMLElement>("[data-game-tab]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameTab=(x.dataset.gameTab as GameTab)||"story";render();};
     });
-    gameSurface.addEventListener("pointercancel",()=>{gameActive=false;});
+    document.querySelectorAll<HTMLElement>("[data-game-race]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=chooseRace(gameState,(x.dataset.gameRace as GameRace)||"human");gameTab="story";render();};
+    });
+    document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
+    });
   }
-  bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
+    bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
 }
 
 function escapeHtml(s:string){
