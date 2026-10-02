@@ -4464,3 +4464,18 @@ main{
     max-height:620px!important;
   }
 }
+
+/* TOUCH HUD — swipe left on the bar to hide; swipe right from the left edge to reveal. */
+.portal-workspace.portal-hud-hidden{
+  grid-template-columns:0 minmax(0,1fr)!important;
+}
+.portal-workspace.portal-hud-hidden > .portal-toolbar{
+  transform:translateX(calc(-100% - 2px))!important;
+  pointer-events:none!important;
+}
+.portal-workspace.portal-hud-hidden > main{
+  padding-left:1px!important;
+}
+.portal-workspace.portal-hud-hidden > main > .home-portal{
+  width:100%!important;
+}
