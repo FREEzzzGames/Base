@@ -1,6 +1,7 @@
 type SvgIconDef={paths:string[];circles?:string[];rects?:string[];lines?:string[];polygons?:string[]};
 const ICONS:Record<string,SvgIconDef>={
   user:{paths:["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z","M4 21a8 8 0 0 1 16 0"]},
+  languages:{paths:["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z","M3 12h18","M12 3c2.5 2.4 3.7 5.4 3.7 9s-1.2 6.6-3.7 9","M12 3c-2.5 2.4-3.7 5.4-3.7 9s1.2 6.6 3.7 9"]},
   profile:{paths:["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z","M4 21a8 8 0 0 1 16 0"]},
   video:{paths:["M4 6.5h11a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z","m17 10 5-3v10l-5-3"]},
   chat:{paths:["M4 5.5A3.5 3.5 0 0 1 7.5 2h9A3.5 3.5 0 0 1 20 5.5v7a3.5 3.5 0 0 1-3.5 3.5H11l-5 4v-4.7a3.5 3.5 0 0 1-2-3.2Z"]},
