@@ -3259,3 +3259,17 @@ main{
   .portal-toolbar-language-button{display:grid!important}
   .portal-toolbar-nav{display:flex!important}
 }
+
+/* SIDEBAR ORDER — bottom-up: HOME, LANGUAGE, LIVE, CHAT, GAME, LIBRARY, RADIO. */
+.portal-toolbar-nav{
+  flex-direction:column!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(1){order:7!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(2){order:5!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(3){order:4!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4){order:3!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(5){order:2!important}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(6){order:1!important}
+.portal-toolbar-nav > .portal-toolbar-language-wrap{order:6!important}
