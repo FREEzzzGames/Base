@@ -81,14 +81,18 @@ function bind(){
 }
 
 function addHudButton(){
+  let collapsed=false;
+  try{collapsed=localStorage.getItem("freezzz:hud-collapsed")==="1";}catch{}
+  document.querySelectorAll<HTMLElement>(".portal-workspace").forEach(w=>w.classList.toggle("portal-workspace-hud-collapsed",collapsed));
   document.querySelectorAll<HTMLElement>(".portal-toolbar").forEach(toolbar=>{
     if(toolbar.querySelector("[data-mw-hud]"))return;
     const b=document.createElement("button");
-    b.type="button";b.className="portal-mw-hud-toggle";b.dataset.mwHud="1";b.textContent="‹";
+    b.type="button";b.className="portal-mw-hud-toggle";b.dataset.mwHud="1";b.textContent=collapsed?"›":"‹";
     b.onclick=()=>{
       const w=toolbar.closest(".portal-workspace");if(!w)return;
-      const collapsed=w.classList.toggle("portal-workspace-hud-collapsed");
-      b.textContent=collapsed?"›":"‹";
+      const next=w.classList.toggle("portal-workspace-hud-collapsed");
+      b.textContent=next?"›":"‹";
+      try{localStorage.setItem("freezzz:hud-collapsed",next?"1":"0");}catch{}
     };
     toolbar.append(b);
   });
