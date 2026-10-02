@@ -322,7 +322,7 @@ function render(){
           <div><h2>GAME</h2><p>FREEzzz STORY · FOUR RACES</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
-        <div class="portal-block game-story-block" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab)}</div>
+        <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab)}</div>
       </div>`;
   }
   if(view==="radio"){
