@@ -12,3 +12,7 @@ services:
         sync: false
       - key: ALLOWED_ORIGIN
         value: https://freezzgames.github.io
+      - key: TELEGRAM_REQUIRED_CHAT_ID
+        sync: false
+      - key: TELEGRAM_REQUIRE_MEMBERSHIP
+        value: "false"
