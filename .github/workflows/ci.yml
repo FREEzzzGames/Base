@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           mkdir -p src/public
           cat > src/build-info.ts <<EOF
-          export const PORTAL_VERSION = "$$(node -p 'require("./package.json").version')";
+          export const PORTAL_VERSION = "$(node -p 'require("./package.json").version')";
           export const PORTAL_BUILD_ID = "$GITHUB_SHA";
           EOF
           node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("src/public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
