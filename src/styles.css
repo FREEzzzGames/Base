@@ -1,7 +1,7 @@
 
 :root{
   color-scheme:light dark;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -2886,4 +2886,10 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .home-hero-clock{
   color:rgba(238,246,252,.76)!important;
   text-shadow:0 2px 4px rgba(0,0,0,.76),0 0 12px rgba(255,255,255,.10)!important;
+}
+
+/* FONT SCOPE — Nothing/Inter everywhere except GAME. */
+.game-portal,
+.game-portal *{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
