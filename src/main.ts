@@ -1,7 +1,6 @@
 import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
-import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
@@ -12,7 +11,6 @@ import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } 
 import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 
-initPortalPalette();
 initTelegramBridge();
 
 async function checkForPortalUpdate(){
