@@ -1,7 +1,7 @@
 import type {PortalEventBus} from "../core/portal-core";
 import type {MihiLayer} from "./mihi-types";
 
-const LOCAL_MODEL_URL="/mihi/animated-woman.glb";
+const LOCAL_MODEL_URL=new URL(import.meta.env.BASE_URL+"mihi/animated-woman.glb",window.location.href).toString();
 const REMOTE_MODEL_URL="https://static.poly.pizza/46d6db5a-3c9f-4238-8cdf-8eb7194498dc.glb";
 
 type MihiVisualState={layer:MihiLayer};
