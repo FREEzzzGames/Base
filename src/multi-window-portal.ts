@@ -185,8 +185,8 @@ export function initMultiWindowPortal(){
     render();
   };
   window.addEventListener("resize",clampWindows,{passive:true});
+  window.addEventListener("freezzz:portal-render",addHudButton);
   addHudButton();
-  new MutationObserver(addHudButton).observe(document.body,{childList:true,subtree:true});
   render();
 }
 if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",initMultiWindowPortal,{once:true});
