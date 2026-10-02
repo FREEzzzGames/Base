@@ -4087,3 +4087,16 @@ main{
 .home-portal{
   gap:3px!important;
 }
+
+/* HUD is a primary HOME block — keep the same 3px rhythm. */
+:root{
+  --portal-grid-gap:3px!important;
+}
+main{
+  padding-left:calc(var(--portal-hud-width) + 3px + var(--tg-content-safe-area-inset-left,0px))!important;
+}
+@media(max-width:699px){
+  main{
+    padding-left:calc(var(--portal-hud-width) + 3px + var(--tg-content-safe-area-inset-left,0px))!important;
+  }
+}
