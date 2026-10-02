@@ -136,6 +136,27 @@ let editorMessage="";
 function orderedBlocks(screen:View){
   return [...editorLayout[screen]].sort((a,b)=>a.order-b.order);
 }
+function defaultEditorGeometry(screen:View,index:number,count:number,span:1|2){
+  const presets:Record<View,Array<[number,number]>>={
+    home:[[0,12],[14,18],[34,18],[54,18],[74,18],[94,6]],
+    live:[[0,12],[14,48],[64,30]],
+    chat:[[0,12],[14,58],[74,14]],
+    game:[[0,12],[14,64],[80,12]],
+    radio:[[0,10],[12,34],[48,18],[68,12],[82,12]],
+    library:[[0,88]]
+  };
+  const preset=presets[screen][Math.min(index,presets[screen].length-1)]||[Math.min(92,index*12),Math.max(6,Math.floor(82/Math.max(1,count)))];
+  return {x:5,y:preset[0],w:90,h:preset[1]};
+}
+function editorGeometry(screen:View,block:EditorBlock,index:number,count:number){
+  const fallback=defaultEditorGeometry(screen,index,count,block.span);
+  return {
+    x:block.x??fallback.x,
+    y:block.y??fallback.y,
+    w:block.w??fallback.w,
+    h:block.h??fallback.h
+  };
+}
 function editorLabel(screen:View,id:string,fallback:string){
   return editorLayout[screen].find(b=>b.id===id)?.label||fallback;
 }
@@ -170,12 +191,9 @@ function syncEditorBlocksFromDOM():boolean{
   return changed;
 }
 function editorBlockMarkup(block:EditorBlock,index:number){
-  const style=[
-    block.x!==undefined?"left:"+block.x+"%;":"",
-    block.y!==undefined?"top:"+block.y+"%;":"",
-    block.w!==undefined?"width:"+block.w+"%;":"",
-    block.h!==undefined?"height:"+block.h+"%;":""
-  ].join("");
+  const count=editorLayout[editorScreen].length;
+  const g=editorGeometry(editorScreen,block,index,count);
+  const style="left:"+g.x+"%;top:"+g.y+"%;width:"+g.w+"%;height:"+g.h+"%;";
   return '<article class="editor-block block-color-'+(index%8)+'" data-editor-block="'+escapeHtml(block.id)+'" data-editor-index="'+index+'" data-editor-drag="'+escapeHtml(block.id)+'" style="'+style+'">'+
     '<div class="editor-block-drag" data-editor-drag-handle="'+escapeHtml(block.id)+'" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>'+
     '<div class="editor-block-preview"><span class="editor-block-type">'+escapeHtml(block.id)+'</span>'+
@@ -485,21 +503,15 @@ function applyLayoutToRoot(root:HTMLElement,screen:View){
   blocks.forEach((block,index)=>{
     const el=byId.get(block.id);
     if(!el)return;
+    const g=editorGeometry(screen,block,index,blocks.length);
     el.style.order=String(index);
-    el.style.gridColumn=block.span===2?"1 / -1":"span 1";
-    if(block.x!==undefined||block.y!==undefined||block.w!==undefined||block.h!==undefined){
-      el.style.position="absolute";
-      el.style.left=(block.x??0)+"%";
-      el.style.top=(block.y??0)+"%";
-      el.style.width=(block.w??(block.span===2?100:50))+"%";
-      if(block.h!==undefined)el.style.height=block.h+"%";
-    }else{
-      el.style.position="";
-      el.style.left="";
-      el.style.top="";
-      el.style.width="";
-      el.style.height="";
-    }
+    el.style.gridColumn="1 / -1";
+    el.style.position="absolute";
+    el.style.left=g.x+"%";
+    el.style.top=g.y+"%";
+    el.style.width=g.w+"%";
+    el.style.height=g.h+"%";
+    el.style.boxSizing="border-box";
   });
 }
 
