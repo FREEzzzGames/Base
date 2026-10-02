@@ -1,5 +1,7 @@
 # FREEzzz Platform — LAW 2.0
 
+**Current product scope:** Telegram Mini App only. Android, standalone web and other host implementations remain parked until explicitly activated; the 31-stage LAW remains canonical and is not renumbered.
+
 01 Source of Truth
 02 Architecture Foundation
 03 Full Audit
