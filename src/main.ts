@@ -8,6 +8,7 @@ import { icon, streams, type LiveStream } from "./portal-ui";
 import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
+import { renderLivePopup } from "./live-runtime";
 
 initTelegramBridge();
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
@@ -279,7 +280,7 @@ function render(){
         </button>
       </nav>
       <main>${body}</main>
-      ${livePopupMarkup()}
+      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
       ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
 
@@ -366,51 +367,6 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")radioPlaybackStatus="paused";});
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
-}
-function liveEmbedUrl(stream:LiveStream,source:"twitch"|"youtube"):string{
-  if(source==="twitch"){
-    const parent=window.location.hostname||"freezzgames.github.io";
-    return "https://player.twitch.tv/?"+new URLSearchParams({channel:stream.twitchChannel,parent,autoplay:"false",muted:"false"}).toString();
-  }
-  if(stream.youtubeChannel){
-    return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:stream.youtubeChannel,autoplay:"0",rel:"0",playsinline:"1"}).toString();
-  }
-  return "";
-}
-
-function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
-  liveSelected=name;
-  livePopupOpen=true;
-  render();
-}
-function closeLivePopup():void{
-  livePopupOpen=false;
-  render();
-}
-function livePopupMarkup():string{
-  if(!livePopupOpen||!liveSelected)return "";
-  const stream=streams.find(s=>s.name===liveSelected);
-  if(!stream)return "";
-  const source=(livePopupSource==="youtube"?"youtube":"twitch") as "twitch"|"youtube";
-  const embed=liveEmbedUrl(stream,source);
-  const external=source==="youtube"?stream.youtube:stream.twitch;
-  return `<div class="live-popup-overlay" data-live-popup-overlay>
-    <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
-      <header class="live-popup-header">
-        <div><span class="live-popup-kicker">LIVE</span><strong>${escapeHtml(stream.name)}</strong><small>${source==="youtube"?"YouTube":"Twitch"}</small></div>
-        <button class="live-popup-close" data-live-popup-close type="button" aria-label="Закрыть">×</button>
-      </header>
-      <div class="live-popup-source-tabs">
-        <button class="tg-button ${source==="twitch"?"":"secondary"}" data-live-popup-source="twitch" type="button">Twitch</button>
-        <button class="tg-button ${source==="youtube"?"":"secondary"}" data-live-popup-source="youtube" type="button">YouTube</button>
-      </div>
-      <div class="live-popup-video">
-        ${embed
-          ? `<iframe src="${escapeHtml(embed)}" title="${escapeHtml(stream.name)} — ${source}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
-          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер недоступен</strong><span>Канал доступен на ${source}, но универсальный embed для него не задан.</span><button class="tg-button" data-live-external type="button">Открыть ${source}</button></div>`}
-      </div>
-    </section>
-  </div>`;
 }
 portalEvents.on("navigation:changed",payload=>{
   view=payload.view;
