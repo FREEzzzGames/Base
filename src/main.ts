@@ -350,7 +350,7 @@ function render(){
         <section class="hero portal-block home-hero" data-portal-block="hero">
           <div class="home-hero-meta"><span>FREEzzzyPORTAL</span><span data-home-clock>--:--:--</span></div>
           <h1>FREEzzzY</h1>
-          <p>Твой интерактивный мир внутри одного портала.</p>
+          <p>${T("homeDescription")}</p>
         </section>
         ${homeCard("live",icon("video","home-card-icon"),T("liveCard"),'<div class="home-live-preview" data-home-live-content></div>')}
         ${homeCard("chat",icon("chat","home-card-icon"),T("chatCard"),'<div class="home-chat-preview" data-home-chat-content></div>')}
@@ -364,14 +364,14 @@ function render(){
     body=`
       <div class="content portal-layout" data-portal-layout="live">
         <div class="section-head portal-block" data-portal-block="header">
-          <div><h2>LIVE</h2><p>Стримеры · Twitch + YouTube</p></div>
+          <div><h2>LIVE</h2><p>${T("liveSub")}</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
             return `<article class="stream">
               <div class="avatar">${icon(s.icon,"stream-icon")}</div>
-              <div><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>Twitch + YouTube</small></div>
+              <div><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></div>
               <div class="stream-actions">
                 <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="twitch" type="button">Twitch</button>
                 <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="youtube" type="button">YouTube</button>
@@ -385,13 +385,13 @@ function render(){
     body=`
       <div class="content portal-layout" data-portal-layout="chat">
         <div class="section-head portal-block" data-portal-block="header">
-          <div><h2>CHAT</h2><p>Общение FREEzzz</p></div>
+          <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
         <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
           <input id="chatinput" placeholder="${T("message")}" autocomplete="off">
-          <button class="tg-button">Отправить</button>
+          <button class="tg-button">${T("send")}</button>
         </form>
       </div>`;
   }
@@ -400,7 +400,7 @@ function render(){
     body=`
       <div class="content portal-layout game-portal" data-portal-layout="game">
         <div class="section-head portal-block game-section-head" data-portal-block="header">
-          <div><h2>GAME</h2><p>FREEzzz STORY · FOUR RACES</p></div>
+          <div><h2>GAME</h2><p>${T("gameSub")}</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="portal-block game-story-block game-font-${gameFontSize}" data-portal-block="game">${renderGameFontToolbar()}${renderGame(gameState,gameTab,lang as GameLanguage)}</div>
@@ -421,7 +421,7 @@ function render(){
         <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
         <section class="radio-panel">
           <div class="radio-heading">
-            <div><span class="radio-kicker">FREEzzz RADIO</span><h3>Internet Radio</h3><p>Выбери станцию по логотипу и запусти её прямо внутри портала.</p></div>
+            <div><span class="radio-kicker">FREEzzz RADIO</span><h3>${T("internetRadio")}</h3><p>${T("radioChoose")}</p></div>
           </div>
           <div class="radio-carousel portal-block" data-portal-block="carousel" id="radio-carousel" aria-label="Radio station carousel">
             <div class="radio-carousel-track" id="radio-carousel-track">
@@ -464,10 +464,10 @@ function render(){
       <div class="content portal-layout" data-portal-layout="library">
         <section class="hero portal-block" data-portal-block="content">
           <h2>LIBRARY</h2>
-          <p>Локальная библиотека портала.</p>
+          <p>${T("libraryLocal")}</p>
           <div class="top-actions" style="justify-content:flex-start;margin-top:12px">
-            <button class="tg-button" id="save">Save</button>
-            <button class="tg-button secondary" id="clear">Clear</button>
+            <button class="tg-button" id="save">${T("save")}</button>
+            <button class="tg-button secondary" id="clear">${T("clear")}</button>
           </div>
           <pre>${localStorage.getItem("freezzz-library")||"[]"}</pre>
         </section>
@@ -530,7 +530,7 @@ function refreshHomeContent(){
   if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const live=document.querySelector<HTMLElement>("[data-home-live-content]");
   if(live){
-    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s.icon,"home-stream-icon")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>Twitch + YouTube</small></span>`).join("");
+    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s.icon,"home-stream-icon")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></span>`).join("");
   }
   const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
   if(chat){
@@ -538,7 +538,7 @@ function refreshHomeContent(){
     chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:T("noMessages");
   }
   const game=document.querySelector<HTMLElement>("[data-home-game-content]");
-  if(game)game.innerHTML=gameState.race?`<span>LEVEL <b>${gameState.level}</b></span><span>XP ${gameState.xp}/100</span><small>${escapeHtml(gameState.race.toUpperCase())} · история продолжается</small>`:`<span>FREEzzz STORY</span><span>4 RACES</span><small>Выбери героя и начни приключение</small>`;
+  if(game)game.innerHTML=gameState.race?`<span>LEVEL <b>${gameState.level}</b></span><span>XP ${gameState.xp}/100</span><small>${escapeHtml(gameState.race.toUpperCase())} · ${T("historyContinues")}</small>`:`<span>${T("gameStory")}</span><span>${T("fourRaces")}</span><small>${T("chooseHero")}</small>`;
   const radio=document.querySelector<HTMLElement>("[data-home-radio-content]");
   if(radio){
     const station=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
@@ -548,7 +548,7 @@ function refreshHomeContent(){
   if(library){
     let count=0;
     try{const saved=JSON.parse(localStorage.getItem("freezzz-library")||"[]");count=Array.isArray(saved)?saved.length:0;}catch{}
-    library.innerHTML=`<b>${count}</b><span>сохранённых игр</span><small>Локальная библиотека</small>`;
+    library.innerHTML=`<b>${count}</b><span>сохранённых игр</span><small>${T("localLibrary")}</small>`;
   }
 }
 function ensureHomeRefresh(){
