@@ -27,6 +27,7 @@ export function renderDeveloperDiagnostics(snapshot:DeveloperDiagnosticsSnapshot
         <div class="dev-mode-switch">
           <button class="dev-mode-pill" data-dev-mode-toggle type="button"><span class="dev-mode-dot"></span>${snapshot.developerMode?"DEV":"USER"}</button>
           <span class="dev-view-badge">${escapeHtml(snapshot.view.toUpperCase())}</span>
+          <span class="dev-gesture-hint" title="Перетаскивай выбранный блок пальцем">✋</span>
         </div>
         <div class="dev-block-list">
           ${snapshot.blocks.length?snapshot.blocks.map(block=>`<button class="dev-block-chip ${selected?.key===block.key?"active":""}" data-dev-block="${escapeAttr(block.key)}" type="button"><span class="dev-block-icon">${blockIcon(block.key)}</span><span>${escapeHtml(block.label)}</span></button>`).join(""):`<span class="dev-empty">Нет блоков</span>`}
