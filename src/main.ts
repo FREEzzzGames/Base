@@ -90,6 +90,16 @@ function resetDeveloperLayout(){
 }
 function portalBlockInfos(){return getLayoutBlockInfos(view,layoutOverrides);}
 function applyDeveloperLayout(){applyLayout(view,developerMode,layoutOverrides);}
+function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
+  liveSelected=name;
+  livePopupSource=source;
+  livePopupOpen=true;
+  render();
+}
+function closeLivePopup():void{
+  livePopupOpen=false;
+  render();
+}
 function renderDeveloperPanel(){
   return renderDeveloperDiagnostics({
     version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,
