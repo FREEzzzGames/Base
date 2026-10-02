@@ -10,11 +10,10 @@ import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platfo
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
 import { drawDuckBlast } from "./game-runtime";
-
-initTelegramBridge();
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
+initTelegramBridge();
 
 async function checkForPortalUpdate(){
   try{
