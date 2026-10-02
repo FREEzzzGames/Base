@@ -84,48 +84,6 @@ let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
-let gameAmbientHost:HTMLDivElement|null=null;
-let gameAmbientPlaying=true;
-let gameAmbientMuted=true;
-function gameAmbientCommand(func:string){
-  const frame=gameAmbientHost?.querySelector<HTMLIFrameElement>("iframe");
-  if(!frame?.contentWindow)return;
-  frame.contentWindow.postMessage(JSON.stringify({event:"command",func,args:[]}),"https://www.youtube.com");
-}
-function bindGameAmbientControls(){
-  if(!gameAmbientHost)return;
-  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-mute]")?.addEventListener("click",e=>{
-    e.stopPropagation();
-    gameAmbientMuted=!gameAmbientMuted;
-    gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
-    const b=e.currentTarget as HTMLButtonElement;
-    b.innerHTML=icon(gameAmbientMuted?"mute":"play","ambient-control-icon");
-    b.setAttribute("aria-label",gameAmbientMuted?T("soundOn"):T("soundOff"));
-  });
-  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
-    e.stopPropagation();
-    gameAmbientPlaying=!gameAmbientPlaying;
-    gameAmbientCommand(gameAmbientPlaying?"playVideo":"pauseVideo");
-    const b=e.currentTarget as HTMLButtonElement;
-    b.innerHTML=icon(gameAmbientPlaying?"play":"waiting","ambient-control-icon");
-    b.setAttribute("aria-label",gameAmbientPlaying?T("pauseVideo"):T("resumeVideo"));
-  });
-}
-function syncGameAmbient(){
-  const target=document.querySelector<HTMLElement>("[data-game-ambient-host]");
-  if(view!=="game"){
-    gameAmbientHost?.remove();
-    return;
-  }
-  if(!target)return;
-  if(!gameAmbientHost){
-    gameAmbientHost=document.createElement("div");
-    gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">'+icon("mute","ambient-control-icon")+'</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'">'+icon("pause","ambient-control-icon")+'</button></div>';
-    bindGameAmbientControls();
-  }
-  if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
-}
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
@@ -387,7 +345,6 @@ function render(){
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
     portalEvents.emit("navigation:changed",{view:"home"});
   });
-  syncGameAmbient();
 }
 
 function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
