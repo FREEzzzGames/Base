@@ -190,6 +190,7 @@ function renderPortalToolbar(){
     ["library","library","LIBRARY"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
+    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="https://cdn.pixabay.com/video/2024/08/18/227152_large.mp4" type="video/mp4"></video>
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
