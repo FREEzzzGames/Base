@@ -11,6 +11,7 @@ import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
+import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 
 initPortalPalette();
 initTelegramBridge();
@@ -51,6 +52,15 @@ let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="u
 let layoutOverrides=loadLayoutOverrides();
 let developerSelectedBlock="";
 let profileOpen=false;
+let portalProfile:PortalProfile=loadPortalProfile();
+syncPortalIdentity(portalProfile);
+startPortalSession(portalProfile);
+let activityLastFlushAt=Date.now();
+let gameActivityStartedAt:number|null=view==="game"?Date.now():null;
+let liveActivityStartedAt:number|null=null;
+let radioActivityStartedAt:number|null=null;
+let liveActivityName="";
+let radioActivityName="";
 let liveSelected="";
 let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
@@ -251,11 +261,47 @@ function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
   liveSelected=name;
   livePopupSource=source;
   livePopupOpen=true;
+  beginLiveActivity(name);
   render();
 }
 function closeLivePopup():void{
+  endLiveActivity();
   livePopupOpen=false;
   render();
+}
+function flushActivityTracking(){
+  const now=Date.now();
+  const elapsed=Math.max(0,(now-activityLastFlushAt)/1000);
+  activityLastFlushAt=now;
+  if(view==="game"&&gameActivityStartedAt!==null)addGameTime(portalProfile,elapsed);
+  if(liveActivityStartedAt!==null&&liveActivityName){addLiveWatchTime(portalProfile,liveActivityName,elapsed);liveActivityStartedAt=now;}
+  if(radioActivityStartedAt!==null&&radioActivityName){addRadioListenTime(portalProfile,radioActivityName,elapsed);radioActivityStartedAt=now;}
+}
+function beginGameActivity(){if(gameActivityStartedAt!==null)return;gameActivityStartedAt=Date.now();recordGameLaunch(portalProfile);}
+function endGameActivity(){if(gameActivityStartedAt===null)return;addGameTime(portalProfile,(Date.now()-gameActivityStartedAt)/1000);gameActivityStartedAt=null;}
+function beginLiveActivity(name:string){if(liveActivityStartedAt!==null&&liveActivityName===name)return;if(liveActivityStartedAt!==null)flushActivityTracking();liveActivityName=name;liveActivityStartedAt=Date.now();recordLiveVisit(portalProfile,name);}
+function endLiveActivity(){if(liveActivityStartedAt===null)return;flushActivityTracking();liveActivityStartedAt=null;liveActivityName="";}
+function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
+function endRadioActivity(){if(radioActivityStartedAt===null)return;flushActivityTracking();radioActivityStartedAt=null;radioActivityName="";}
+function profileDisplayName(){const u=portalProfile.identity;return [u.firstName,u.lastName].filter(Boolean).join(" ")||u.username||"FREEzzz user";}
+function profileInitial(){return (portalProfile.identity.firstName||portalProfile.identity.username||"F").slice(0,1).toUpperCase();}
+function renderProfileCard(){
+  const s=portalProfile.stats;
+  const liveItems=Object.entries(s.live.channels).sort((a,b)=>b[1].seconds-a[1].seconds).slice(0,3);
+  const radioItems=Object.entries(s.radio.stations).sort((a,b)=>b[1].seconds-a[1].seconds).slice(0,3);
+  const u=portalProfile.identity;
+  const avatar=u.photoUrl?`<img class="profile-avatar profile-avatar-photo" src="${escapeHtml(u.photoUrl)}" alt="">`:`<span class="profile-avatar">${escapeHtml(profileInitial())}</span>`;
+  const liveHtml=liveItems.length?liveItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} виз.</small></div>`).join(""):`<p class="profile-empty">Пока нет просмотров.</p>`;
+  const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
+  return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
+    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button>
+    <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
+    <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
+    <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
+    <div class="profile-section"><h3>RADIO</h3>${radioHtml}</div>
+    <div class="profile-section"><h3>GAME</h3><div class="profile-row"><span>Игровое время</span><small>${formatDuration(s.game.seconds)}</small></div><div class="profile-row"><span>Запуски</span><small>${s.game.launches}</small></div></div>
+    <div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div>
+  </section></div>`;
 }
 function renderDeveloperPanel(){
   return renderDeveloperDiagnostics({
@@ -439,7 +485,7 @@ function render(){
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
-      ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
+      ${profileOpen?renderProfileCard():""}
 
     </div>`;
   bind();
@@ -520,13 +566,16 @@ function playRadioStation(id:string){
   radioAudio.dataset.station=station.name;
   radioAudio.controls=true;
   radioPlaybackStatus="loading";
-  radioAudio.addEventListener("playing",()=>{radioPlaybackStatus="playing";render();},{once:true});
+  radioAudio.addEventListener("playing",()=>{radioPlaybackStatus="playing";beginRadioActivity(station.name);render();},{once:true});
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")radioPlaybackStatus="paused";});
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
 portalEvents.on("navigation:changed",payload=>{
   clearGameNavHideTimer();
+  flushActivityTracking();
+  if(view==="game"&&payload.view!=="game")endGameActivity();
+  if(view!=="game"&&payload.view==="game")beginGameActivity();
   gameNavRevealed=false;
   view=payload.view;
   portalState.view=payload.view;
@@ -534,14 +583,17 @@ portalEvents.on("navigation:changed",payload=>{
 });
 window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
+window.setInterval(()=>flushActivityTracking(),15000);
+window.addEventListener("pagehide",()=>{flushActivityTracking();endGameActivity();endLiveActivity();endRadioActivity();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
     document.querySelectorAll<HTMLButtonElement>("[data-radio-carousel-id]").forEach(x=>x.onclick=()=>{radioSelectedId=x.dataset.radioCarouselId||"";try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{};render();});
     document.querySelector("#radio-play")?.addEventListener("click",()=>void playRadioStation(radioSelectedId));
-    document.querySelector("#radio-pause")?.addEventListener("click",()=>{radioAudio?.pause();radioPlaybackStatus="paused";render();});
-    document.querySelector("#radio-stop")?.addEventListener("click",()=>{if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();});
+    document.querySelector("#radio-pause")?.addEventListener("click",()=>{endRadioActivity();radioAudio?.pause();radioPlaybackStatus="paused";render();});
+    document.querySelector("#radio-stop")?.addEventListener("click",()=>{endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();});
     const carousel=document.querySelector<HTMLElement>("#radio-carousel-track");
     let startX=0;
     carousel?.addEventListener("pointerdown",e=>{startX=e.clientX;});
@@ -645,6 +697,7 @@ function bind(){
     const message=i.value.trim();
     if(message){
       chatMessages.push({author:"You",message});
+      recordChatMessage(portalProfile);
       if(chatMessages.length>50)chatMessages=chatMessages.slice(-50);
       i.value="";
       render();
