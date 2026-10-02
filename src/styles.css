@@ -2890,12 +2890,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 @media(max-width:390px){.topbar{min-height:52px;padding-left:6px;padding-right:6px}.lang-switch{min-width:104px;width:104px;height:36px}.lang-switch button{min-width:30px;height:30px;padding:0 4px;font-size:12px}.home-card{min-height:96px}.game-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.game-tabs button{min-height:48px;font-size:14px}.game-choices button{min-height:52px;padding:10px}}
 @media(max-width:340px){.lang-switch{min-width:98px;width:98px}.lang-switch button{min-width:28px;font-size:11px}.game-tabs button{font-size:13px}}
 
-/* ================================================================
-   FINAL TELEGRAM MINI APP SHELL AUDIT
-   Telegram owns the host header; the Mini App content stays compact,
-   theme-driven and mobile-first.
-   ================================================================ */
-.portal-topbar{display:none!important}
 .app-shell{width:100%;max-width:760px;min-width:0;min-height:100%;margin:0 auto;background:var(--tg-theme-bg-color,#fff);color:var(--tg-theme-text-color,#222)}
 main{box-sizing:border-box;width:100%;min-height:calc(100svh - var(--tg-safe-area-inset-top,0px));overflow:auto;padding:max(8px,var(--tg-content-safe-area-inset-top,var(--tg-safe-area-inset-top,0px))) max(8px,var(--tg-content-safe-area-inset-right,0px)) max(16px,var(--tg-content-safe-area-inset-bottom,var(--tg-safe-area-inset-bottom,0px))) max(8px,var(--tg-content-safe-area-inset-left,0px));scrollbar-width:none}
 main::-webkit-scrollbar{display:none}
