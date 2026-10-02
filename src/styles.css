@@ -3189,3 +3189,146 @@ main{
   }
 }
 
+
+
+/* Unified portal top bar: one physical row at every viewport width. */
+.portal-topbar{
+  min-height:56px;
+  height:calc(56px + var(--safe-top));
+  padding:var(--safe-top) var(--portal-gutter) 0;
+  display:flex;
+  align-items:center;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.portal-topbar .topbar-main{
+  width:100%;
+  min-width:0;
+  height:56px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:8px;
+}
+.portal-topbar .topbar-left{
+  order:1;
+  flex:0 0 44px;
+  width:44px;
+  min-width:44px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.portal-topbar .topbar-right{
+  order:3;
+  flex:0 0 auto;
+  width:auto;
+  min-width:0;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
+.portal-topbar .topbar-nav{
+  order:2;
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+  height:48px;
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+  overscroll-behavior-x:contain;
+}
+.portal-topbar .topbar-nav::-webkit-scrollbar{display:none}
+.portal-topbar .lang-switch{
+  width:126px;
+  min-width:126px;
+  height:40px;
+}
+.portal-topbar .topbar-nav-item{
+  flex:0 0 clamp(48px,7vw,78px);
+  width:clamp(48px,7vw,78px);
+  min-width:48px;
+  height:44px;
+  min-height:44px;
+}
+@media(max-width:520px){
+  .portal-topbar{
+    min-height:54px;
+    height:calc(54px + var(--safe-top));
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .portal-topbar .topbar-main{height:54px;gap:6px}
+  .portal-topbar .topbar-left{
+    flex-basis:44px;
+    width:44px;
+    min-width:44px;
+  }
+  .portal-topbar .topbar-right{
+    height:42px;
+  }
+  .portal-topbar .lang-switch{
+    width:116px;
+    min-width:116px;
+    height:38px;
+  }
+  .portal-topbar .topbar-nav{
+    justify-content:flex-start;
+    gap:3px;
+    height:46px;
+  }
+  .portal-topbar .topbar-nav-item{
+    flex:0 0 46px;
+    width:46px;
+    min-width:46px;
+    height:44px;
+    padding:3px 2px;
+  }
+  .portal-topbar .topbar-nav-item span{display:none}
+  .portal-topbar .topbar-nav-item .ui-icon,
+  .portal-topbar .topbar-nav-item .nav-icon{
+    width:30px;
+    height:30px;
+    flex-basis:30px;
+  }
+}
+@media(max-width:390px){
+  .portal-topbar{
+    min-height:52px;
+    height:calc(52px + var(--safe-top));
+  }
+  .portal-topbar .topbar-main{height:52px;gap:4px}
+  .portal-topbar .topbar-left,
+  .portal-topbar .topbar-left .profile-button{
+    width:42px;
+    min-width:42px;
+    height:42px;
+  }
+  .portal-topbar .lang-switch{
+    width:108px;
+    min-width:108px;
+    height:36px;
+  }
+  .portal-topbar .lang-switch button{
+    min-width:36px;
+    height:30px;
+    padding-inline:3px;
+  }
+  .portal-topbar .topbar-nav-item{
+    flex-basis:44px;
+    width:44px;
+    min-width:44px;
+  }
+}
+
