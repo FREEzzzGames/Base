@@ -1,6 +1,7 @@
 import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
+import "./multi-window-portal";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
@@ -471,6 +472,12 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError=T("playError");render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError=T("autoplayError");}).finally(()=>render());
 }
+window.addEventListener("freezzz:radio-mini",event=>{
+  const action=(event as CustomEvent<{action?:string}>).detail?.action;
+  if(action==="play")playRadioStation(radioSelectedId);
+  if(action==="pause"){endRadioActivity();radioAudio?.pause();radioPlaybackStatus="paused";render();}
+  if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();}
+});
 portalEvents.on("navigation:changed",payload=>{
   const previousView=view;
   flushActivityTracking();
