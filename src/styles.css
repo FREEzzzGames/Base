@@ -1875,3 +1875,68 @@ main{
   .game-rpg{padding:9px;border-radius:17px}
   .game-rpg:after{border-radius:16px}
 }
+
+
+/* GAME FONT SIZE — user-selectable reading scale */
+.game-font-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:0 0 7px;padding:4px 5px;border:1px solid var(--ds-border);border-radius:10px;background:color-mix(in srgb,var(--ds-panel) 88%,transparent)}
+.game-font-toolbar>span{margin-right:3px;color:var(--ds-muted);font-size:8px;font-weight:900;letter-spacing:.12em}
+.game-font-toolbar button{min-width:34px;height:30px;padding:2px 7px;border:1px solid var(--ds-border);border-radius:7px;background:var(--ds-control);color:var(--ds-muted);font:inherit;font-size:11px;font-weight:900;line-height:1}
+.game-font-toolbar button.active{border-color:var(--ds-accent);background:var(--ds-accent);color:var(--ds-accent-text)}
+.game-font-toolbar button:active{transform:scale(.96)}
+
+.game-font-large .game-rpg .game-player-head strong{font-size:17px}
+.game-font-large .game-rpg .game-player-head small{font-size:12px}
+.game-font-large .game-rpg .game-vitals{font-size:12px}
+.game-font-large .game-rpg .game-tabs button{font-size:17px}
+.game-font-large .game-rpg .game-tabs button small{font-size:11px}
+.game-font-large .game-rpg .game-intro span{font-size:10px}
+.game-font-large .game-rpg .game-intro h2{font-size:28px}
+.game-font-large .game-rpg .game-intro p{font-size:13px}
+.game-font-large .game-rpg .race-card strong{font-size:16px}
+.game-font-large .game-rpg .race-card small{font-size:11px}
+.game-font-large .game-rpg .race-card em{font-size:9px}
+.game-font-large .game-rpg .game-scene small{font-size:9px}
+.game-font-large .game-rpg .game-speaker{font-size:9px}
+.game-font-large .game-rpg .game-dialog p{font-size:14px;line-height:1.65}
+.game-font-large .game-rpg .game-choices button{font-size:13px}
+.game-font-large .game-rpg .game-panel-title span{font-size:11px}
+.game-font-large .game-rpg .game-panel-title small{font-size:9px}
+.game-font-large .game-rpg .game-stat span,.game-font-large .game-rpg .game-skill span{font-size:11px}
+.game-font-large .game-rpg .game-stat b,.game-font-large .game-rpg .game-skill b{font-size:11px}
+.game-font-large .game-rpg .game-achievement small{font-size:10px}
+.game-font-large .game-rpg .game-journal b{font-size:10px}
+.game-font-large .game-rpg .game-journal p{font-size:11px}
+.game-font-large .game-rpg .game-quest b,.game-font-large .game-rpg .game-shop-item b{font-size:1.05rem}
+.game-font-large .game-rpg .game-quest small,.game-font-large .game-rpg .game-shop-item small{font-size:11px}
+.game-font-large .game-rpg .game-ability b{font-size:14px}
+.game-font-large .game-rpg .game-ability small{font-size:11px}
+
+.game-font-largest .game-rpg .game-player-head strong{font-size:19px}
+.game-font-largest .game-rpg .game-player-head small{font-size:13px}
+.game-font-largest .game-rpg .game-vitals{font-size:13px}
+.game-font-largest .game-rpg .game-tabs button{font-size:19px}
+.game-font-largest .game-rpg .game-tabs button small{font-size:12px}
+.game-font-largest .game-rpg .game-intro span{font-size:11px}
+.game-font-largest .game-rpg .game-intro h2{font-size:31px}
+.game-font-largest .game-rpg .game-intro p{font-size:15px;line-height:1.6}
+.game-font-largest .game-rpg .race-card strong{font-size:18px}
+.game-font-largest .game-rpg .race-card small{font-size:13px;line-height:1.5}
+.game-font-largest .game-rpg .race-card em{font-size:10px}
+.game-font-largest .game-rpg .game-scene small{font-size:10px}
+.game-font-largest .game-rpg .game-speaker{font-size:10px}
+.game-font-largest .game-rpg .game-dialog p{font-size:16px;line-height:1.72}
+.game-font-largest .game-rpg .game-choices button{font-size:15px;line-height:1.5}
+.game-font-largest .game-rpg .game-panel-title span{font-size:12px}
+.game-font-largest .game-rpg .game-panel-title small{font-size:10px}
+.game-font-largest .game-rpg .game-stat span,.game-font-largest .game-rpg .game-skill span{font-size:13px}
+.game-font-largest .game-rpg .game-stat b,.game-font-largest .game-rpg .game-skill b{font-size:13px}
+.game-font-largest .game-rpg .game-achievement b{font-size:15px}
+.game-font-largest .game-rpg .game-achievement small{font-size:12px}
+.game-font-largest .game-rpg .game-journal b{font-size:11px}
+.game-font-largest .game-rpg .game-journal p{font-size:13px;line-height:1.55}
+.game-font-largest .game-rpg .game-quest b,.game-font-largest .game-rpg .game-shop-item b{font-size:1.12rem}
+.game-font-largest .game-rpg .game-quest small,.game-font-largest .game-rpg .game-shop-item small{font-size:13px;line-height:1.5}
+.game-font-largest .game-rpg .game-ability b{font-size:15px}
+.game-font-largest .game-rpg .game-ability small{font-size:13px;line-height:1.5}
+
+@media(max-width:520px){.game-font-toolbar{justify-content:center;margin-bottom:6px}.game-font-toolbar button{min-width:38px;height:32px}}
