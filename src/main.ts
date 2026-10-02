@@ -455,14 +455,21 @@ function render(){
           <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
           <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
         </nav>
-
-        <div class="top-actions" aria-label="Portal navigation">
-          <button class="icon-button nav-action ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT"><span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span class="nav-label">CHAT</span></button>
-          <button class="icon-button nav-action radio-button ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO"><span class="radio-glyph" aria-hidden="true"></span><span class="nav-label">RADIO</span></button>
-          <button class="icon-button nav-action ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME"><span class="nav-icon home-icon"></span><span class="nav-label">HOME</span></button>
-          ${constructorEnabled?`<button class="icon-button nav-action interface-mode-button" data-interface-toggle type="button" aria-label="${interfaceMode==="editor"?"Показать пользовательский интерфейс":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"USER UI":"DEV UI"}"><span class="nav-icon settings-icon"></span><span class="nav-label">DEV</span></button>`:""}
-        </div>
       </header>
+      <nav class="bottom-nav" aria-label="Portal navigation">
+        <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
+          <span class="nav-icon chat-icon"><i></i><i></i><i></i></span><span>CHAT</span>
+        </button>
+        <button class="bottom-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
+          <span class="bottom-radio-icon" aria-hidden="true"></span><span>RADIO</span>
+        </button>
+        <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
+          <span class="nav-icon home-icon"></span><span>HOME</span>
+        </button>
+        ${constructorEnabled?`<button class="bottom-nav-item ${interfaceMode==="editor"?"active":""}" data-interface-toggle type="button" aria-label="${interfaceMode==="editor"?"Показать пользовательский интерфейс":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"USER UI":"DEV UI"}">
+          <span class="nav-icon settings-icon"></span><span>DEV</span>
+        </button>`:""}
+      </nav>
       <main>${body}</main>
       ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
       ${dev?renderEditor():""}
