@@ -1053,3 +1053,54 @@ main{
     flex-basis:21px;
   }
 }
+
+
+/* FINAL home scaling audit: prevent intrinsic-width cards and keep one stable responsive column. */
+.home-portal{
+  width:min(100%,680px);
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:10px;
+  align-items:stretch;
+}
+.home-portal > .home-hero,
+.home-portal > .home-card{
+  width:100%;
+  min-width:0;
+  max-width:none;
+  margin:0;
+}
+.home-card{
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.home-card-head{
+  width:100%;
+  min-width:0;
+}
+.home-card-head strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.home-live-preview,
+.home-chat-preview,
+.home-game-preview,
+.home-radio-preview,
+.home-library-preview{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+}
+@media(max-width:520px){
+  .home-portal{
+    width:100%;
+    gap:8px;
+  }
+  .home-portal > .home-card,
+  .home-portal > .home-hero{
+    width:100%;
+  }
+}
