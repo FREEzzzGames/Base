@@ -54,27 +54,7 @@ function emptyStats():PortalActivityStats{
 }
 
 export function getTelegramIdentity(verified?:TelegramProfileIdentity):TelegramProfileIdentity{
-  if(verified)return {...verified};
-
-  try{
-    const tg=(window as Window&{Telegram?:{WebApp?:{initDataUnsafe?:{user?:{
-      id?:number;
-      first_name?:string;
-      last_name?:string;
-      username?:string;
-      language_code?:string;
-      photo_url?:string;
-    }}}}}).Telegram?.WebApp;
-    const u=tg?.initDataUnsafe?.user;
-    return u?{
-      id:u.id,
-      firstName:u.first_name,
-      lastName:u.last_name,
-      username:u.username,
-      languageCode:u.language_code,
-      photoUrl:u.photo_url
-    }:{};
-  }catch{return {};}
+  return verified?{...verified}:{};
 }
 
 export function loadPortalProfile(verifiedIdentity?:TelegramProfileIdentity):PortalProfile{
