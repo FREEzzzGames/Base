@@ -467,7 +467,8 @@ portalEvents.on("navigation:changed",payload=>{
 });
 window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
-window.setInterval(()=>flushActivityTracking(),15000);\nwindow.setInterval(updateHomeClock,1000);
+window.setInterval(()=>flushActivityTracking(),15000);
+window.setInterval(updateHomeClock,1000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bindHudTouchGesture(){
