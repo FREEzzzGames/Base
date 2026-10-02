@@ -2,6 +2,11 @@ export interface DeveloperBlockInfo{
   readonly key:string;
   readonly label:string;
   readonly view:string;
+  readonly width:number;
+  readonly height:number;
+  readonly x:number;
+  readonly y:number;
+  readonly order:number;
 }
 
 export interface DeveloperDiagnosticsSnapshot{
@@ -63,19 +68,19 @@ export function renderDeveloperDiagnostics(snapshot:DeveloperDiagnosticsSnapshot
           <div class="dev-selected-block">
             <div class="dev-selected-name"><span>ВЫБРАН</span><strong>${escapeHtml(selected.label)}</strong></div>
             <label>ШИРИНА <output data-dev-output="width">100%</output>
-              <input data-dev-control="width" type="range" min="20" max="100" step="1" value="100">
+              <input data-dev-control="width" type="range" min="20" max="100" step="1" value="${selected.width}">
             </label>
-            <label>ВЫСОТА <output data-dev-output="height">AUTO</output>
-              <input data-dev-control="height" type="range" min="0" max="900" step="4" value="0">
+            <label>ВЫСОТА <output data-dev-output="height">${selected.height?selected.height+"px":"AUTO"}</output>
+              <input data-dev-control="height" type="range" min="0" max="900" step="4" value="${selected.height}">
             </label>
-            <label>ПОЗИЦИЯ X <output data-dev-output="x">0px</output>
-              <input data-dev-control="x" type="range" min="-240" max="240" step="2" value="0">
+            <label>ПОЗИЦИЯ X <output data-dev-output="x">${selected.x}px</output>
+              <input data-dev-control="x" type="range" min="-240" max="240" step="2" value="${selected.x}">
             </label>
-            <label>ПОЗИЦИЯ Y <output data-dev-output="y">0px</output>
-              <input data-dev-control="y" type="range" min="-400" max="400" step="2" value="0">
+            <label>ПОЗИЦИЯ Y <output data-dev-output="y">${selected.y}px</output>
+              <input data-dev-control="y" type="range" min="-400" max="400" step="2" value="${selected.y}">
             </label>
-            <label>ПОРЯДОК <output data-dev-output="order">0</output>
-              <input data-dev-control="order" type="range" min="-10" max="10" step="1" value="0">
+            <label>ПОРЯДОК <output data-dev-output="order">${selected.order}</output>
+              <input data-dev-control="order" type="range" min="-10" max="10" step="1" value="${selected.order}">
             </label>
           </div>`:""}
 
