@@ -195,8 +195,6 @@ function renderPortalToolbar(){
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
-      </div>
-      <div class="portal-toolbar-actions">
         <div class="portal-toolbar-language-wrap">
           <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
           <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
