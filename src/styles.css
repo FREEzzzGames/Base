@@ -3077,3 +3077,25 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .portal-toolbar-language-button .portal-toolbar-icon{
   filter:none!important;
 }
+
+
+/* FINAL TOOLBAR BUTTON BACKGROUNDS + LANGUAGE MENU */
+.portal-toolbar{
+  overflow:visible!important;
+}
+.portal-toolbar-background-video{
+  border-radius:inherit!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item,
+.portal-toolbar-language-button{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child{
+  background:rgba(255,32,32,.15)!important;
+  border-color:rgba(255,32,32,.15)!important;
+  box-shadow:none!important;
+}
+.portal-toolbar-language-button:active{
+  background:rgba(255,255,255,.08)!important;
+}
