@@ -1,6 +1,6 @@
 export const PORTAL_ILLUSTRATIONS:Record<string,string>={
   user:"boy",profile:"boy",video:"video",chat:"chatbot",game:"game",radio:"music",library:"archive",
-  home:"welcome-on-board",settings:"icons-drawing",rocket:"dart",zap:"electric-scooter",live:"video",
+  home:"welcome-on-board",editor:"icons-drawing",settings:"icons-drawing",rocket:"dart",zap:"electric-scooter",live:"video",
   message:"message",search:"search",loading:"loading",calendar:"calendar",refresh:"boy-refresh",
   error:"error",success:"good-news",waiting:"wait"
 };
