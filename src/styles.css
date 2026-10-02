@@ -1668,3 +1668,66 @@ main{
 @media(prefers-reduced-motion:reduce){
   .bottom-nav,.game-nav-reveal{transition-duration:.01ms}
 }
+
+
+/* GAME AMBIENT FIRE — persistent YouTube atmosphere */
+.game-ambient-scene{
+  overflow:hidden;
+  isolation:isolate;
+  background:#05090e;
+}
+.game-ambient-player{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  overflow:hidden;
+  background:#05090e;
+}
+.game-ambient-player iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+.game-ambient-scene>small{
+  position:absolute;
+  z-index:4;
+  left:14px;
+  bottom:12px;
+  padding:5px 8px;
+  border-radius:7px;
+  background:rgba(3,7,11,.62);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+  color:#d9e2ef;
+  letter-spacing:.12em;
+}
+.game-ambient-controls{
+  position:absolute;
+  z-index:5;
+  right:10px;
+  bottom:10px;
+  display:flex;
+  gap:6px;
+  opacity:.82;
+  transition:opacity .2s ease;
+}
+.game-ambient-controls:hover{opacity:1}
+.game-ambient-controls button{
+  width:38px;
+  height:34px;
+  padding:0;
+  border:1px solid rgba(220,230,245,.2);
+  border-radius:9px;
+  background:rgba(3,7,11,.7);
+  color:#e9eef7;
+  font:inherit;
+  font-size:15px;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.game-ambient-controls button:active{transform:scale(.94)}
+.game-ambient-scene+ .game-dialog,
+.game-ambient-scene~.game-dialog{position:relative;z-index:2}
