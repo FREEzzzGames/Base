@@ -542,7 +542,7 @@ function refreshHomeContent(){
   if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const live=document.querySelector<HTMLElement>("[data-home-live-content]");
   if(live){
-    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s[0],"home-stream-icon")}</i><b>${escapeHtml(s[1])}</b><small>● OFFLINE · ${escapeHtml(s[2])}</small></span>`).join("");
+    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s.icon,"home-stream-icon")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>Twitch + YouTube</small></span>`).join("");
   }
   const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
   if(chat){
