@@ -60,7 +60,7 @@ jobs:
           const missing = [];
           for (const file of roots) {
             const source = readFileSync(file, "utf8");
-            for (const match of source.matchAll(/from\\s+["'](\\.[^"']+)["']/g)) {
+            for (const match of source.matchAll(/from\s+["'](\.[^"']+)["']/g)) {
               const base = resolve(dirname(file), match[1]);
               const candidates = [base, base+".ts", base+".js"];
               if (!candidates.some(existsSync)) missing.push(file+" -> "+match[1]);
