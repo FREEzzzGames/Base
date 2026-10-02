@@ -351,10 +351,6 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
-      <video class="portal-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-        <source src="https://cdn.pixabay.com/video/2019/12/17/30300-380713848_large.mp4" type="video/mp4">
-      </video>
-      <div class="portal-background-overlay" aria-hidden="true"></div>
       ${renderPortalToolbar()}
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
@@ -377,9 +373,20 @@ function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
   return `<img class="stream-avatar-image ${className}" data-stream-avatar="1" data-stream-avatar-twitch="${escapeHtml(urls.twitch)}" src="${escapeHtml(primary)}" alt="" aria-hidden="true" loading="lazy">`;
 }
 function homeCard(v:View,e:string,t:string,content:string){
+  const backgrounds:Partial<Record<View,string>>={
+    live:"https://cdn.pixabay.com/video/2019/01/25/20919-313485347_large.mp4",
+    chat:"https://cdn.pixabay.com/video/2022/04/25/115036-703067759_large.mp4",
+    game:"https://cdn.pixabay.com/video/2019/12/17/30300-380713848_large.mp4",
+    radio:"https://cdn.pixabay.com/video/2019/10/02/27466-363961185_large.mp4",
+    library:"https://cdn.pixabay.com/video/2020/11/15/56485-479679949_large.mp4"
+  };
+  const background=backgrounds[v];
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
-    <div class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></div>
-    ${content}
+    ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video><span class="home-card-background-overlay" aria-hidden="true"></span>`:""}
+    <span class="home-card-content">
+      <span class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></span>
+      ${content}
+    </span>
   </button>`;
 }
 function refreshHomeContent(){
