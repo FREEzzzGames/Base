@@ -2,6 +2,7 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import "./multi-window-portal";
+import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
@@ -198,7 +199,7 @@ function renderPortalToolbar(){
     ["radio","radio","RADIO"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
-    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="https://cdn.pixabay.com/video/2024/08/18/227152_large.mp4" type="video/mp4"></video>
+    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
@@ -225,7 +226,7 @@ function render(){
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-            <source src="https://cdn.pixabay.com/video/2023/07/22/172788-847869832_large.mp4" type="video/mp4">
+            <source src="${portalVideoUrl("hero")}" type="video/mp4">
           </video>
           <div class="home-hero-content">
           <div class="home-hero-top">
@@ -386,11 +387,11 @@ function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
 }
 function homeCard(v:View,e:string,t:string,content:string){
   const backgrounds:Partial<Record<View,string>>={
-    live:"https://cdn.pixabay.com/video/2022/02/03/106557-673518279_large.mp4",
-    chat:"https://cdn.pixabay.com/video/2022/04/25/115036-703067759_large.mp4",
-    game:"https://cdn.pixabay.com/video/2022/12/05/141675-778335011_large.mp4",
-    radio:"https://cdn.pixabay.com/video/2019/10/02/27466-363961185_large.mp4",
-    library:"https://cdn.pixabay.com/video/2019/12/17/30300-380713848_large.mp4"
+    live:portalVideoUrl("live"),
+    chat:portalVideoUrl("chat"),
+    game:portalVideoUrl("game"),
+    radio:portalVideoUrl("radio"),
+    library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
