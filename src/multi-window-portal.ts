@@ -13,6 +13,7 @@ let nextZ=60;
 let liveName=streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
 let chat=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
+type ChatMessage={author:string;message:string};
 let layer:HTMLDivElement|null=null;
 
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
@@ -59,15 +60,27 @@ function bind(){
   layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(e=>e.onpointerdown=()=>focus(e.dataset.mw as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-drag]").forEach(h=>h.onpointerdown=e=>{
     if((e.target as HTMLElement).closest("button"))return;
-    const id=h.dataset.mwDrag as MiniId,w=windows[id],sx=e.clientX,sy=e.clientY,ox=w.x,oy=w.y;
+    const id=h.dataset.mwDrag as MiniId,w=windows[id];
+    const pointer=e as PointerEvent;
+    const sx=pointer.clientX,sy=pointer.clientY,ox=w.x,oy=w.y;
+    try{h.setPointerCapture(pointer.pointerId);}catch{}
     const move=(ev:PointerEvent)=>{
-      w.x=Math.max(4,Math.min(window.innerWidth-w.width-4,ox+ev.clientX-sx));
-      w.y=Math.max(4,Math.min(window.innerHeight-w.height-70,oy+ev.clientY-sy));
+      const maxX=Math.max(4,window.innerWidth-w.width-4);
+      const maxY=Math.max(4,window.innerHeight-w.height-70);
+      w.x=Math.max(4,Math.min(maxX,ox+ev.clientX-sx));
+      w.y=Math.max(4,Math.min(maxY,oy+ev.clientY-sy));
       const el=layer?.querySelector<HTMLElement>('[data-mw="'+id+'"]');
       if(el){el.style.left=w.x+"px";el.style.top=w.y+"px";}
     };
-    const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);};
-    h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);
+    const end=()=>{
+      h.removeEventListener("pointermove",move);
+      h.removeEventListener("pointerup",end);
+      h.removeEventListener("pointercancel",end);
+      try{h.releasePointerCapture(pointer.pointerId);}catch{}
+    };
+    h.addEventListener("pointermove",move);
+    h.addEventListener("pointerup",end);
+    h.addEventListener("pointercancel",end);
   });
   layer?.querySelector<HTMLElement>("[data-mw-chat-form]")?.addEventListener("submit",e=>{
     e.preventDefault();
@@ -126,6 +139,21 @@ export function initMultiWindowPortal(){
   layer.className="portal-mw-layer";
   document.body.append(layer);
   intercept();
+  window.addEventListener("freezzz:chat-sync",event=>{
+    const messages=(event as CustomEvent<{messages?:ChatMessage[]}>).detail?.messages;
+    if(!Array.isArray(messages))return;
+    chat=messages.slice(-50).map(m=>({author:String(m.author||""),message:String(m.message||"")}));
+    if(windows.chat.open)render();
+  });
+  const clampWindows=()=>{
+    (Object.keys(windows) as MiniId[]).forEach(id=>{
+      const w=windows[id];
+      w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
+      w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-70),w.y));
+    });
+    render();
+  };
+  window.addEventListener("resize",clampWindows,{passive:true});
   addHudButton();
   new MutationObserver(addHudButton).observe(document.body,{childList:true,subtree:true});
   render();
