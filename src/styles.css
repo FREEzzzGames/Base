@@ -1555,3 +1555,40 @@ main{
   }
   .live-popup-header{min-height:52px}
 }
+
+.stream-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+}
+.stream-actions .tg-button{
+  min-width:70px;
+  padding:0 9px;
+  font-size:11px;
+}
+.live-popup-source-tabs{
+  display:flex;
+  gap:6px;
+  padding:8px 12px;
+  border-bottom:1px solid var(--ds-border);
+  background:var(--ds-control);
+}
+.live-popup-source-tabs .tg-button{
+  min-height:34px;
+  flex:0 0 auto;
+}
+@media(max-width:520px){
+  .stream{
+    grid-template-columns:42px minmax(0,1fr);
+  }
+  .stream-actions{
+    grid-column:2;
+    justify-content:flex-start;
+    width:100%;
+  }
+  .stream-actions .tg-button{
+    flex:1;
+    min-width:0;
+  }
+}
