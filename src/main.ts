@@ -1,4 +1,5 @@
-import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./radio-browser";
+import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
+import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
@@ -74,7 +75,8 @@ let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",mes
 let homeRefreshTimer:number|null=null;
 let score=0;
 let player=.5;
-const radioBrowser=new RadioBrowserClient();
+let radioBrowser:RadioBrowserClient|null=null;
+let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
 let radioGenre="pop";
 let radioQuery="";
@@ -346,10 +348,21 @@ function ensureHomeRefresh(){
   refreshHomeContent();
 }
 
+async function getRadioBrowser():Promise<RadioBrowserClient>{
+  if(radioBrowser)return radioBrowser;
+  if(!radioBrowserLoading){
+    radioBrowserLoading=import("./radio-browser").then(module=>{
+      radioBrowser=new module.RadioBrowserClient();
+      return radioBrowser;
+    });
+  }
+  return radioBrowserLoading;
+}
 async function loadRadioStations(){
   radioLoading=true; radioError=""; render();
   try{
-    radioStations=await radioBrowser.searchStations(radioGenre,radioQuery,30);
+    const client=await getRadioBrowser();
+    radioStations=await client.searchStations(radioGenre,radioQuery,30);
     if(radioSelectedId&&radioStations.some(s=>s.stationuuid===radioSelectedId)){
       // keep the saved station when it is still present
     }else if(radioStations[0]){
