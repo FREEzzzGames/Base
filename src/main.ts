@@ -81,6 +81,7 @@ const TELEGRAM_CANVAS={width:360,height:640};
 type EditorLayout=Record<View,EditorBlock[]>;
 const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
 const EDITOR_GEOMETRY_VERSION_KEY="freezzz:editor-geometry-version";
+const EDITOR_GEOMETRY_VERSION=3;
 const EDITOR_DEFAULTS:EditorLayout={
   home:[
     {id:"hero",label:"Главный экран / приветствие",span:2,order:0},
@@ -125,8 +126,8 @@ function loadEditorLayout():EditorLayout{
     if(!raw)return cloneEditorDefaults();
     const saved=JSON.parse(raw) as Partial<EditorLayout>;
     const base=cloneEditorDefaults();
-    const geometryVersion=localStorage.getItem(EDITOR_GEOMETRY_VERSION_KEY);
-    const migrateGeometry=geometryVersion!=="2";
+    const geometryVersion=Number(localStorage.getItem(EDITOR_GEOMETRY_VERSION_KEY)||"0");
+    const migrateGeometry=geometryVersion<EDITOR_GEOMETRY_VERSION;
     for(const key of Object.keys(base) as View[]){
       if(Array.isArray(saved[key])&&saved[key]!.length){
         base[key]=saved[key]!.map((b,i)=>({
@@ -141,9 +142,18 @@ function loadEditorLayout():EditorLayout{
         }));
       }
     }
-    if(migrateGeometry){
-      try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");}catch{}
+    for(const key of Object.keys(base) as View[]){
+      const blocks=base[key];
+      const positioned=blocks.filter(b=>b.x!==undefined&&b.y!==undefined&&b.w!==undefined&&b.h!==undefined);
+      const invalid=positioned.some((a,i)=>positioned.slice(i+1).some(b=>
+        a.x!<b.x!+b.w! && a.x!+a.w!>b.x! &&
+        a.y!<b.y!+b.h! && a.y!+a.h!>b.y!
+      ));
+      if(migrateGeometry||invalid){
+        blocks.forEach(b=>{b.x=undefined;b.y=undefined;b.w=undefined;b.h=undefined;});
+      }
     }
+    try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,String(EDITOR_GEOMETRY_VERSION));}catch{}
     return base;
   }catch{return cloneEditorDefaults();}
 }
@@ -562,9 +572,14 @@ function applyLayoutToRoot(root:HTMLElement,screen:View){
   const layout=root.matches("[data-portal-layout]")?root:root.querySelector<HTMLElement>("[data-portal-layout]");
   if(!layout)return;
   const blocks=orderedBlocks(screen);
+  if(screen==="radio"){
+    // RADIO contains nested functional controls; keep its internal responsive layout intact.
+    layout.style.position="";
+    return;
+  }
   layout.style.position="relative";
   const byId=new Map<string,HTMLElement>();
-  layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
+  layout.querySelectorAll<HTMLElement>(":scope > [data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
   blocks.forEach((block,index)=>{
     const el=byId.get(block.id);
     if(!el)return;
@@ -730,7 +745,7 @@ function bind(){
     render();
   });
   document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
-    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");editorMessage="Схема сохранена локально.";}
+    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,String(EDITOR_GEOMETRY_VERSION));editorMessage="Схема сохранена локально.";}
     catch{editorMessage="Не удалось сохранить схему."}
     render();
   });
