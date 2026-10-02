@@ -57,6 +57,47 @@ let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",mes
 let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
 let gameTab:GameTab="story";
+let gameNavRevealed=false;
+let gameNavHideTimer:number|null=null;
+function clearGameNavHideTimer(){
+  if(gameNavHideTimer!==null){window.clearTimeout(gameNavHideTimer);gameNavHideTimer=null;}
+}
+function setGameNavRevealed(revealed:boolean,autoHide=true){
+  if(view!=="game")return;
+  clearGameNavHideTimer();
+  gameNavRevealed=revealed;
+  document.querySelector(".bottom-nav")?.classList.toggle("game-nav-revealed",revealed);
+  document.querySelector(".game-nav-reveal")?.classList.toggle("is-active",revealed);
+  if(revealed&&autoHide){
+    gameNavHideTimer=window.setTimeout(()=>setGameNavRevealed(false,false),3200);
+  }
+}
+function bindGameNavGesture(){
+  const shell=document.querySelector<HTMLElement>(".app-shell");
+  if(!shell||view!=="game")return;
+  const reveal=document.querySelector<HTMLButtonElement>(".game-nav-reveal");
+  reveal?.addEventListener("click",e=>{
+    e.preventDefault();e.stopPropagation();setGameNavRevealed(!gameNavRevealed,!gameNavRevealed);
+  });
+  let startY=0;
+  let startX=0;
+  let tracking=false;
+  shell.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    const nearBottom=e.clientY>=window.innerHeight-110;
+    tracking=nearBottom;
+    if(tracking){startY=e.clientY;startX=e.clientX;}
+  },{passive:true});
+  shell.addEventListener("pointerup",e=>{
+    if(!tracking)return;
+    tracking=false;
+    const dy=e.clientY-startY;
+    const dx=Math.abs(e.clientX-startX);
+    if(dy<-42&&dx<90)setGameNavRevealed(true,true);
+  },{passive:true});
+  shell.addEventListener("pointercancel",()=>{tracking=false;},{passive:true});
+  if(gameNavRevealed)setGameNavRevealed(true,true);
+}
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
@@ -324,7 +365,7 @@ function render(){
         </nav>
         ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?"РАЗРАБ":"ПОЛЬЗ."}</small></button>`:""}
       </header>
-      <nav class="bottom-nav" aria-label="Portal navigation">
+      <nav class="bottom-nav ${view==="game"?"bottom-nav-game":""} ${view==="game"&&gameNavRevealed?"game-nav-revealed":""}" aria-label="Portal navigation">
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
           ${icon("chat","nav-icon")}<span>CHAT</span>
         </button>
@@ -342,6 +383,7 @@ function render(){
           ${icon("home","nav-icon")}<span>HOME</span>
         </button>
       </nav>
+      ${view==="game"?`<button class="game-nav-reveal ${gameNavRevealed?"is-active":""}" type="button" aria-label="Показать меню" title="Провести вверх от нижнего края или нажать">⌃</button>`:""}
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
@@ -431,6 +473,8 @@ function playRadioStation(id:string){
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
 portalEvents.on("navigation:changed",payload=>{
+  clearGameNavHideTimer();
+  gameNavRevealed=false;
   view=payload.view;
   portalState.view=payload.view;
   render();
@@ -486,6 +530,7 @@ function bind(){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
   });
   bindDeveloperCanvas();
+  bindGameNavGesture();
   document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
   });
