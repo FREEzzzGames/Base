@@ -129,9 +129,12 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
+    # A newer main release must be able to take over from a stuck Pages deploy.
+    # The release gate still prevents stale SHAs from reaching production.
     concurrency:
       group: pages-production
-      cancel-in-progress: false
+      cancel-in-progress: true
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
