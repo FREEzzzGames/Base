@@ -317,7 +317,6 @@ function render(){
 
     </div>`;
   bind();
-  applyDeveloperLayout();
   syncGameAmbient();
   if(view==="home")ensureHomeRefresh();
 }
