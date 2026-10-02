@@ -1553,3 +1553,6 @@ main{
 .race-card{transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
 .race-card:hover{transform:translateY(-1px);border-color:var(--ds-accent);box-shadow:0 6px 20px rgba(0,0,0,.16)}
 .game-finale .game-dialog{box-shadow:0 0 28px color-mix(in srgb,var(--ds-accent) 12%,transparent)}
+
+.game-ending-seal{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;padding:16px;border:1px solid color-mix(in srgb,var(--ds-accent) 45%,transparent);border-radius:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--ds-panel) 88%,#9a7b45 12%),var(--ds-panel));box-shadow:0 0 24px color-mix(in srgb,var(--ds-accent) 10%,transparent)}
+.game-ending-seal b{letter-spacing:.14em}.game-ending-seal small{opacity:.78;line-height:1.45}
