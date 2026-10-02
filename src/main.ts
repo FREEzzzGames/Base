@@ -2,10 +2,7 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
-import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
-import { renderDeveloperDiagnostics } from "./developer-tools";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
-import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
@@ -59,11 +56,6 @@ let view:View=portalState.view;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(!localStorage.getItem("freezzz:language")){if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}}catch{}
 const T=(key:string)=>pt(lang,key);
-const DEVELOPER_TOOLS_ENABLED = true;
-let developerOpen=false;
-let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="user";}catch{return true;}})();
-let layoutOverrides=loadLayoutOverrides();
-let developerSelectedBlock="";
 let profileOpen=Boolean(portalSession.profileOpen);
 let portalProfile:PortalProfile=loadPortalProfile();
 syncPortalIdentity(portalProfile);
@@ -96,90 +88,6 @@ function renderGameFontToolbar(){
       '<button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label="'+T("largest")+'" title="'+T("largest")+'">A++</button>'+
     '</div></div>';
 }
-let gameNavRevealed=false;
-let gameNavHideTimer:number|null=null;
-let gameAmbientHost:HTMLDivElement|null=null;
-let gameAmbientPlaying=true;
-let gameAmbientMuted=true;
-function gameAmbientCommand(func:string){
-  const frame=gameAmbientHost?.querySelector<HTMLIFrameElement>("iframe");
-  if(!frame?.contentWindow)return;
-  frame.contentWindow.postMessage(JSON.stringify({event:"command",func,args:[]}),"https://www.youtube.com");
-}
-function bindGameAmbientControls(){
-  if(!gameAmbientHost)return;
-  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-mute]")?.addEventListener("click",e=>{
-    e.stopPropagation();
-    gameAmbientMuted=!gameAmbientMuted;
-    gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
-    const b=e.currentTarget as HTMLButtonElement;
-    b.innerHTML=icon(gameAmbientMuted?"mute":"play","ambient-control-icon");
-    b.setAttribute("aria-label",gameAmbientMuted?T("soundOn"):T("soundOff"));
-  });
-  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
-    e.stopPropagation();
-    gameAmbientPlaying=!gameAmbientPlaying;
-    gameAmbientCommand(gameAmbientPlaying?"playVideo":"pauseVideo");
-    const b=e.currentTarget as HTMLButtonElement;
-    b.innerHTML=icon(gameAmbientPlaying?"play":"waiting","ambient-control-icon");
-    b.setAttribute("aria-label",gameAmbientPlaying?T("pauseVideo"):T("resumeVideo"));
-  });
-}
-function syncGameAmbient(){
-  const target=document.querySelector<HTMLElement>("[data-game-ambient-host]");
-  if(view!=="game"){
-    gameAmbientHost?.remove();
-    return;
-  }
-  if(!target)return;
-  if(!gameAmbientHost){
-    gameAmbientHost=document.createElement("div");
-    gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">⊘</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'">Ⅱ</button></div>';
-    bindGameAmbientControls();
-  }
-  if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
-}
-
-function clearGameNavHideTimer(){
-  if(gameNavHideTimer!==null){window.clearTimeout(gameNavHideTimer);gameNavHideTimer=null;}
-}
-function setGameNavRevealed(revealed:boolean,autoHide=true){
-  if(view!=="game")return;
-  clearGameNavHideTimer();
-  gameNavRevealed=revealed;
-  document.querySelector(".bottom-nav")?.classList.toggle("game-nav-revealed",revealed);
-  document.querySelector(".game-nav-reveal")?.classList.toggle("is-active",revealed);
-  if(revealed&&autoHide){
-    gameNavHideTimer=window.setTimeout(()=>setGameNavRevealed(false,false),3200);
-  }
-}
-function bindGameNavGesture(){
-  const shell=document.querySelector<HTMLElement>(".app-shell");
-  if(!shell||view!=="game")return;
-  const reveal=document.querySelector<HTMLButtonElement>(".game-nav-reveal");
-  reveal?.addEventListener("click",e=>{
-    e.preventDefault();e.stopPropagation();setGameNavRevealed(!gameNavRevealed,!gameNavRevealed);
-  });
-  let startY=0;
-  let startX=0;
-  let tracking=false;
-  shell.addEventListener("pointerdown",e=>{
-    if(e.pointerType==="mouse"&&e.button!==0)return;
-    const nearBottom=e.clientY>=window.innerHeight-110;
-    tracking=nearBottom;
-    if(tracking){startY=e.clientY;startX=e.clientX;}
-  },{passive:true});
-  shell.addEventListener("pointerup",e=>{
-    if(!tracking)return;
-    tracking=false;
-    const dy=e.clientY-startY;
-    const dx=Math.abs(e.clientX-startX);
-    if(dy<-42&&dx<90)setGameNavRevealed(true,true);
-  },{passive:true});
-  shell.addEventListener("pointercancel",()=>{tracking=false;},{passive:true});
-  if(gameNavRevealed)setGameNavRevealed(true,true);
-}
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
@@ -190,87 +98,6 @@ let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
-function currentLayoutOverride(key:string):LayoutOverride{return getLayoutOverride(layoutOverrides,key);}
-function updateDeveloperControl(name:keyof LayoutOverride,value:number){
-  if(!developerSelectedBlock)return;
-  const current=currentLayoutOverride(developerSelectedBlock);
-  layoutOverrides[developerSelectedBlock]={...current,[name]:value};
-  saveLayoutOverrides(layoutOverrides);
-  applyDeveloperLayout();
-  const output=document.querySelector<HTMLOutputElement>("[data-dev-output=\""+name+"\"]");
-  if(output)output.textContent=name==="width"?value+"%":name==="height"?(value?value+"px":"AUTO"):name==="order"?String(value):value+"px";
-}
-function resetDeveloperBlock(){
-  if(!developerSelectedBlock)return;
-  delete layoutOverrides[developerSelectedBlock];
-  saveLayoutOverrides(layoutOverrides);
-  render();
-}
-function resetDeveloperLayout(){
-  layoutOverrides={};
-  saveLayoutOverrides(layoutOverrides);
-  render();
-}
-function portalBlockInfos(){return getLayoutBlockInfos(view,layoutOverrides);}
-function applyDeveloperLayout(){
-  applyLayout(view,developerMode,layoutOverrides);
-  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>{
-    el.dataset.devSelected=developerMode&&el.dataset.portalBlock===developerSelectedBlock.split(":").pop()?"true":"false";
-  });
-}
-let developerDrag:{element:HTMLElement;startX:number;startY:number;originX:number;originY:number;moved:boolean}|null=null;
-function bindDeveloperCanvas(){
-  if(!developerMode)return;
-  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(el=>{
-    const block=el.dataset.portalBlock||"";
-    const key=view+":"+block;
-    el.addEventListener("click",e=>{
-      const target=e.target as HTMLElement;
-      const nested=target.closest("button,input,textarea,select,a");
-      if(nested&&nested!==el)return;
-      e.preventDefault();
-      e.stopPropagation();
-      developerSelectedBlock=key;
-      render();
-    },true);
-    el.addEventListener("pointerdown",e=>{
-      if(e.pointerType==="mouse"&&e.button!==0)return;
-      const target=e.target as HTMLElement;
-      const nested=target.closest("input,textarea,select,a,[data-dev-control],[data-dev-nudge],[data-dev-size]");
-      if(nested)return;
-      developerSelectedBlock=key;
-      const current=currentLayoutOverride(key);
-      developerDrag={element:el,startX:e.clientX,startY:e.clientY,originX:current.x,originY:current.y,moved:false};
-      el.setPointerCapture?.(e.pointerId);
-      e.preventDefault();
-      e.stopPropagation();
-      applyDeveloperLayout();
-    },{passive:false});
-    el.addEventListener("pointermove",e=>{
-      if(!developerDrag||developerDrag.element!==el)return;
-      const dx=e.clientX-developerDrag.startX;
-      const dy=e.clientY-developerDrag.startY;
-      if(Math.abs(dx)+Math.abs(dy)<3)return;
-      developerDrag.moved=true;
-      const nx=Math.max(-240,Math.min(240,developerDrag.originX+dx));
-      const ny=Math.max(-400,Math.min(400,developerDrag.originY+dy));
-      updateDeveloperControl("x",Math.round(nx));
-      updateDeveloperControl("y",Math.round(ny));
-      e.preventDefault();
-    },{passive:false});
-    const finish=(e:PointerEvent)=>{
-      if(!developerDrag||developerDrag.element!==el)return;
-      if(developerDrag.moved){
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      developerDrag=null;
-    };
-    el.addEventListener("pointerup",finish,{passive:false});
-    el.addEventListener("pointercancel",finish,{passive:false});
-  });
-  applyDeveloperLayout();
-}
 function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
   liveSelected=name;
   livePopupSource=source;
@@ -316,20 +143,6 @@ function renderProfileCard(){
     <div class="profile-section"><h3>GAME</h3><div class="profile-row"><span>Игровое время</span><small>${formatDuration(s.game.seconds)}</small></div><div class="profile-row"><span>Запуски</span><small>${s.game.launches}</small></div></div>
     
   </section></div>`;
-}
-function renderDeveloperPanel(){
-  return renderDeveloperDiagnostics({
-    version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,
-    telegram:portalState.telegram,online:portalState.online,
-    modules:PORTAL_MODULES.map(module=>module.id),developerMode,
-    selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()
-  },lang);
-}
-function toggleDeveloperMode(){
-  developerMode=!developerMode;
-  developerOpen=developerMode;
-  try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{}
-  render();
 }
 function savePortalSessionSnapshot(){
   try{
@@ -479,41 +292,27 @@ function render(){
       <header class="topbar portal-topbar">
         <div class="topbar-main">
           <div class="topbar-left">
-            <button class="profile-button" data-profile-toggle type="button" aria-label="\${T("profile")}" title="\${T("profile")}">\${icon("user","profile-icon")}</button>
+            <button class="profile-button" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","profile-icon")}</button>
           </div>
           <nav class="topbar-nav" aria-label="Portal navigation">
-            <button class="topbar-nav-item \${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
-              \${icon("home","nav-icon")}<span>HOME</span>
-            </button>
-            <button class="topbar-nav-item \${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">
-              \${icon("video","nav-icon")}<span>LIVE</span>
-            </button>
-            <button class="topbar-nav-item \${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
-              \${icon("chat","nav-icon")}<span>CHAT</span>
-            </button>
-            <button class="topbar-nav-item \${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">
-              \${icon("game","nav-icon")}<span>GAME</span>
-            </button>
-            <button class="topbar-nav-item \${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
-              \${icon("radio","nav-icon")}<span>RADIO</span>
-            </button>
-            \${DEVELOPER_TOOLS_ENABLED&&developerMode?\`<button class="topbar-nav-item \${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Конструктор" title="LAYOUT">
-              \${icon("editor","nav-icon")}<span>EDIT</span>
-            </button>\`:""}
+            <button class="topbar-nav-item ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">${icon("home","nav-icon")}<span>HOME</span></button>
+            <button class="topbar-nav-item ${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">${icon("video","nav-icon")}<span>LIVE</span></button>
+            <button class="topbar-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">${icon("chat","nav-icon")}<span>CHAT</span></button>
+            <button class="topbar-nav-item ${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">${icon("game","nav-icon")}<span>GAME</span></button>
+            <button class="topbar-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">${icon("radio","nav-icon")}<span>RADIO</span></button>
+            <button class="topbar-nav-item ${view==="library"?"active":""}" data-view="library" aria-label="Library" title="LIBRARY">${icon("library","nav-icon")}<span>LIBRARY</span></button>
           </nav>
           <div class="topbar-right">
-            <nav class="lang-switch" aria-label="\${T("language")}">
-              <button data-lang="RU" class="\${lang==="RU"?"active":""}">RU</button>
-              <button data-lang="DE" class="\${lang==="DE"?"active":""}">DE</button>
-              <button data-lang="EN" class="\${lang==="EN"?"active":""}">EN</button>
+            <nav class="lang-switch" aria-label="${T("language")}">
+              <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
+              <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
+              <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
             </nav>
-            \${DEVELOPER_TOOLS_ENABLED?\`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="\${T("constructor")}" title="\${T("constructor")}"><span>\${developerMode?"DEV":"USER"}</span><small>\${developerMode?T("developer"):T("user")}</small></button>\`:""}
           </div>
         </div>
       </header>
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
-      ${developerOpen&&developerMode?renderDeveloperPanel():""}
       ${profileOpen?renderProfileCard():""}
 
     </div>`;
@@ -662,42 +461,6 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-profile-card]").forEach(function(x){
     x.onclick=function(e){e.stopPropagation();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-dev-mode-toggle]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();toggleDeveloperMode();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-developer-toggle]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
-  });
-  bindDeveloperCanvas();
-  // Navigation is permanently available in the unified top bar.
-  document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-dev-size]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();if(!developerSelectedBlock)return;const current=currentLayoutOverride(developerSelectedBlock);const next=Math.max(20,Math.min(100,current.width+Number(x.dataset.devSize||0)));updateDeveloperControl("width",next);render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-dev-nudge]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();if(!developerSelectedBlock)return;const current=currentLayoutOverride(developerSelectedBlock);const action=x.dataset.devNudge||"";const step=8;let nx=current.x,ny=current.y;if(action==="up")ny-=step;else if(action==="down")ny+=step;else if(action==="left")nx-=step;else if(action==="right")nx+=step;else if(action==="center"){nx=0;ny=0;}updateDeveloperControl("x",Math.max(-240,Math.min(240,nx)));updateDeveloperControl("y",Math.max(-400,Math.min(400,ny)));render();};
-  });
-  document.querySelectorAll<HTMLInputElement>("[data-dev-control]").forEach(function(x){
-    x.oninput=function(){
-      const name=x.dataset.devControl as keyof LayoutOverride;
-      updateDeveloperControl(name,Number(x.value));
-    };
-  });
-  document.querySelector("[data-dev-reset]")?.addEventListener("click",e=>{e.preventDefault();resetDeveloperBlock();});
-  document.querySelector("[data-dev-reset-all]")?.addEventListener("click",e=>{e.preventDefault();resetDeveloperLayout();});
-  document.querySelector("[data-dev-preview]")?.addEventListener("click",e=>{
-    e.preventDefault();developerMode=false;developerOpen=false;
-    try{localStorage.setItem("freezzz:dev-mode","user");}catch{}
-    render();
-  });
-  document.querySelectorAll<HTMLElement>("[data-developer-close]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=false;render();};
-  });
-  document.querySelector("[data-developer-overlay]")?.addEventListener("click",function(e){
-    if(e.target===e.currentTarget){developerOpen=false;render();}
   });
   document.querySelectorAll<HTMLImageElement>("[data-stream-avatar]").forEach(function(img){
     img.addEventListener("error",function(){
