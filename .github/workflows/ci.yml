@@ -29,12 +29,21 @@ jobs:
       - name: Stamp portal build
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p src/public
-          node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("src/build-info.ts", "export const PORTAL_VERSION = \"" + p.version + "\";\\nexport const PORTAL_BUILD_ID = \"" + b + "\";\\n"); fs.writeFileSync("src/public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
+          cat > src/build-info.ts <<EOF
+          export const PORTAL_VERSION = "$$(node -p 'require("./package.json").version')";
+          export const PORTAL_BUILD_ID = "$GITHUB_SHA";
+          EOF
+          node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("src/public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
+          node -e 'const fs=require("fs"); const s=fs.readFileSync("src/build-info.ts","utf8"); if(!s.includes(process.env.GITHUB_SHA)) throw new Error("build-info.ts was not stamped with GITHUB_SHA");'
 
       - run: npm run typecheck
       - run: npm run build
-      - run: node scripts/release-smoke.mjs
+      - name: Release smoke
+        env:
+          EXPECTED_BUILD: ${{ github.sha }}
+        run: node scripts/release-smoke.mjs
 
       - uses: actions/configure-pages@v5
 
@@ -48,7 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: pages-production
-      queue: max
       cancel-in-progress: false
     environment:
       name: github-pages
@@ -58,6 +66,7 @@ jobs:
         id: release-gate
         shell: bash
         run: |
+          set -euo pipefail
           latest="$(git ls-remote "https://github.com/${{ github.repository }}.git" refs/heads/main | awk '{print $1}')"
           if [ "$latest" = "${GITHUB_SHA}" ]; then
             echo "deploy=true" >> "$GITHUB_OUTPUT"

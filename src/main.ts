@@ -348,7 +348,7 @@ function liveEmbedUrl(stream:LiveStream,source:"twitch"|"youtube"):string{
   return "";
 }
 
-function openLivePopup(name:string):void{
+function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
   liveSelected=name;
   livePopupOpen=true;
   render();
