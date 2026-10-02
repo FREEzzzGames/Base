@@ -4,7 +4,7 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 import { renderDeveloperDiagnostics } from "./developer-tools";
-import { icon, streams } from "./portal-ui";
+import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
@@ -370,7 +370,7 @@ function render(){
         <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
             return `<article class="stream">
-              <div class="avatar">${icon(s.icon,"stream-icon")}</div>
+              <div class="avatar">${streamAvatarMarkup(s)}</div>
               <div><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></div>
               <div class="stream-actions">
                 <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="twitch" type="button">Twitch</button>
@@ -520,6 +520,12 @@ ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle 
   if(view==="home")ensureHomeRefresh();
 }
 
+function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
+  const urls=streamAvatarSources(stream);
+  if(!urls.youtube&&!urls.twitch)return icon(stream.icon,"stream-icon");
+  const primary=urls.youtube||urls.twitch;
+  return `<img class="stream-avatar-image ${className}" data-stream-avatar="1" data-stream-avatar-twitch="${escapeHtml(urls.twitch)}" src="${escapeHtml(primary)}" alt="" aria-hidden="true" loading="lazy">`;
+}
 function homeCard(v:View,e:string,t:string,content:string){
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
     <div class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></div>
@@ -532,7 +538,7 @@ function refreshHomeContent(){
   if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const live=document.querySelector<HTMLElement>("[data-home-live-content]");
   if(live){
-    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${icon(s.icon,"home-stream-icon")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></span>`).join("");
+    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${streamAvatarMarkup(s,"home-stream-avatar")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></span>`).join("");
   }
   const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
   if(chat){
@@ -689,6 +695,19 @@ function bind(){
   });
   document.querySelector("[data-developer-overlay]")?.addEventListener("click",function(e){
     if(e.target===e.currentTarget){developerOpen=false;render();}
+  });
+  document.querySelectorAll<HTMLImageElement>("[data-stream-avatar]").forEach(function(img){
+    img.addEventListener("error",function(){
+      const fallback=img.dataset.streamAvatarTwitch||"";
+      const current=img.getAttribute("src")||"";
+      if(fallback&&current!==fallback&&!img.dataset.streamAvatarFallback){
+        img.dataset.streamAvatarFallback="1";
+        img.src=fallback;
+        return;
+      }
+      const host=img.parentElement;
+      if(host)host.innerHTML=icon("video","stream-icon");
+    });
   });
   document.querySelectorAll<HTMLElement>("[data-live-open]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"",x.dataset.liveSource==="youtube"?"youtube":"twitch");};
