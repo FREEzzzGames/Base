@@ -24,9 +24,13 @@ export interface TelegramWebAppBridge{
   setBackgroundColor?:(color:string)=>void;
   setBottomBarColor?:(color:string)=>void;
   requestFullscreen?:()=>void;
+  exitFullscreen?:()=>void;
   lockOrientation?:()=>void;
+  unlockOrientation?:()=>void;
   isFullscreen?:boolean;
   isExpanded?:boolean;
+  isActive?:boolean;
+  viewportHeight?:number;
   viewportStableHeight?:number;
   safeAreaInset?:{top?:number;bottom?:number;left?:number;right?:number};
   contentSafeAreaInset?:{top?:number;bottom?:number;left?:number;right?:number};
@@ -34,6 +38,7 @@ export interface TelegramWebAppBridge{
   colorScheme?:"light"|"dark";
   version?:string;
   platform?:string;
+  initData?:string;
   initDataUnsafe?:{
     user?:{
       language_code?:string;
@@ -103,10 +108,17 @@ export function applyTelegramTheme(tg:TelegramWebAppBridge):void{
 
 function syncTelegramViewport(tg:TelegramWebAppBridge):void{
   const stable=tg.viewportStableHeight;
+  const current=tg.viewportHeight;
   if(typeof stable==="number"&&stable>0){
     document.documentElement.style.setProperty("--tg-viewport-stable-height",stable+"px");
   }
+  if(typeof current==="number"&&current>0){
+    document.documentElement.style.setProperty("--tg-viewport-height",current+"px");
+  }
+  document.documentElement.dataset.telegramExpanded=tg.isExpanded?"true":"false";
+  document.documentElement.dataset.telegramActive=tg.isActive===false?"false":"true";
 }
+
 
 export function initTelegramBridge():void{
   const tg=getTelegramWebApp();
@@ -125,6 +137,10 @@ export function initTelegramBridge():void{
   tg.onEvent?.("viewportChanged",()=>syncTelegramViewport(tg));
   tg.onEvent?.("safeAreaChanged",()=>applyTelegramTheme(tg));
   tg.onEvent?.("contentSafeAreaChanged",()=>applyTelegramTheme(tg));
+  tg.onEvent?.("activated",()=>{document.documentElement.dataset.telegramActive="true";});
+  tg.onEvent?.("deactivated",()=>{document.documentElement.dataset.telegramActive="false";});
+  tg.onEvent?.("fullscreenChanged",()=>{document.documentElement.dataset.telegramFullscreen=tg.isFullscreen?"true":"false";});
+  tg.onEvent?.("fullscreenFailed",()=>{document.documentElement.dataset.telegramFullscreen="false";});
 }
 
 export function bindTelegramBackButton(enabled:boolean,onBack:()=>void):void{
