@@ -1393,3 +1393,43 @@ main{
   max-height:none;
   overflow:visible;
 }
+
+/* Unified existing icon language: Lucide SVG geometry, no custom glyph drawings. */
+.ui-icon{
+  display:block;
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  color:currentColor;
+}
+.profile-icon{width:27px;height:27px;color:var(--tg-button-color)}
+.home-card-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  color:var(--ds-accent);
+}
+.home-card-icon .ui-icon{width:25px;height:25px}
+.home-stream-icon{
+  width:20px;
+  height:20px;
+  color:var(--ds-accent);
+}
+.home-live-row i{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+}
+.bottom-nav-item .ui-icon{
+  width:25px;
+  height:25px;
+  flex-basis:25px;
+}
+.bottom-nav-home .ui-icon{width:27px;height:27px}
+.top-actions .ui-icon{width:24px;height:24px}
+.profile-glyph,.chat-icon,.home-icon,.settings-icon,.bottom-radio-icon{display:none!important}
+.radio-glyph{display:none!important}
