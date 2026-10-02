@@ -1,4 +1,103 @@
 
+/* FINAL PORTAL TOOLBAR / HERO PROFILE PASS */
+.portal-toolbar-icon{
+  color:#f4ead5!important;
+  filter:drop-shadow(0 0 3px rgba(244,234,213,.95)) drop-shadow(0 0 9px rgba(244,234,213,.58))!important;
+}
+.portal-toolbar-item{
+  color:#f4ead5!important;
+}
+.portal-toolbar-item.active{
+  color:#f4ead5!important;
+}
+.portal-toolbar-item.active .portal-toolbar-icon{
+  filter:drop-shadow(0 0 4px rgba(244,234,213,1)) drop-shadow(0 0 12px rgba(244,234,213,.72))!important;
+}
+.portal-toolbar-actions{
+  position:relative!important;
+}
+.portal-toolbar-language-wrap{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+}
+.portal-toolbar-language-button{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border:1px solid transparent!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#f4ead5!important;
+  display:grid!important;
+  place-items:center!important;
+  font:inherit!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.portal-toolbar-language-button .portal-toolbar-icon{
+  width:24px!important;
+  height:24px!important;
+}
+.portal-toolbar-language-button:active{
+  background:rgba(244,234,213,.10)!important;
+}
+.portal-toolbar-language-menu{
+  position:absolute!important;
+  top:calc(100% + 6px)!important;
+  right:0!important;
+  z-index:95!important;
+  display:flex!important;
+  gap:3px!important;
+  padding:5px!important;
+  border:1px solid rgba(244,234,213,.18)!important;
+  border-radius:10px!important;
+  background:rgba(10,17,24,.82)!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.35)!important;
+}
+.portal-toolbar-language-menu[hidden]{display:none!important}
+.portal-toolbar-language-menu button{
+  min-width:34px!important;
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 6px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:#f4ead5!important;
+  font:inherit!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.portal-toolbar-language-menu button.active{
+  background:rgba(244,234,213,.15)!important;
+  box-shadow:0 0 7px rgba(244,234,213,.28)!important;
+}
+.portal-toolbar-language-menu button:active{
+  background:rgba(244,234,213,.12)!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child{
+  border:1px solid rgba(244,234,213,.15)!important;
+  background:rgba(244,234,213,.15)!important;
+  box-shadow:0 0 8px rgba(244,234,213,.16)!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child .portal-toolbar-icon{
+  filter:drop-shadow(0 0 4px rgba(244,234,213,1)) drop-shadow(0 0 12px rgba(244,234,213,.75))!important;
+}
+.home-hero-profile-trigger{
+  cursor:pointer!important;
+  user-select:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.home-hero-profile-trigger:active{
+  transform:translateY(1px)!important;
+}
+
+
 :root{
   color-scheme:light dark;
   font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
