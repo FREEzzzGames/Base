@@ -42,8 +42,6 @@ jobs:
           test -f src/portal-ui.ts
           test -f src/live-runtime.ts
           test -f src/platform-bridge.ts
-          test -f src/portal-navigation.ts
-          test -f src/game-runtime.ts
           test -f src/radio-config.ts
 
           # Catch the exact class of regressions that previously appeared during
