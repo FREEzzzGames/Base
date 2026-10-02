@@ -729,25 +729,6 @@ main{
   font-size:10px;
   text-align:center;
 }
-.editor-block-actions{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-width:34px;
-}
-.editor-drag-hint{
-  font-size:7px;
-  letter-spacing:.08em;
-  color:rgba(255,255,255,.72);
-  writing-mode:vertical-rl;
-}
-.editor-move{display:none!important}
-@media(max-width:520px){
-  .touch-controls{flex-direction:column;gap:4px}
-  .touch-controls button{width:100%;min-width:0;height:38px}
-  .touch-controls span{font-size:9px}
-}
-
 /* RADIO runtime layout safety: keep the station interface in normal document flow. */
 .portal-layout[data-portal-layout="radio"]{
   display:block;
