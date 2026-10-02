@@ -46,6 +46,17 @@ jobs:
           test ! -e src/game-runtime.ts
           test ! -e scripts/fetch-tabler.mjs
 
+          # Architecture debt guards: stale HOME refresh loops and global DOM mutation
+          # observers must not return after the cleanup pass.
+          if grep -RInE 'homeRefreshTimer|refreshHomeContent|ensureHomeRefresh' src/main.ts; then
+            echo "Stale HOME refresh machinery detected."
+            exit 1
+          fi
+          if grep -RInE 'new MutationObserver\(' src/mihi src/multi-window-portal.ts; then
+            echo "Global mutation observers are not allowed in MIHI/multi-window runtime."
+            exit 1
+          fi
+
           # No removed UI/runtime features may return through stale source files.
           if grep -RInE 'game-font|gameFont|data-game-font|font-size control|freezzz:game-font-size|editor-layout|data-editor-' src package.json; then
             echo "Obsolete runtime/UI traces detected."
