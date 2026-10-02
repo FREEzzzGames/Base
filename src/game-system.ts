@@ -1,3 +1,4 @@
+export type GameLanguage="RU"|"DE"|"EN";
 export type GameRace="human"|"elf"|"orc"|"dwarf";
 export type GameTab="story"|"character"|"skills"|"achievements"|"journal"|"quests"|"shop";
 type MiniQuest={id:string;title:string;description:string;goal:number;progress:number;reward:number;kind:"observe"|"talk"|"explore"|"knowledge"};
