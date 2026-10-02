@@ -57,9 +57,27 @@ const app=document.querySelector<HTMLDivElement>("#app")!;
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
-let lang=portalState.language;
+let lang:Language=portalState.language;
+type Language="RU"|"DE"|"EN";
 const DEVELOPER_TOOLS_ENABLED = import.meta.env.DEV || import.meta.env.VITE_FREEZZ_DEV_TOOLS === "1";
 let developerOpen=false;
+let profileOpen=false;
+let liveSelected="";
+let livePopupOpen=false;
+let livePopupSource:"twitch"|"youtube"="twitch";
+let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
+let homeRefreshTimer:number|null=null;
+let score=0;
+let player=.5;
+const radioBrowser=new RadioBrowserClient();
+let radioStations:readonly RadioBrowserStation[]=[];
+let radioGenre="pop";
+let radioQuery="";
+let radioLoading=false;
+let radioError="";
+let radioAudio:HTMLAudioElement|null=null;
+let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
+let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 const LUCIDE_ICONS:Record<string,string>={
   user:'<circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>',
   video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>',
@@ -458,7 +476,7 @@ function bind(){
     const tg=getTelegramWebApp();
     if(tg?.openLink)tg.openLink(url,{try_instant_view:false});else window.open(url,"_blank","noopener,noreferrer");
   });
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=x.dataset.lang||"RU";render();};});
+  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
     x.onclick=function(e){
       e.preventDefault();
