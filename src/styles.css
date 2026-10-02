@@ -4479,3 +4479,10 @@ main{
 .portal-workspace.portal-hud-hidden > main > .home-portal{
   width:100%!important;
 }
+
+/* HOME BLOCKS — square edges, preserve all other geometry */
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  border-radius:0!important;
+}
