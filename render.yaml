@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: freezzz-telegram-auth
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ALLOWED_ORIGIN
+        value: https://freezzgames.github.io
