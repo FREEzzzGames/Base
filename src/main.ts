@@ -383,7 +383,7 @@ function homeCard(v:View,e:string,t:string,content:string){
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
     <span class="home-card-content">
-      <span class="home-card-head"><strong>${t}</strong></span>
+      <span class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></span>
       ${content}
     </span>
   </button>`;
