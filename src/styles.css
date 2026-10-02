@@ -3855,3 +3855,38 @@ main{
   position:relative!important;
   z-index:2!important;
 }
+
+/* ================================================================
+   MASTER NEON BACKGROUND — GRAPHITE NEON
+   HOME + HUD backing layers
+   ================================================================ */
+main{
+  background:#252a31!important;
+}
+.home-portal{
+  background:#252a31!important;
+}
+.home-portal::before{
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(82,92,104,1) 0%,
+      rgba(55,63,73,.99) 38%,
+      rgba(37,43,51,.98) 72%,
+      rgba(22,27,33,1) 100%)!important;
+  box-shadow:
+    inset 0 0 80px rgba(135,150,165,.72),
+    inset 0 0 180px rgba(75,90,105,.62)!important;
+}
+.portal-toolbar{
+  background:#252a31!important;
+}
+.portal-toolbar::before{
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(82,92,104,1) 0%,
+      rgba(55,63,73,.99) 55%,
+      rgba(22,27,33,1) 100%)!important;
+  box-shadow:
+    inset 0 0 45px rgba(135,150,165,.72),
+    inset 0 0 90px rgba(75,90,105,.58)!important;
+}
