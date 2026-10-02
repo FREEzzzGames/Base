@@ -204,192 +204,6 @@ form input{
 }
 
 
-/* Approved FREEzzz top bar: geometric icons, compact Telegram proportions. */
-.topbar{
-  min-height:58px;
-  grid-template-columns:auto minmax(0,1fr) auto;
-}
-.topbar-left{
-  min-width:0;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  justify-self:start;
-}
-.topbar-right{
-  min-width:0;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:8px;
-  justify-self:end;
-}
-.profile-button{
-  width:38px;height:38px;padding:0;border:0;border-radius:50%;
-  display:grid;place-items:center;background:transparent;
-}
-.profile-button:hover{background:var(--tg-theme-secondary-bg-color)}
-.profile-glyph{
-  position:relative;width:25px;height:25px;display:block;
-}
-.profile-glyph:before{
-  content:"";position:absolute;left:7px;top:1px;width:11px;height:11px;
-  border-radius:50%;background:var(--tg-theme-button-color);
-}
-.profile-glyph:after{
-  content:"";position:absolute;left:3px;bottom:1px;width:19px;height:11px;
-  border-radius:8px 12px 3px 3px;background:var(--tg-theme-button-color);
-}
-.brand-avatar{
-  flex:0 0 42px;width:42px;height:42px;
-  font-size:21px;
-}
-.brand-title strong{font-size:21px;letter-spacing:.2px}
-.brand-title small{font-size:10px}
-.lang-switch{
-  position:static;
-  transform:none;
-  z-index:2;
-  padding:4px;
-  min-width:174px;
-  justify-content:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.18);
-}
-.lang-switch button{
-  min-width:52px;height:42px;font-size:16px;
-}
-.lang-switch button.active{box-shadow:0 2px 8px rgba(0,0,0,.22)}
-.top-actions{
-  display:none;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.bottom-radio-icon{
-  position:relative;
-  width:26px;
-  height:26px;
-  display:block;
-}
-.bottom-radio-icon:before{
-  content:"";
-  position:absolute;
-  left:3px;right:3px;top:7px;height:15px;
-  border:2px solid currentColor;
-  border-radius:4px;
-}
-.bottom-radio-icon:after{
-  content:"";
-  position:absolute;
-  left:9px;top:1px;width:17px;height:2px;
-  background:currentColor;
-  border-radius:2px;
-  transform:rotate(-27deg);
-  transform-origin:left center;
-  box-shadow:-1px 19px 0 -1px currentColor,7px 19px 0 -1px currentColor;
-}
-main{
-  padding-bottom:calc(96px + var(--safe-bottom));
-}
-@media(max-width:520px){
-
-
-  main{padding-bottom:calc(88px + var(--safe-bottom))}
-}
-@media(max-width:390px){
-
-
-  main{padding-bottom:calc(82px + var(--safe-bottom))}
-}
-.icon-button{
-  width:44px;height:44px;
-  border-radius:8px;
-}
-.nav-icon{
-  width:27px;height:27px;display:block;position:relative;
-}
-.chat-icon{
-  border:3px solid var(--tg-theme-text-color);
-  border-radius:50%;
-  height:21px;width:28px;margin-top:-2px;
-}
-.chat-icon:after{
-  content:"";position:absolute;left:2px;bottom:-7px;
-  width:8px;height:9px;background:var(--tg-theme-text-color);
-  clip-path:polygon(0 0,100% 0,0 100%);
-}
-.chat-icon i{
-  position:absolute;top:6px;width:4px;height:4px;border-radius:50%;
-  background:var(--tg-theme-text-color);
-}
-.chat-icon i:nth-child(1){left:5px}
-.chat-icon i:nth-child(2){left:11px}
-.chat-icon i:nth-child(3){left:17px}
-.radio-button{font-size:23px}
-.radio-glyph{display:grid;place-items:center;line-height:1}
-.home-icon:before{
-  content:"";position:absolute;left:3px;top:8px;width:21px;height:16px;
-  border:3px solid var(--tg-theme-text-color);border-top:0;border-radius:2px;
-}
-.home-icon:after{
-  content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;
-  border-left:3px solid var(--tg-theme-text-color);border-top:3px solid var(--tg-theme-text-color);
-  transform:rotate(45deg);border-radius:2px;
-}
-.settings-icon:before{
-  content:"";position:absolute;inset:4px;border:3px solid var(--tg-theme-text-color);border-radius:50%;
-}
-.settings-icon:after{
-  content:"";position:absolute;left:8px;top:8px;width:11px;height:11px;
-  border:3px solid var(--tg-theme-text-color);border-radius:50%;
-  box-shadow:
-    0 -11px 0 -8px var(--tg-theme-text-color),
-    0 11px 0 -8px var(--tg-theme-text-color),
-    11px 0 0 -8px var(--tg-theme-text-color),
-    -11px 0 0 -8px var(--tg-theme-text-color);
-}
-@media(max-width:700px){
-  .topbar{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4px}
-  .brand-title strong{font-size:18px}
-  .brand-avatar{flex-basis:38px;width:38px;height:38px;font-size:19px}
-  .profile-button{width:34px;height:34px}
-  .lang-switch{min-width:156px}
-  .lang-switch button{min-width:46px;height:38px;font-size:14px}
-  .icon-button{width:38px;height:38px}
-  .top-actions{gap:1px}
-}
-@media(max-width:520px){
-  .topbar-left{gap:5px}
-  .brand-title{display:none}
-  .brand-avatar{flex-basis:38px;width:38px;height:38px}
-  .lang-switch{min-width:146px}
-  .lang-switch button{min-width:42px;height:36px}
-  .top-actions .icon-button{width:34px;height:34px}
-  .top-actions{gap:0}
-}
-@media(max-width:390px){
-  .profile-button{display:none}
-  .brand-avatar{width:34px;height:34px;flex-basis:34px}
-  .lang-switch{min-width:128px;padding:3px}
-  .lang-switch button{min-width:37px;height:32px;font-size:12px}
-  .top-actions .icon-button{width:31px;height:31px}
-  .radio-button{font-size:19px}
-  .chat-icon{transform:scale(.82)}
-  .home-icon,.settings-icon{transform:scale(.82)}
-}
-
 .radio-panel{padding:14px;border:1px solid var(--tg-theme-section-separator-color);border-radius:var(--radius);background:var(--tg-theme-secondary-bg-color)}
 .radio-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.radio-heading h3{margin:4px 0;font-size:20px}.radio-heading p{margin:0;color:var(--tg-theme-hint-color);font-size:12px}.radio-kicker{font-size:10px;letter-spacing:.16em;color:var(--tg-theme-hint-color)}
 .radio-player{min-height:76px;margin:12px 0;padding:10px;border:1px solid var(--tg-theme-section-separator-color);border-radius:8px;background:var(--tg-theme-bg-color, #ffffff);display:flex;flex-direction:column;justify-content:center;gap:4px}.radio-player span{color:var(--tg-theme-hint-color);font-size:12px}
@@ -487,6 +301,29 @@ main{
 }
 
 
+/* Current shared controls — legacy topbar navigation removed. */
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  min-width:0;
+}
+.icon-button{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:0;
+  border:0;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:transparent;
+  color:var(--tg-theme-text-color,#222);
+}
+.icon-button:active{transform:scale(.97)}
+
 /* Telegram-safe profile interaction */
 .profile-overlay{position:fixed;inset:0;z-index:25;display:grid;place-items:center;padding:20px;background:rgba(3,7,11,.78);backdrop-filter:blur(5px)}
 .profile-card{position:relative;width:min(92vw,340px);padding:24px;border:1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,.12));border-radius:10px;background:var(--tg-theme-secondary-bg-color, #f1f1f1);text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.12)}
@@ -494,109 +331,6 @@ main{
 .profile-avatar{width:64px;height:64px;margin:4px auto 12px;display:grid;place-items:center;border-radius:50%;background:var(--tg-theme-button-color, #3390ec);color:#fff;font-size:30px;font-weight:800}
 .profile-card h2{margin:0 0 5px}.profile-card p{margin:0;color:var(--tg-theme-hint-color, #707579)}
 .profile-actions{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-
-
-/* Modern responsive top navigation — text + CSS vector icons only. */
-.topbar{
-  min-height:64px;
-  padding:calc(8px + var(--safe-top)) 10px 8px;
-  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-  gap:10px;
-  background:color-mix(in srgb,var(--tg-theme-secondary-bg-color) 94%,black 6%);
-  border-bottom:1px solid color-mix(in srgb,var(--tg-theme-section-separator-color) 82%,transparent);
-}
-.topbar-left{gap:7px;min-width:0}
-.profile-button,.icon-button{
-  flex:0 0 40px;width:40px;height:40px;
-  border:1px solid transparent;
-  border-radius:12px;
-  background:transparent;
-  transition:background .16s ease,border-color .16s ease,transform .12s ease;
-}
-.profile-button:hover,.icon-button:hover{background:var(--tg-theme-secondary-bg-color);border-color:var(--tg-theme-section-separator-color)}
-.profile-button:active,.icon-button:active{transform:scale(.95)}
-.brand-avatar{flex:0 0 40px;width:40px;height:40px;font-size:20px}
-.lang-switch{
-  min-width:138px;height:40px;padding:3px;gap:2px;
-  border:1px solid var(--tg-theme-section-separator-color);
-  border-radius:12px;
-  background:var(--tg-theme-secondary-bg-color, #f1f1f1);
-  box-shadow:none;
-}
-.lang-switch button{
-  min-width:40px;height:32px;padding:0 8px;border-radius:9px;
-  font-size:14px;font-weight:600;letter-spacing:.02em;
-}
-.lang-switch button.active{box-shadow:none}
-.top-actions{
-  justify-self:end;min-width:0;gap:3px;
-  display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;
-}
-.top-actions::-webkit-scrollbar{display:none}
-.nav-action{position:relative;display:grid;place-items:center}
-.nav-action.active{background:color-mix(in srgb,var(--tg-theme-button-color, #3390ec) 18%,transparent);border-color:color-mix(in srgb,var(--tg-theme-link-color) 45%,transparent)}
-.nav-label{display:none}
-.radio-glyph{position:relative;width:25px;height:22px;display:block}
-.radio-glyph:before{content:"";position:absolute;left:3px;right:2px;bottom:1px;height:14px;border:2px solid currentColor;border-radius:4px}
-.radio-glyph:after{content:"";position:absolute;left:9px;top:0;width:13px;height:2px;background:currentColor;transform:rotate(-25deg);transform-origin:left center;border-radius:2px}
-.radio-button:before{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:currentColor;transform:translate(-6px,5px);box-shadow:8px 0 0 currentColor}
-.chat-icon{border-width:2px;height:20px;width:27px}
-.home-icon:before,.home-icon:after{border-width:2px}
-.settings-icon:before,.settings-icon:after{border-width:2px}
-@media(max-width:520px){
-  .topbar{min-height:58px;padding:calc(6px + var(--safe-top)) 7px 6px;gap:6px}
-  .topbar-left{gap:4px}
-  .profile-button,.icon-button{flex-basis:36px;width:36px;height:36px;border-radius:10px}
-  .brand-avatar{flex-basis:36px;width:36px;height:36px;font-size:18px}
-  .lang-switch{min-width:116px;width:116px;height:36px;padding:2px;border-radius:10px}
-  .lang-switch button{min-width:34px;height:30px;padding:0 5px;font-size:13px}
-  .top-actions{gap:2px}
-}
-@media(max-width:390px){
-  .topbar{grid-template-columns:auto minmax(0,1fr) auto;gap:4px}
-  .profile-button,.icon-button{flex-basis:34px;width:34px;height:34px}
-  .brand-avatar{flex-basis:34px;width:34px;height:34px}
-  .lang-switch{min-width:108px;width:108px}
-  .lang-switch button{min-width:31px;font-size:12px}
-  .top-actions{max-width:144px}
-}
-@media(max-width:340px){
-  .brand-avatar{display:none}
-  .top-actions{max-width:140px}
-  .lang-switch{min-width:105px;width:105px}
-}
-
-
-/* Final navigation icon scale: fixed vector bounds for Telegram/Web/TV. */
-.top-actions .icon-button{
-  width:40px;height:40px;min-width:40px;
-  padding:0;display:grid;place-items:center;
-}
-.top-actions .nav-icon{width:24px;height:24px;transform:none}
-.top-actions .chat-icon{width:24px;height:18px;margin:0;border:2px solid currentColor;border-radius:50%}
-.top-actions .chat-icon:after{left:2px;bottom:-6px;width:7px;height:7px}
-.top-actions .chat-icon i{top:5px;width:3px;height:3px}
-.top-actions .chat-icon i:nth-child(1){left:4px}
-.top-actions .chat-icon i:nth-child(2){left:10px}
-.top-actions .chat-icon i:nth-child(3){left:16px}
-.top-actions .home-icon:before{left:3px;top:8px;width:18px;height:13px;border-width:2px}
-.top-actions .home-icon:after{left:3px;top:3px;width:15px;height:15px;border-width:2px}
-.top-actions .radio-glyph{width:24px;height:21px}
-.top-actions .radio-glyph:before{left:2px;right:1px;bottom:1px;height:13px;border-width:2px}
-.top-actions .radio-glyph:after{left:8px;top:0;width:13px;height:2px}
-.top-actions .radio-button:before{width:4px;height:4px;transform:translate(-5px,5px);box-shadow:7px 0 0 currentColor}
-@media(max-width:520px){
-  .top-actions .icon-button{width:36px;height:36px;min-width:36px}
-  .top-actions .nav-icon{width:22px;height:22px}
-  .top-actions .chat-icon{width:22px;height:17px}
-  .top-actions .home-icon:before{width:17px;height:12px}
-  .top-actions .home-icon:after{width:14px;height:14px}
-  .top-actions .radio-glyph{width:22px;height:20px}
-}
-
-
-/* Final bottom navigation override: legacy top navigation styles stay inert. */
-.topbar .top-actions{display:none!important}
 
 
 /* Telegram Mini App touch-first interaction layer. */
@@ -2570,58 +2304,6 @@ main{
     height:54px;
     flex-basis:54px;
   }
-}
-
-/* Bottom navigation: stable 44px+ touch targets without the previous oversized icon system. */
-
-
-
-
-main{
-  padding-bottom:calc(78px + var(--safe-bottom));
-}
-
-@media(max-width:390px){
-  header.topbar{
-    min-height:52px;
-    padding-left:8px;
-    padding-right:8px;
-  }
-  .profile-button{
-    width:44px;
-    height:44px;
-  }
-  .profile-button .ui-icon,
-  .profile-button .portal-illustration{
-    width:36px;
-    height:36px;
-    flex-basis:36px;
-  }
-  .lang-switch{
-    min-width:126px;
-    width:126px;
-    height:42px;
-  }
-  .lang-switch button{
-    min-width:40px;
-    height:34px;
-  }
-
-
-
-
-
-  main{
-    padding-bottom:calc(74px + var(--safe-bottom));
-  }
-}
-
-/* Short mobile viewports: preserve usable controls, reduce vertical decoration only. */
-@media(max-height:700px){
-  header.topbar{min-height:52px;}
-  .home-card{min-height:100px;}
-
-  main{padding-bottom:calc(74px + var(--safe-bottom));}
 }
 
 /* Wide screens can use the approved split home layout. */
