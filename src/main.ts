@@ -379,6 +379,7 @@ function render(){
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   bind();
   bindHudTouchGesture();
+  updateHomeClock();
   window.dispatchEvent(new CustomEvent("freezzz:chat-sync",{detail:{messages:chatMessages}}));
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
@@ -466,7 +467,7 @@ portalEvents.on("navigation:changed",payload=>{
 });
 window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
-window.setInterval(()=>flushActivityTracking(),15000);
+window.setInterval(()=>flushActivityTracking(),15000);\nwindow.setInterval(updateHomeClock,1000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bindHudTouchGesture(){
@@ -490,6 +491,12 @@ function bindHudTouchGesture(){
   const end=()=>{tracking=false;};
   document.addEventListener("pointerup",end,{passive:true});
   document.addEventListener("pointercancel",end,{passive:true});
+}
+function updateHomeClock(){
+  if(view!=="home")return;
+  const clock=document.querySelector<HTMLElement>("[data-home-clock]");
+  if(!clock)return;
+  clock.textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
 function bind(){
   if(view==="radio"){
