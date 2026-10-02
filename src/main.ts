@@ -271,13 +271,19 @@ function render(){
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
           ${icon("chat","nav-icon")}<span>CHAT</span>
         </button>
+        <button class="bottom-nav-item ${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">
+          ${icon("video","nav-icon")}<span>LIVE</span>
+        </button>
+        <button class="bottom-nav-item ${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">
+          ${icon("game","nav-icon")}<span>GAME</span>
+        </button>
         <button class="bottom-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
           ${icon("radio","nav-icon")}<span>RADIO</span>
         </button>
+        ${DEVELOPER_TOOLS_ENABLED?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Инструменты разработчика" title="DEV">${icon("settings","nav-icon")}<span>DEV</span></button>`:""}
         <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
           ${icon("home","nav-icon")}<span>HOME</span>
         </button>
-        ${DEVELOPER_TOOLS_ENABLED?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Инструменты разработчика" title="DEV">${icon("settings","nav-icon")}<span>DEV</span></button>`:""}
       </nav>
       <main>${body}</main>
       ${livePopupMarkup()}
