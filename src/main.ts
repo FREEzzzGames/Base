@@ -11,6 +11,7 @@ import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
+import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 
 initPortalPalette();
@@ -38,6 +39,7 @@ async function checkForPortalUpdate(){
 void checkForPortalUpdate();
 
 type View = PortalView;
+type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
 type PortalSessionSnapshot={view:View;gameTab:GameTab;profileOpen:boolean;};
@@ -54,9 +56,9 @@ const portalSession=loadPortalSessionSnapshot();
 const portalState=createPlatformState({view:(portalSession.view||"home") as View,language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
-let lang:Language=portalState.language;
-try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}catch{}
-type Language="RU"|"DE"|"EN";
+let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
+try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(!localStorage.getItem("freezzz:language")){if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}}catch{}
+const T=(key:string)=>pt(lang,key);
 const DEVELOPER_TOOLS_ENABLED = true;
 let developerOpen=false;
 let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="user";}catch{return true;}})();
@@ -75,7 +77,7 @@ let radioActivityName="";
 let liveSelected="";
 let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
-let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
+let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:${T("welcome")}}];
 let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
@@ -87,11 +89,11 @@ function setGameFontSize(size:GameFontSize){gameFontSize=size;try{localStorage.s
 function renderGameFontToolbar(){
   const current=gameFontSize==="normal"?"A":gameFontSize==="large"?"A+":"A++";
   return '<div class="game-font-control '+(gameFontControlsOpen?"is-open":"")+'" data-game-font-control>'+
-    '<button type="button" class="game-font-toggle" data-game-font-toggle aria-label="Размер текста" title="Размер текста">'+current+'</button>'+
-    '<div class="game-font-toolbar" role="group" aria-label="Размер текста в игре">'+
-      '<button type="button" class="'+(gameFontSize==="normal"?"active":"")+'" data-game-font-size="normal" aria-label="Обычный размер" title="Обычный">A</button>'+
-      '<button type="button" class="'+(gameFontSize==="large"?"active":"")+'" data-game-font-size="large" aria-label="Большой размер" title="Большой">A+</button>'+
-      '<button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label="Самый большой размер" title="Самый большой">A++</button>'+
+    '<button type="button" class="game-font-toggle" data-game-font-toggle aria-label=${T("fontSize")} title=${T("fontSize")}>'+current+'</button>'+
+    '<div class="game-font-toolbar" role="group" aria-label=${T("fontSizeGame")}>'+
+      '<button type="button" class="'+(gameFontSize==="normal"?"active":"")+'" data-game-font-size="normal" aria-label=${T("normal")} title="Обычный">A</button>'+
+      '<button type="button" class="'+(gameFontSize==="large"?"active":"")+'" data-game-font-size="large" aria-label=${T("large")} title="Большой">A+</button>'+
+      '<button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label=${T("largest")} title="Самый большой">A++</button>'+
     '</div></div>';
 }
 let gameNavRevealed=false;
@@ -112,7 +114,7 @@ function bindGameAmbientControls(){
     gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
     const b=e.currentTarget as HTMLButtonElement;
     b.textContent=gameAmbientMuted?"⊘":"◉";
-    b.setAttribute("aria-label",gameAmbientMuted?"Включить звук":"Выключить звук");
+    b.setAttribute("aria-label",gameAmbientMuted?${T("soundOn")}:${T("soundOff")});
   });
   gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
     e.stopPropagation();
@@ -120,7 +122,7 @@ function bindGameAmbientControls(){
     gameAmbientCommand(gameAmbientPlaying?"playVideo":"pauseVideo");
     const b=e.currentTarget as HTMLButtonElement;
     b.textContent=gameAmbientPlaying?"Ⅱ":"▶";
-    b.setAttribute("aria-label",gameAmbientPlaying?"Остановить видео":"Продолжить видео");
+    b.setAttribute("aria-label",gameAmbientPlaying?${T("pauseVideo")}:${T("resumeVideo")});
   });
 }
 function syncGameAmbient(){
@@ -133,7 +135,7 @@ function syncGameAmbient(){
   if(!gameAmbientHost){
     gameAmbientHost=document.createElement("div");
     gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="Лесной костёр — атмосфера игры" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="Включить звук">⊘</button><button type="button" data-ambient-play aria-label="Остановить видео">Ⅱ</button></div>';
+    gameAmbientHost.innerHTML='<iframe title=${T("fireVideo")} src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label=${T("soundOn")}>⊘</button><button type="button" data-ambient-play aria-label=${T("pauseVideo")}>Ⅱ</button></div>';
     bindGameAmbientControls();
   }
   if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
@@ -306,7 +308,7 @@ function renderProfileCard(){
   const liveHtml=liveItems.length?liveItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} виз.</small></div>`).join(""):`<p class="profile-empty">Пока нет просмотров.</p>`;
   const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
   return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
-    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button>
+    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label=${T("close")}>×</button>
     <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
     <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
@@ -350,11 +352,11 @@ function render(){
           <h1>FREEzzzY</h1>
           <p>Твой интерактивный мир внутри одного портала.</p>
         </section>
-        ${homeCard("live",icon("video","home-card-icon"),"LIVE — Стримеры и каналы",'<div class="home-live-preview" data-home-live-content></div>')}
-        ${homeCard("chat",icon("chat","home-card-icon"),"CHAT — Общение",'<div class="home-chat-preview" data-home-chat-content></div>')}
-        ${homeCard("game",icon("game","home-card-icon"),"GAME — Игровая зона",'<div class="home-game-preview" data-home-game-content></div>')}
-        ${homeCard("radio",icon("radio","home-card-icon"),"RADIO — Музыка",'<div class="home-radio-preview" data-home-radio-content></div>')}
-        ${homeCard("library",icon("library","home-card-icon"),"LIBRARY — Библиотека",'<div class="home-library-preview" data-home-library-content></div>')}
+        ${homeCard("live",icon("video","home-card-icon"),${T("liveCard")},'<div class="home-live-preview" data-home-live-content></div>')}
+        ${homeCard("chat",icon("chat","home-card-icon"),${T("chatCard")},'<div class="home-chat-preview" data-home-chat-content></div>')}
+        ${homeCard("game",icon("game","home-card-icon"),${T("gameCard")},'<div class="home-game-preview" data-home-game-content></div>')}
+        ${homeCard("radio",icon("radio","home-card-icon"),${T("radioCard")},'<div class="home-radio-preview" data-home-radio-content></div>')}
+        ${homeCard("library",icon("library","home-card-icon"),${T("libraryCard")},'<div class="home-library-preview" data-home-library-content></div>')}
       </div>`;
   }
 
@@ -388,7 +390,7 @@ function render(){
         </div>
         <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
-          <input id="chatinput" placeholder="Сообщение…" autocomplete="off">
+          <input id="chatinput" placeholder=${T("message")} autocomplete="off">
           <button class="tg-button">Отправить</button>
         </form>
       </div>`;
@@ -437,20 +439,20 @@ function render(){
           <div class="radio-now-playing portal-block" data-portal-block="nowplaying">
             <div>
               <span class="radio-kicker">NOW PLAYING</span>
-              <h3>${selectedStation?escapeHtml(selectedStation.name):"Choose a station"}</h3>
+              <h3>${selectedStation?escapeHtml(selectedStation.name):${T("chooseStation")}}</h3>
               <p>${selectedStation
                 ? [selectedStation.country||"International",selectedStation.tags||"radio",selectedStation.language||"",selectedStation.codec?`${selectedStation.codec} · ${selectedStation.bitrate||0} kbps`:""].filter(Boolean).map(escapeHtml).join(" · ")
-                : "Загрузка станций…"}
+                : ${T("radioLoading")}}
               </p>
             </div>
             <div class="radio-player-controls">
-              <button id="radio-play" class="tg-button" type="button" ${selectedStation?"":"disabled"}>${radioPlaybackStatus==="playing"?"Playing":"Play"}</button>
+              <button id="radio-play" class="tg-button" type="button" ${selectedStation?"":"disabled"}>${radioPlaybackStatus==="playing"?${T("playing")}:${T("play")}}</button>
               <button id="radio-pause" class="tg-button secondary" type="button" ${radioPlaybackStatus==="playing"?"":"disabled"}>Pause</button>
               <button id="radio-stop" class="tg-button secondary" type="button" ${radioPlaybackStatus!=="idle"&&radioPlaybackStatus!=="stopped"?"":"disabled"}>Stop</button>
             </div>
           </div>
           <div id="radio-audio-host" class="radio-audio-host"></div>
-          <form id="radio-search-form" class="inline-form portal-block" data-portal-block="search"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder="Search station"><button class="tg-button" type="submit">Search</button></form>
+          <form id="radio-search-form" class="inline-form portal-block" data-portal-block="search"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder=${T("searchStation")}><button class="tg-button" type="submit">Search</button></form>
           <div class="radio-genres portal-block" data-portal-block="genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${escapeHtml(g)}" class="${radioGenre===g?"active":""}">${escapeHtml(g)}</button>`).join("")}</div>
           ${radioError?`<div class="radio-status">${escapeHtml(radioError)}</div>`:""}
         </section>
@@ -483,7 +485,7 @@ function render(){
             <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
           </nav>
         </div>
-        ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?"РАЗРАБ":"ПОЛЬЗ."}</small></button>`:""}
+        ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?T("developer"):T("user")}</small></button>`:""}
       </header>
       <nav class="bottom-nav ${view==="game"?"bottom-nav-game":""} ${view==="game"&&gameNavRevealed?"game-nav-revealed":""}" aria-label="Portal navigation">
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
@@ -503,7 +505,7 @@ function render(){
           ${icon("home","nav-icon")}<span>HOME</span>
         </button>
       </nav>
-      ${view==="game"?`<button class="game-nav-reveal ${gameNavRevealed?"is-active":""}" type="button" aria-label="Показать меню" title="Провести вверх от нижнего края или нажать">⌃</button>`:""}
+      ${view==="game"?`<button class="game-nav-reveal ${gameNavRevealed?"is-active":""}" type="button" aria-label=${T("showMenu")} title=${T("swipeHint")}>⌃</button>`:""}
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
@@ -533,14 +535,14 @@ function refreshHomeContent(){
   const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
   if(chat){
     const last=chatMessages[chatMessages.length-1];
-    chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:"Нет сообщений";
+    chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:${T("noMessages")};
   }
   const game=document.querySelector<HTMLElement>("[data-home-game-content]");
   if(game)game.innerHTML=gameState.race?`<span>LEVEL <b>${gameState.level}</b></span><span>XP ${gameState.xp}/100</span><small>${escapeHtml(gameState.race.toUpperCase())} · история продолжается</small>`:`<span>FREEzzz STORY</span><span>4 RACES</span><small>Выбери героя и начни приключение</small>`;
   const radio=document.querySelector<HTMLElement>("[data-home-radio-content]");
   if(radio){
     const station=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
-    radio.innerHTML=station?`<b>${escapeHtml(station.name)}</b><span>${radioPlaybackStatus==="playing"?"● PLAYING":"○ "+(radioPlaybackStatus==="paused"?"PAUSED":"READY")}</span>`:radioLoading?"Загрузка станции…":"RADIO готово";
+    radio.innerHTML=station?`<b>${escapeHtml(station.name)}</b><span>${radioPlaybackStatus==="playing"?"● PLAYING":"○ "+(radioPlaybackStatus==="paused"?"PAUSED":"READY")}</span>`:radioLoading?${T("radioLoadingShort")}:${T("radioReady")};
   }
   const library=document.querySelector<HTMLElement>("[data-home-library-content]");
   if(library){
@@ -590,8 +592,8 @@ function playRadioStation(id:string){
   radioPlaybackStatus="loading";
   radioAudio.addEventListener("playing",()=>{radioPlaybackStatus="playing";beginRadioActivity(station.name);render();},{once:true});
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")radioPlaybackStatus="paused";});
-  radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
-  void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
+  radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError=${T("playError")};render();},{once:true});
+  void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError=${T("autoplayError")};}).finally(()=>render());
 }
 portalEvents.on("navigation:changed",payload=>{
   clearGameNavHideTimer();
@@ -703,7 +705,7 @@ function bind(){
     const url=stream?(livePopupSource==="youtube"?stream.youtube:stream.twitch):"";if(!url)return;
     openExternalUrl(url);
   });
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";render();};});
+  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
     x.onclick=function(e){
       e.preventDefault();
