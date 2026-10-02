@@ -1600,3 +1600,15 @@ main{
   .game-dialog p{margin:6px 0 8px;font-size:13px;line-height:1.45}
   .game-choices button{min-height:44px;padding:8px 11px}
 }
+
+
+/* GAME ECONOMY — restrained progression */
+.game-quest,.game-shop-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-top:1px solid color-mix(in srgb,var(--ds-text) 10%,transparent)}
+.game-quest>div,.game-shop-item>div{display:grid;gap:4px;min-width:0}
+.game-quest b,.game-shop-item b{font-size:1rem}
+.game-quest small,.game-shop-item small{opacity:.72;line-height:1.35}
+.game-quest em{font-style:normal;font-size:.78rem;opacity:.6}
+.game-quest>button,.game-shop-item>button{flex:0 0 auto;border:1px solid var(--ds-accent);background:var(--ds-panel);color:var(--ds-text);border-radius:10px;padding:9px 12px;font:inherit;cursor:pointer}
+.game-quest>span{font-size:.72rem;opacity:.55;white-space:nowrap}
+.game-quest.done{border-color:color-mix(in srgb,var(--ds-accent) 35%,transparent)}
+.game-shop-item>button:disabled{opacity:.35;cursor:not-allowed}
