@@ -37,7 +37,8 @@ export interface PortalProfile{
   stats:PortalActivityStats;
 }
 
-const KEY="freezzz:portal-profile:v1";
+const KEY_PREFIX="freezzz:portal-profile:v1:";
+function storageKey(identity:TelegramProfileIdentity=getTelegramIdentity()){return KEY_PREFIX+(identity.id?String(identity.id):"anonymous");}
 
 function nowIso(){return new Date().toISOString();}
 
@@ -71,7 +72,8 @@ export function getTelegramIdentity():TelegramProfileIdentity{
 
 export function loadPortalProfile():PortalProfile{
   try{
-    const raw=localStorage.getItem(KEY);
+    const identity=getTelegramIdentity();
+    const raw=localStorage.getItem(storageKey(identity));
     if(raw){
       const saved=JSON.parse(raw) as PortalProfile;
       return {
@@ -87,11 +89,11 @@ export function loadPortalProfile():PortalProfile{
       };
     }
   }catch{}
-  return {identity:getTelegramIdentity(),language:"RU",stats:emptyStats()};
+  return {identity,language:"RU",stats:emptyStats()};
 }
 
 export function savePortalProfile(profile:PortalProfile):void{
-  try{localStorage.setItem(KEY,JSON.stringify(profile));}catch{}
+  try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}catch{}
 }
 
 export function syncPortalIdentity(profile:PortalProfile):PortalProfile{
