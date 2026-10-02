@@ -346,9 +346,9 @@ function render(){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
-          <div class="home-hero-meta"><span>FREEzzz PORTAL</span><span data-home-clock>--:--:--</span></div>
-          <h1>FREEzzz</h1>
-          <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
+          <div class="home-hero-meta"><span>FREEzzzyPORTAL</span><span data-home-clock>--:--:--</span></div>
+          <h1>FREEzzzY</h1>
+          <p>Твой интерактивный мир внутри одного портала.</p>
         </section>
         ${homeCard("live",icon("video","home-card-icon"),"LIVE — Стримеры и каналы",'<div class="home-live-preview" data-home-live-content></div>')}
         ${homeCard("chat",icon("chat","home-card-icon"),"CHAT — Общение",'<div class="home-chat-preview" data-home-chat-content></div>')}
