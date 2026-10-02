@@ -2,6 +2,7 @@ import { RadioBrowserClient, RADIO_GENRES, type RadioBrowserStation } from "./ra
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
+import { renderDeveloperDiagnostics } from "./developer-tools";
 
 initPortalPalette();
 
@@ -54,256 +55,8 @@ type View = "home"|"live"|"chat"|"game"|"radio"|"library";
 const app=document.querySelector<HTMLDivElement>("#app")!;
 let view:View="home";
 let lang="RU";
-type InterfaceMode = "user"|"editor";
-const INTERFACE_MODE_KEY = "freezzz:interface-mode";
-const CONSTRUCTOR_ENABLED_KEY = "freezzz:constructor-enabled";
-let constructorEnabled=(()=>{try{return localStorage.getItem(CONSTRUCTOR_ENABLED_KEY)!=="disabled";}catch{return true;}})();
-let interfaceMode:InterfaceMode=(()=>{try{return localStorage.getItem(INTERFACE_MODE_KEY)==="editor"?"editor":"user";}catch{return "user";}})();
-let dev=interfaceMode==="editor";
-let profileOpen=false;
-let liveSelected="";
-let livePopupOpen=false;
-let livePopupSource:"twitch"|"youtube"="twitch";
-let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
-let homeRefreshTimer:number|null=null;
-let score=0;
-let player=.5;
-const radioBrowser=new RadioBrowserClient();
-let radioStations:readonly RadioBrowserStation[]=[];
-let radioGenre="pop";
-let radioQuery="";
-let radioLoading=false;
-let radioError="";
-let radioAudio:HTMLAudioElement|null=null;
-let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
-let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
-
-type EditorBlock={id:string;label:string;span:1|2;order:number;x?:number;y?:number;w?:number;h?:number};
-const TELEGRAM_CANVAS={width:360,height:640};
-type EditorLayout=Record<View,EditorBlock[]>;
-const EDITOR_LAYOUT_KEY="freezzz:editor-layout";
-const EDITOR_GEOMETRY_VERSION_KEY="freezzz:editor-geometry-version";
-const EDITOR_GEOMETRY_VERSION=3;
-const EDITOR_DEFAULTS:EditorLayout={
-  home:[
-    {id:"hero",label:"Главный экран / приветствие",span:2,order:0},
-    {id:"live",label:"LIVE — Стримеры и каналы",span:1,order:1},
-    {id:"chat",label:"CHAT — Общение",span:1,order:2},
-    {id:"game",label:"GAME — Игровая зона",span:1,order:3},
-    {id:"radio",label:"RADIO — Музыка",span:1,order:4},
-    {id:"library",label:"LIBRARY — Библиотека",span:1,order:5}
-  ],
-  live:[
-    {id:"header",label:"LIVE — Заголовок",span:2,order:0},
-    {id:"streams",label:"Список стримеров",span:2,order:1},
-    {id:"player",label:"Окно трансляции",span:2,order:2}
-  ],
-  chat:[
-    {id:"header",label:"CHAT — Заголовок",span:2,order:0},
-    {id:"messages",label:"Лента сообщений",span:2,order:1},
-    {id:"composer",label:"Поле сообщения",span:2,order:2}
-  ],
-  game:[
-    {id:"header",label:"GAME — Заголовок",span:2,order:0},
-    {id:"game",label:"Игровое окно",span:2,order:1},
-    {id:"controls",label:"Игровое управление",span:2,order:2}
-  ],
-  radio:[
-    {id:"header",label:"RADIO — Заголовок",span:2,order:0},
-    {id:"carousel",label:"Карусель станций",span:2,order:1},
-    {id:"nowplaying",label:"NOW PLAYING",span:2,order:2},
-    {id:"search",label:"Поиск станции",span:2,order:3},
-    {id:"genres",label:"Жанры",span:2,order:4}
-  ],
-  library:[
-    {id:"content",label:"LIBRARY — Библиотека",span:2,order:0}
-  ]
-};
-function cloneEditorDefaults():EditorLayout{
-  return JSON.parse(JSON.stringify(EDITOR_DEFAULTS)) as EditorLayout;
-}
-function loadEditorLayout():EditorLayout{
-  try{
-    const raw=localStorage.getItem(EDITOR_LAYOUT_KEY);
-    if(!raw)return cloneEditorDefaults();
-    const saved=JSON.parse(raw) as Partial<EditorLayout>;
-    const base=cloneEditorDefaults();
-    const geometryVersion=Number(localStorage.getItem(EDITOR_GEOMETRY_VERSION_KEY)||"0");
-    const migrateGeometry=geometryVersion<EDITOR_GEOMETRY_VERSION;
-    for(const key of Object.keys(base) as View[]){
-      if(Array.isArray(saved[key])&&saved[key]!.length){
-        base[key]=saved[key]!.map((b,i)=>({
-          id:String(b.id),
-          label:String(b.label||b.id),
-          span:b.span===2?2:1,
-          order:i,
-          x:migrateGeometry?undefined:(Number.isFinite(Number(b.x))?Math.max(0,Math.min(100,Number(b.x))):undefined),
-          y:migrateGeometry?undefined:(Number.isFinite(Number(b.y))?Math.max(0,Math.min(100,Number(b.y))):undefined),
-          w:migrateGeometry?undefined:(Number.isFinite(Number(b.w))?Math.max(10,Math.min(100,Number(b.w))):undefined),
-          h:migrateGeometry?undefined:(Number.isFinite(Number(b.h))?Math.max(4,Math.min(100,Number(b.h))):undefined)
-        }));
-      }
-    }
-    for(const key of Object.keys(base) as View[]){
-      const blocks=base[key];
-      const positioned=blocks.filter(b=>b.x!==undefined&&b.y!==undefined&&b.w!==undefined&&b.h!==undefined);
-      const invalid=positioned.some((a,i)=>positioned.slice(i+1).some(b=>
-        a.x!<b.x!+b.w! && a.x!+a.w!>b.x! &&
-        a.y!<b.y!+b.h! && a.y!+a.h!>b.y!
-      ));
-      if(migrateGeometry||invalid){
-        blocks.forEach(b=>{b.x=undefined;b.y=undefined;b.w=undefined;b.h=undefined;});
-      }
-    }
-    try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,String(EDITOR_GEOMETRY_VERSION));}catch{}
-    return base;
-  }catch{return cloneEditorDefaults();}
-}
-let editorLayout:EditorLayout=loadEditorLayout();
-let editorScreen:View="home";
-let editorMessage="";
-function orderedBlocks(screen:View){
-  return [...editorLayout[screen]].sort((a,b)=>a.order-b.order);
-}
-function defaultEditorGeometry(screen:View,index:number,count:number,span:1|2){
-  const presets:Record<View,Array<[number,number]>>={
-    home:[[0,10],[11,43],[11,43],[55,33],[89,10],[89,10]],
-    live:[[0,12],[14,48],[64,30]],
-    chat:[[0,12],[14,58],[74,14]],
-    game:[[0,12],[14,64],[80,12]],
-    radio:[[0,10],[12,34],[48,18],[68,12],[82,12]],
-    library:[[0,88]]
-  };
-  const preset=presets[screen][Math.min(index,presets[screen].length-1)]||[Math.min(92,index*12),Math.max(6,Math.floor(82/Math.max(1,count)))];
-  if(screen==="home"){
-    const homePositions=[[5,0,90,10],[5,11,42,43],[53,11,42,43],[5,55,90,33],[5,89,42,10],[53,89,42,10]];
-    const p=homePositions[Math.min(index,homePositions.length-1)];
-    return {x:p[0],y:p[1],w:p[2],h:p[3]};
-  }
-  return {x:5,y:preset[0],w:90,h:preset[1]};
-}
-function editorGeometry(screen:View,block:EditorBlock,index:number,count:number){
-  const fallback=defaultEditorGeometry(screen,index,count,block.span);
-  return {
-    x:block.x??fallback.x,
-    y:block.y??fallback.y,
-    w:block.w??fallback.w,
-    h:block.h??fallback.h
-  };
-}
-function editorLabel(screen:View,id:string,fallback:string){
-  return editorLayout[screen].find(b=>b.id===id)?.label||fallback;
-}
-function editorSchema(){
-  return {version:"0.0.1",type:"FREEzzz portal layout",screens:editorLayout};
-}
-function syncEditorBlocksFromDOM():boolean{
-  const layout=app.querySelector<HTMLElement>("[data-portal-layout]");
-  if(!layout)return false;
-  const screen=layout.dataset.portalLayout as View;
-  const known=new Set(editorLayout[screen].map(b=>b.id));
-  let changed=false;
-  layout.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(element=>{
-    const id=element.dataset.portalBlock?.trim();
-    if(!id||known.has(id))return;
-    const label=element.dataset.portalLabel?.trim()
-      ||element.querySelector<HTMLElement>("h1,h2,h3,strong")?.textContent?.trim()
-      ||id;
-    editorLayout[screen].push({
-      id,
-      label:label.slice(0,80),
-      span:element.dataset.portalSpan==="1"?1:2,
-      order:editorLayout[screen].length,
-      x:undefined,y:undefined,w:element.dataset.portalSpan==="1"?50:100,h:undefined
-    });
-    known.add(id);
-    changed=true;
-  });
-  if(changed){
-    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));}catch{}
-  }
-  return changed;
-}
-function editorBlockMarkup(block:EditorBlock,index:number){
-  const count=editorLayout[editorScreen].length;
-  const g=editorGeometry(editorScreen,block,index,count);
-  const style="left:"+g.x+"%;top:"+g.y+"%;width:"+g.w+"%;height:"+g.h+"%;";
-  return '<article class="editor-block block-color-'+(index%8)+'" data-editor-block="'+escapeHtml(block.id)+'" data-editor-index="'+index+'" data-editor-drag="'+escapeHtml(block.id)+'" style="'+style+'">'+
-    '<div class="editor-block-drag" data-editor-drag-handle="'+escapeHtml(block.id)+'" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>'+
-    '<div class="editor-block-preview"><span class="editor-block-type">'+escapeHtml(block.id)+'</span>'+
-    '<input class="editor-block-label" data-editor-label="'+escapeHtml(block.id)+'" value="'+escapeHtml(block.label)+'" maxlength="80" aria-label="Подпись блока"></div>'+
-    '<div class="editor-block-actions" aria-label="Перемещение блока выполняется свайпом или перетаскиванием">'+
-    '<span class="editor-drag-hint">SWIPE</span></div>'+
-    '<span class="editor-resize-handle" data-editor-resize="'+escapeHtml(block.id)+'" title="Изменить размер" aria-label="Изменить размер"></span></article>';
-}
-
-function renderEditor(){
-  const screens:Array<[View,string]>=[["home","HOME"],["live","LIVE"],["chat","CHAT"],["game","GAME"],["radio","RADIO"],["library","LIBRARY"]];
-  const blocks=orderedBlocks(editorScreen);
-  return `
-    <aside class="dev editor-overlay">
-      <div class="editor-live-preview" data-editor-live-preview>
-        <div class="editor-preview-title"><span>USER UI</span><b>LIVE</b></div>
-        <div class="editor-preview-device"><div class="editor-preview-screen" data-editor-preview-screen></div></div>
-      </div>
-      <div class="dev-panel editor-panel">
-        <div class="editor-head">
-          <div><span class="radio-kicker">FREEzzz EDITOR</span><h2>Конструктор интерфейса</h2>
-          <p>Сенсор: удерживай блок и перемещай. Маркер внизу справа меняет размер. Изменения сразу видны в пользовательском интерфейсе и в USER UI LIVE.</p></div>
-          <div class="editor-head-actions">
-            <button class="tg-button secondary" data-editor-exit type="button">Выйти в меню</button>
-            <button class="tg-button secondary editor-delete-button" data-constructor-remove type="button">Удалить конструктор</button>
-          </div>
-        </div>
-        <div class="editor-screen-tabs">${screens.map(([id,label])=>'<button type="button" data-editor-screen="'+id+'" class="'+(editorScreen===id?"active":"")+'">'+label+'</button>').join("")}</div>
-        <div class="editor-toolbar">
-          <button class="tg-button" data-editor-add type="button">＋ Добавить блок</button>
-          <button class="tg-button" data-editor-save type="button">Сохранить</button>
-          <button class="tg-button secondary" data-editor-export type="button">JSON</button>
-          <button class="tg-button secondary" data-editor-reset type="button">Сбросить</button>
-        </div>
-        <div class="editor-workspace" data-editor-workspace><div class="editor-sheet"><div class="editor-sheet-grid" aria-hidden="true"></div>
-          <div class="editor-canvas" data-editor-canvas>${blocks.map(editorBlockMarkup).join("")}</div>
-        </div></div>
-        <div class="editor-status">${escapeHtml(editorMessage||"LIVE: изменения применяются сразу. «Сохранить» записывает их на устройство.")}</div>
-        <textarea class="editor-json" id="editor-json" placeholder="JSON схемы"></textarea>
-      </div>
-    </aside>`;
-}
-
-function updateEditorPreview(){
-  const preview=document.querySelector<HTMLElement>("[data-editor-preview-screen]");
-  if(!preview)return;
-  const source=document.querySelector<HTMLElement>("main .content[data-portal-layout]");
-  preview.innerHTML="";
-  if(!source){
-    preview.innerHTML='<div class="editor-preview-empty">Нет экрана</div>';
-    return;
-  }
-  const clone=source.cloneNode(true) as HTMLElement;
-  clone.removeAttribute("id");
-  clone.classList.add("editor-preview-content");
-  applyLayoutToRoot(clone,editorScreen);
-  clone.querySelectorAll<HTMLElement>("[data-url]").forEach(el=>el.removeAttribute("data-url"));
-  clone.querySelectorAll("button,input,textarea").forEach(el=>el.setAttribute("tabindex","-1"));
-  preview.appendChild(clone);
-}
-
-function syncEditorRuntime(){
-  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
-  if(layout&&layout.dataset.portalLayout===editorScreen&&editorScreen!=="home"){
-    applyLayoutToRoot(layout,editorScreen);
-    for(const block of editorLayout[editorScreen]){
-      const target=layout.querySelector<HTMLElement>("[data-portal-block='"+CSS.escape(block.id)+"']");
-      if(!target)continue;
-      const textTarget=target.querySelector<HTMLElement>("h1,h2,h3,strong");
-      if(textTarget&&block.label)textTarget.textContent=block.label;
-    }
-  }
-  updateEditorPreview();
-}
-
-
+const DEVELOPER_TOOLS_ENABLED = import.meta.env.DEV || import.meta.env.VITE_FREEZZ_DEV_TOOLS === "1";
+let developerOpen=false;
 const LUCIDE_ICONS:Record<string,string>={
   user:'<circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>',
   video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>',
@@ -348,11 +101,11 @@ function render(){
           <h1>FREEzzz</h1>
           <p>Твой игровой портал внутри одной вертикальной оболочки.</p>
         </section>
-        ${homeCard("live",icon("video","home-card-icon"),editorLabel("home","live","LIVE — Стримеры и каналы"),'<div class="home-live-preview" data-home-live-content></div>')}
-        ${homeCard("chat",icon("chat","home-card-icon"),editorLabel("home","chat","CHAT — Общение"),'<div class="home-chat-preview" data-home-chat-content></div>')}
-        ${homeCard("game",icon("game","home-card-icon"),editorLabel("home","game","GAME — Игровая зона"),'<div class="home-game-preview" data-home-game-content></div>')}
-        ${homeCard("radio",icon("radio","home-card-icon"),editorLabel("home","radio","RADIO — Музыка"),'<div class="home-radio-preview" data-home-radio-content></div>')}
-        ${homeCard("library",icon("library","home-card-icon"),editorLabel("home","library","LIBRARY — Библиотека"),'<div class="home-library-preview" data-home-library-content></div>')}
+        ${homeCard("live",icon("video","home-card-icon"),"LIVE — Стримеры и каналы",'<div class="home-live-preview" data-home-live-content></div>')}
+        ${homeCard("chat",icon("chat","home-card-icon"),"CHAT — Общение",'<div class="home-chat-preview" data-home-chat-content></div>')}
+        ${homeCard("game",icon("game","home-card-icon"),"GAME — Игровая зона",'<div class="home-game-preview" data-home-game-content></div>')}
+        ${homeCard("radio",icon("radio","home-card-icon"),"RADIO — Музыка",'<div class="home-radio-preview" data-home-radio-content></div>')}
+        ${homeCard("library",icon("library","home-card-icon"),"LIBRARY — Библиотека",'<div class="home-library-preview" data-home-library-content></div>')}
       </div>`;
   }
 
@@ -476,7 +229,7 @@ function render(){
   }
 
   app.innerHTML=`
-    <div class="app-shell ${interfaceMode==="editor"?"editor-mode":""}">
+    <div class="app-shell">
       <header class="topbar">
         <div class="topbar-left">
           <button class="profile-button" data-profile-toggle type="button" aria-label="Profile">${icon("user","profile-icon")}</button>
@@ -503,31 +256,16 @@ function render(){
         <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
           ${icon("home","nav-icon")}<span>HOME</span>
         </button>
-        ${constructorEnabled?`<button class="bottom-nav-item ${interfaceMode==="editor"?"active":""}" data-interface-toggle type="button" aria-label="${interfaceMode==="editor"?"Показать пользовательский интерфейс":"Показать интерфейс разработчика"}" title="${interfaceMode==="editor"?"USER UI":"DEV UI"}">
-          ${icon("settings","nav-icon")}<span>DEV</span>
-        </button>`:""}
+        ${DEVELOPER_TOOLS_ENABLED?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Инструменты разработчика" title="DEV">${icon("settings","nav-icon")}<span>DEV</span></button>`:""}
       </nav>
       <main>${body}</main>
       ${livePopupMarkup()}
       ${profileOpen?`<div class="profile-overlay" data-profile-close><section class="profile-card" data-profile-card><button class="icon-button profile-close" data-profile-toggle type="button" aria-label="Закрыть">×</button><span class="profile-avatar">F</span><h2>FREEzzz</h2><p>Профиль пользователя</p><div class="profile-actions"><button class="tg-button" data-view="home" type="button">HOME</button><button class="tg-button secondary" data-profile-toggle type="button">Закрыть</button></div></section></div>`:""}
-      ${dev?renderEditor():""}
-      ${false?`<aside class="dev">
-        <div class="dev-panel">
-          <h2>Редакторская схема интерфейса</h2>
-          <pre>${JSON.stringify({version:"0.0.1",view:view,language:lang,stage21:"EXCLUDED",modules:["LIVE","CHAT","GAME","RADIO","LIBRARY"]},null,2)}</pre>
-        </div>
-      </aside>`:""}
+
     </div>`;
-  const editorBlocksChanged=syncEditorBlocksFromDOM();
-  if(editorBlocksChanged&&interfaceMode==="editor"){
-    app.querySelector(".editor-overlay")?.remove();
-    app.querySelector(".app-shell")?.insertAdjacentHTML("beforeend",renderEditor());
-  }
   bind();
-  applySavedPortalLayout();
   if(view==="game")startGame();
   if(view==="home")ensureHomeRefresh();
-  if(dev)updateEditorPreview();
 }
 
 function homeCard(v:View,e:string,t:string,content:string){
@@ -596,42 +334,6 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError="Не удалось воспроизвести поток этой станции.";render();},{once:true});
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError="Нажми Play ещё раз — браузер заблокировал автозапуск.";}).finally(()=>render());
 }
-function applyLayoutToRoot(root:HTMLElement,screen:View){
-  if(screen==="home")return;
-  const layout=root.matches("[data-portal-layout]")?root:root.querySelector<HTMLElement>("[data-portal-layout]");
-  if(!layout)return;
-  const blocks=orderedBlocks(screen);
-  if(screen==="radio"){
-    // RADIO contains nested functional controls; keep its internal responsive layout intact.
-    layout.style.position="";
-    return;
-  }
-  layout.style.position="relative";
-  const byId=new Map<string,HTMLElement>();
-  layout.querySelectorAll<HTMLElement>(":scope > [data-portal-block]").forEach(el=>byId.set(el.dataset.portalBlock||"",el));
-  blocks.forEach((block,index)=>{
-    const el=byId.get(block.id);
-    if(!el)return;
-    const g=editorGeometry(screen,block,index,blocks.length);
-    el.style.order=String(index);
-    el.style.gridColumn="1 / -1";
-    el.style.position="absolute";
-    el.style.left=g.x+"%";
-    el.style.top=g.y+"%";
-    el.style.width=g.w+"%";
-    el.style.height=g.h+"%";
-    el.style.boxSizing="border-box";
-  });
-}
-
-function applySavedPortalLayout(){
-  const layout=document.querySelector<HTMLElement>("[data-portal-layout]");
-  if(!layout)return;
-  const screen=layout.dataset.portalLayout as View;
-  if(screen==="home")return;
-  applyLayoutToRoot(layout,screen);
-}
-
 function liveEmbedUrl(stream:LiveStream,source:"twitch"|"youtube"):string{
   if(source==="twitch"){
     const parent=window.location.hostname||"freezzgames.github.io";
@@ -714,30 +416,20 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
   });
-  document.querySelector("[data-editor-exit]")?.addEventListener("click",function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    interfaceMode="user";
-    dev=false;
-    view="home";
-    try{localStorage.setItem(INTERFACE_MODE_KEY,"user");}catch{}
-    render();
-  });
-  document.querySelectorAll<HTMLElement>("[data-interface-toggle]").forEach(function(x){
-    x.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      interfaceMode=interfaceMode==="editor"?"user":"editor";
-      dev=interfaceMode==="editor";
-      try{localStorage.setItem(INTERFACE_MODE_KEY,interfaceMode);}catch{}
-      render();
-    };
-  });
   document.querySelectorAll<HTMLElement>("[data-profile-close]").forEach(function(x){
     x.onclick=function(){profileOpen=false;render();};
   });
   document.querySelectorAll<HTMLElement>("[data-profile-card]").forEach(function(x){
     x.onclick=function(e){e.stopPropagation();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-developer-toggle]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-developer-close]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=false;render();};
+  });
+  document.querySelector("[data-developer-overlay]")?.addEventListener("click",function(e){
+    if(e.target===e.currentTarget){developerOpen=false;render();}
   });
   document.querySelectorAll<HTMLElement>("[data-live-open]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"",x.dataset.liveSource==="youtube"?"youtube":"twitch");};
@@ -768,92 +460,6 @@ function bind(){
       if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}
       else{window.open(url,"_blank","noopener,noreferrer");}
     };
-  });
-  document.querySelectorAll<HTMLElement>("[data-editor-screen]").forEach(function(x){
-    x.onclick=function(){editorScreen=x.dataset.editorScreen as View;editorMessage="";view=editorScreen;render();};
-  });
-  document.querySelectorAll<HTMLElement>("[data-editor-move]").forEach(function(x){
-    x.onclick=function(){
-      const id=x.dataset.editorId!, direction=Number(x.dataset.editorMove||0);
-      const list=orderedBlocks(editorScreen), index=list.findIndex(b=>b.id===id), next=index+direction;
-      if(index<0||next<0||next>=list.length)return;
-      const [moved]=list.splice(index,1); list.splice(next,0,moved); list.forEach((b,i)=>b.order=i);
-      editorLayout[editorScreen]=list; render();
-    };
-  });
-  document.querySelectorAll<HTMLInputElement>("[data-editor-label]").forEach(function(x){
-    x.oninput=function(){
-      const b=editorLayout[editorScreen].find(b=>b.id===x.dataset.editorLabel);
-      if(b){b.label=x.value;syncEditorRuntime();}
-    };
-  });
-  document.querySelectorAll<HTMLElement>("[data-editor-resize]").forEach(function(handle){
-    handle.addEventListener("pointerdown",function(e){
-      e.preventDefault();e.stopPropagation();
-      const id=handle.dataset.editorResize!, block=editorLayout[editorScreen].find(b=>b.id===id);
-      const canvas=document.querySelector<HTMLElement>(".editor-canvas"), el=handle.closest<HTMLElement>(".editor-block");
-      if(!block||!canvas||!el)return;
-      const rect=canvas.getBoundingClientRect(), startX=e.clientX,startY=e.clientY;
-      const startW=block.w??(block.span===2?100:50), startH=block.h??Math.max(6,(el.getBoundingClientRect().height/rect.height)*100);
-      const move=(ev:PointerEvent)=>{
-        block.w=Math.max(10,Math.min(100-(block.x??0),startW+((ev.clientX-startX)/rect.width)*100));
-        block.h=Math.max(6,Math.min(100-(block.y??0),startH+((ev.clientY-startY)/rect.height)*100));
-        el.style.width=block.w+"%";el.style.height=block.h+"%";syncEditorRuntime();
-      };
-      const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
-      window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
-    },{passive:false});
-  });
-  document.querySelectorAll<HTMLElement>("[data-editor-drag]").forEach(function(x){
-    x.addEventListener("pointerdown",function(e){
-      if((e.target as HTMLElement).closest("input,button,[data-editor-resize]"))return;
-      e.preventDefault();
-      const canvas=document.querySelector<HTMLElement>(".editor-canvas"),id=x.dataset.editorDrag!,block=editorLayout[editorScreen].find(b=>b.id===id);
-      if(!canvas||!block)return;
-      const rect=canvas.getBoundingClientRect(),startX=e.clientX,startY=e.clientY;
-      const ox=block.x??Math.max(0,Math.min(100,(x.offsetLeft/rect.width)*100));
-      const oy=block.y??Math.max(0,Math.min(100,(x.offsetTop/rect.height)*100));
-      const move=(ev:PointerEvent)=>{
-        block.x=Math.max(0,Math.min(100-(block.w??(block.span===2?100:50)),ox+((ev.clientX-startX)/rect.width)*100));
-        block.y=Math.max(0,Math.min(100-(block.h??10),oy+((ev.clientY-startY)/rect.height)*100));
-        x.style.left=block.x+"%";x.style.top=block.y+"%";syncEditorRuntime();
-      };
-      const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
-      window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up,{once:true});
-    },{passive:false});
-  });
-  document.querySelector("[data-editor-add]")?.addEventListener("click",()=>{
-    const list=orderedBlocks(editorScreen);
-    const used=new Set(list.map(b=>b.id));
-    let number=list.length+1;
-    let id="custom-"+number;
-    while(used.has(id)){number++;id="custom-"+number;}
-    const block:EditorBlock={id,label:"Новый блок",span:1,order:list.length,x:5,y:Math.min(88,8+list.length*10),w:90,h:9};
-    editorLayout[editorScreen]=[...list,block];
-    editorMessage="Новый визуальный блок добавлен.";
-    render();
-  });
-  document.querySelector("[data-editor-save]")?.addEventListener("click",()=>{
-    try{localStorage.setItem(EDITOR_LAYOUT_KEY,JSON.stringify(editorLayout));localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,String(EDITOR_GEOMETRY_VERSION));editorMessage="Схема сохранена локально.";}
-    catch{editorMessage="Не удалось сохранить схему."}
-    render();
-  });
-  document.querySelector("[data-editor-export]")?.addEventListener("click",()=>{
-    const box=document.querySelector<HTMLTextAreaElement>("#editor-json");if(box)box.value=JSON.stringify(editorSchema(),null,2);editorMessage="JSON готов.";
-  });
-  document.querySelector("[data-editor-reset]")?.addEventListener("click",()=>{
-    editorLayout[editorScreen]=cloneEditorDefaults()[editorScreen];try{localStorage.setItem(EDITOR_GEOMETRY_VERSION_KEY,"2");}catch{};editorMessage="Экран сброшен.";render();
-  });
-  document.querySelector("[data-constructor-remove]")?.addEventListener("click",function(){
-    constructorEnabled=false;
-    interfaceMode="user";
-    dev=false;
-    try{
-      localStorage.setItem(CONSTRUCTOR_ENABLED_KEY,"disabled");
-      localStorage.setItem(INTERFACE_MODE_KEY,"user");
-    }catch{}
-    view="home";
-    render();
   });
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
     e.preventDefault();
@@ -905,7 +511,7 @@ function bindPortalSwipeNavigation(){
   root.addEventListener("pointerdown",e=>{
     if(e.pointerType==="mouse"&&e.button!==0)return;
     const target=e.target as HTMLElement;
-    if(target.closest("input,textarea,button,a,select,[data-editor-drag],[data-editor-resize],.editor-overlay"))return;
+    if(target.closest("input,textarea,button,a,select"))return;
     startX=e.clientX;startY=e.clientY;startTime=Date.now();pointerId=e.pointerId;
   },{passive:true});
   root.addEventListener("pointerup",e=>{
