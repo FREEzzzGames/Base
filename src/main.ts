@@ -246,11 +246,11 @@ function render(){
           <p>${T("homeDescription")}</p>
           </div>
         </section>
-        ${homeCard("live")}}
-        ${homeCard("chat")}}
-        ${homeCard("game")}}
-        ${homeCard("radio")}}
-        ${homeCard("library")}}
+        ${homeCard("live")}
+        ${homeCard("chat")}
+        ${homeCard("game")}
+        ${homeCard("radio")}
+        ${homeCard("library")}
       </div>`;
   }
 
