@@ -1024,3 +1024,41 @@ form input{
   .top-actions .home-icon:after{width:14px;height:14px}
   .top-actions .radio-glyph{width:22px;height:20px}
 }
+
+
+/* Constructor simulation scaling — blocks use the 360×640 logical canvas consistently. */
+.editor-sheet{width:min(360px,calc(100vw - 32px));}
+.editor-canvas{inset:10px;}
+.editor-block{
+  min-width:6%;
+  min-height:6%;
+  padding:4px 6px;
+  grid-template-columns:18px minmax(0,1fr) 36px;
+  gap:4px;
+  border-width:1px;
+  border-radius:6px;
+}
+.editor-block-drag{font-size:15px}
+.editor-block-type{font-size:8px}
+.editor-block-label{
+  min-height:0;
+  height:auto;
+  margin:1px 0 0;
+  padding:1px 3px;
+  font-size:12px;
+  line-height:1.05;
+}
+.editor-block-actions{grid-template-rows:1fr 1fr;gap:2px}
+.editor-move{min-width:32px;min-height:18px;font-size:10px;border-radius:4px}
+.editor-resize-handle{
+  right:-5px;bottom:-5px;
+  width:14px;height:14px;
+  border-right-width:2px;border-bottom-width:2px;
+}
+@media(max-width:520px){
+  .editor-sheet{width:min(360px,calc(100vw - 20px));}
+  .editor-canvas{inset:8px}
+  .editor-block{min-width:8%;min-height:7%;padding:3px 5px;grid-template-columns:16px minmax(0,1fr) 32px;gap:3px}
+  .editor-block-label{font-size:11px}
+  .editor-move{min-width:28px;min-height:17px;font-size:9px}
+}
