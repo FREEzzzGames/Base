@@ -44,8 +44,7 @@ export class MihiEngine{
       this.events.on("navigation:changed",p=>this.onContext(contextByView[p.view]??"system")),
       this.events.on("profile:toggled",p=>this.touch("profile.toggle",p.open?"open":"close")),
       this.events.on("live:popup",p=>this.touch("live.popup."+p.source,p.open?"open":"close")),
-      this.events.on("radio:playback",p=>this.touch("radio.playback."+p.status,p.status)),
-      this.events.on("mihi:request-action",p=>this.touch(p.actionId,p.source))
+      this.events.on("radio:playback",p=>this.touch("radio.playback."+p.status,p.status))
     ];
     return ()=>offs.forEach(off=>off());
   }
