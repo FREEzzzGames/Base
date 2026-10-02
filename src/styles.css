@@ -2869,3 +2869,21 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
     min-height:200px!important;
   }
 }
+
+/* HOME HERO — PROFILE IDENTITY + READABILITY */
+.home-hero h1{
+  color:rgba(255,255,255,.98)!important;
+  text-shadow:0 2px 3px rgba(0,0,0,.72),0 0 14px rgba(255,255,255,.10)!important;
+}
+.home-hero p{
+  color:rgba(245,248,252,.88)!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.82),0 0 10px rgba(0,0,0,.28)!important;
+}
+.home-hero-kicker{
+  color:rgba(238,244,250,.58)!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.70)!important;
+}
+.home-hero-clock{
+  color:rgba(238,246,252,.76)!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.76),0 0 12px rgba(255,255,255,.10)!important;
+}
