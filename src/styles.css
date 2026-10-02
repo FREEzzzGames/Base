@@ -4414,3 +4414,46 @@ main{
   max-width:calc(100vw - 64px)!important;
   box-sizing:border-box!important;
 }
+
+
+/* HOME CARDS — title-only mode (targeted change). */
+.home-portal > .home-card{
+  position:relative!important;
+  padding:0!important;
+  container-type:size;
+}
+.home-portal > .home-card .home-card-title{
+  position:absolute!important;
+  z-index:1001!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  font-weight:800!important;
+  line-height:.95!important;
+  letter-spacing:-.02em!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.75)!important;
+  pointer-events:none!important;
+  white-space:nowrap!important;
+  font-size:clamp(28px,30cqh,64px)!important;
+}
+.home-portal > .home-live .home-card-title{
+  top:10px!important;
+  left:10px!important;
+}
+.home-portal > .home-chat .home-card-title{
+  right:10px!important;
+  bottom:10px!important;
+}
+.home-portal > .home-game .home-card-title{
+  left:10px!important;
+  bottom:10px!important;
+}
+.home-portal > .home-radio .home-card-title{
+  right:10px!important;
+  bottom:10px!important;
+}
+.home-portal > .home-library .home-card-title{
+  top:10px!important;
+  right:10px!important;
+}
