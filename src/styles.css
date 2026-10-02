@@ -3969,11 +3969,6 @@ main{
   height:100%!important;
   min-height:0!important;
 }
-.portal-route-workspace > main > .portal-layout{
-  height:100%!important;
-  min-height:0!important;
-}
-
 /* Route views fill the same working viewport as HOME.
    GAME is intentionally excluded from this rule set. */
 .portal-route-workspace > main > .portal-layout[data-portal-layout="live"],
