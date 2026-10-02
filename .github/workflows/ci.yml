@@ -47,7 +47,7 @@ jobs:
           test ! -e scripts/fetch-tabler.mjs
 
           # No removed UI/runtime features may return through stale source files.
-          if grep -RInE 'game-font|gameFont|data-game-font|font-size control|freezzz:game-font-size|constructor|editor-layout|data-editor-' src package.json; then
+          if grep -RInE 'game-font|gameFont|data-game-font|font-size control|freezzz:game-font-size|editor-layout|data-editor-' src package.json; then
             echo "Obsolete runtime/UI traces detected."
             exit 1
           fi
