@@ -4215,3 +4215,37 @@ main{
     inset 0 0 4px 2px rgba(0,0,0,.25)!important;
   box-sizing:border-box!important;
 }
+
+/* ================================================================
+   PRIMARY BLOCK RHYTHM — 1PX GAP + EXTENDED GRADIENT SPRAY
+   The reclaimed 2px become a soft transition around each frame.
+   ================================================================ */
+.home-portal{
+  gap:1px!important;
+}
+:root{
+  --portal-grid-gap:1px!important;
+}
+
+/* Keep the solid 1px contour crisp and extend the spray outward. */
+.home-portal > .home-hero::before,
+.home-portal > .home-card::before,
+.home-portal > .home-library::before,
+.portal-toolbar::after{
+  border:1px solid #000!important;
+  box-shadow:
+    inset 0 0 0 1px #000,
+    inset 0 0 2px 1px rgba(0,0,0,.50),
+    inset 0 0 4px 2px rgba(0,0,0,.25),
+    0 0 2px 1px rgba(0,0,0,.25)!important;
+}
+
+/* The 1px gaps themselves use the shared dark gradient surface. */
+main,
+.home-portal{
+  background:
+    radial-gradient(circle at 50% 45%,
+      #343a42 0%,
+      #171b20 48%,
+      #050607 100%)!important;
+}
