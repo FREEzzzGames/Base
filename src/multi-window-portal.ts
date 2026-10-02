@@ -124,23 +124,6 @@ function bind(){
   });
 }
 
-function addHudButton(){
-  let collapsed=false;
-  try{collapsed=localStorage.getItem("freezzz:hud-collapsed")==="1";}catch{}
-  document.querySelectorAll<HTMLElement>(".portal-workspace").forEach(w=>w.classList.toggle("portal-workspace-hud-collapsed",collapsed));
-  document.querySelectorAll<HTMLElement>(".portal-toolbar").forEach(toolbar=>{
-    if(toolbar.querySelector("[data-mw-hud]"))return;
-    const b=document.createElement("button");
-    b.type="button";b.className="portal-mw-hud-toggle";b.dataset.mwHud="1";b.textContent=collapsed?"›":"‹";
-    b.onclick=()=>{
-      const w=toolbar.closest(".portal-workspace");if(!w)return;
-      const next=w.classList.toggle("portal-workspace-hud-collapsed");
-      b.textContent=next?"›":"‹";
-      try{localStorage.setItem("freezzz:hud-collapsed",next?"1":"0");}catch{}
-    };
-    toolbar.append(b);
-  });
-}
 
 function intercept(){
   document.addEventListener("click",e=>{
@@ -185,8 +168,6 @@ export function initMultiWindowPortal(){
     render();
   };
   window.addEventListener("resize",clampWindows,{passive:true});
-  window.addEventListener("freezzz:portal-render",addHudButton);
-  addHudButton();
   render();
 }
 if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",initMultiWindowPortal,{once:true});
