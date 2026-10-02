@@ -3801,7 +3801,7 @@ main{
   isolation:isolate!important;
   background:
     radial-gradient(circle at 50% 45%,#343a42 0%,#171b20 48%,#050607 100%)!important;
-  border:1px solid #000!important;
+  border:0!important;
   box-shadow:
     inset 0 0 0 1px #000,
     inset 0 0 2px 1px rgba(0,0,0,.50),
@@ -4081,6 +4081,39 @@ main{
 .portal-mw-head button.active{background:rgba(51,144,236,.75)!important}
 .portal-mw-head button:active{background:rgba(255,255,255,.16)!important}
 
+/* Mechanical widget resizing: eight touch/mouse resize zones, kept inside the window edge. */
+.portal-mw-resize{
+  position:absolute!important;
+  z-index:20!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  user-select:none!important;
+}
+.portal-mw-resize-n,.portal-mw-resize-s{left:12px!important;right:12px!important;height:12px!important;}
+.portal-mw-resize-n{top:0!important;cursor:ns-resize!important;}
+.portal-mw-resize-s{bottom:0!important;cursor:ns-resize!important;}
+.portal-mw-resize-e,.portal-mw-resize-w{top:12px!important;bottom:12px!important;width:12px!important;}
+.portal-mw-resize-e{right:0!important;cursor:ew-resize!important;}
+.portal-mw-resize-w{left:0!important;cursor:ew-resize!important;}
+.portal-mw-resize-ne,.portal-mw-resize-nw,.portal-mw-resize-se,.portal-mw-resize-sw{
+  width:18px!important;height:18px!important;
+}
+.portal-mw-resize-ne{top:0!important;right:0!important;cursor:nesw-resize!important;}
+.portal-mw-resize-nw{top:0!important;left:0!important;cursor:nwse-resize!important;}
+.portal-mw-resize-se{right:0!important;bottom:0!important;cursor:nwse-resize!important;}
+.portal-mw-resize-sw{left:0!important;bottom:0!important;cursor:nesw-resize!important;}
+.portal-mw-resize-se::after,.portal-mw-resize-sw::after,.portal-mw-resize-ne::after,.portal-mw-resize-nw::after{
+  content:""!important;
+  position:absolute!important;
+  width:8px!important;height:8px!important;
+  border:0 solid rgba(255,255,255,.55)!important;
+  opacity:.8!important;
+}
+.portal-mw-resize-se::after{right:3px!important;bottom:3px!important;border-right:2px solid rgba(255,255,255,.55)!important;border-bottom:2px solid rgba(255,255,255,.55)!important;}
+.portal-mw-resize-sw::after{left:3px!important;bottom:3px!important;border-left:2px solid rgba(255,255,255,.55)!important;border-bottom:2px solid rgba(255,255,255,.55)!important;}
+.portal-mw-resize-ne::after{right:3px!important;top:3px!important;border-right:2px solid rgba(255,255,255,.55)!important;border-top:2px solid rgba(255,255,255,.55)!important;}
+.portal-mw-resize-nw::after{left:3px!important;top:3px!important;border-left:2px solid rgba(255,255,255,.55)!important;border-top:2px solid rgba(255,255,255,.55)!important;}
+
 .portal-mw-live-body{
   width:100%!important;
   height:calc(100% - 36px)!important;
@@ -4297,16 +4330,9 @@ main{
   .portal-mw{
     max-width:calc(100vw - 8px)!important;
   }
-  .portal-mw-live{
-    width:min(300px,calc(100vw - 8px))!important;
-    height:min(205px,calc(100vh - 120px))!important;
-  }
-  .portal-mw-chat{
-    width:min(286px,calc(100vw - 8px))!important;
-    height:min(245px,calc(100vh - 100px))!important;
-  }
-  .portal-mw-radio{
-    width:min(330px,calc(100vw - 8px))!important;
+  .portal-mw-live,.portal-mw-chat,.portal-mw-radio{
+    max-width:calc(100vw - 8px)!important;
+    max-height:calc(100vh - 78px)!important;
   }
 
   .portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .section-head{
