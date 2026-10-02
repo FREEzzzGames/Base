@@ -5,7 +5,6 @@ export interface RadioBrowserStation{
   readonly votes:number; readonly lastcheckok:number;
 }
 const SERVERS=["https://de1.api.radio-browser.info","https://nl1.api.radio-browser.info","https://at1.api.radio-browser.info"] as const;
-export const RADIO_GENRES=["pop","rock","dance","electronic","house","techno","trance","hip-hop","jazz","blues","classical","metal","indie","alternative","ambient","disco","funk","soul","reggae","country","folk","oldies","80s","90s","news","talk","chillout","lounge","soundtrack"] as const;
 export class RadioBrowserClient{
   private serverIndex=0;
   private async request<T>(path:string):Promise<T>{
