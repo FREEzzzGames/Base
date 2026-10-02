@@ -396,9 +396,11 @@ function homeCard(v:View,_e:string,t:string,_content:string){
     library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
+  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
+  const title=titles[v]||t;
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
-    <span class="home-card-title">${t}</span>
+    <span class="home-card-title">${title}</span>
   </button>`;
 }
 function refreshHomeContent(){
