@@ -3047,7 +3047,7 @@ main::-webkit-scrollbar{display:none}
 
 .home-portal > .home-card .home-card-background-overlay{
   position:absolute!important;
-  inset:0!important;
+  inset:-1px!important;
   width:100%!important;
   height:100%!important;
   margin:0!important;
