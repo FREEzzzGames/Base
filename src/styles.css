@@ -1306,3 +1306,65 @@ main{
 /* Final bottom navigation override: legacy top navigation styles stay inert. */
 .topbar .top-actions{display:none!important}
 .bottom-nav{display:grid!important}
+
+/* Telegram Mini App touch-first interaction layer. */
+html[data-telegram] body,
+html[data-telegram] .app-shell{
+  overscroll-behavior:none;
+}
+main{
+  touch-action:pan-y;
+}
+.content{
+  touch-action:pan-y;
+}
+.bottom-nav,
+.bottom-nav-item,
+.card,
+.tg-button{
+  -webkit-tap-highlight-color:transparent;
+}
+.game[data-game-touch]{
+  touch-action:none;
+  cursor:grab;
+}
+.game[data-game-touch]:active{cursor:grabbing}
+.touch-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:44px;
+}
+.touch-controls button{
+  flex:0 0 auto;
+  min-width:150px;
+  height:42px;
+  border:1px solid var(--tg-line);
+  border-radius:var(--ds-radius-sm);
+  background:var(--tg-button-color);
+  color:var(--tg-button-text-color);
+}
+.touch-controls span{
+  color:var(--tg-muted);
+  font-size:10px;
+  text-align:center;
+}
+.editor-block-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:34px;
+}
+.editor-drag-hint{
+  font-size:7px;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,.72);
+  writing-mode:vertical-rl;
+}
+.editor-move{display:none!important}
+@media(max-width:520px){
+  .touch-controls{flex-direction:column;gap:4px}
+  .touch-controls button{width:100%;min-width:0;height:38px}
+  .touch-controls span{font-size:9px}
+}
