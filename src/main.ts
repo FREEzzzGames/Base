@@ -121,16 +121,20 @@ function currentLayoutOverride(key:string):LayoutOverride{
   return value?{width:100,height:0,x:0,y:0,order:0,...value}:{width:100,height:0,x:0,y:0,order:0};
 }
 function saveDeveloperLayout(){try{localStorage.setItem(DEV_LAYOUT_KEY,JSON.stringify(layoutOverrides));}catch{}}
+const PORTAL_EDITABLE_BLOCKS:Record<View,readonly string[]>={
+  home:["hero","live","chat","game","radio","library"],
+  live:["header","streams"],
+  chat:["header","messages","composer"],
+  game:["header","game","controls"],
+  radio:["header","carousel","nowplaying","search","genres"],
+  library:["content"]
+};
 function portalBlockInfos(){
-  const seen=new Set<string>();
-  return Array.from(document.querySelectorAll<HTMLElement>("[data-portal-block]")).map((el,index)=>{
-    const block=el.dataset.portalBlock||String(index);
+  return PORTAL_EDITABLE_BLOCKS[view].map(block=>{
     const key=view+":"+block;
-    if(seen.has(key))return null;
-    seen.add(key);
     const value=currentLayoutOverride(key);
     return {key,label:block.toUpperCase(),view,width:value.width,height:value.height,x:value.x,y:value.y,order:value.order};
-  }).filter(Boolean) as Array<{key:string;label:string;view:string;width:number;height:number;x:number;y:number;order:number}>;
+  });
 }
 function applyDeveloperLayout(){
   document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach((el,index)=>{
