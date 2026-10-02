@@ -113,7 +113,7 @@ function bindGameAmbientControls(){
     gameAmbientMuted=!gameAmbientMuted;
     gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
     const b=e.currentTarget as HTMLButtonElement;
-    b.textContent=gameAmbientMuted?"⊘":"◉";
+    b.innerHTML=icon(gameAmbientMuted?"mute":"play","ambient-control-icon");
     b.setAttribute("aria-label",gameAmbientMuted?T("soundOn"):T("soundOff"));
   });
   gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
@@ -121,7 +121,7 @@ function bindGameAmbientControls(){
     gameAmbientPlaying=!gameAmbientPlaying;
     gameAmbientCommand(gameAmbientPlaying?"playVideo":"pauseVideo");
     const b=e.currentTarget as HTMLButtonElement;
-    b.textContent=gameAmbientPlaying?"Ⅱ":"▶";
+    b.innerHTML=icon(gameAmbientPlaying?"play":"waiting","ambient-control-icon");
     b.setAttribute("aria-label",gameAmbientPlaying?T("pauseVideo"):T("resumeVideo"));
   });
 }
