@@ -113,7 +113,7 @@ function syncGameAmbient(){
   if(!gameAmbientHost){
     gameAmbientHost=document.createElement("div");
     gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">⊘</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'">Ⅱ</button></div>';
+    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">'+icon("mute","ambient-control-icon")+'</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'>'+icon("pause","ambient-control-icon")+'</button></div>';
     bindGameAmbientControls();
   }
   if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
@@ -176,7 +176,7 @@ function renderProfileCard(){
   const liveHtml=liveItems.length?liveItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} виз.</small></div>`).join(""):`<p class="profile-empty">Пока нет просмотров.</p>`;
   const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
   return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
-    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="'+T("close")+'">×</button>
+    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="'+T("close")+'>'+icon("error","profile-close-icon")+'</button>
     <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
     <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
@@ -240,7 +240,7 @@ function render(){
       <div class="content portal-layout" data-portal-layout="chat">
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
-          <button class="tg-button secondary" data-view="home">⌂</button>
+          <button class="tg-button secondary" data-view="home">'+icon("home","button-icon")+'</button>
         </div>
         <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
@@ -272,7 +272,7 @@ function render(){
       : [];
     body=`
       <div class="content portal-layout" data-portal-layout="radio">
-        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">⌂</button></div>
+        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">'+icon("home","button-icon")+'</button></div>
         <section class="radio-panel">
           <div class="radio-heading">
             <div><span class="radio-kicker">FREEzzz RADIO</span><h3>${T("internetRadio")}</h3><p>${T("radioChoose")}</p></div>
