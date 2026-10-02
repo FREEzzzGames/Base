@@ -6,32 +6,11 @@ import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 import { renderDeveloperDiagnostics } from "./developer-tools";
 import { icon, streams, type LiveStream } from "./portal-ui";
 import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
+import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
+import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
-
-interface TelegramWebAppBridge{
-  ready?:()=>void;
-  expand?:()=>void;
-  openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;
-  openTelegramLink?:(url:string)=>void;
-  disableVerticalSwipes?:()=>void;
-  platform?:string;
-}
-function getTelegramWebApp():TelegramWebAppBridge|null{
-  const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;
-  return candidate||null;
-}
-function initTelegramBridge(){
-  const tg=getTelegramWebApp();
-  if(!tg)return;
-  tg.ready?.();
-  tg.expand?.();
-  tg.disableVerticalSwipes?.();
-  document.documentElement.dataset.telegram="true";
-  if(tg.platform)document.documentElement.dataset.telegramPlatform=tg.platform;
-}
-initTelegramBridge();
 
 async function checkForPortalUpdate(){
   try{
@@ -523,8 +502,7 @@ function bind(){
   document.querySelector("[data-live-external]")?.addEventListener("click",function(){
     const stream=streams.find(s=>s.name===liveSelected);
     const url=stream?(livePopupSource==="youtube"?stream.youtube:stream.twitch):"";if(!url)return;
-    const tg=getTelegramWebApp();
-    if(tg?.openLink)tg.openLink(url,{try_instant_view:false});else window.open(url,"_blank","noopener,noreferrer");
+    openExternalUrl(url);
   });
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(){lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";render();};});
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
@@ -533,9 +511,7 @@ function bind(){
       e.stopPropagation();
       const url=x.dataset.url;
       if(!url)return;
-      const tg=getTelegramWebApp();
-      if(tg?.openLink){tg.openLink(url,{try_instant_view:false});}
-      else{window.open(url,"_blank","noopener,noreferrer");}
+      openExternalUrl(url);
     };
   });
   document.querySelector("#chatform")?.addEventListener("submit",function(e){
@@ -576,33 +552,9 @@ function bind(){
     });
     gameSurface.addEventListener("pointercancel",()=>{gameActive=false;});
   }
-  bindPortalSwipeNavigation();
+  bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
 }
 
-function bindPortalSwipeNavigation(){
-  const root=document.querySelector<HTMLElement>(".app-shell");
-  if(!root||root.dataset.swipeBound==="true")return;
-  root.dataset.swipeBound="true";
-  const order:View[]=["home","live","chat","game","radio","library"];
-  let startX=0,startY=0,startTime=0,pointerId:number|null=null;
-  root.addEventListener("pointerdown",e=>{
-    if(e.pointerType==="mouse"&&e.button!==0)return;
-    const target=e.target as HTMLElement;
-    if(target.closest("input,textarea,button,a,select"))return;
-    startX=e.clientX;startY=e.clientY;startTime=Date.now();pointerId=e.pointerId;
-  },{passive:true});
-  root.addEventListener("pointerup",e=>{
-    if(pointerId!==e.pointerId)return;
-    pointerId=null;
-    const dx=e.clientX-startX,dy=e.clientY-startY,dt=Date.now()-startTime;
-    if(dt>650||Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.35)return;
-    const index=order.indexOf(view);
-    if(index<0)return;
-    const nextIndex=dx<0?Math.min(order.length-1,index+1):Math.max(0,index-1);
-    if(nextIndex===index)return;
-    portalEvents.emit("navigation:changed",{view:order[nextIndex]});
-  },{passive:true});
-}
 function escapeHtml(s:string){
   return s.replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c;
