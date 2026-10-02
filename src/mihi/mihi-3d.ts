@@ -1,0 +1,132 @@
+import type {PortalEventBus} from "../core/portal-core";
+import type {MihiLayer, MihiState} from "./mihi-types";
+
+const MIHI_MODEL_URL="https://static.poly.pizza/46d6db5a-3c9f-4238-8cdf-8eb7194498dc.glb";
+
+export class Mihi3DView{
+  private readonly root:HTMLElement;
+  private readonly canvas:HTMLCanvasElement;
+  private renderer:import("three").WebGLRenderer|null=null;
+  private scene:import("three").Scene|null=null;
+  private camera:import("three").PerspectiveCamera|null=null;
+  private mixer:import("three").AnimationMixer|null=null;
+  private actions=new Map<string,import("three").AnimationAction>();
+  private activeAction:import("three").AnimationAction|null=null;
+  private frame=0;
+  private resizeObserver?:ResizeObserver;
+  private loaded=false;
+  private disposed=false;
+  private loadPromise:Promise<void>|null=null;
+  private currentLayer:MihiLayer=1;
+  private offs:(()=>void)[]=[];
+
+  constructor(private readonly events:PortalEventBus){
+    this.root=document.createElement("div");
+    this.root.className="mihi-3d";
+    this.root.dataset.mihi3d="1";
+    this.root.innerHTML='<canvas class="mihi-3d-canvas" aria-hidden="true"></canvas><span class="mihi-3d-status" data-mihi-3d-status>MIHI</span>';
+    this.canvas=this.root.querySelector<HTMLCanvasElement>("canvas")!;
+    this.bind();
+  }
+
+  mount(host:HTMLElement){host.append(this.root);this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(this.root);void this.load();}
+
+  private bind(){
+    this.offs=[
+      this.events.on("mihi:state",state=>{this.currentLayer=state.layer;this.selectForState(state);}),
+      this.events.on("mihi:request-action",payload=>{if(payload.source==="mihi")this.play("Interact");})
+    ];
+  }
+
+  private async load(){
+    if(this.loadPromise)return this.loadPromise;
+    this.loadPromise=this.loadInternal();
+    return this.loadPromise;
+  }
+
+  private async loadInternal(){
+    try{
+      const [THREE,loaderModule]=await Promise.all([import("three"),import("three/examples/jsm/loaders/GLTFLoader.js")]);
+      if(this.disposed)return;
+      const {GLTFLoader}=loaderModule;
+      const renderer=new THREE.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:true,powerPreference:"high-performance"});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+      renderer.outputColorSpace=THREE.SRGBColorSpace;
+      renderer.setClearColor(0x000000,0);
+      const scene=new THREE.Scene();
+      const camera=new THREE.PerspectiveCamera(24,1,0.01,100);
+      camera.position.set(0,1.35,3.2);
+      scene.add(new THREE.HemisphereLight(0xffffff,0x182033,2.2));
+      const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(2,3,4);scene.add(key);
+      const fill=new THREE.DirectionalLight(0x8fb8ff,1.1);fill.position.set(-2,1,2);scene.add(fill);
+      const loader=new GLTFLoader();
+      const gltf=await loader.loadAsync(MIHI_MODEL_URL);
+      if(this.disposed){renderer.dispose();return;}
+      const model=gltf.scene;
+      const box=new THREE.Box3().setFromObject(model);
+      const size=box.getSize(new THREE.Vector3());
+      const center=box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+      model.position.y-=size.y*0.08;
+      const targetHeight=Math.max(size.y,0.001);
+      model.scale.setScalar(1.35/targetHeight);
+      scene.add(model);
+      this.mixer=new THREE.AnimationMixer(model);
+      for(const clip of gltf.animations){
+        const name=clip.name.split("|").pop()||clip.name;
+        this.actions.set(name,this.mixer.clipAction(clip));
+      }
+      this.renderer=renderer;this.scene=scene;this.camera=camera;this.loaded=true;
+      this.setStatus("");
+      this.play("Idle_Neutral");
+      this.resize();
+      this.animate();
+    }catch(error){
+      this.setStatus("3D offline");
+      console.warn("Mihi 3D model unavailable",error);
+    }
+  }
+
+  private setStatus(text:string){const el=this.root.querySelector<HTMLElement>("[data-mihi-3d-status]");if(el)el.textContent=text;this.root.classList.toggle("mihi-3d-failed",Boolean(text));}
+
+  private selectForState(state:MihiState){
+    if(!this.loaded)return;
+    if(state.layer>=10){this.play("Idle_Neutral");return;}
+    if(state.layer>=8){this.play("Interact");return;}
+    if(state.layer>=5){this.play("Wave");return;}
+    this.play("Idle_Neutral");
+  }
+
+  private play(name:string){
+    const next=this.actions.get(name)||this.actions.get("Idle_Neutral");
+    if(!next||next===this.activeAction)return;
+    this.activeAction?.fadeOut(0.2);
+    next.reset().fadeIn(0.2).play();
+    this.activeAction=next;
+  }
+
+  private resize(){
+    if(!this.renderer||!this.camera)return;
+    const width=Math.max(1,this.root.clientWidth),height=Math.max(1,this.root.clientHeight);
+    this.renderer.setSize(width,height,false);
+    this.camera.aspect=width/height;
+    this.camera.updateProjectionMatrix();
+  }
+
+  private animate=()=>{
+    if(this.disposed)return;
+    this.frame=requestAnimationFrame(this.animate);
+    this.mixer?.update(1/60);
+    if(this.renderer&&this.scene&&this.camera)this.renderer.render(this.scene,this.camera);
+  };
+
+  dispose(){
+    this.disposed=true;
+    cancelAnimationFrame(this.frame);
+    this.resizeObserver?.disconnect();
+    this.offs.forEach(off=>off());
+    this.offs=[];
+    this.renderer?.dispose();
+    this.root.remove();
+  }
+}
