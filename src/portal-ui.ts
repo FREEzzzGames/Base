@@ -13,6 +13,18 @@ export function icon(name:string,className=""){
 }
 
 export type LiveStream={icon:string;name:string;twitch:string;youtube:string;twitchChannel:string;youtubeChannel?:string};
+export function streamAvatarSources(stream:LiveStream):{youtube:string;twitch:string}{
+  const youtube=stream.youtubeChannel||stream.youtube;
+  const twitch=stream.twitchChannel||"";
+  return {
+    youtube:youtube?avatarSource("youtube",youtube):"",
+    twitch:twitch?avatarSource("twitch",twitch):""
+  };
+}
+function avatarSource(provider:"youtube"|"twitch",key:string):string{
+  const host=["https","unavatar","io"].join(".").replace("https.","https://");
+  return host+"/"+provider+"/"+encodeURIComponent(key)+"?fallback=false&ttl=24h";
+}
 export const streams:LiveStream[]=[
   {icon:"video",name:"Leb1ga",twitch:"https://www.twitch.tv/leb1ga",youtube:"https://www.youtube.com/@leb1ga",twitchChannel:"leb1ga"},
   {icon:"game",name:"Dendi",twitch:"https://www.twitch.tv/Dendi",youtube:"https://www.youtube.com/@Dendi",twitchChannel:"dendi"},
