@@ -2587,3 +2587,147 @@ main{
     text-align:left;
   }
 }
+
+
+/* FINAL HOME / TOPBAR HARMONIZATION
+   Keeps the Telegram chrome separate while making the portal controls use
+   the same geometric language, spacing and borders as the HOME cards. */
+.topbar{
+  min-height:58px;
+  padding:calc(7px + var(--safe-top)) 12px 7px;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  background:var(--tg-bg);
+  border-bottom:1px solid var(--ds-border);
+  box-sizing:border-box;
+}
+.topbar-left{
+  justify-self:start;
+  min-width:40px;
+  display:flex;
+  align-items:center;
+}
+.topbar-right{
+  justify-self:end;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.profile-button{
+  width:40px;
+  height:40px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:transparent;
+}
+.profile-button:hover{
+  background:var(--ds-card-hover);
+  border-color:var(--ds-border);
+}
+.profile-button .ui-icon{
+  width:24px;
+  height:24px;
+  font-size:24px;
+}
+.lang-switch{
+  min-width:138px;
+  width:138px;
+  height:40px;
+  padding:3px;
+  gap:2px;
+  box-sizing:border-box;
+  border:1px solid var(--ds-border);
+  border-radius:12px;
+  background:var(--ds-control);
+  box-shadow:none;
+}
+.lang-switch button{
+  flex:1 1 0;
+  min-width:0;
+  height:32px;
+  padding:0 7px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:var(--ds-muted);
+  font:inherit;
+  font-size:14px;
+  font-weight:600;
+  line-height:1;
+}
+.lang-switch button.active{
+  color:var(--ds-accent-text);
+  background:var(--ds-accent);
+  box-shadow:none;
+}
+.dev-mode-toggle{
+  min-width:64px;
+  width:64px;
+  height:40px;
+  padding:4px 6px;
+  border:1px solid var(--ds-border);
+  border-radius:12px;
+  background:var(--ds-control);
+  color:var(--ds-text);
+  box-sizing:border-box;
+}
+.dev-mode-toggle span{
+  font-size:10px;
+  line-height:1;
+  letter-spacing:.08em;
+}
+.dev-mode-toggle small{
+  margin-top:3px;
+  font-size:8px;
+  line-height:1;
+  color:var(--ds-muted);
+}
+.home-portal{
+  padding-top:2px;
+}
+.home-portal .home-card,
+.home-portal .home-hero{
+  border-color:var(--ds-border);
+  background:var(--ds-panel);
+  box-shadow:0 0 0 1px rgba(100,181,246,.025);
+}
+.home-portal .home-card-head{
+  gap:8px;
+}
+.home-portal .home-card-head strong{
+  color:var(--ds-text);
+}
+.home-portal .home-card-icon{
+  color:var(--ds-accent);
+}
+@media(max-width:520px){
+  .topbar{
+    padding-left:10px;
+    padding-right:10px;
+    gap:7px;
+  }
+  .topbar-right{gap:6px}
+  .lang-switch{
+    width:128px;
+    min-width:128px;
+    height:38px;
+  }
+  .lang-switch button{height:30px;font-size:13px}
+  .dev-mode-toggle{
+    width:58px;
+    min-width:58px;
+    height:38px;
+    border-radius:11px;
+  }
+  .dev-mode-toggle span{font-size:9px}
+  .dev-mode-toggle small{font-size:7px}
+}
+@media(max-width:390px){
+  .topbar-right{gap:5px}
+  .lang-switch{width:116px;min-width:116px}
+  .lang-switch button{font-size:12px}
+  .dev-mode-toggle{width:52px;min-width:52px}
+  .dev-mode-toggle small{font-size:6.5px}
+}
