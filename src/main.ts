@@ -215,6 +215,11 @@ function render(){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
+          <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+            <source src="https://cdn.pixabay.com/video/2023/02/25/152174-802335605_tiny.mp4" type="video/mp4">
+          </video>
+          <div class="home-hero-overlay" aria-hidden="true"></div>
+          <div class="home-hero-content">
           <div class="home-hero-top">
             <div class="home-hero-brand">
               <span class="home-hero-kicker">FREEzzzyPORTAL</span>
@@ -223,6 +228,7 @@ function render(){
           </div>
           <h1>FREEzzzY</h1>
           <p>${T("homeDescription")}</p>
+          </div>
         </section>
         ${homeCard("live",icon("video","home-card-icon"),T("liveCard"),'<div class="home-live-preview" data-home-live-content></div>')}
         ${homeCard("chat",icon("chat","home-card-icon"),T("chatCard"),'<div class="home-chat-preview" data-home-chat-content></div>')}
