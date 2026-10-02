@@ -80,6 +80,7 @@ export class MihiEngine{
   }
 
   private publish(){
+    this.state.layer=Math.min(10,Math.max(1,Math.floor(this.state.attention/10)+1)) as MihiLayer;
     this.events.emit("mihi:state",{layer:this.state.layer,context:this.state.context,attention:this.state.attention,visible:this.state.visible});
   }
 
