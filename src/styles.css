@@ -3022,3 +3022,5 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   z-index:1!important;
 }
 
+
+/* PUBLISH SYNC — toolbar/HERO profile changes are authoritative on main. */
