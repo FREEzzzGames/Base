@@ -2,6 +2,7 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
+import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
@@ -77,6 +78,48 @@ let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab=
 type GameFontSize="normal"|"large"|"largest";
 let gameFontSize:GameFontSize=(()=>{try{const v=localStorage.getItem("freezzz:game-font-size");return v==="large"||v==="largest"?v:"normal";}catch{return "normal";}})();
 let gameFontControlsOpen=false;
+let gameAmbientHost:HTMLDivElement|null=null;
+let gameAmbientPlaying=true;
+let gameAmbientMuted=true;
+function gameAmbientCommand(func:string){
+  const frame=gameAmbientHost?.querySelector<HTMLIFrameElement>("iframe");
+  if(!frame?.contentWindow)return;
+  frame.contentWindow.postMessage(JSON.stringify({event:"command",func,args:[]}),"https://www.youtube.com");
+}
+function bindGameAmbientControls(){
+  if(!gameAmbientHost)return;
+  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-mute]")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    gameAmbientMuted=!gameAmbientMuted;
+    gameAmbientCommand(gameAmbientMuted?"mute":"unMute");
+    const b=e.currentTarget as HTMLButtonElement;
+    b.innerHTML=icon(gameAmbientMuted?"mute":"play","ambient-control-icon");
+    b.setAttribute("aria-label",gameAmbientMuted?T("soundOn"):T("soundOff"));
+  });
+  gameAmbientHost.querySelector<HTMLButtonElement>("[data-ambient-play]")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    gameAmbientPlaying=!gameAmbientPlaying;
+    gameAmbientCommand(gameAmbientPlaying?"playVideo":"pauseVideo");
+    const b=e.currentTarget as HTMLButtonElement;
+    b.innerHTML=icon(gameAmbientPlaying?"play":"waiting","ambient-control-icon");
+    b.setAttribute("aria-label",gameAmbientPlaying?T("pauseVideo"):T("resumeVideo"));
+  });
+}
+function syncGameAmbient(){
+  const target=document.querySelector<HTMLElement>("[data-game-ambient-host]");
+  if(view!=="game"){
+    gameAmbientHost?.remove();
+    return;
+  }
+  if(!target)return;
+  if(!gameAmbientHost){
+    gameAmbientHost=document.createElement("div");
+    gameAmbientHost.className="game-ambient-player";
+    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">⊘</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'">Ⅱ</button></div>';
+    bindGameAmbientControls();
+  }
+  if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
+}
 function setGameFontSize(size:GameFontSize){gameFontSize=size;try{localStorage.setItem("freezzz:game-font-size",size);}catch{}render();}
 function renderGameFontToolbar(){
   const current=gameFontSize==="normal"?"A":gameFontSize==="large"?"A+":"A++";
@@ -405,11 +448,9 @@ function playRadioStation(id:string){
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError=T("autoplayError");}).finally(()=>render());
 }
 portalEvents.on("navigation:changed",payload=>{
-  clearGameNavHideTimer();
   flushActivityTracking();
   if(view==="game"&&payload.view!=="game")endGameActivity();
   if(view!=="game"&&payload.view==="game")beginGameActivity();
-  gameNavRevealed=false;
   view=payload.view;
   portalState.view=payload.view;
   render();
