@@ -1731,3 +1731,147 @@ main{
 .game-ambient-controls button:active{transform:scale(.94)}
 .game-ambient-scene+ .game-dialog,
 .game-ambient-scene~.game-dialog{position:relative;z-index:2}
+
+
+/* GAME WORLD SHELL — each hero and tab has its own atmosphere */
+.game-rpg{
+  --game-accent:#d7dde7;
+  --game-glow:rgba(215,221,231,.18);
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid color-mix(in srgb,var(--game-accent) 34%,var(--ds-border));
+  border-radius:20px;
+  padding:12px;
+  background:
+    radial-gradient(circle at 85% 12%,var(--game-glow),transparent 32%),
+    linear-gradient(145deg,#080d14,#101722 55%,#070b11);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 16px 42px rgba(0,0,0,.25);
+  transition:background .45s ease,border-color .45s ease,box-shadow .45s ease;
+}
+.game-rpg:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  opacity:.9;
+  transition:background .45s ease;
+}
+.game-rpg:after{
+  content:"";
+  position:absolute;
+  inset:1px;
+  z-index:-1;
+  pointer-events:none;
+  border-radius:19px;
+  box-shadow:inset 0 0 42px var(--game-glow);
+}
+
+/* Four character identities: red / blue / white / green */
+.game-race-human{--game-accent:#d66a6a;--game-glow:rgba(214,106,106,.20)}
+.game-race-elf{--game-accent:#74a9df;--game-glow:rgba(116,169,223,.20)}
+.game-race-orc{--game-accent:#e9edf4;--game-glow:rgba(233,237,244,.18)}
+.game-race-dwarf{--game-accent:#72b987;--game-glow:rgba(114,185,135,.20)}
+
+.game-race-human .game-player-head,
+.game-race-elf .game-player-head,
+.game-race-orc .game-player-head,
+.game-race-dwarf .game-player-head{
+  border-color:color-mix(in srgb,var(--game-accent) 45%,var(--ds-border));
+  box-shadow:inset 0 0 22px var(--game-glow);
+}
+.game-race-human .game-avatar,
+.game-race-elf .game-avatar,
+.game-race-orc .game-avatar,
+.game-race-dwarf .game-avatar{
+  border-color:var(--game-accent);
+  color:var(--game-accent);
+  box-shadow:0 0 18px var(--game-glow);
+}
+
+/* Story/world atmospheres */
+.game-tab-story:before{
+  background:
+    radial-gradient(circle at 20% 25%,rgba(80,115,150,.18),transparent 28%),
+    radial-gradient(circle at 78% 65%,rgba(175,105,48,.14),transparent 30%),
+    linear-gradient(155deg,#07101a 0%,#0c1820 48%,#120f0d 100%);
+}
+.game-tab-character:before{
+  background:
+    radial-gradient(circle at 15% 20%,rgba(190,70,70,.18),transparent 30%),
+    radial-gradient(circle at 85% 80%,rgba(90,110,150,.12),transparent 34%),
+    linear-gradient(150deg,#160d12,#10131b 52%,#0b0f16);
+}
+.game-tab-skills:before{
+  background:
+    repeating-linear-gradient(120deg,rgba(120,170,220,.035) 0 1px,transparent 1px 18px),
+    radial-gradient(circle at 50% 20%,rgba(90,140,210,.16),transparent 38%),
+    linear-gradient(150deg,#08121d,#0a1620 55%,#071017);
+}
+.game-tab-quests:before{
+  background:
+    radial-gradient(circle at 20% 75%,rgba(90,170,120,.15),transparent 32%),
+    radial-gradient(circle at 80% 20%,rgba(160,125,65,.13),transparent 30%),
+    linear-gradient(145deg,#09150f,#101912 55%,#0b100d);
+}
+.game-tab-shop:before{
+  background:
+    radial-gradient(circle at 75% 20%,rgba(205,165,75,.17),transparent 28%),
+    radial-gradient(circle at 20% 80%,rgba(125,90,45,.12),transparent 30%),
+    linear-gradient(150deg,#151108,#17150e 52%,#0d0e0c);
+}
+.game-tab-achievements:before{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(210,215,230,.17),transparent 28%),
+    radial-gradient(circle at 20% 75%,rgba(110,120,150,.12),transparent 30%),
+    linear-gradient(150deg,#10131a,#0d1119 55%,#090c12);
+}
+.game-tab-journal:before{
+  background:
+    repeating-linear-gradient(0deg,rgba(190,165,110,.028) 0 1px,transparent 1px 5px),
+    radial-gradient(circle at 30% 30%,rgba(170,130,75,.14),transparent 34%),
+    linear-gradient(145deg,#17130d,#14120e 55%,#0b0d0d);
+}
+
+/* Story tab keeps the fire-video window as the visual anchor */
+.game-tab-story .game-ambient-scene{
+  border-color:color-mix(in srgb,var(--game-accent) 34%,var(--ds-border));
+  box-shadow:inset 0 0 42px var(--game-glow),0 10px 30px rgba(0,0,0,.22);
+}
+.game-rpg .game-tabs button{
+  border-color:color-mix(in srgb,var(--game-accent) 18%,var(--ds-border));
+}
+.game-rpg .game-tabs button.active{
+  border-color:var(--game-accent);
+  box-shadow:0 0 16px var(--game-glow),inset 0 0 14px var(--game-glow);
+  color:var(--game-accent);
+}
+.game-rpg .game-panel,
+.game-rpg .game-dialog,
+.game-rpg .game-choices button,
+.game-rpg .game-quest,
+.game-rpg .game-shop-item,
+.game-rpg .game-achievement{
+  border-color:color-mix(in srgb,var(--game-accent) 20%,var(--ds-border));
+}
+.game-rpg .game-dialog,
+.game-rpg .game-panel{
+  box-shadow:inset 0 0 24px color-mix(in srgb,var(--game-accent) 7%,transparent);
+}
+.game-rpg .game-speaker,
+.game-rpg .game-panel-title{
+  color:color-mix(in srgb,var(--game-accent) 86%,var(--ds-text));
+}
+.game-rpg .game-choices button:hover,
+.game-rpg .game-quest>button:hover,
+.game-rpg .game-shop-item>button:hover{
+  border-color:var(--game-accent);
+  box-shadow:0 0 14px var(--game-glow);
+}
+
+/* Mobile: preserve the shell without stealing vertical space */
+@media(max-width:520px){
+  .game-rpg{padding:9px;border-radius:17px}
+  .game-rpg:after{border-radius:16px}
+}
