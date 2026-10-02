@@ -104,7 +104,17 @@ function intercept(){
     if(!el)return;
     const id=el.dataset.view as MiniId;
     if(id!=="live"&&id!=="chat"&&id!=="radio")return;
-    e.preventDefault();e.stopImmediatePropagation();
+
+    // HOME cards open floating mini windows; HUD navigation keeps the
+    // original full-screen route behavior.
+    if(el.closest(".portal-toolbar")){
+      windows[id].open=false;
+      render();
+      return;
+    }
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
     if(id==="live"&&!liveName)liveName=streams[0]?.name||"";
     toggle(id);
   },true);
