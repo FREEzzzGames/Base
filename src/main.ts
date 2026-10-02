@@ -4,7 +4,7 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
-import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
+import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
@@ -360,6 +360,10 @@ function render(){
 
     </div>`;
   bind();
+  bindTelegramBackButton(view!=="home" || profileOpen,()=>{
+    if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
+    portalEvents.emit("navigation:changed",{view:"home"});
+  });
   syncGameAmbient();
   if(view==="home")ensureHomeRefresh();
 }
