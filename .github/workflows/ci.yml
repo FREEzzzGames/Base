@@ -16,8 +16,10 @@ permissions:
 # Every main commit gets a deterministic validation; only the current main SHA
 # is allowed through the production gate below.
 concurrency:
-  group: freezzz-pages-${{ github.workflow }}-${{ github.ref }}
-  queue: max
+  # Every commit validates independently. Production deployment remains serialized
+  # and the SHA gate below rejects stale releases.
+  group: freezzz-pages-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   build:
