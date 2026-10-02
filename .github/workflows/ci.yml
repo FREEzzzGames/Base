@@ -44,11 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: pages-production
-      queue: max
       cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Verify this release is still current
+        id: release-gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          latest="$(gh api "repos/${{ github.repository }}/commits/main" --jq '.sha')"
+          if [ "$latest" = "${GITHUB_SHA}" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Current main is ${GITHUB_SHA}; deploying."
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping stale release ${GITHUB_SHA}; current main is $latest."
+          fi
+
       - id: deployment
+        if: steps.release-gate.outputs.deploy == 'true'
         uses: actions/deploy-pages@v4
