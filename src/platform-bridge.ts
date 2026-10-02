@@ -80,6 +80,15 @@ export function applyTelegramTheme(tg:TelegramWebAppBridge):void{
   setTelegramCssVariable("--tg-theme-button-text-color",p.button_text_color);
   setTelegramCssVariable("--tg-theme-header-bg-color",p.header_bg_color);
   setTelegramCssVariable("--tg-theme-bottom-bar-bg-color",p.bottom_bar_bg_color);
+  // Mirror Telegram's native color system into portal semantic tokens when the client provides it.
+  setTelegramCssVariable("--ds-bg",p.bg_color);
+  setTelegramCssVariable("--ds-panel",p.secondary_bg_color||p.bg_color);
+  setTelegramCssVariable("--ds-card",p.section_bg_color||p.secondary_bg_color||p.bg_color);
+  setTelegramCssVariable("--ds-card-hover",p.section_separator_color||p.secondary_bg_color);
+  setTelegramCssVariable("--ds-text",p.text_color);
+  setTelegramCssVariable("--ds-muted",p.hint_color);
+  setTelegramCssVariable("--ds-accent",p.button_color);
+  setTelegramCssVariable("--ds-accent-text",p.button_text_color);
   const root=document.documentElement;
   root.dataset.telegramTheme=tg.colorScheme||"dark";
   if(tg.safeAreaInset){
