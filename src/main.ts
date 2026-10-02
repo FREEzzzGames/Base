@@ -8,7 +8,7 @@ import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
 import { renderLivePopup } from "./live-runtime";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
-import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
+import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
 import { createMihiModule } from "./mihi/mihi-module";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
@@ -53,6 +53,7 @@ function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
 const portalSession=loadPortalSessionSnapshot();
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
+const moduleManager=new PortalModuleManager();
 const mihi=createMihiModule(portalEvents);
 let view:View=portalState.view;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
@@ -79,7 +80,6 @@ let liveSelected="";
 let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
-let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
 let gameAmbientHost:HTMLDivElement|null=null;
@@ -134,17 +134,23 @@ let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
+function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
+  radioPlaybackStatus=status;
+  portalEvents.emit("radio:playback",{status});
+}
 
 function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
   liveSelected=name;
   livePopupSource=source;
   livePopupOpen=true;
   beginLiveActivity(name);
+  portalEvents.emit("live:popup",{open:true,source});
   render();
 }
 function closeLivePopup():void{
   endLiveActivity();
   livePopupOpen=false;
+  portalEvents.emit("live:popup",{open:false,source:livePopupSource});
   render();
 }
 function flushActivityTracking(){
@@ -219,7 +225,6 @@ function renderPortalToolbar(){
 }
 
 function render(){
-  if(view!=="home"&&homeRefreshTimer!==null){window.clearInterval(homeRefreshTimer);homeRefreshTimer=null;}
   savePortalSessionSnapshot();
   let body="";
 
@@ -241,11 +246,11 @@ function render(){
           <p>${T("homeDescription")}</p>
           </div>
         </section>
-        ${homeCard("live",icon("video","home-card-icon"),T("liveCard"),'<div class="home-live-preview" data-home-live-content></div>')}
-        ${homeCard("chat",icon("chat","home-card-icon"),T("chatCard"),'<div class="home-chat-preview" data-home-chat-content></div>')}
-        ${homeCard("game",icon("game","home-card-icon"),T("gameCard"),'<div class="home-game-preview" data-home-game-content></div>')}
-        ${homeCard("radio",icon("radio","home-card-icon"),T("radioCard"),'<div class="home-radio-preview" data-home-radio-content></div>')}
-        ${homeCard("library",icon("library","home-card-icon"),T("libraryCard"),'<div class="home-library-preview" data-home-library-content></div>')}
+        ${homeCard("live")}}
+        ${homeCard("chat")}}
+        ${homeCard("game")}}
+        ${homeCard("radio")}}
+        ${homeCard("library")}}
       </div>`;
   }
 
@@ -378,7 +383,6 @@ function render(){
     portalEvents.emit("navigation:changed",{view:"home"});
   });
   syncGameAmbient();
-  if(view==="home")ensureHomeRefresh();
 }
 
 function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
@@ -387,7 +391,7 @@ function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
   const primary=urls.youtube||urls.twitch;
   return `<img class="stream-avatar-image ${className}" data-stream-avatar="1" data-stream-avatar-twitch="${escapeHtml(urls.twitch)}" src="${escapeHtml(primary)}" alt="" aria-hidden="true" loading="lazy">`;
 }
-function homeCard(v:View,_e:string,t:string,_content:string){
+function homeCard(v:Exclude<View,"home">){
   const backgrounds:Partial<Record<View,string>>={
     live:portalVideoUrl("live"),
     chat:portalVideoUrl("chat"),
@@ -403,39 +407,6 @@ function homeCard(v:View,_e:string,t:string,_content:string){
     <span class="home-card-title">${title}</span>
   </button>`;
 }
-function refreshHomeContent(){
-  if(view!=="home")return;
-  const clock=document.querySelector<HTMLElement>("[data-home-clock]");
-  if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  const live=document.querySelector<HTMLElement>("[data-home-live-content]");
-  if(live){
-    live.innerHTML=streams.slice(0,3).map(s=>`<span class="home-live-row"><i>${streamAvatarMarkup(s,"home-stream-avatar")}</i><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></span>`).join("");
-  }
-  const chat=document.querySelector<HTMLElement>("[data-home-chat-content]");
-  if(chat){
-    const last=chatMessages[chatMessages.length-1];
-    chat.innerHTML=last?`<b>${escapeHtml(last.author)}</b><span>${escapeHtml(last.message)}</span>`:T("noMessages");
-  }
-  const game=document.querySelector<HTMLElement>("[data-home-game-content]");
-  if(game)game.innerHTML=gameState.race?`<span>LEVEL <b>${gameState.level}</b></span><span>XP ${gameState.xp}/100</span><small>${escapeHtml(gameState.race.toUpperCase())} · ${T("historyContinues")}</small>`:`<span>${T("gameStory")}</span><span>${T("fourRaces")}</span><small>${T("chooseHero")}</small>`;
-  const radio=document.querySelector<HTMLElement>("[data-home-radio-content]");
-  if(radio){
-    const station=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
-    radio.innerHTML=station?`<b>${escapeHtml(station.name)}</b><span>${radioPlaybackStatus==="playing"?"● "+T("playing"):"○ "+(radioPlaybackStatus==="paused"?T("pause"):T("radioReady"))}</span>`:radioLoading?T("radioLoadingShort"):T("radioReady");
-  }
-  const library=document.querySelector<HTMLElement>("[data-home-library-content]");
-  if(library){
-    let count=0;
-    try{const saved=JSON.parse(localStorage.getItem("freezzz-library")||"[]");count=Array.isArray(saved)?saved.length:0;}catch{}
-    library.innerHTML=`<b>${count}</b><span>сохранённых игр</span><small>${T("localLibrary")}</small>`;
-  }
-}
-function ensureHomeRefresh(){
-  if(homeRefreshTimer!==null)return;
-  homeRefreshTimer=window.setInterval(refreshHomeContent,500);
-  refreshHomeContent();
-}
-
 async function getRadioBrowser():Promise<RadioBrowserClient>{
   if(radioBrowser)return radioBrowser;
   if(!radioBrowserLoading){
@@ -469,17 +440,17 @@ function playRadioStation(id:string){
   radioAudio=new Audio(station.url_resolved||station.url);
   radioAudio.dataset.station=station.name;
   radioAudio.controls=true;
-  radioPlaybackStatus="loading";
-  radioAudio.addEventListener("playing",()=>{radioPlaybackStatus="playing";beginRadioActivity(station.name);render();},{once:true});
-  radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")radioPlaybackStatus="paused";});
-  radioAudio.addEventListener("error",()=>{radioPlaybackStatus="failed";radioError=T("playError");render();},{once:true});
-  void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError=T("autoplayError");}).finally(()=>render());
+  setRadioPlaybackStatus("loading");
+  radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);render();},{once:true});
+  radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");});
+  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");radioError=T("playError");render();},{once:true});
+  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");radioError=T("autoplayError");}).finally(()=>render());
 }
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
   if(action==="play")playRadioStation(radioSelectedId);
-  if(action==="pause"){endRadioActivity();radioAudio?.pause();radioPlaybackStatus="paused";render();}
-  if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();}
+  if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();}
+  if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();}
 });
 portalEvents.on("navigation:changed",payload=>{
   const previousView=view;
@@ -502,8 +473,8 @@ function bind(){
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
     document.querySelectorAll<HTMLButtonElement>("[data-radio-carousel-id]").forEach(x=>x.onclick=()=>{radioSelectedId=x.dataset.radioCarouselId||"";try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{};render();});
     document.querySelector("#radio-play")?.addEventListener("click",()=>void playRadioStation(radioSelectedId));
-    document.querySelector("#radio-pause")?.addEventListener("click",()=>{endRadioActivity();radioAudio?.pause();radioPlaybackStatus="paused";render();});
-    document.querySelector("#radio-stop")?.addEventListener("click",()=>{endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}radioPlaybackStatus="stopped";render();});
+    document.querySelector("#radio-pause")?.addEventListener("click",()=>{endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();});
+    document.querySelector("#radio-stop")?.addEventListener("click",()=>{endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();});
     const carousel=document.querySelector<HTMLElement>("#radio-carousel-track");
     let startX=0;
     carousel?.addEventListener("pointerdown",e=>{startX=e.clientX;});
@@ -525,12 +496,12 @@ function bind(){
       e.preventDefault();
       e.stopPropagation();
       const next=x.dataset.view as View;
-      if(!next)return;
+      if(!next||!moduleManager.has(next))return;
       portalEvents.emit("navigation:changed",{view:next});
     };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;render();};
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
     if(x.getAttribute("role")==="button"){
       x.onkeydown=function(e){
         if(e.key!=="Enter"&&e.key!==" ")return;
