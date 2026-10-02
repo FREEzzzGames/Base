@@ -378,6 +378,7 @@ function render(){
 
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   bind();
+  bindHudTouchGesture();
   window.dispatchEvent(new CustomEvent("freezzz:chat-sync",{detail:{messages:chatMessages}}));
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
@@ -468,7 +469,31 @@ window.addEventListener("offline",()=>{portalState.online=false;});
 window.setInterval(()=>flushActivityTracking(),15000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
-function bind(){
+function bindHudTouchGesture(){
+  if(hudGestureBound)return;
+  const workspace=document.querySelector<HTMLElement>(".portal-workspace");
+  if(!workspace)return;
+  hudGestureBound=true;
+  let startX=0,startY=0,tracking=false,triggered=false;
+  workspace.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;
+  },{passive:true});
+  workspace.addEventListener("pointermove",e=>{
+    if(!tracking||triggered)return;
+    const dx=e.clientX-startX,dy=e.clientY-startY;
+    if(Math.abs(dy)>Math.abs(dx)+8)return;
+    if(!hudHidden&&startX<=64&&dx<-44){
+      triggered=true;hudHidden=true;workspace.classList.add("portal-hud-hidden");
+    }else if(hudHidden&&startX<=28&&dx>44){
+      triggered=true;hudHidden=false;workspace.classList.remove("portal-hud-hidden");
+    }
+  },{passive:true});
+  const end=()=>{tracking=false;};
+  workspace.addEventListener("pointerup",end,{passive:true});
+  workspace.addEventListener("pointercancel",end,{passive:true});
+}
+\nfunction bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
