@@ -3025,6 +3025,7 @@ main::-webkit-scrollbar{display:none}
   box-sizing:border-box!important;
   min-width:0!important;
   max-width:100%!important;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.20)!important;
 }
 
 
