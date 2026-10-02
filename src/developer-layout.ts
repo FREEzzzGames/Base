@@ -14,7 +14,7 @@ export interface LayoutBlockInfo extends LayoutOverride{
   view:PortalView;
 }
 
-export const DEV_LAYOUT_KEY="freezzz:dev-layout:v1";
+export const DEV_LAYOUT_KEY="freezzz:dev-layout:v2";
 
 export const PORTAL_EDITABLE_BLOCKS:Record<PortalView,readonly string[]>={
   home:["hero","live","chat","game","radio","library"],
