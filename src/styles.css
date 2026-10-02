@@ -1520,3 +1520,15 @@ main{
 }
 .game-restart:active{transform:scale(.97);background:var(--ds-card-hover)}
 @media(max-width:520px){.game-restart{font-size:10px;padding:4px 7px}}
+
+/* RACE-SPECIFIC GAME PROGRESSION */
+.game-abilities{margin-top:14px;padding-top:12px;border-top:1px solid var(--ds-border)}
+.game-ability{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;padding:9px 0;border-top:1px solid var(--ds-border)}
+.game-ability:first-of-type{border-top:0}
+.game-ability>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--ds-control);color:var(--ds-muted);font-size:13px}
+.game-ability b,.game-ability small{display:block}
+.game-ability b{font-size:13px}
+.game-ability small{margin-top:3px;color:var(--ds-muted);font-size:10px;line-height:1.4}
+.game-ability.unlocked>span{background:var(--ds-accent);color:var(--ds-accent-text)}
+.game-ability.unlocked b{color:var(--ds-accent)}
+.game-ability.locked{opacity:.62}
