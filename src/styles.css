@@ -2954,15 +2954,13 @@ main::-webkit-scrollbar{display:none}
 
 @media(max-width:699px){
   .home-portal{
-    grid-template-columns:minmax(0,1fr)!important;
-    grid-template-rows:auto auto auto auto auto minmax(220px,1fr)!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:auto auto auto minmax(220px,1fr)!important;
     grid-template-areas:
-      "hero"
-      "live"
-      "chat"
-      "game"
-      "radio"
-      "library";
+      "hero hero"
+      "live chat"
+      "game radio"
+      "library library";
     min-height:calc(100dvh - 64px)!important;
   }
 
@@ -2972,10 +2970,6 @@ main::-webkit-scrollbar{display:none}
 }
 
 @media(max-width:390px){
-  .home-portal{
-    grid-template-rows:auto auto auto auto auto minmax(200px,1fr)!important;
-  }
-
   .home-portal > .home-library{
     min-height:200px!important;
   }
