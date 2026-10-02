@@ -3743,7 +3743,7 @@ main{
   height:100dvh!important;
   min-height:0!important;
   display:grid!important;
-  grid-template-rows:auto minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
   overflow:hidden!important;
 }
 .app-shell > main{
