@@ -2,7 +2,7 @@ export type PortalLanguage="RU"|"DE"|"EN";
 export const PORTAL_I18N:Record<PortalLanguage,Record<string,string>>={
 RU:{
  welcome:"Добро пожаловать в FREEzzz.",
- fontSize:"Размер текста",fontSizeGame:"Размер текста в игре",normal:"Обычный",large:"Большой",largest:"Самый большой",
+ 
  soundOn:"Включить звук",soundOff:"Выключить звук",pauseVideo:"Остановить видео",resumeVideo:"Продолжить видео",
  fireVideo:"Лесной костёр — атмосфера игры",close:"Закрыть",sessions:"Сессий",gameLaunches:"Запусков GAME",gameTime:"Время GAME",liveTime:"Просмотр LIVE",radioTime:"Радио",chatMessages:"Сообщений CHAT",playTime:"Игровое время",launches:"Запуски",noViews:"Пока нет просмотров.",noRadio:"Пока нет прослушиваний.",
  liveCard:"LIVE — Стримеры и каналы",chatCard:"CHAT — Общение",gameCard:"GAME — Игровая зона",radioCard:"RADIO — Музыка",libraryCard:"LIBRARY — Библиотека",
