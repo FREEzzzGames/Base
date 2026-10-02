@@ -73,8 +73,10 @@ export class Mihi3DView{
       model.scale.setScalar(1.35/targetHeight);
       scene.add(model);
       this.mixer=new THREE.AnimationMixer(model);
+      const allowedAnimations=new Set(["Idle","Idle_Neutral","Interact","Wave","Walk"]);
       for(const clip of gltf.animations){
         const name=clip.name.split("|").pop()||clip.name;
+        if(!allowedAnimations.has(name))continue;
         this.actions.set(name,this.mixer.clipAction(clip));
       }
       this.renderer=renderer;this.scene=scene;this.camera=camera;this.loaded=true;
