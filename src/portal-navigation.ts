@@ -16,6 +16,7 @@ export function bindPortalSwipeNavigation(
     if(target.closest("input,textarea,button,a,select"))return;
     startX=e.clientX;startY=e.clientY;startTime=Date.now();pointerId=e.pointerId;
   },{passive:true});
+  root.addEventListener("pointercancel",e=>{if(pointerId===e.pointerId)pointerId=null;},{passive:true});
   root.addEventListener("pointerup",e=>{
     if(pointerId!==e.pointerId)return;
     pointerId=null;
