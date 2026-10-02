@@ -589,33 +589,7 @@ main{
   }
 }
 
-/* FINAL home scaling audit: prevent intrinsic-width cards and keep one stable responsive column. */
-.home-portal{
-  width:min(100%,680px);
-  margin:0 auto;
-  display:grid;
-  grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
-  grid-template-areas:
-    "hero hero"
-    "live chat"
-    "live game"
-    "live radio"
-    "library library";
-  grid-auto-rows:minmax(0,auto);
-  gap:10px;
-  align-items:stretch;
-}
-.home-portal > .home-hero,
-.home-portal > .home-card{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  width:100%;
-  min-width:0;
-  max-width:none;
-  margin:0;
-}
-
+/* HOME CARD BACKGROUNDS — scoped to HOME cards only. */
 .home-card-background-video{
   position:absolute;
   inset:0;
@@ -643,75 +617,6 @@ main{
   height:100%;
   min-width:0;
 }
-.home-portal > .home-hero{grid-area:hero}
-.home-portal > .home-live{grid-area:live;min-height:560px}
-.home-portal > .home-chat{grid-area:chat;min-height:168px}
-.home-portal > .home-game{grid-area:game;min-height:210px}
-.home-portal > .home-radio{grid-area:radio;min-height:210px}
-.home-portal > .home-library{grid-area:library;min-height:170px}
-.home-portal .home-card{
-  border-radius:18px;
-}
-.home-portal .home-live-preview{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;
-  gap:10px;
-  padding-top:8px;
-}
-.home-portal .home-chat-preview,
-.home-portal .home-game-preview,
-.home-portal .home-radio-preview,
-.home-portal .home-library-preview{
-  margin-top:auto;
-}
-@media(max-width:520px){
-  .home-portal{
-    width:100%;
-    grid-template-columns:minmax(0,1.03fr) minmax(0,.97fr);
-    gap:8px;
-  }
-  .home-portal > .home-live{min-height:500px}
-  .home-portal > .home-chat{min-height:150px}
-  .home-portal > .home-game,
-  .home-portal > .home-radio{min-height:190px}
-  .home-portal > .home-library{min-height:150px}
-}
-.home-card{
-  box-sizing:border-box;
-  overflow:hidden;
-}
-.home-card-head{
-  width:100%;
-  min-width:0;
-}
-.home-card-head strong{
-  min-width:0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.home-live-preview,
-.home-chat-preview,
-.home-game-preview,
-.home-radio-preview,
-.home-library-preview{
-  width:100%;
-  min-width:0;
-  max-width:100%;
-  overflow:hidden;
-}
-@media(max-width:520px){
-  .home-portal{
-    width:100%;
-    gap:8px;
-  }
-  .home-portal > .home-card,
-  .home-portal > .home-hero{
-    width:100%;
-  }
-}
-
 
 /* GAME RPG — stable portal implementation */
 .game-portal{gap:12px}
