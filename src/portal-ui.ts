@@ -32,7 +32,7 @@ function youtubeHandle(url:string):string{
 }
 function avatarSource(provider:"youtube"|"twitch",key:string):string{
   const host=["https","unavatar","io"].join(".").replace("https.","https://");
-  return host+"/"+provider+"/"+encodeURIComponent(key)+"?fallback=false&ttl=24h";
+  return host+"/"+provider+"/"+encodeURIComponent(key);
 }
 export const streams:LiveStream[]=[
   {icon:"video",name:"Leb1ga",twitch:"https://www.twitch.tv/leb1ga",youtube:"https://www.youtube.com/@leb1ga",twitchChannel:"leb1ga"},
