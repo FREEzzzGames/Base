@@ -30,7 +30,7 @@ DE:{
  savedGames:"gespeicherte Spiele",localLibrary:"Lokale Bibliothek",historyContinues:"Geschichte geht weiter",chooseHero:"Wähle deinen Helden und beginne das Abenteuer",
  gameStory:"FREEzzz STORY",fourRaces:"4 VÖLKER",radioLoadingShort:"Sender wird geladen…",stream:"Stream",radio:"Radio",thanks:"Danke",
  playError:"Der Stream dieses Senders konnte nicht wiedergegeben werden.",autoplayError:"Tippe erneut auf Play – der Browser hat den Autostart blockiert.",
- profile:"Profil",language:"Sprache",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",edit:"EDIT",
+ profile:"Profil",language:"Sprache",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",
  telegramProfile:"Telegram-Profil",telegramIdentityUnavailable:"Telegram-Identität nicht verfügbar"
 },
 EN:{
@@ -46,7 +46,7 @@ EN:{
  savedGames:"saved games",localLibrary:"Local Library",historyContinues:"story continues",chooseHero:"Choose your hero and begin the adventure",
  gameStory:"FREEzzz STORY",fourRaces:"4 RACES",radioLoadingShort:"Loading station…",stream:"stream",radio:"radio",thanks:"thanks",
  playError:"This station's stream could not be played.",autoplayError:"Press Play again — the browser blocked autoplay.",
- profile:"Profile",language:"Language",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",edit:"EDIT",
+ profile:"Profile",language:"Language",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",
  telegramProfile:"Telegram profile",telegramIdentityUnavailable:"Telegram identity unavailable"
 }
 };
