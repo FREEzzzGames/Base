@@ -119,6 +119,24 @@ jobs:
           VITE_TELEGRAM_AUTH_URL: ${{ secrets.TELEGRAM_AUTH_URL }}
         run: npm run build
 
+      - name: Verify local portal videos
+        shell: bash
+        run: |
+          set -euo pipefail
+          for video in \
+            hud-background.mp4 \
+            home-hero.mp4 \
+            home-live.mp4 \
+            home-chat.mp4 \
+            home-game.mp4 \
+            home-radio.mp4 \
+            home-library.mp4
+          do
+            test -s "dist/videos/$video"
+          done
+          echo "LOCAL_PORTAL_VIDEOS_OK"
+          ls -lh dist/videos/*.mp4
+
       - name: Release smoke
         env:
           EXPECTED_BUILD: ${{ github.sha }}
