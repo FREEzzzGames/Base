@@ -60,8 +60,18 @@ let gameState=loadGameState();
 let gameTab:GameTab="story";
 type GameFontSize="normal"|"large"|"largest";
 let gameFontSize:GameFontSize=(()=>{try{const v=localStorage.getItem("freezzz:game-font-size");return v==="large"||v==="largest"?v:"normal";}catch{return "normal";}})();
+let gameFontControlsOpen=false;
 function setGameFontSize(size:GameFontSize){gameFontSize=size;try{localStorage.setItem("freezzz:game-font-size",size);}catch{}render();}
-function renderGameFontToolbar(){return '<div class="game-font-toolbar" role="group" aria-label="Размер текста в игре"><span>ТЕКСТ</span><button type="button" class="'+(gameFontSize==="normal"?"active":"")+'" data-game-font-size="normal" aria-label="Обычный размер" title="Обычный">A</button><button type="button" class="'+(gameFontSize==="large"?"active":"")+'" data-game-font-size="large" aria-label="Большой размер" title="Больше">A+</button><button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label="Самый большой размер" title="Самый большой">A++</button></div>';}
+function renderGameFontToolbar(){
+  const current=gameFontSize==="normal"?"A":gameFontSize==="large"?"A+":"A++";
+  return '<div class="game-font-control '+(gameFontControlsOpen?"is-open":"")+'" data-game-font-control>'+
+    '<button type="button" class="game-font-toggle" data-game-font-toggle aria-label="Размер текста" title="Размер текста">'+current+'</button>'+
+    '<div class="game-font-toolbar" role="group" aria-label="Размер текста в игре">'+
+      '<button type="button" class="'+(gameFontSize==="normal"?"active":"")+'" data-game-font-size="normal" aria-label="Обычный размер" title="Обычный">A</button>'+
+      '<button type="button" class="'+(gameFontSize==="large"?"active":"")+'" data-game-font-size="large" aria-label="Большой размер" title="Большой">A+</button>'+
+      '<button type="button" class="'+(gameFontSize==="largest"?"active":"")+'" data-game-font-size="largest" aria-label="Самый большой размер" title="Самый большой">A++</button>'+
+    '</div></div>';
+}
 let gameNavRevealed=false;
 let gameNavHideTimer:number|null=null;
 let gameAmbientHost:HTMLDivElement|null=null;
@@ -660,6 +670,9 @@ function bind(){
     });
     document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
+    });
+    document.querySelectorAll<HTMLButtonElement>("[data-game-font-toggle]").forEach(x=>{
+      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameFontControlsOpen=!gameFontControlsOpen;render();};
     });
     document.querySelectorAll<HTMLButtonElement>("[data-game-font-size]").forEach(x=>{
       x.onclick=e=>{e.preventDefault();e.stopPropagation();setGameFontSize((x.dataset.gameFontSize as GameFontSize)||"normal");};
