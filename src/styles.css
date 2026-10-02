@@ -2485,3 +2485,56 @@ main{
 .profile-card-expanded .profile-actions{
   justify-content:flex-start;
 }
+
+
+/* HOME HERO — balanced clock hierarchy */
+.home-hero{
+  overflow:hidden;
+}
+.home-hero-meta{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  margin-bottom:10px;
+  color:var(--tg-muted);
+  font-size:11px;
+  line-height:1;
+  letter-spacing:.12em;
+}
+.home-hero-meta>span:first-child{
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.home-hero-meta [data-home-clock]{
+  display:block;
+  min-width:4ch;
+  color:var(--tg-text);
+  font-size:44px;
+  font-weight:700;
+  line-height:.9;
+  letter-spacing:.02em;
+  text-align:right;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.home-hero h1{
+  margin:0 0 10px;
+  font-size:32px;
+  line-height:1;
+}
+.home-hero p{
+  max-width:42ch;
+}
+@media(max-width:420px){
+  .home-hero-meta{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .home-hero-meta [data-home-clock]{
+    font-size:clamp(42px,15vw,58px);
+    text-align:left;
+  }
+}
