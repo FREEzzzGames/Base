@@ -199,7 +199,7 @@ export function showTelegramMainButton(text:string,onClick:()=>void):void{
 export async function verifyTelegramSession(apiBaseUrl?:string):Promise<TelegramAuthResult>{
   const tg=getTelegramWebApp();
   const initData=tg?.initData;
-  const base=(apiBaseUrl||import.meta.env.VITE_TELEGRAM_AUTH_URL||"").replace(/\\/$/,"");
+  const base=(apiBaseUrl||import.meta.env.VITE_TELEGRAM_AUTH_URL||"").replace(/\/$/,"");
   if(!tg||!initData||!base)return {ok:false,error:"AUTH_SERVICE_UNAVAILABLE"};
   try{
     const response=await fetch(base+"/api/auth/telegram",{
