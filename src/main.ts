@@ -59,6 +59,23 @@ let gameState=loadGameState();
 let gameTab:GameTab="story";
 let gameNavRevealed=false;
 let gameNavHideTimer:number|null=null;
+let gameAmbientHost:HTMLDivElement|null=null;
+let gameAmbientPlaying=true;
+function syncGameAmbient(){
+  const target=document.querySelector<HTMLElement>("[data-game-ambient-host]");
+  if(view!=="game"){
+    gameAmbientHost?.remove();
+    return;
+  }
+  if(!target)return;
+  if(!gameAmbientHost){
+    gameAmbientHost=document.createElement("div");
+    gameAmbientHost.className="game-ambient-player";
+    gameAmbientHost.innerHTML='<iframe title="Лесной костёр — атмосфера игры" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  }
+  if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
+}
+
 function clearGameNavHideTimer(){
   if(gameNavHideTimer!==null){window.clearTimeout(gameNavHideTimer);gameNavHideTimer=null;}
 }
@@ -392,6 +409,7 @@ function render(){
     </div>`;
   bind();
   applyDeveloperLayout();
+  syncGameAmbient();
   if(view==="home")ensureHomeRefresh();
 }
 
