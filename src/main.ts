@@ -4,6 +4,7 @@ import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 import { renderDeveloperDiagnostics } from "./developer-tools";
 import { icon, streams, type LiveStream } from "./portal-ui";
+import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
@@ -63,9 +64,7 @@ type Language="RU"|"DE"|"EN";
 const DEVELOPER_TOOLS_ENABLED = import.meta.env.DEV || import.meta.env.VITE_FREEZZ_DEV_TOOLS === "1";
 let developerOpen=false;
 let developerMode=(()=>{try{return localStorage.getItem("freezzz:dev-mode")!=="user";}catch{return true;}})();
-type LayoutOverride={width:number;height:number;x:number;y:number;order:number};
-const DEV_LAYOUT_KEY="freezzz:dev-layout:v1";
-let layoutOverrides:Record<string,LayoutOverride>=(()=>{try{return JSON.parse(localStorage.getItem(DEV_LAYOUT_KEY)||"{}") as Record<string,LayoutOverride>;}catch{return {};}})();
+let layoutOverrides=loadLayoutOverrides();
 let developerSelectedBlock="";
 let profileOpen=false;
 let liveSelected="";
@@ -84,54 +83,43 @@ let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
-function currentLayoutOverride(key:string):LayoutOverride{
-  const value=layoutOverrides[key];
-  return value?value:{width:100,height:0,x:0,y:0,order:0};
-}
-function saveDeveloperLayout(){try{localStorage.setItem(DEV_LAYOUT_KEY,JSON.stringify(layoutOverrides));}catch{}}
-const PORTAL_EDITABLE_BLOCKS:Record<View,readonly string[]>={
-  home:["hero","live","chat","game","radio","library"],
-  live:["header","streams"],
-  chat:["header","messages","composer"],
-  game:["header","game","controls"],
-  radio:["header","carousel","nowplaying","search","genres"],
-  library:["content"]
-};
-function portalBlockInfos(){
-  return PORTAL_EDITABLE_BLOCKS[view].map(block=>{
-    const key=view+":"+block;
-    const value=currentLayoutOverride(key);
-    return {key,label:block.toUpperCase(),view,width:value.width,height:value.height,x:value.x,y:value.y,order:value.order};
-  });
-}
-function applyDeveloperLayout(){
-  document.querySelectorAll<HTMLElement>("[data-portal-block]").forEach((el,index)=>{
-    const block=el.dataset.portalBlock||String(index);
-    const value=currentLayoutOverride(view+":"+block);
-    if(!developerMode){
-      el.style.removeProperty("width");el.style.removeProperty("height");el.style.removeProperty("transform");el.style.removeProperty("order");
-      return;
-    }
-    el.dataset.devEditable="true";
-    el.style.width=value.width===100?"":value.width+"%";
-    el.style.height=value.height>0?value.height+"px":"";
-    el.style.transform=(value.x||value.y)?"translate("+value.x+"px,"+value.y+"px)":"";
-    el.style.order=String(value.order);
-  });
-}
+function currentLayoutOverride(key:string):LayoutOverride{return getLayoutOverride(layoutOverrides,key);}
 function updateDeveloperControl(name:keyof LayoutOverride,value:number){
   if(!developerSelectedBlock)return;
   const current=currentLayoutOverride(developerSelectedBlock);
   layoutOverrides[developerSelectedBlock]={...current,[name]:value};
-  saveDeveloperLayout();
+  saveLayoutOverrides(layoutOverrides);
   applyDeveloperLayout();
   const output=document.querySelector<HTMLOutputElement>("[data-dev-output=\""+name+"\"]");
   if(output)output.textContent=name==="width"?value+"%":name==="height"?(value?value+"px":"AUTO"):name==="order"?String(value):value+"px";
 }
-function resetDeveloperBlock(){if(!developerSelectedBlock)return;delete layoutOverrides[developerSelectedBlock];saveDeveloperLayout();render();}
-function resetDeveloperLayout(){layoutOverrides={};saveDeveloperLayout();render();}
-function renderDeveloperPanel(){return renderDeveloperDiagnostics({version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,telegram:portalState.telegram,online:portalState.online,modules:PORTAL_MODULES.map(module=>module.id),developerMode,selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()});}
-function toggleDeveloperMode(){developerMode=!developerMode;developerOpen=developerMode;try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{};render();}
+function resetDeveloperBlock(){
+  if(!developerSelectedBlock)return;
+  delete layoutOverrides[developerSelectedBlock];
+  saveLayoutOverrides(layoutOverrides);
+  render();
+}
+function resetDeveloperLayout(){
+  layoutOverrides={};
+  saveLayoutOverrides(layoutOverrides);
+  render();
+}
+function portalBlockInfos(){return getLayoutBlockInfos(view,layoutOverrides);}
+function applyDeveloperLayout(){applyLayout(view,developerMode,layoutOverrides);}
+function renderDeveloperPanel(){
+  return renderDeveloperDiagnostics({
+    version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,
+    telegram:portalState.telegram,online:portalState.online,
+    modules:PORTAL_MODULES.map(module=>module.id),developerMode,
+    selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()
+  });
+}
+function toggleDeveloperMode(){
+  developerMode=!developerMode;
+  developerOpen=developerMode;
+  try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{}
+  render();
+}
 function render(){
   let body="";
 
