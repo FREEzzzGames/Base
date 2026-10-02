@@ -4457,3 +4457,27 @@ main{
   top:10px!important;
   right:10px!important;
 }
+
+/* ================================================================
+   HOME BLOCKS — flat surfaces, no contour or shadow effects
+   ================================================================ */
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+.home-portal > .home-hero::before,
+.home-portal > .home-card::before,
+.home-portal > .home-library::before{
+  display:none!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.home-portal > .home-card::after{
+  box-shadow:none!important;
+}
+.portal-home-workspace{
+  box-shadow:none!important;
+}
