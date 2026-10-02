@@ -1,3 +1,20 @@
+export interface TelegramVerifiedIdentity{
+  id?:number;
+  firstName?:string;
+  lastName?:string;
+  username?:string;
+  languageCode?:string;
+  photoUrl?:string;
+}
+
+export interface TelegramAuthResult{
+  ok:boolean;
+  user?:TelegramVerifiedIdentity|null;
+  authDate?:number;
+  queryId?:string|null;
+  error?:string;
+}
+
 export interface TelegramThemeParams{
   bg_color?:string;
   secondary_bg_color?:string;
@@ -177,6 +194,26 @@ export function showTelegramMainButton(text:string,onClick:()=>void):void{
   button.onClick?.(handler);
   button.show?.();
   w[key]=handler;
+}
+
+export async function verifyTelegramSession(apiBaseUrl?:string):Promise<TelegramAuthResult>{
+  const tg=getTelegramWebApp();
+  const initData=tg?.initData;
+  const base=(apiBaseUrl||import.meta.env.VITE_TELEGRAM_AUTH_URL||"").replace(/\\/$/,"");
+  if(!tg||!initData||!base)return {ok:false,error:"AUTH_SERVICE_UNAVAILABLE"};
+  try{
+    const response=await fetch(base+"/api/auth/telegram",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({initData}),
+      credentials:"omit",
+      cache:"no-store"
+    });
+    const payload=await response.json() as TelegramAuthResult;
+    return response.ok&&payload.ok?payload:{ok:false,error:payload.error||"AUTH_FAILED"};
+  }catch{
+    return {ok:false,error:"AUTH_SERVICE_UNAVAILABLE"};
+  }
 }
 
 export function openExternalUrl(url:string):void{
