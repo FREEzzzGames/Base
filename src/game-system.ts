@@ -1,15 +1,15 @@
 export type GameRace="human"|"elf"|"orc"|"dwarf";
 export type GameTab="story"|"character"|"skills"|"achievements"|"journal";
-export interface GameState{race:GameRace|null;level:number;xp:number;step:number;health:number;energy:number;stats:{strength:number;endurance:number;mind:number;awareness:number;influence:number};skills:{exploration:number;negotiation:number;survival:number;knowledge:number;observation:number;will:number};reputation:{human:number;elf:number;orc:number;dwarf:number};achievements:string[];abilities:string[];abilityPoints:number;known:string[];promises:string[];choices:string[]}
-const KEY="freezzz:game-state:v2";
+export interface GameState{race:GameRace|null;level:number;xp:number;step:number;health:number;energy:number;mysteryClues:string[];mysteryRevealed:boolean;stats:{strength:number;endurance:number;mind:number;awareness:number;influence:number};skills:{exploration:number;negotiation:number;survival:number;knowledge:number;observation:number;will:number};reputation:{human:number;elf:number;orc:number;dwarf:number};achievements:string[];abilities:string[];abilityPoints:number;known:string[];promises:string[];choices:string[]}
+const KEY="freezzz:game-state:v3";
 const RACES:Record<GameRace,{name:string;gender:string;role:string;icon:string;description:string;stats:GameState["stats"]}>={
  human:{name:"Человек",gender:"Парень",role:"Маг",icon:"○",description:"Маг-исследователь. Развивает разум, знания и силу заклинаний через изучение мира.",stats:{strength:4,endurance:5,mind:8,awareness:5,influence:6}},
  elf:{name:"Эльф",gender:"Девушка",role:"Лучник",icon:"✧",description:"Лучница-наблюдатель. Развивает внимание, исследование и точность через наблюдение.",stats:{strength:5,endurance:4,mind:6,awareness:9,influence:5}},
  orc:{name:"Орк",gender:"Девушка",role:"Воин",icon:"◇",description:"Воительница испытаний. Развивает выносливость, волю и боевые навыки через испытания.",stats:{strength:9,endurance:9,mind:3,awareness:5,influence:3}},
  dwarf:{name:"Гном",gender:"Парень",role:"Вор",icon:"△",description:"Вор и мастер скрытности. Развивает наблюдение, исследование и знания через поиск секретов.",stats:{strength:5,endurance:6,mind:7,awareness:8,influence:4}}
 };
-const DEFAULT_STATE:GameState={race:null,level:1,xp:0,step:1,health:72,energy:60,stats:{strength:5,endurance:5,mind:5,awareness:5,influence:5},skills:{exploration:0,negotiation:0,survival:0,knowledge:0,observation:0,will:0},reputation:{human:50,elf:0,orc:0,dwarf:0},achievements:[],abilities:[],abilityPoints:0,known:[],promises:[],choices:[]};
-export function loadGameState():GameState{try{const raw=localStorage.getItem(KEY);if(!raw)return structuredClone(DEFAULT_STATE);const p=JSON.parse(raw) as Partial<GameState>;return {...structuredClone(DEFAULT_STATE),...p,stats:{...DEFAULT_STATE.stats,...p.stats},skills:{...DEFAULT_STATE.skills,...p.skills},reputation:{...DEFAULT_STATE.reputation,...p.reputation},abilities:[...(p.abilities||[])],abilityPoints:p.abilityPoints||0}}catch{return structuredClone(DEFAULT_STATE)}}
+const DEFAULT_STATE:GameState={race:null,level:1,xp:0,step:1,health:72,energy:60,mysteryClues:[],mysteryRevealed:false,stats:{strength:5,endurance:5,mind:5,awareness:5,influence:5},skills:{exploration:0,negotiation:0,survival:0,knowledge:0,observation:0,will:0},reputation:{human:50,elf:0,orc:0,dwarf:0},achievements:[],abilities:[],abilityPoints:0,known:[],promises:[],choices:[]};
+export function loadGameState():GameState{try{const raw=localStorage.getItem(KEY);if(!raw)return structuredClone(DEFAULT_STATE);const p=JSON.parse(raw) as Partial<GameState>;return {...structuredClone(DEFAULT_STATE),...p,mysteryClues:[...(p.mysteryClues||[])],mysteryRevealed:Boolean(p.mysteryRevealed),stats:{...DEFAULT_STATE.stats,...p.stats},skills:{...DEFAULT_STATE.skills,...p.skills},reputation:{...DEFAULT_STATE.reputation,...p.reputation},abilities:[...(p.abilities||[])],abilityPoints:p.abilityPoints||0}}catch{return structuredClone(DEFAULT_STATE)}}
 export function saveGameState(s:GameState){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}}
 export function restartGame():GameState{const n=structuredClone(DEFAULT_STATE);try{localStorage.removeItem(KEY)}catch{}return n}
 export function chooseRace(s:GameState,r:GameRace):GameState{const base=RACES[r];const n={...structuredClone(DEFAULT_STATE),race:r,stats:{...base.stats}};saveGameState(n);return n}
@@ -55,16 +55,48 @@ function bars(s:GameState){return [["Сила","✦",s.stats.strength],["Вын�
 function tabs(t:GameTab){return [["story","▤"],["character","○"],["skills","✦"],["achievements","◆"],["journal","▤"]].map(x=>'<button class="'+(t===x[0]?"active":"")+'" data-game-tab="'+x[0]+'" type="button">'+x[1]+'</button>').join("")}
 function racePicker(){return '<div class="game-rpg game-race-picker"><div class="game-intro"><span>FREEzzz STORY · FOUR PATHS</span><h2>КТО ТЫ?</h2><p>У каждого персонажа своя история, система развития навыков и способы открытия способностей.</p></div><div class="race-grid">'+(Object.keys(RACES) as GameRace[]).map(r=>{const x=RACES[r];return '<button class="race-card" data-game-race="'+r+'" type="button"><span>'+x.icon+'</span><strong>'+x.name+'</strong><small>'+x.description+'</small><em>Сила '+x.stats.strength+' · Разум '+x.stats.mind+' · Внимание '+x.stats.awareness+'</em></button>'}).join("")+'</div></div>'}
 function abilityPanel(s:GameState){const list=ABILITIES[s.race!];return '<div class="game-abilities"><div class="game-panel-title"><span>СПОСОБНОСТИ</span><small>Очки '+s.abilityPoints+'</small></div>'+list.map(a=>'<div class="game-ability '+(s.abilities.includes(a.name)?"unlocked":"locked")+'"><span>'+(s.abilities.includes(a.name)?"◆":"?")+'</span><div><b>'+a.name+'</b><small>'+a.desc+'</small></div></div>').join("")+'</div>'}
+const MYSTERY_CLUES:Record<GameRace,string[]>={
+ human:[
+  "На полях старой карты повторяется знак четырёх лучей. Рядом нет объяснения, только стёртая дата.",
+  "Один из древних текстов откликается на магию, но в нём намеренно отсутствует последняя строка.",
+  "На камне у дальней дороги найден тот же знак. Он старше местных поселений, хотя никто не помнит, кто его оставил.",
+  "Четвёртый фрагмент показывает: твои странные находки были частями одной записи, разделённой между четырьмя народами."
+ ],
+ elf:[
+  "В лесу птицы замолкают у дерева с четырьмя тонкими зарубками. Причина неизвестна.",
+  "В забытом саду найден серебряный лист с тем же знаком, который не принадлежит ни одному известному роду.",
+  "Старая тропа ведёт к каменной арке, но её символы намеренно повреждены так, будто кто-то скрывал имена.",
+  "Последний след подтверждает: лес хранил не отдельную тайну, а часть общей истории, которую четыре народа когда-то скрыли."
+ ],
+ orc:[
+  "Старейшины узнают знак четырёх лучей, но каждый раз замолкают, когда речь заходит о его происхождении.",
+  "На горном пути найден камень с древней зарубкой. Она сделана тем же способом, что и знак на оружии предков, но смысл забыт.",
+  "В руинах крепости обнаружено имя, которое выскоблено из всех сохранившихся списков. Рядом стоят четыре одинаковых метки.",
+  "Последняя улика показывает: запрет старейшин был не тайной одного племени, а частью общего решения четырёх народов."
+ ],
+ dwarf:[
+  "В старой мастерской найден чертёж без названия. В углах стоят четыре одинаковых знака, будто это части одного механизма.",
+  "Механизм открывает только один фрагмент схемы. Кто его создал и зачем, мастерская не говорит.",
+  "В тайном проходе обнаружен тот же узор и дата, совпадающая с записями из других земель.",
+  "Последний чертёж собирает всё воедино: мастерская была частью хранилища общей памяти, которую четыре народа сознательно разделили."
+ ]
+};
+function mysteryFor(s:GameState){return MYSTERY_CLUES[s.race!][Math.min(3,Math.max(0,s.step-1))]}
+function addMysteryClue(n:GameState){const clue=mysteryFor(n);if(clue&&!n.mysteryClues.includes(clue))n.mysteryClues.push(clue)}
 function story(s:GameState){
  const r=s.race!, scenes=SCENES[r];
  if(s.step>scenes.length){
-  const finalChoice=s.step===scenes.length+1;
-  const text="Человек-маг, эльфийка-лучница, гном-вор и орчиха-воин приходят к древней границе с четырёх сторон. В тишине старого зала загораются четыре знака. Их дороги, начавшиеся в разных землях, сходятся здесь, и герои впервые видят друг друга. Перед ними открывается карта, на которой отмечено место за дальними горами — место, о котором все четверо слышали в своих отдельных странствиях.";
-  const thought="Четыре дороги, четыре дара и одна тайна. Отныне путь каждого станет частью общего странствия.";
-  const choices=finalChoice
-   ? '<button data-game-choice="convergence" type="button"><b>◆</b> Принять пророчество и объединиться</button>'
-   : '<button data-game-choice="prologue2" type="button"><b>◆</b> Открыть предсказание следующей части</button>';
-  return '<section class="game-story game-finale"><div class="game-scene"><div class="scene-stars">✦ · ✦ · · ✦</div><div class="scene-moon">◐</div><div class="scene-fire">♨</div><div class="scene-silhouette">♟ · ♟ · ♟ · ♟</div><small>ЧЕТЫРЕ ПУТИ · ОДНА СУДЬБА</small></div><article class="game-dialog"><span class="game-speaker">ФИНАЛ ПЕРВОЙ ЧАСТИ</span><p>'+text+'</p><span class="game-speaker">ПРЕДСКАЗАНИЕ</span><p class="game-thought">'+thought+'</p></article><div class="game-choices">'+choices+'</div></section>';
+  const resolved=s.mysteryRevealed;
+  const text=resolved
+   ? "В древнем зале четыре знака складываются в единую печать. Теперь становится ясно, что загадки каждой дороги не были случайностью. Четыре народа когда-то заключили Первый Союз, а затем сами разделили его память на четыре части, чтобы ни один народ не смог завладеть древним источником силы в одиночку. Каждый из героев нёс ключ к одной части, не зная об этом. Старые следы, замолчанные имена, серебряный лист и незаконченный чертёж были не зовом извне, а следами давно принятого решения их предков. Великая интрига раскрыта: легенды о вражде скрывали не предательство одного народа, а добровольное забвение всех четырёх. Герои возвращают память целиком — и на этом их первая история завершена."
+   : "Человек-маг, эльфийка-лучница, гном-вор и орчиха-воин приходят к древней границе с четырёх сторон. В тишине старого зала загораются четыре знака. Их дороги, начавшиеся в разных землях, сходятся здесь, и герои впервые видят друг друга. Перед ними лежат четыре фрагмента одной старой тайны — и каждый узнаёт в ней собственную улику.";
+  const thought=resolved
+   ? "Не было избранного одного. Не было тайного врага одного. Была память, которую четыре народа однажды решили разделить — и которую теперь четыре человека смогли собрать обратно."
+   : "Четыре дороги, четыре дара и одна тайна. Последняя разгадка ждёт не в будущем странствии, а здесь, в памяти четырёх народов.";
+  const choices=resolved
+   ? '<div class="game-ending-seal"><b>◆ ИСТОРИЯ ЗАВЕРШЕНА</b><small>Четыре пути сошлись. Тайна раскрыта. Эта часть имеет окончательный финал.</small></div>'
+   : '<button data-game-choice="convergence" type="button"><b>◆</b> Соединить четыре улики и раскрыть тайну</button>';
+  return '<section class="game-story game-finale"><div class="game-scene"><div class="scene-stars">✦ · ✦ · · ✦</div><div class="scene-moon">◐</div><div class="scene-fire">♨</div><div class="scene-silhouette">♟ · ♟ · ♟ · ♟</div><small>ЧЕТЫРЕ ПУТИ · ОДНА ТАЙНА</small></div><article class="game-dialog"><span class="game-speaker">ФИНАЛ · ПОСЛЕДНЯЯ ЗАГАДКА</span><p>'+text+'</p><span class="game-speaker">РАЗГАДКА</span><p class="game-thought">'+thought+'</p></article><div class="game-choices">'+choices+'</div></section>';
  }
  const scene=scenes[s.step-1];
  const thought="Я — "+RACES[r].name+". Этот путь принадлежит мне.";
@@ -79,11 +111,11 @@ export function applyGameChoice(s:GameState,c:string):GameState{
  const n={...structuredClone(s),choices:[...s.choices,c],known:[...s.known],promises:[...s.promises],achievements:[...s.achievements],abilities:[...s.abilities]};
  if(c==="prologue2"||c==="convergence"){
   if(c==="prologue2"){n.known.push("Пророчество: четыре героя должны встретиться.");n.achievements.push("Финал первой части");}
-  if(c==="convergence"){n.known.push("Четыре героя приняли общий путь.");n.promises.push("Во второй части действовать одной командой.");n.achievements.push("Команда предначертана");}
+  if(c==="convergence"){n.known.push("Четыре улики собраны в одну историю.");n.known.push("Разгадка: Первый Союз был разделён самими четырьмя народами, чтобы древняя сила не стала собственностью одного народа.");n.promises.push("Хранить восстановленную память и не повторять старую ошибку разделения.");n.achievements.push("Великая тайна раскрыта");n.mysteryRevealed=true;}
   n.step+=1;saveGameState(n);return n;
  }
  const scene=SCENES[n.race!].flatMap(x=>x.choices).find(x=>x.id===c);if(!scene)return n;
- const gained=gainSkill(n,scene.skill);n.xp+=scene.xp+gained*4;
+ const gained=gainSkill(n,scene.skill);n.xp+=scene.xp+gained*4;addMysteryClue(n);
  if(n.race==="elf")n.known.push("Точная деталь замечена.");
  if(n.race==="human"&&n.skills.negotiation>0)n.reputation.human=Math.min(100,n.reputation.human+1);
  if(n.race==="orc")n.energy=Math.max(25,n.energy-2);
