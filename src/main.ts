@@ -342,6 +342,7 @@ function render(){
 
     </div>`;
   bind();
+  applyDeveloperLayout();
   if(view==="game")startGame();
   if(view==="home")ensureHomeRefresh();
 }
@@ -506,8 +507,27 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-profile-card]").forEach(function(x){
     x.onclick=function(e){e.stopPropagation();};
   });
+  document.querySelectorAll<HTMLElement>("[data-dev-mode-toggle]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();toggleDeveloperMode();};
+  });
   document.querySelectorAll<HTMLElement>("[data-developer-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
+  });
+  document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
+  });
+  document.querySelectorAll<HTMLInputElement>("[data-dev-control]").forEach(function(x){
+    x.oninput=function(){
+      const name=x.dataset.devControl as keyof LayoutOverride;
+      updateDeveloperControl(name,Number(x.value));
+    };
+  });
+  document.querySelector("[data-dev-reset]")?.addEventListener("click",e=>{e.preventDefault();resetDeveloperBlock();});
+  document.querySelector("[data-dev-reset-all]")?.addEventListener("click",e=>{e.preventDefault();resetDeveloperLayout();});
+  document.querySelector("[data-dev-preview]")?.addEventListener("click",e=>{
+    e.preventDefault();developerMode=false;developerOpen=false;
+    try{localStorage.setItem("freezzz:dev-mode","user");}catch{}
+    render();
   });
   document.querySelectorAll<HTMLElement>("[data-developer-close]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=false;render();};
