@@ -209,29 +209,123 @@ const MYSTERY_CLUES:Record<GameRace,string[]>={
 };
 function mysteryFor(s:GameState){return MYSTERY_CLUES[s.race!][Math.min(3,Math.max(0,s.step-1))]}
 function addMysteryClue(n:GameState){const clue=mysteryFor(n);if(clue&&!n.mysteryClues.includes(clue))n.mysteryClues.push(clue)}
-function story(s:GameState){
- const r=s.race!,scenes=SCENES[r];
+function localizeStateText(lang:GameLanguage,value:string){
+ if(lang==="RU")return value;
+ const exact:Record<string,{DE:string;EN:string}>={
+  "Магическое знание расширяет путь героя.":{DE:"Magisches Wissen erweitert den Weg des Helden.",EN:"Magical knowledge broadens the hero's path."},
+  "Лучница заметила деталь, скрытую от других.":{DE:"Die Bogenschützin bemerkte ein Detail, das anderen verborgen blieb.",EN:"The archer noticed a detail hidden from others."},
+  "Вор обнаружил скрытую деталь.":{DE:"Der Dieb entdeckte ein verborgenes Detail.",EN:"The thief discovered a hidden detail."},
+  "Это решение останется частью твоего пути.":{DE:"Diese Entscheidung bleibt Teil deines Weges.",EN:"This decision will remain part of your journey."}
+ };
+ if(exact[value])return exact[value][lang];
+ if(value.startsWith("Открыта способность: ")){const name=value.slice(20),x=ABILITY_LOCALE[lang][name];return (lang==="DE"?"Fähigkeit freigeschaltet: ": "Ability unlocked: ")+(x?.name||name);}
+ if(value.startsWith("Новый уровень · ")){const name=value.slice(16),race=(Object.keys(RACES) as GameRace[]).find(x=>RACES[x].name===name);return (lang==="DE"?"Neue Stufe · ":"New level · ")+(race?RACE_LOCALE[lang][race].name:name);}
+ if(value.startsWith("Куплено: ")){const name=value.slice(9),idx=SHOP_ITEMS.findIndex(x=>x.name===name);return (lang==="DE"?"Gekauft: ":"Purchased: ")+(idx>=0?GAME_EXTRA[lang].shop.names[idx]:name);}
+ if(value.startsWith("Мини-квест выполнен: ")){return lang==="DE"?"Nebenaufgabe abgeschlossen": "Side quest completed";}
+ return value;
+}
+function localizedFlag(s:GameState,lang:GameLanguage,value:string){
+ if(!value.startsWith("action:"))return localizeStateText(lang,value);
+ const scene=sceneFor(lang,s.race!,Math.min(3,Math.max(0,s.step-1)));
+ const a=scene.actions[value.slice(7)];
+ return a?a.object+" · "+a.label:value;
+}
+function story(s:GameState,lang:GameLanguage){
+ const r=s.race!,scenes=SCENES[r],index=Math.min(3,Math.max(0,s.step-1)),scene=sceneFor(lang,r,index),ui=GAME_EXTRA[lang].actions,fin=FINAL_LOCALE[lang];
  if(s.step>scenes.length){
   const resolved=s.mysteryRevealed;
-  const text=resolved
-   ? "В древнем зале четыре знака складываются в одну печать. Теперь понятно: четыре народа когда-то договорились хранить одну общую историю, но разделили её на четыре части и спрятали каждую у себя. Карта, серебряный лист, старое имя и чертёж оказались частями одной записи. Никто никого не предавал: все четыре народа сами решили забыть эту историю, потому что боялись повторить старую ошибку. Теперь память снова собрана."
-   : "Четыре дороги приводят к древней границе. В зале загораются четыре знака, и каждый герой узнаёт в них собственную улику. Осталось соединить найденные фрагменты.";
-  const thought=resolved
-   ? "Здесь не оказалось одного виноватого. Четыре народа сами сделали этот выбор. И только четыре человека смогли вернуть то, что их предки разделили."
-   : "Все четыре истории сходятся в одной точке. Первый Союз был разделён на части, чтобы его память не исчезла совсем.";
-  const choices=resolved
-   ? '<div class="game-ending-seal"><b>◆ ИСТОРИЯ ЗАВЕРШЕНА</b><small>Четыре пути сошлись. Тайна раскрыта. История завершена.</small></div>'
-   : '<button data-game-choice="convergence" type="button"><b>◆</b> Соединить четыре улики и узнать правду</button>';
-  return '<section class="game-story game-finale"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>ЧЕТЫРЕ ПУТИ · ОДНА ТАЙНА</small></div><article class="game-dialog"><span class="game-speaker">ФИНАЛ · ПОСЛЕДНЯЯ ЗАГАДКА</span><p>'+text+'</p><span class="game-speaker">РАЗГАДКА</span><p class="game-thought">'+thought+'</p></article><div class="game-choices">'+choices+'</div></section>';
+  const choices=resolved?'<div class="game-ending-seal"><b>'+fin.seal+'</b><small>'+fin.keepMemory+'</small></div>':'<button data-game-choice="convergence" type="button"><b>◆</b> '+({RU:"Соединить четыре улики и узнать правду",DE:"Die vier Hinweise verbinden und die Wahrheit erfahren",EN:"Join the four clues and uncover the truth"}[lang])+'</button>';
+  return '<section class="game-story game-finale"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+fin.sceneLabel+'</small></div><article class="game-dialog"><span class="game-speaker">'+fin.lastRiddle+'</span><p>'+(resolved?fin.resolved:fin.unresolved)+'</p><span class="game-speaker">'+fin.solution+'</span><p class="game-thought">'+(resolved?fin.thoughtResolved:fin.thoughtUnresolved)+'</p></article><div class="game-choices">'+choices+'</div></section>';
  }
- const scene=scenes[s.step-1];
  if(s.outcome){
-  return '<section class="game-story game-consequence"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+scene.object+'</small></div><article class="game-dialog"><span class="game-speaker">ПОСЛЕДСТВИЕ · '+RACES[r].name.toUpperCase()+'</span><p>'+s.outcome+'</p><span class="game-speaker">МИР ЗАПОМНИЛ</span><p class="game-thought">'+(s.worldFlags[s.worldFlags.length-1]||"Это решение останется частью твоего пути.")+'</p></article><div class="game-choices"><button data-game-choice="continue" type="button"><b>→</b> Продолжить путь</button></div></section>';
+  const source=SCENES[r][index].actions.find(a=>a.id===s.lastAction),localized=source?scene.actions[s.lastAction||""]:null;
+  const outcome=localized?.outcome||localizeStateText(lang,s.outcome);
+  const remembered=s.worldFlags.length?localizedFlag(s,lang,s.worldFlags[s.worldFlags.length-1]):ui.noAnswer;
+  return '<section class="game-story game-consequence"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+(localized?.object||scene.object)+'</small></div><article class="game-dialog"><span class="game-speaker">'+ui.consequence+' · '+RACE_LOCALE[lang][r].name.toUpperCase()+'</span><p>'+outcome+'</p><span class="game-speaker">'+ui.remembered+'</span><p class="game-thought">'+remembered+'</p></article><div class="game-choices"><button data-game-choice="continue" type="button"><b>→</b> '+ui.continue+'</button></div></section>';
  }
- const choices=scene.actions.map((a,i)=>'<button data-game-choice="'+a.id+'" type="button"><b>'+(i+1)+'</b><span><strong>'+a.label+'</strong><small>'+a.object+' · '+a.skill.toUpperCase()+'</small></span></button>').join("");
- return '<section class="game-story"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+scene.object+'</small></div><article class="game-dialog"><span class="game-speaker">'+RACES[r].name.toUpperCase()+' · ГЛАВА '+s.step+'</span><p>'+scene.text+'</p><span class="game-speaker">ЧТО ТЫ СДЕЛАЕШЬ?</span><p class="game-thought">Нет правильного ответа. Мир запомнит способ, которым ты поступил.</p></article><div class="game-choices">'+choices+'</div></section>';
+ const choices=SCENES[r][s.step-1].actions.map((base,i)=>{const a=scene.actions[base.id],skill=SKILL_LOCALE[lang][base.skill];return '<button data-game-choice="'+base.id+'" type="button"><b>'+(i+1)+'</b><span><strong>'+a.label+'</strong><small>'+a.object+' · '+skill.toUpperCase()+'</small></span></button>';}).join("");
+ return '<section class="game-story"><div class="game-scene game-ambient-scene" data-game-ambient-host><small>'+scene.object+'</small></div><article class="game-dialog"><span class="game-speaker">'+RACE_LOCALE[lang][r].name.toUpperCase()+' · '+ui.chapter+' '+s.step+'</span><p>'+scene.text+'</p><span class="game-speaker">'+ui.what+'</span><p class="game-thought">'+ui.noAnswer+'</p></article><div class="game-choices">'+choices+'</div></section>';
 }
-export function renderGame(s:GameState,t:GameTab,lang:GameLanguage="RU"):string{if(!s.race)return racePicker();const r=RACES[s.race];let p="";if(t==="story")p=story(s);if(t==="character")p='<section class="game-panel"><div class="game-panel-title"><span>ХАРАКТЕРИСТИКИ</span><small>LVL '+s.level+' · XP '+s.xp+'/'+levelNeed(s.race!,s.level)+'</small></div>'+bars(s)+abilityPanel(s)+'</section>';if(t==="quests")p=questPanel(s);if(t==="shop")p=shopPanel(s);if(t==="skills")p='<section class="game-panel"><div class="game-panel-title"><span>НАВЫКИ</span><small>'+r.gender+' · '+r.role+'</small></div>'+SKILLS.map(x=>'<div class="game-skill"><span>'+x[2]+' '+x[1]+'</span><b>'+s.skills[x[0]]+'</b><em><u style="width:'+Math.min(100,s.skills[x[0]]*20)+'%"></u></em></div>').join("")+abilityPanel(s)+'</section>';if(t==="achievements")p='<section class="game-panel"><div class="game-panel-title"><span>АЧИВКИ</span><small>'+s.achievements.length+' открыто</small></div>'+((s.achievements.length?s.achievements:["Первый шаг","???","???"]).map(a=>'<div class="game-achievement '+(a==="???"?"locked":"")+'"><span>'+(a==="???"?"?":"◆")+'</span><div><b>'+a+'</b><small>'+(a==="???"?"Скрытое достижение":"Получено по ходу истории")+'</small></div></div>').join(""))+'</section>';if(t==="journal")p='<section class="game-panel"><div class="game-panel-title"><span>ЖУРНАЛ</span><small>Глава '+s.step+' · '+r.name+'</small></div><div class="game-journal"><b>Улики</b>'+((s.mysteryClues.length?s.mysteryClues:["Пока нет найденных фрагментов."]).map(x=>'<p>✓ '+x+'</p>').join(""))+'<b>Мир помнит</b>'+((s.worldFlags.length?s.worldFlags:["Пока решений нет."]).map(x=>'<p>◆ '+x+'</p>').join(""))+'<b>Обещания</b>'+((s.promises.length?s.promises:["Пока нет."]).map(x=>'<p>○ '+x+'</p>').join(""))+'</div></section>';return '<div class="game-rpg game-race-'+s.race+' game-tab-'+t+'" data-game-root data-race="'+s.race+'" data-game-tab="'+t+'"><header class="game-player-head"><div class="game-avatar">'+r.icon+'</div><div><strong>'+r.name+' · '+r.role+'</strong><small>'+r.gender+' · Уровень '+s.level+'</small></div><div class="game-vitals"><span>♥ '+s.health+'</span><span>⚡ '+s.energy+'</span><button class="game-restart" data-game-restart type="button">Новая игра</button></div></header><nav class="game-tabs">'+tabs(t)+'</nav>'+p+'</div>'}
+function levelNeed(r:GameRace,level:number){return ({human:90,elf:100,orc:110,dwarf:105}[r])*Math.max(1,level)}
+function unlockAbilities(n:GameState){const r=n.race!;const has=(x:string)=>n.abilities.includes(x);const unlock=(x:string)=>{if(!has(x)){n.abilities.push(x);n.abilityPoints++;n.achievements.push("Открыта способность: "+x)}};if(r==="human"){if(n.skills.knowledge>=2||n.skills.will>=2)unlock("Искра маны");if(Object.values(n.skills).filter(v=>v>0).length>=4)unlock("Арканное чутьё")}if(r==="elf"){if(n.skills.observation>=2)unlock("Меткий взгляд");if(n.skills.observation+n.skills.exploration>=6)unlock("Следопыт")}if(r==="orc"){if(n.skills.survival>=2||n.skills.will>=2)unlock("Боевой дух");if(n.skills.survival+n.skills.will>=6)unlock("Несокрушимая воля")}if(r==="dwarf"){if(n.skills.observation>=2||n.skills.exploration>=2)unlock("Тихая рука");if(n.known.length>=3)unlock("Вскрытие тайны")}}
+function gainSkill(n:GameState,skill:keyof GameState["skills"]){let amount=1;const r=n.race!;if(r==="human"&&(skill==="knowledge"||skill==="will"))amount=2;if(r==="elf"&&(skill==="observation"||skill==="exploration"))amount=2;if(r==="orc"&&(skill==="survival"||skill==="will"||skill==="exploration"))amount=2;if(r==="dwarf"&&(skill==="knowledge"||skill==="observation"||skill==="exploration"))amount=2;n.skills[skill]+=amount;if(r==="human"&&(skill==="knowledge"||skill==="will"))n.known.push("Магическое знание расширяет путь героя.");if(r==="elf"&&(skill==="observation"||skill==="exploration"))n.known.push("Лучница заметила деталь, скрытую от других.");if(r==="orc"&&(skill==="survival"||skill==="will"))n.energy=Math.min(100,n.energy+4);if(r==="dwarf"&&(skill==="knowledge"||skill==="observation"||skill==="exploration"))n.known.push("Вор обнаружил скрытую деталь.");return amount}
+
+function completeQuestForAction(n:GameState,skill:keyof GameState["skills"]){
+ const q=n.miniQuests.find(x=>x.progress<x.goal&&questSkill(x.kind)===skill);
+ if(q){q.progress=q.goal;return;}
+}
+function buyItem(n:GameState,id:string):GameState{
+ const item=SHOP_ITEMS.find(x=>x.id===id);if(!item||n.coins<item.price)return n;
+ n.coins-=item.price;
+ if(id==="heal")n.health=Math.min(100,n.health+20);
+ if(id==="energy")n.energy=Math.min(100,n.energy+20);
+ if(id==="focus"){
+  const key:nkey = n.race==="human"?"knowledge":n.race==="elf"?"observation":n.race==="orc"?"survival":"exploration";
+  n.skills[key]++;
+ }
+ if(id==="insight")n.xp+=18;
+ n.known.push("Куплено: "+item.name);
+ return n;
+}
+type nkey=keyof GameState["skills"];
+export function applyGameChoice(s:GameState,c:string):GameState{
+ const n={...structuredClone(s),choices:[...s.choices],known:[...s.known],promises:[...s.promises],achievements:[...s.achievements],abilities:[...s.abilities],worldFlags:[...s.worldFlags]};
+ if(c.startsWith("buy:")){buyItem(n,c.slice(4));saveGameState(n);return n;}
+ if(c.startsWith("claim:")){
+  const q=n.miniQuests.find(x=>x.id===c.slice(6)&&x.progress>=x.goal);
+  if(q){n.coins+=q.reward;n.completedQuests++;n.miniQuests=createMiniQuests(n);n.known.push("Мини-квест выполнен: "+q.title);}
+  saveGameState(n);return n;
+ }
+ if(c==="convergence"){
+  n.known.push("Четыре улики собраны в одну историю.");
+  n.known.push("Разгадка: Первый Союз был разделён самими четырьмя народами, чтобы древняя сила не стала собственностью одного народа.");
+  n.promises.push("Хранить восстановленную память и не повторять старую ошибку разделения.");
+  n.achievements.push("Великая тайна раскрыта");
+  n.mysteryRevealed=true;
+  n.outcome=null;n.lastAction=null;
+  n.step+=1;saveGameState(n);return n;
+ }
+ if(c==="continue"){
+  addMysteryClue(n);
+  n.step+=1;n.outcome=null;n.lastAction=null;
+  saveGameState(n);return n;
+ }
+ const action=SCENES[n.race!].flatMap(x=>x.actions).find(x=>x.id===c);
+ if(!action)return n;
+ n.choices.push(c);
+ const gained=gainSkill(n,action.skill);
+ n.xp+=action.xp+gained*4;completeQuestForAction(n,action.skill);
+ n.outcome=action.outcome;
+ n.lastAction=c;
+ n.worldFlags.push("action:"+action.id);
+ if(n.worldFlags.length>12)n.worldFlags=n.worldFlags.slice(-12);
+ if(n.race==="human"&&action.skill==="negotiation")n.reputation.human=Math.min(100,n.reputation.human+2);
+ if(n.race==="elf"&&(action.skill==="observation"||action.skill==="exploration"))n.known.push("Лучница заметила деталь, скрытую от других.");
+ if(n.race==="orc"&&action.skill==="survival")n.energy=Math.min(100,n.energy+4);
+ if(n.race==="dwarf"&&action.skill==="knowledge")n.abilityPoints++;
+ unlockAbilities(n);
+ const need=levelNeed(n.race!,n.level);
+ if(n.xp>=need){
+  n.xp-=need;n.level++;n.achievements.push("Новый уровень · "+RACES[n.race!].name);
+  if(n.race==="human")n.stats.influence++;
+  if(n.race==="elf")n.stats.awareness++;
+  if(n.race==="orc")n.stats.endurance++;
+  if(n.race==="dwarf")n.stats.mind++;
+ }
+ saveGameState(n);return n;
+}export function renderGame(s:GameState,t:GameTab,lang:GameLanguage="RU"):string{
+ if(!s.race)return racePicker(lang);
+ const r=s.race,rl=RACE_LOCALE[lang][r],ui=GAME_EXTRA[lang],skills=SKILL_LOCALE[lang];
+ let p="";
+ if(t==="story")p=story(s,lang);
+ if(t==="character")p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.stats+'</span><small>LVL '+s.level+' · XP '+s.xp+'/'+levelNeed(r,s.level)+'</small></div>'+bars(s,lang)+abilityPanel(s,lang)+'</section>';
+ if(t==="quests")p=questPanel(s,lang);
+ if(t==="shop")p=shopPanel(s,lang);
+ if(t==="skills")p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.skills+'</span><small>'+rl.gender+' · '+rl.role+'</small></div>'+SKILLS.map(x=>'<div class="game-skill"><span>'+x[2]+' '+skills[x[0]]+'</span><b>'+s.skills[x[0]]+'</b><em><u style="width:'+Math.min(100,s.skills[x[0]]*20)+'%"></u></em></div>').join("")+abilityPanel(s,lang)+'</section>';
+ if(t==="achievements"){const list=s.achievements.length?s.achievements:["Первый шаг","???","???"];p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.achievements+'</span><small>'+s.achievements.length+' '+ui.actions.openCount+'</small></div>'+list.map(a=>'<div class="game-achievement '+(a==="???"?"locked":"")+'"><span>'+(a==="???"?"?":"◆")+'</span><div><b>'+localizeStateText(lang,a)+'</b><small>'+(a==="???"?ui.actions.hidden:ui.actions.earned)+'</small></div></div>').join("")+'</section>';}
+ if(t==="journal"){const clues=s.mysteryClues.length?s.mysteryClues:[];const flags=s.worldFlags.length?s.worldFlags:[];const promises=s.promises.length?s.promises:[];p='<section class="game-panel"><div class="game-panel-title"><span>'+ui.actions.journal+'</span><small>'+ui.actions.chapter+' '+s.step+' · '+rl.name+'</small></div><div class="game-journal"><b>'+ui.clues+'</b>'+(clues.length?clues.map(x=>'<p>✓ '+x+'</p>').join(""):'<p>✓ '+ui.none+'</p>')+'<b>'+ui.remembered+'</b>'+(flags.length?flags.map(x=>'<p>◆ '+localizedFlag(s,lang,x)+'</p>').join(""):'<p>◆ '+ui.none+'</p>')+'<b>'+ui.promises+'</b>'+(promises.length?promises.map(x=>'<p>○ '+localizeStateText(lang,x)+'</p>').join(""):'<p>○ '+ui.none+'</p>')+'</div></section>';}
+ return '<div class="game-rpg game-race-'+r+' game-tab-'+t+'" data-game-root data-race="'+r+'" data-game-tab="'+t+'"><header class="game-player-head"><div class="game-avatar">'+RACES[r].icon+'</div><div><strong>'+rl.name+' · '+rl.role+'</strong><small>'+rl.gender+' · '+ui.level+' '+s.level+'</small></div><div class="game-vitals"><span>♥ '+s.health+'</span><span>⚡ '+s.energy+'</span><button class="game-restart" data-game-restart type="button">'+ui.newGame+'</button></div></header><nav class="game-tabs">'+tabs(t,lang)+'</nav>'+p+'</div>';
+}
 function levelNeed(r:GameRace,level:number){return ({human:90,elf:100,orc:110,dwarf:105}[r])*Math.max(1,level)}
 function unlockAbilities(n:GameState){const r=n.race!;const has=(x:string)=>n.abilities.includes(x);const unlock=(x:string)=>{if(!has(x)){n.abilities.push(x);n.abilityPoints++;n.achievements.push("Открыта способность: "+x)}};if(r==="human"){if(n.skills.knowledge>=2||n.skills.will>=2)unlock("Искра маны");if(Object.values(n.skills).filter(v=>v>0).length>=4)unlock("Арканное чутьё")}if(r==="elf"){if(n.skills.observation>=2)unlock("Меткий взгляд");if(n.skills.observation+n.skills.exploration>=6)unlock("Следопыт")}if(r==="orc"){if(n.skills.survival>=2||n.skills.will>=2)unlock("Боевой дух");if(n.skills.survival+n.skills.will>=6)unlock("Несокрушимая воля")}if(r==="dwarf"){if(n.skills.observation>=2||n.skills.exploration>=2)unlock("Тихая рука");if(n.known.length>=3)unlock("Вскрытие тайны")}}
 function gainSkill(n:GameState,skill:keyof GameState["skills"]){let amount=1;const r=n.race!;if(r==="human"&&(skill==="knowledge"||skill==="will"))amount=2;if(r==="elf"&&(skill==="observation"||skill==="exploration"))amount=2;if(r==="orc"&&(skill==="survival"||skill==="will"||skill==="exploration"))amount=2;if(r==="dwarf"&&(skill==="knowledge"||skill==="observation"||skill==="exploration"))amount=2;n.skills[skill]+=amount;if(r==="human"&&(skill==="knowledge"||skill==="will"))n.known.push("Магическое знание расширяет путь героя.");if(r==="elf"&&(skill==="observation"||skill==="exploration"))n.known.push("Лучница заметила деталь, скрытую от других.");if(r==="orc"&&(skill==="survival"||skill==="will"))n.energy=Math.min(100,n.energy+4);if(r==="dwarf"&&(skill==="knowledge"||skill==="observation"||skill==="exploration"))n.known.push("Вор обнаружил скрытую деталь.");return amount}
