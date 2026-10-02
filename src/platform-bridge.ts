@@ -5,6 +5,11 @@ export interface TelegramWebAppBridge{
   openTelegramLink?:(url:string)=>void;
   disableVerticalSwipes?:()=>void;
   platform?:string;
+  initDataUnsafe?:{
+    user?:{
+      language_code?:string;
+    };
+  };
 }
 
 export function getTelegramWebApp():TelegramWebAppBridge|null{
