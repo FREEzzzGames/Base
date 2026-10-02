@@ -3806,3 +3806,52 @@ main{
   position:relative!important;
   z-index:1!important;
 }
+
+/* ================================================================
+   MASTER NEON BACKGROUND — BRIGHT RED
+   HOME blocks + HUD/sidebar backing layer
+   ================================================================ */
+main{
+  background:#ff1018!important;
+}
+.home-portal{
+  background:#ff1018!important;
+}
+.home-portal::before{
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255,48,58,1) 0%,
+      rgba(255,18,30,.99) 38%,
+      rgba(225,0,18,.98) 72%,
+      rgba(175,0,12,1) 100%)!important;
+  box-shadow:
+    inset 0 0 80px rgba(255,55,65,.95),
+    inset 0 0 180px rgba(255,0,20,.78)!important;
+}
+
+/* Red neon backing layer beneath the entire HUD block. */
+.portal-toolbar{
+  background:#ff1018!important;
+}
+.portal-toolbar::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255,45,55,1) 0%,
+      rgba(255,10,25,.99) 55%,
+      rgba(185,0,12,1) 100%)!important;
+  box-shadow:
+    inset 0 0 45px rgba(255,65,75,.95),
+    inset 0 0 90px rgba(255,0,18,.72)!important;
+}
+.portal-toolbar-background-video{
+  z-index:1!important;
+}
+.portal-toolbar-main{
+  position:relative!important;
+  z-index:2!important;
+}
