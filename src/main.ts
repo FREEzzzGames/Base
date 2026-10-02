@@ -378,7 +378,7 @@ function homeCard(v:View,e:string,t:string,content:string){
     chat:"https://cdn.pixabay.com/video/2022/04/25/115036-703067759_large.mp4",
     game:"https://cdn.pixabay.com/video/2019/12/17/30300-380713848_large.mp4",
     radio:"https://cdn.pixabay.com/video/2019/10/02/27466-363961185_large.mp4",
-    library:"https://cdn.pixabay.com/video/2020/11/15/56485-479679949_large.mp4"
+    library:"https://cdn.pixabay.com/video/2022/12/05/141675-778335011_large.mp4"
   };
   const background=backgrounds[v];
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
