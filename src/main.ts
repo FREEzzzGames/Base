@@ -344,7 +344,11 @@ function render(){
 
   if(view==="library"){
     body=`
-      <div class="content portal-layout" data-portal-layout="library">
+      <div class="content portal-layout library-portal" data-portal-layout="library">
+        <video class="library-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+          <source src="https://cdn.pixabay.com/video/2020/11/15/56485-479679949_large.mp4" type="video/mp4">
+        </video>
+        <div class="library-background-overlay" aria-hidden="true"></div>
         <section class="hero portal-block" data-portal-block="content">
           <h2>LIBRARY</h2>
           <p>${T("libraryLocal")}</p>
