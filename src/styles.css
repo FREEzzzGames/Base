@@ -1289,7 +1289,7 @@ main{
   cursor:grab;
 }
 [data-portal-block][data-dev-selected="true"]::after{
-  content:"✋";
+  content:"✣";
   position:absolute;
   right:8px;
   top:8px;
@@ -1394,4 +1394,113 @@ main{
   .race-grid{grid-template-columns:1fr}
   .race-card{min-height:116px}
   .game-scene{min-height:165px}
+}
+
+/* READABILITY + TYPOGRAPHY SYSTEM — portal-wide */
+.ui-icon{
+  display:inline-grid;
+  place-items:center;
+  width:1.35em;
+  height:1.35em;
+  flex:0 0 1.35em;
+  font-family:inherit;
+  font-size:1.08em;
+  font-weight:600;
+  line-height:1;
+  letter-spacing:0;
+  color:currentColor;
+  stroke:none;
+}
+.home-card-icon .ui-icon,
+.stream-icon,
+.profile-icon,
+.nav-icon{
+  font-family:inherit;
+  font-size:1.15em;
+  font-weight:600;
+}
+.profile-button .ui-icon{font-size:25px}
+.topbar .nav-icon{font-size:22px}
+.bottom-nav-item .ui-icon{
+  font-family:inherit;
+  font-size:23px;
+  font-weight:600;
+  line-height:1;
+}
+.bottom-nav-home .ui-icon{font-size:25px}
+
+/* Larger readable content while preserving the established Handjet font. */
+.content,
+.content button,
+.content input,
+.content textarea{
+  font-family:inherit;
+}
+.section-head h1,.section-head h2{font-size:24px}
+.section-head p{font-size:15px}
+.hero h1,.hero h2{font-size:28px}
+.hero p{font-size:15px;line-height:1.5}
+.card strong{font-size:18px}
+.card span{font-size:14px;line-height:1.45}
+.stream b{font-size:17px}
+.stream small{font-size:13px}
+.tg-button{font-size:14px}
+.chat p{font-size:15px;line-height:1.55;padding:11px 13px}
+.chat p b{font-size:16px}
+.chat-message-body{display:block;min-width:0}
+.chat-emoji{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  font-family:system-ui,sans-serif;
+  font-size:22px;
+  line-height:1;
+}
+.chat p{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+.chat p br{display:block}
+.radio-heading h3{font-size:24px}
+.radio-heading p{font-size:15px;line-height:1.45}
+.radio-now-playing h3{font-size:20px}
+.radio-now-playing p{font-size:14px}
+.radio-genres button{font-size:13px}
+.game-intro h2{font-size:30px}
+.game-intro p{font-size:14px;line-height:1.55}
+.race-card strong{font-size:18px}
+.race-card small{font-size:12px;line-height:1.45}
+.race-card em{font-size:10px}
+.game-player-head strong{font-size:17px}
+.game-player-head small{font-size:13px}
+.game-vitals{font-size:13px}
+.game-tabs button{font-size:20px}
+.game-dialog p{font-size:15px;line-height:1.6}
+.game-speaker{font-size:10px}
+.game-choices button{font-size:14px;line-height:1.35}
+.game-panel-title span{font-size:13px}
+.game-panel-title small{font-size:11px}
+.game-stat span,.game-skill span{font-size:13px}
+.game-stat b,.game-skill b{font-size:13px}
+.game-achievement b{font-size:14px}
+.game-achievement small{font-size:11px}
+.game-journal b{font-size:11px}
+.game-journal p{font-size:13px}
+@media(max-width:520px){
+  .section-head h1,.section-head h2{font-size:23px}
+  .section-head p{font-size:14px}
+  .card strong{font-size:17px}
+  .card span{font-size:13px}
+  .stream b{font-size:16px}
+  .stream small{font-size:12px}
+  .tg-button{font-size:13px}
+  .chat p{font-size:14px}
+  .game-intro h2{font-size:28px}
+  .game-intro p{font-size:13px}
+  .race-card strong{font-size:17px}
+  .race-card small{font-size:11px}
+  .game-dialog p{font-size:14px}
 }
