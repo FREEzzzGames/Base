@@ -52,12 +52,16 @@ const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolea
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
-try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(!localStorage.getItem("freezzz:language")){if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}}catch{}
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
 const telegramAuth=await verifyTelegramSession();
 const verifiedTelegramIdentity:TelegramVerifiedIdentity|undefined=telegramAuth.ok&&telegramAuth.user?telegramAuth.user:undefined;
+if(!localStorage.getItem("freezzz:language")){
+  const code=verifiedTelegramIdentity?.languageCode?.toUpperCase()||"";
+  if(code.startsWith("DE"))lang="DE";
+  else if(code.startsWith("EN"))lang="EN";
+}
 let portalProfile:PortalProfile=loadPortalProfile(verifiedTelegramIdentity);
 syncPortalIdentity(portalProfile,verifiedTelegramIdentity);
 startPortalSession(portalProfile);
