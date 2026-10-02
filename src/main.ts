@@ -48,13 +48,13 @@ function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
   }catch{return {};}
 }
 const portalSession=loadPortalSessionSnapshot();
-const portalState=createPlatformState({view:(portalSession.view||"home") as View,language:"RU",telegram:Boolean(getTelegramWebApp())});
+const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 let view:View=portalState.view;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(!localStorage.getItem("freezzz:language")){if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}}catch{}
 const T=(key:string)=>pt(lang,key);
-let profileOpen=Boolean(portalSession.profileOpen);
+let profileOpen=false;
 let portalProfile:PortalProfile=loadPortalProfile();
 syncPortalIdentity(portalProfile);
 startPortalSession(portalProfile);
@@ -112,7 +112,7 @@ function syncGameAmbient(){
   if(!gameAmbientHost){
     gameAmbientHost=document.createElement("div");
     gameAmbientHost.className="game-ambient-player";
-    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">'+icon("mute","ambient-control-icon")+'</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'>'+icon("pause","ambient-control-icon")+'</button></div>';
+    gameAmbientHost.innerHTML='<iframe title="'+T("fireVideo")+'" src="https://www.youtube.com/embed/8KrLtLr-Gy8?autoplay=1&mute=1&loop=1&playlist=8KrLtLr-Gy8&playsinline=1&controls=1&enablejsapi=1&rel=0&origin='+encodeURIComponent(location.origin)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="game-ambient-controls"><button type="button" data-ambient-mute aria-label="'+T("soundOn")+'">'+icon("mute","ambient-control-icon")+'</button><button type="button" data-ambient-play aria-label="'+T("pauseVideo")+'">'+icon("pause","ambient-control-icon")+'</button></div>';
     bindGameAmbientControls();
   }
   if(!target.contains(gameAmbientHost))target.appendChild(gameAmbientHost);
@@ -159,7 +159,7 @@ function flushActivityTracking(){
   if(radioActivityStartedAt!==null&&radioActivityName){addRadioListenTime(portalProfile,radioActivityName,elapsed);radioActivityStartedAt=now;}
 }
 function beginGameActivity(){if(gameActivityStartedAt!==null)return;gameActivityStartedAt=Date.now();recordGameLaunch(portalProfile);}
-function endGameActivity(){if(gameActivityStartedAt===null)return;addGameTime(portalProfile,(Date.now()-gameActivityStartedAt)/1000);gameActivityStartedAt=null;}
+function endGameActivity(){if(gameActivityStartedAt===null)return;flushActivityTracking();gameActivityStartedAt=null;}
 function beginLiveActivity(name:string){if(liveActivityStartedAt!==null&&liveActivityName===name)return;if(liveActivityStartedAt!==null)flushActivityTracking();liveActivityName=name;liveActivityStartedAt=Date.now();recordLiveVisit(portalProfile,name);}
 function endLiveActivity(){if(liveActivityStartedAt===null)return;flushActivityTracking();liveActivityStartedAt=null;liveActivityName="";}
 function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
@@ -221,6 +221,7 @@ function renderPortalToolbar(){
 }
 
 function render(){
+  if(view!=="home"&&homeRefreshTimer!==null){window.clearInterval(homeRefreshTimer);homeRefreshTimer=null;}
   savePortalSessionSnapshot();
   let body="";
 
@@ -457,9 +458,11 @@ function playRadioStation(id:string){
   void radioAudio.play().then(()=>{radioPlaybackStatus="playing";}).catch(()=>{radioPlaybackStatus="failed";radioError=T("autoplayError");}).finally(()=>render());
 }
 portalEvents.on("navigation:changed",payload=>{
+  const previousView=view;
   flushActivityTracking();
-  if(view==="game"&&payload.view!=="game")endGameActivity();
-  if(view!=="game"&&payload.view==="game")beginGameActivity();
+  if(previousView==="game"&&payload.view!=="game")endGameActivity();
+  if(previousView!=="game"&&payload.view==="game")beginGameActivity();
+  if(previousView==="live"&&payload.view!=="live"){endLiveActivity();livePopupOpen=false;liveSelected="";}
   view=payload.view;
   portalState.view=payload.view;
   render();
@@ -467,7 +470,7 @@ portalEvents.on("navigation:changed",payload=>{
 window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
 window.setInterval(()=>flushActivityTracking(),15000);
-window.addEventListener("pagehide",()=>{flushActivityTracking();endGameActivity();endLiveActivity();endRadioActivity();});
+window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bind(){
   if(view==="radio"){
