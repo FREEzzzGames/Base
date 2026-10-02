@@ -19,6 +19,9 @@ export type PortalEventMap={
   "profile:toggled":{open:boolean};
   "live:popup":{open:boolean;source:"twitch"|"youtube"};
   "radio:playback":{status:string};
+  "mihi:state":{layer:number;context:string;attention:number;visible:boolean};
+  "mihi:request-action":{actionId:string;source:"mihi"};
+  "mihi:easter-egg":{id:string;title:string};
 };
 
 type Handler<T>=(payload:T)=>void;
