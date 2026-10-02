@@ -3,6 +3,7 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 import { renderDeveloperDiagnostics } from "./developer-tools";
+import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 
 initPortalPalette();
 
@@ -50,11 +51,13 @@ async function checkForPortalUpdate(){
 }
 void checkForPortalUpdate();
 
-type View = "home"|"live"|"chat"|"game"|"radio"|"library";
+type View = PortalView;
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-let view:View="home";
-let lang="RU";
+const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
+const portalEvents=new PortalEventBus();
+let view:View=portalState.view;
+let lang=portalState.language;
 const DEVELOPER_TOOLS_ENABLED = import.meta.env.DEV || import.meta.env.VITE_FREEZZ_DEV_TOOLS === "1";
 let developerOpen=false;
 const LUCIDE_ICONS:Record<string,string>={
@@ -379,6 +382,13 @@ function livePopupMarkup():string{
     </section>
   </div>`;
 }
+portalEvents.on("navigation:changed",payload=>{
+  view=payload.view;
+  portalState.view=payload.view;
+  render();
+});
+window.addEventListener("online",()=>{portalState.online=true;});
+window.addEventListener("offline",()=>{portalState.online=false;});
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
@@ -409,8 +419,7 @@ function bind(){
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next)return;
-      view=next;
-      render();
+      portalEvents.emit("navigation:changed",{view:next});
     };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
@@ -523,8 +532,7 @@ function bindPortalSwipeNavigation(){
     if(index<0)return;
     const nextIndex=dx<0?Math.min(order.length-1,index+1):Math.max(0,index-1);
     if(nextIndex===index)return;
-    view=order[nextIndex];
-    render();
+    portalEvents.emit("navigation:changed",{view:order[nextIndex]});
   },{passive:true});
 }
 function escapeHtml(s:string){
