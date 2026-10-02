@@ -3024,3 +3024,18 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 
 
 /* PUBLISH SYNC — toolbar/HERO profile changes are authoritative on main. */
+
+
+/* PORTAL TOOLBAR VIDEO DIM — background only, 50%. */
+.portal-toolbar::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  background:rgba(0,0,0,.50)!important;
+  pointer-events:none!important;
+}
+.portal-toolbar > .portal-toolbar-main{
+  position:relative!important;
+  z-index:1!important;
+}
