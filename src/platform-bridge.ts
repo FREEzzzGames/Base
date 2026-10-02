@@ -64,6 +64,11 @@ export interface TelegramWebAppBridge{
   offEvent?:(event:string,callback:()=>void)=>void;
 }
 
+export function getTelegramWebApp():TelegramWebAppBridge|null{
+  const candidate=(window as Window&{Telegram?:{WebApp?:TelegramWebAppBridge}}).Telegram?.WebApp;
+  return candidate||null;
+}
+
 function setTelegramCssVariable(name:string,value?:string):void{
   if(value)document.documentElement.style.setProperty(name,value);
 }
