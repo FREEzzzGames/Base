@@ -1,0 +1,12 @@
+{
+  "name": "freezzz-telegram-auth",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
