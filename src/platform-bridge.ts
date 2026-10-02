@@ -29,6 +29,7 @@ export interface TelegramWebAppBridge{
   isExpanded?:boolean;
   viewportStableHeight?:number;
   safeAreaInset?:{top?:number;bottom?:number;left?:number;right?:number};
+  contentSafeAreaInset?:{top?:number;bottom?:number;left?:number;right?:number};
   themeParams?:TelegramThemeParams;
   colorScheme?:"light"|"dark";
   version?:string;
@@ -93,6 +94,11 @@ export function applyTelegramTheme(tg:TelegramWebAppBridge):void{
       if(typeof value==="number")root.style.setProperty("--tg-safe-"+key, value+"px");
     }
   }
+  if(tg.contentSafeAreaInset){
+    for(const [key,value] of Object.entries(tg.contentSafeAreaInset)){
+      if(typeof value==="number")root.style.setProperty("--tg-content-safe-area-inset-"+key, value+"px");
+    }
+  }
 }
 
 function syncTelegramViewport(tg:TelegramWebAppBridge):void{
@@ -117,6 +123,8 @@ export function initTelegramBridge():void{
   if(tg.platform)document.documentElement.dataset.telegramPlatform=tg.platform;
   tg.onEvent?.("themeChanged",()=>applyTelegramTheme(tg));
   tg.onEvent?.("viewportChanged",()=>syncTelegramViewport(tg));
+  tg.onEvent?.("safeAreaChanged",()=>applyTelegramTheme(tg));
+  tg.onEvent?.("contentSafeAreaChanged",()=>applyTelegramTheme(tg));
 }
 
 export function bindTelegramBackButton(enabled:boolean,onBack:()=>void):void{
