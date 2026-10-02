@@ -3733,3 +3733,47 @@ main{
   .home-portal{height:calc(100dvh - 2px)!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;grid-template-areas:"hero hero" "live chat" "game radio" "library library"!important;gap:1px!important}
   .portal-toolbar{top:1px!important;bottom:1px!important}
 }
+
+/* ================================================================
+   WORK AREA GEOMETRY — HUD AND HOME SHARE THE SAME GRID ROW
+   ================================================================ */
+.app-shell{
+  height:100dvh!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  overflow:hidden!important;
+}
+.app-shell > main{
+  grid-row:2!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  padding-top:1px!important;
+  padding-bottom:1px!important;
+  padding-left:calc(56px + 1px + var(--tg-content-safe-area-inset-left,0px))!important;
+  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+}
+.app-shell > .portal-toolbar{
+  grid-row:2!important;
+  grid-column:1!important;
+  position:absolute!important;
+  top:1px!important;
+  bottom:1px!important;
+  left:0!important;
+  width:56px!important;
+  height:auto!important;
+  margin:0!important;
+}
+.app-shell > main .home-portal{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+}
+
+/* Primary-block rhythm: HUD is part of the same 1px system. */
+.app-shell > main{
+  --portal-primary-gap:1px;
+}
