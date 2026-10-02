@@ -2645,6 +2645,16 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 }
 
 
+/* HOME HERO — RESTORED BASE SCALE */
+.home-portal > .home-hero{
+  position:relative!important;
+  width:100%!important;
+  aspect-ratio:4 / 1!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+
 /* HOME HERO: remote video background */
 .home-hero{
   position:relative;
