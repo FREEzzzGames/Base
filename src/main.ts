@@ -118,7 +118,7 @@ const streams:LiveStream[]=[
 
 function currentLayoutOverride(key:string):LayoutOverride{
   const value=layoutOverrides[key];
-  return value?{width:100,height:0,x:0,y:0,order:0,...value}:{width:100,height:0,x:0,y:0,order:0};
+  return value?value:{width:100,height:0,x:0,y:0,order:0};
 }
 function saveDeveloperLayout(){try{localStorage.setItem(DEV_LAYOUT_KEY,JSON.stringify(layoutOverrides));}catch{}}
 const PORTAL_EDITABLE_BLOCKS:Record<View,readonly string[]>={
@@ -162,7 +162,7 @@ function updateDeveloperControl(name:keyof LayoutOverride,value:number){
 }
 function resetDeveloperBlock(){if(!developerSelectedBlock)return;delete layoutOverrides[developerSelectedBlock];saveDeveloperLayout();render();}
 function resetDeveloperLayout(){layoutOverrides={};saveDeveloperLayout();render();}
-function renderDeveloperPanel(){return renderDeveloperDiagnostics({version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,telegram:portalState.telegram,online:portalState.online,modules:PORTAL_MODULES,developerMode,selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()});}
+function renderDeveloperPanel(){return renderDeveloperDiagnostics({version:PORTAL_VERSION,build:PORTAL_BUILD_ID,view,language:lang,telegram:portalState.telegram,online:portalState.online,modules:PORTAL_MODULES.map(module=>module.id),developerMode,selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()});}
 function toggleDeveloperMode(){developerMode=!developerMode;developerOpen=developerMode;try{localStorage.setItem("freezzz:dev-mode",developerMode?"developer":"user");}catch{};render();}
 function render(){
   let body="";
