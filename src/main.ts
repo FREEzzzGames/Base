@@ -9,6 +9,7 @@ import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverride
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
 import { renderLivePopup } from "./live-runtime";
+import { drawDuckBlast } from "./game-runtime";
 
 initTelegramBridge();
 import { PORTAL_MODULES, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
@@ -287,7 +288,7 @@ function render(){
     </div>`;
   bind();
   applyDeveloperLayout();
-  if(view==="game")startGame();
+  if(view==="game")drawDuckBlast(document.querySelector<HTMLCanvasElement>('#canvas')!,player);
   if(view==="home")ensureHomeRefresh();
 }
 
@@ -503,7 +504,7 @@ function bind(){
       if(!gameActive)return;
       const rect=gameSurface.getBoundingClientRect();
       player=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-      startGame();
+      drawDuckBlast(document.querySelector<HTMLCanvasElement>('#canvas')!,player);
     },{passive:false});
     gameSurface.addEventListener("pointerup",()=>{
       if(gameActive){gameActive=false;score++;const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;}
@@ -519,27 +520,7 @@ function escapeHtml(s:string){
   });
 }
 
-function startGame(){
-  const c=document.querySelector<HTMLCanvasElement>("#canvas");
-  if(!c)return;
-  const r=c.getBoundingClientRect();
-  c.width=Math.max(320,r.width);
-  c.height=Math.max(420,r.height);
-  const x=c.getContext("2d")!;
-  x.fillStyle="#080d12";
-  x.fillRect(0,0,c.width,c.height);
-  x.fillStyle="#ffd166";
-  x.beginPath();
-  x.arc(c.width*.5,c.height*.2,20,0,Math.PI*2);
-  x.fill();
-  x.fillStyle="#35e0a1";
-  x.beginPath();
-  x.moveTo(c.width*player,c.height*.8);
-  x.lineTo(c.width*player-28,c.height*.9);
-  x.lineTo(c.width*player+28,c.height*.9);
-  x.closePath();
-  x.fill();
-}
+
 
 render();
 if(view==="home"&&!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
