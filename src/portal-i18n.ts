@@ -18,7 +18,7 @@ RU:{
  visits:"виз.",plays:"прослуш.",telegramProfile:"Профиль Telegram",telegramIdentityUnavailable:"Идентификатор Telegram недоступен"
 },
 DE:{
- welcome:"Willkommen bei FREEzzz.",fontSize:"Textgröße",fontSizeGame:"Textgröße im Spiel",normal:"Normal",large:"Groß",largest:"Am größten",
+ welcome:"Willkommen bei FREEzzz.",
  soundOn:"Ton einschalten",soundOff:"Ton ausschalten",pauseVideo:"Video anhalten",resumeVideo:"Video fortsetzen",
  fireVideo:"Waldfeuer – Spielatmosphäre",close:"Schließen",sessions:"Sitzungen",gameLaunches:"GAME-Starts",gameTime:"GAME-Zeit",liveTime:"LIVE-Zeit",radioTime:"Radio-Zeit",chatMessages:"CHAT-Nachrichten",playTime:"Spielzeit",launches:"Starts",noViews:"Noch keine Aufrufe.",noRadio:"Noch keine Wiedergaben.",
  liveCard:"LIVE — Streamer & Kanäle",chatCard:"CHAT — Unterhaltung",gameCard:"GAME — Spielbereich",radioCard:"RADIO — Musik",libraryCard:"LIBRARY — Bibliothek",
@@ -34,7 +34,7 @@ DE:{
  visits:"Besuche",plays:"Wiedergaben",telegramProfile:"Telegram-Profil",telegramIdentityUnavailable:"Telegram-Identität nicht verfügbar"
 },
 EN:{
- welcome:"Welcome to FREEzzz.",fontSize:"Text size",fontSizeGame:"Text size in game",normal:"Normal",large:"Large",largest:"Largest",
+ welcome:"Welcome to FREEzzz.",
  soundOn:"Turn sound on",soundOff:"Turn sound off",pauseVideo:"Pause video",resumeVideo:"Resume video",
  fireVideo:"Forest fire — game atmosphere",close:"Close",sessions:"Sessions",gameLaunches:"GAME launches",gameTime:"GAME time",liveTime:"LIVE time",radioTime:"Radio time",chatMessages:"CHAT messages",playTime:"Play time",launches:"Launches",noViews:"No views yet.",noRadio:"No listening history yet.",
  liveCard:"LIVE — Streamers & Channels",chatCard:"CHAT — Community",gameCard:"GAME — Game Zone",radioCard:"RADIO — Music",libraryCard:"LIBRARY — Library",
