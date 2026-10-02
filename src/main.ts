@@ -220,8 +220,8 @@ function editorBlockMarkup(block:EditorBlock,index:number){
     '<div class="editor-block-drag" data-editor-drag-handle="'+escapeHtml(block.id)+'" title="Удерживай и перемещай" aria-label="Переместить блок">⠿</div>'+
     '<div class="editor-block-preview"><span class="editor-block-type">'+escapeHtml(block.id)+'</span>'+
     '<input class="editor-block-label" data-editor-label="'+escapeHtml(block.id)+'" value="'+escapeHtml(block.label)+'" maxlength="80" aria-label="Подпись блока"></div>'+
-    '<div class="editor-block-actions"><button type="button" class="editor-move" data-editor-move="-1" data-editor-id="'+escapeHtml(block.id)+'" aria-label="Выше">▲</button>'+
-    '<button type="button" class="editor-move" data-editor-move="1" data-editor-id="'+escapeHtml(block.id)+'" aria-label="Ниже">▼</button></div>'+
+    '<div class="editor-block-actions" aria-label="Перемещение блока выполняется свайпом или перетаскиванием">'+
+    '<span class="editor-drag-hint">SWIPE</span></div>'+
     '<span class="editor-resize-handle" data-editor-resize="'+escapeHtml(block.id)+'" title="Изменить размер" aria-label="Изменить размер"></span></article>';
 }
 
@@ -361,11 +361,10 @@ function render(){
           <div><h2>GAME</h2><p>DUCK BLAST</p></div>
           <button class="tg-button secondary" data-view="home">⌂</button>
         </div>
-        <div class="game portal-block" data-portal-block="game"><canvas id="canvas"></canvas><b id="score">SCORE ${score}</b></div>
-        <div class="controls portal-block" data-portal-block="controls">
-          <button data-move="-0.1">◀</button>
-          <button data-fire>🚀 FIRE</button>
-          <button data-move="0.1">▶</button>
+        <div class="game portal-block" data-portal-block="game" data-game-touch><canvas id="canvas"></canvas><b id="score">SCORE ${score}</b></div>
+        <div class="controls portal-block touch-controls" data-portal-block="controls">
+          <button data-fire type="button">TOUCH / FIRE</button>
+          <span>Проведи пальцем по полю для перемещения</span>
         </div>
       </div>`;
   }
@@ -765,10 +764,59 @@ function bind(){
   });
   document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
-  document.querySelectorAll<HTMLElement>("[data-move]").forEach(function(x){x.onclick=function(){player=Math.max(0,Math.min(1,player+Number(x.dataset.move)));};});
-  document.querySelector("[data-fire]")?.addEventListener("click",function(){score++;const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;});
+  document.querySelector("[data-fire]")?.addEventListener("click",function(){
+    score++;
+    const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;
+  });
+  const gameSurface=document.querySelector<HTMLElement>("[data-game-touch]");
+  if(gameSurface){
+    let gameStartX=0;
+    let gameActive=false;
+    gameSurface.addEventListener("pointerdown",e=>{
+      if((e.target as HTMLElement).closest("button"))return;
+      gameStartX=e.clientX;
+      gameActive=true;
+      gameSurface.setPointerCapture?.(e.pointerId);
+    },{passive:false});
+    gameSurface.addEventListener("pointermove",e=>{
+      if(!gameActive)return;
+      const rect=gameSurface.getBoundingClientRect();
+      player=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+      startGame();
+    },{passive:false});
+    gameSurface.addEventListener("pointerup",()=>{
+      if(gameActive){gameActive=false;score++;const s=document.querySelector("#score");if(s)s.textContent="SCORE "+score;}
+    });
+    gameSurface.addEventListener("pointercancel",()=>{gameActive=false;});
+  }
+  bindPortalSwipeNavigation();
 }
 
+function bindPortalSwipeNavigation(){
+  const root=document.querySelector<HTMLElement>(".app-shell");
+  if(!root||root.dataset.swipeBound==="true")return;
+  root.dataset.swipeBound="true";
+  const order:View[]=["home","live","chat","game","radio","library"];
+  let startX=0,startY=0,startTime=0,pointerId:number|null=null;
+  root.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    const target=e.target as HTMLElement;
+    if(target.closest("input,textarea,button,a,select,[data-editor-drag],[data-editor-resize],.editor-overlay"))return;
+    startX=e.clientX;startY=e.clientY;startTime=Date.now();pointerId=e.pointerId;
+  },{passive:true});
+  root.addEventListener("pointerup",e=>{
+    if(pointerId!==e.pointerId)return;
+    pointerId=null;
+    const dx=e.clientX-startX,dy=e.clientY-startY,dt=Date.now()-startTime;
+    if(dt>650||Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    const index=order.indexOf(view);
+    if(index<0)return;
+    const nextIndex=dx<0?Math.min(order.length-1,index+1):Math.max(0,index-1);
+    if(nextIndex===index)return;
+    view=order[nextIndex];
+    render();
+  },{passive:true});
+}
 function escapeHtml(s:string){
   return s.replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c;
