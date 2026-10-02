@@ -4147,3 +4147,55 @@ main{
 .portal-toolbar-main{
   z-index:2!important;
 }
+
+/* ================================================================
+   PRIMARY FRAME — ABSOLUTE TOP VISUAL LAYER
+   Frames sit above video, overlays and block content.
+   HUD inner controls are explicitly excluded.
+   ================================================================ */
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  position:relative!important;
+  isolation:isolate!important;
+}
+.home-portal > .home-hero::before,
+.home-portal > .home-card::before,
+.home-portal > .home-library::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:999!important;
+  pointer-events:none!important;
+  border:2px solid #000!important;
+  box-shadow:
+    inset 0 0 0 2px #000,
+    inset 0 0 2px 2px rgba(0,0,0,.95)!important;
+  box-sizing:border-box!important;
+}
+
+/* HUD shell frame is above its video/content, but below its controls. */
+.portal-toolbar{
+  position:absolute!important;
+  isolation:isolate!important;
+}
+.portal-toolbar::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:999!important;
+  pointer-events:none!important;
+  border:2px solid #000!important;
+  box-shadow:
+    inset 0 0 0 2px #000,
+    inset 0 0 2px 2px rgba(0,0,0,.95)!important;
+  box-sizing:border-box!important;
+}
+.portal-toolbar-main{
+  position:relative!important;
+  z-index:1000!important;
+}
+.portal-toolbar-nav{
+  position:relative!important;
+  z-index:1001!important;
+}
