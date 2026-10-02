@@ -491,7 +491,7 @@ function bindHudTouchGesture(){
   document.addEventListener("pointerup",end,{passive:true});
   document.addEventListener("pointercancel",end,{passive:true});
 }
-\nfunction bind(){
+function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
