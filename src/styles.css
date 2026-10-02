@@ -3211,3 +3211,157 @@ main::-webkit-scrollbar{display:none}
   .home-portal{gap:10px}
   .home-card{padding:14px!important}
 }
+
+
+/* ================================================================
+   PERSISTENT TOP TOOLBAR
+   Telegram-style navigation inside the Mini App, below Telegram's
+   native header. Navigation remains available on every portal view.
+   ================================================================ */
+.portal-toolbar{
+  position:sticky;
+  top:0;
+  z-index:80;
+  width:100%;
+  box-sizing:border-box;
+  background:var(--tg-theme-bg-color,#fff);
+  border-bottom:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.10));
+  padding:0 max(6px,var(--tg-content-safe-area-inset-right,0px)) 0 max(6px,var(--tg-content-safe-area-inset-left,0px));
+}
+.portal-toolbar-main{
+  width:min(100%,760px);
+  min-height:52px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  align-items:center;
+  gap:6px;
+}
+.portal-toolbar-home,
+.portal-toolbar-profile,
+.portal-toolbar-item,
+.portal-toolbar-language button{
+  box-sizing:border-box;
+  border:0;
+  font:inherit;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.portal-toolbar-home,
+.portal-toolbar-profile{
+  width:44px;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:transparent;
+  color:var(--tg-theme-hint-color,#707579);
+}
+.portal-toolbar-home.active,
+.portal-toolbar-profile:active,
+.portal-toolbar-home:active{
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec));
+}
+.portal-toolbar-nav{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:2px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x;
+  padding:3px 0;
+}
+.portal-toolbar-nav::-webkit-scrollbar{display:none}
+.portal-toolbar-item{
+  flex:0 0 auto;
+  min-width:52px;
+  min-height:44px;
+  height:44px;
+  padding:4px 8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border-radius:10px;
+  background:transparent;
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:11px;
+  font-weight:600;
+  line-height:1;
+}
+.portal-toolbar-item .portal-toolbar-icon{
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+}
+.portal-toolbar-item.active{
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec));
+}
+.portal-toolbar-item:active,
+.portal-toolbar-home:active,
+.portal-toolbar-profile:active{
+  transform:none;
+}
+.portal-toolbar-actions{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex:0 0 auto;
+}
+.portal-toolbar-language{
+  display:flex;
+  align-items:center;
+  gap:1px;
+  padding:2px;
+  border-radius:9px;
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+}
+.portal-toolbar-language button{
+  min-width:30px;
+  min-height:32px;
+  height:32px;
+  padding:0 4px;
+  border-radius:7px;
+  background:transparent;
+  color:var(--tg-theme-hint-color,#707579);
+  font-size:10px;
+  font-weight:700;
+}
+.portal-toolbar-language button.active{
+  background:var(--tg-theme-button-color,#3390ec);
+  color:var(--tg-theme-button-text-color,#fff);
+}
+.portal-toolbar-profile{
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec));
+}
+.portal-toolbar-icon{
+  width:22px;
+  height:22px;
+  pointer-events:none;
+}
+.portal-toolbar-home .portal-toolbar-icon,
+.portal-toolbar-profile .portal-toolbar-icon{
+  width:24px;
+  height:24px;
+}
+@media(max-width:430px){
+  .portal-toolbar-main{grid-template-columns:40px minmax(0,1fr) auto;gap:4px}
+  .portal-toolbar-home,.portal-toolbar-profile{width:40px;min-width:40px;height:40px;min-height:40px}
+  .portal-toolbar-item{min-width:48px;padding:4px 6px;font-size:10px}
+  .portal-toolbar-item .portal-toolbar-icon{width:19px;height:19px}
+  .portal-toolbar-language button{min-width:28px;padding:0 3px}
+}
+@media(max-width:360px){
+  .portal-toolbar-main{grid-template-columns:40px minmax(0,1fr) 40px}
+  .portal-toolbar-language{display:none}
+  .portal-toolbar-nav{gap:1px}
+  .portal-toolbar-item{min-width:46px}
+}
