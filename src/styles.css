@@ -1863,6 +1863,7 @@ main{
     min-height:112px;
     padding:clamp(11px,3vw,15px);
   }
+}
   /* Wide screens can use the approved split home layout. */
 @media(min-width:700px){
   .home-portal{
@@ -2071,6 +2072,7 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   text-overflow:ellipsis;
   white-space:nowrap;
   font-size:13px!important;
+}
 }
 
 /* Section shell: same rhythm everywhere outside HOME. */
