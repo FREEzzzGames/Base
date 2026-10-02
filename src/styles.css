@@ -1368,3 +1368,28 @@ main{
   .touch-controls button{width:100%;min-width:0;height:38px}
   .touch-controls span{font-size:9px}
 }
+
+/* RADIO runtime layout safety: keep the station interface in normal document flow. */
+.portal-layout[data-portal-layout="radio"]{
+  display:block;
+  min-width:0;
+}
+.portal-layout[data-portal-layout="radio"] .radio-panel{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+}
+.portal-layout[data-portal-layout="radio"] .radio-carousel,
+.portal-layout[data-portal-layout="radio"] .radio-now-playing,
+.portal-layout[data-portal-layout="radio"] .radio-audio-host,
+.portal-layout[data-portal-layout="radio"] #radio-search-form,
+.portal-layout[data-portal-layout="radio"] .radio-genres{
+  position:relative;
+  width:100%;
+  box-sizing:border-box;
+}
+.portal-layout[data-portal-layout="radio"] .radio-genres{
+  align-items:center;
+  max-height:none;
+  overflow:visible;
+}
