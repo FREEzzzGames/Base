@@ -478,14 +478,16 @@ function render(){
     <div class="app-shell">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="profile-button" data-profile-toggle type="button" aria-label="Profile">${icon("user","profile-icon")}</button>
-          <nav class="lang-switch" aria-label="Language">
+          <button class="profile-button" data-profile-toggle type="button" aria-label="${T("profile")}">${icon("user","profile-icon")}</button>
+        </div>
+        <div class="topbar-right">
+          <nav class="lang-switch" aria-label="${T("language")}">
             <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
             <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
             <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
           </nav>
+${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="${T("constructor")}"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?T("developer"):T("user")}</small></button>`:""}
         </div>
-        ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?T("developer"):T("user")}</small></button>`:""}
       </header>
       <nav class="bottom-nav ${view==="game"?"bottom-nav-game":""} ${view==="game"&&gameNavRevealed?"game-nav-revealed":""}" aria-label="Portal navigation">
         <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
