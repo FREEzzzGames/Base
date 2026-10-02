@@ -15,7 +15,7 @@ RU:{
  gameStory:"FREEzzz STORY",fourRaces:"4 RACES",radioLoadingShort:"Загрузка станции…",stream:"стрим",radio:"радио",thanks:"спасибо",
  playError:"Не удалось воспроизвести поток этой станции.",autoplayError:"Нажми Play ещё раз — браузер заблокировал автозапуск.",
  profile:"Профиль",language:"Язык",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",homeDescription:"Твой интерактивный мир внутри одного портала.",platforms:"Twitch + YouTube",internetRadio:"Internet Radio",
- telegramProfile:"Профиль Telegram",telegramIdentityUnavailable:"Идентификатор Telegram недоступен"
+ visits:"виз.",plays:"прослуш.",telegramProfile:"Профиль Telegram",telegramIdentityUnavailable:"Идентификатор Telegram недоступен"
 },
 DE:{
  welcome:"Willkommen bei FREEzzz.",fontSize:"Textgröße",fontSizeGame:"Textgröße im Spiel",normal:"Normal",large:"Groß",largest:"Am größten",
@@ -31,7 +31,7 @@ DE:{
  gameStory:"FREEzzz STORY",fourRaces:"4 VÖLKER",radioLoadingShort:"Sender wird geladen…",stream:"Stream",radio:"Radio",thanks:"Danke",
  playError:"Der Stream dieses Senders konnte nicht wiedergegeben werden.",autoplayError:"Tippe erneut auf Play – der Browser hat den Autostart blockiert.",
  profile:"Profil",language:"Sprache",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",homeDescription:"Deine interaktive Welt in einem einzigen Portal.",platforms:"Twitch + YouTube",internetRadio:"Internetradio",
- telegramProfile:"Telegram-Profil",telegramIdentityUnavailable:"Telegram-Identität nicht verfügbar"
+ visits:"Besuche",plays:"Wiedergaben",telegramProfile:"Telegram-Profil",telegramIdentityUnavailable:"Telegram-Identität nicht verfügbar"
 },
 EN:{
  welcome:"Welcome to FREEzzz.",fontSize:"Text size",fontSizeGame:"Text size in game",normal:"Normal",large:"Large",largest:"Largest",
@@ -47,7 +47,7 @@ EN:{
  gameStory:"FREEzzz STORY",fourRaces:"4 RACES",radioLoadingShort:"Loading station…",stream:"stream",radio:"radio",thanks:"thanks",
  playError:"This station's stream could not be played.",autoplayError:"Press Play again — the browser blocked autoplay.",
  profile:"Profile",language:"Language",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",homeDescription:"Your interactive world inside one portal.",platforms:"Twitch + YouTube",internetRadio:"Internet Radio",
- telegramProfile:"Telegram profile",telegramIdentityUnavailable:"Telegram identity unavailable"
+ visits:"visits",plays:"listens",telegramProfile:"Telegram profile",telegramIdentityUnavailable:"Telegram identity unavailable"
 }
 };
 export function pt(lang:PortalLanguage,key:string){return PORTAL_I18N[lang][key]||PORTAL_I18N.RU[key]||key;}
