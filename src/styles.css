@@ -4100,3 +4100,50 @@ main{
     padding-left:calc(var(--portal-hud-width) + 3px + var(--tg-content-safe-area-inset-left,0px))!important;
   }
 }
+
+/* ================================================================
+   PRIMARY BLOCK FRAME + SHARED BLACK BACKING
+   HUD is a primary block. Internal HUD buttons remain untouched.
+   ================================================================ */
+
+/* One black surface underneath both the HUD and all HOME blocks. */
+main{
+  background:#000!important;
+}
+.home-portal{
+  background:#000!important;
+}
+
+/* Remove any colored backing from the master HOME layer. */
+.home-portal::before{
+  background:#000!important;
+  box-shadow:none!important;
+}
+
+/* Primary block frame: same 2px solid black + 2px inner spray. */
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library,
+.portal-toolbar{
+  border:2px solid #000!important;
+  box-shadow:
+    inset 0 0 0 2px #000,
+    inset 0 0 2px 2px rgba(0,0,0,.95)!important;
+}
+
+/* HUD frame belongs to the HUD shell only — never its buttons. */
+.portal-toolbar{
+  background:#000!important;
+}
+.portal-toolbar::before{
+  background:#000!important;
+  box-shadow:none!important;
+}
+
+/* Keep the HUD video/content layers intact above the shell. */
+.portal-toolbar-background-video{
+  z-index:1!important;
+}
+.portal-toolbar-main{
+  z-index:2!important;
+}
