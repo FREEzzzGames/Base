@@ -12,7 +12,6 @@ export class MihiModule{
   private model?:Mihi3DView;
   private offs:(()=>void)[]=[];
   private geometryObserver?:ResizeObserver;
-  private mutationObserver?:MutationObserver;
 
   constructor(private readonly events:PortalEventBus){
     this.engine=new MihiEngine(events);
@@ -37,10 +36,8 @@ export class MihiModule{
     this.model=new Mihi3DView(this.events);
     this.model.mount(root.querySelector<HTMLElement>("[data-mihi-3d-anchor]")!);
     this.syncGeometry();
-    const workspace=document.querySelector<HTMLElement>(".portal-workspace");
-    if(workspace){this.geometryObserver=new ResizeObserver(()=>this.syncGeometry());this.geometryObserver.observe(workspace);}
-    this.mutationObserver=new MutationObserver(()=>this.syncGeometry());
-    this.mutationObserver.observe(document.body,{childList:true,subtree:true});
+    const main=document.querySelector<HTMLElement>(".portal-workspace > main");
+    if(main){this.geometryObserver=new ResizeObserver(()=>this.syncGeometry());this.geometryObserver.observe(main);}
     window.addEventListener("resize",this.syncGeometry);
     root.querySelector("[data-mihi-toggle]")?.addEventListener("click",()=>this.toggle());
     root.querySelector("[data-mihi-close]")?.addEventListener("click",()=>this.close());
@@ -104,8 +101,6 @@ export class MihiModule{
     this.offs=[];
     this.geometryObserver?.disconnect();
     this.geometryObserver=undefined;
-    this.mutationObserver?.disconnect();
-    this.mutationObserver=undefined;
     window.removeEventListener("resize",this.syncGeometry);
     this.model?.dispose();
     this.model=undefined;
