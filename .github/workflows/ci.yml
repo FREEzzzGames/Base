@@ -25,11 +25,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: '24'
 
       - run: npm install
 
@@ -43,6 +43,35 @@ jobs:
           test -f src/live-runtime.ts
           test -f src/platform-bridge.ts
           test -f src/radio-config.ts
+          test ! -e src/game-runtime.ts
+          test ! -e scripts/fetch-tabler.mjs
+
+          # No removed UI/runtime features may return through stale source files.
+          if grep -RInE 'game-font|gameFont|data-game-font|font-size control|freezzz:game-font-size|constructor|editor-layout|data-editor-' src scripts package.json; then
+            echo "Obsolete runtime/UI traces detected."
+            exit 1
+          fi
+
+          # Validate every relative TypeScript import resolves to a source file.
+          node --input-type=module <<'NODE'
+          import { existsSync, readFileSync } from "node:fs";
+          import { dirname, resolve } from "node:path";
+          const roots = ["src/main.ts","src/core/portal-core.ts","src/game-i18n.ts","src/game-system.ts","src/live-runtime.ts","src/platform-bridge.ts","src/portal-i18n.ts","src/portal-ui.ts","src/profile-store.ts","src/radio-browser.ts","src/radio-config.ts"];
+          const missing = [];
+          for (const file of roots) {
+            const source = readFileSync(file, "utf8");
+            for (const match of source.matchAll(/from\\s+["'](\\.[^"']+)["']/g)) {
+              const base = resolve(dirname(file), match[1]);
+              const candidates = [base, base+".ts", base+".js"];
+              if (!candidates.some(existsSync)) missing.push(file+" -> "+match[1]);
+            }
+          }
+          if (missing.length) {
+            console.error(missing.join("\\n"));
+            process.exit(1);
+          }
+          console.log("RELATIVE_IMPORTS_OK");
+          NODE
 
           # Catch the exact class of regressions that previously appeared during
           # the main.ts extraction: missing shared exports and missing local handlers.
