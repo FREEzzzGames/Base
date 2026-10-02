@@ -63,6 +63,7 @@ let dev=interfaceMode==="editor";
 let profileOpen=false;
 let liveSelected="";
 let livePopupOpen=false;
+let livePopupSource:"twitch"|"youtube"="twitch";
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 let homeRefreshTimer:number|null=null;
 let score=0;
@@ -320,12 +321,20 @@ function icon(name:string,className=""){
   return `<svg class="ui-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 }
 
-const streams=[
-  ["video","Leb1ga","YouTube","https://www.youtube.com/@leb1ga"],
-  ["game","Dendi","YouTube","https://www.youtube.com/@Dendi"],
-  ["zap","Papaplatte","YouTube","https://www.youtube.com/@papaplatte"],
-  ["game","Marmok","YouTube","https://www.youtube.com/@Marmok"],
-  ["rocket","Trymacs","Twitch","https://www.twitch.tv/trymacs"]
+type LiveStream={icon:string;name:string;twitch:string;youtube:string;twitchChannel:string;youtubeChannel?:string};
+const streams:LiveStream[]=[
+  {icon:"video",name:"Leb1ga",twitch:"https://www.twitch.tv/leb1ga",youtube:"https://www.youtube.com/@leb1ga",twitchChannel:"leb1ga"},
+  {icon:"game",name:"Dendi",twitch:"https://www.twitch.tv/Dendi",youtube:"https://www.youtube.com/@Dendi",twitchChannel:"dendi"},
+  {icon:"zap",name:"Vitaliy Kushnyryk",twitch:"https://www.twitch.tv/rolex9",youtube:"https://www.youtube.com/@rolex9",twitchChannel:"rolex9"},
+  {icon:"video",name:"Papaplatte",twitch:"https://www.twitch.tv/papaplatte",youtube:"https://www.youtube.com/@papaplatte",twitchChannel:"papaplatte",youtubeChannel:"UCDmbhGe7-wC1a55l5ZYAZJw"},
+  {icon:"video",name:"MontanaBlack88",twitch:"https://www.twitch.tv/montanablack88",youtube:"https://www.youtube.com/@montanablack",twitchChannel:"montanablack88"},
+  {icon:"rocket",name:"Trymacs",twitch:"https://www.twitch.tv/trymacs",youtube:"https://www.youtube.com/@Trymacs",twitchChannel:"trymacs",youtubeChannel:"UC6Gc4KQ1ueDnh8x7plaAD3w"},
+  {icon:"game",name:"SMETANA",twitch:"https://www.twitch.tv/smetanduck",youtube:"https://www.youtube.com/@smetanaml",twitchChannel:"smetanduck"},
+  {icon:"game",name:"titamin1",twitch:"https://www.twitch.tv/titamin1",youtube:"https://www.youtube.com/@titamin1",twitchChannel:"titamin1"},
+  {icon:"game",name:"Dunkelsch4tten",twitch:"https://www.twitch.tv/dunkelsch4tten",youtube:"https://www.youtube.com/@dunkelsch4tten",twitchChannel:"dunkelsch4tten"},
+  {icon:"game",name:"Buster",twitch:"https://www.twitch.tv/buster",youtube:"https://www.youtube.com/@slavabuster",twitchChannel:"buster"},
+  {icon:"video",name:"Marmok",twitch:"https://www.twitch.tv/marmok_twitch",youtube:"https://www.youtube.com/@MarmokLive",twitchChannel:"marmok_twitch"},
+  {icon:"video",name:"ZUBAREFFF",twitch:"https://www.twitch.tv/zubarefff",youtube:"https://www.youtube.com/@zubarefff11",twitchChannel:"zubarefff"}
 ];
 
 function render(){
@@ -351,21 +360,23 @@ function render(){
     body=`
       <div class="content portal-layout" data-portal-layout="live">
         <div class="section-head portal-block" data-portal-block="header">
-          <div><h2>LIVE</h2><p>Стримеры и трансляции · встроенное окно</p></div>
+          <div><h2>LIVE</h2><p>Стримеры · Twitch + YouTube</p></div>
           <button class="tg-button secondary" data-view="home" type="button">HOME</button>
         </div>
         <div class="list portal-block" data-portal-block="streams">
           ${streams.map(function(s){
             return `<article class="stream">
-              <div class="avatar">${icon(s[0],"stream-icon")}</div>
-              <div><b>${escapeHtml(s[1])}</b><small><span class="live-status-dot"></span> ${escapeHtml(s[2])}</small></div>
-              <button class="tg-button secondary" data-live-open="${escapeHtml(s[1])}" type="button">Смотреть</button>
+              <div class="avatar">${icon(s.icon,"stream-icon")}</div>
+              <div><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>Twitch + YouTube</small></div>
+              <div class="stream-actions">
+                <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="twitch" type="button">Twitch</button>
+                <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="youtube" type="button">YouTube</button>
+              </div>
             </article>`;
           }).join("")}
         </div>
       </div>`;
   }
-
   if(view==="chat"){
     body=`
       <div class="content portal-layout" data-portal-layout="chat">
@@ -621,21 +632,17 @@ function applySavedPortalLayout(){
   applyLayoutToRoot(layout,screen);
 }
 
-function liveEmbedUrl(stream:readonly string[]):string{
-  const url=stream[3];
-  if(stream[2]==="Twitch"){
-    const channel=url.split("/").filter(Boolean).pop()||"";
+function liveEmbedUrl(stream:LiveStream,source:"twitch"|"youtube"):string{
+  if(source==="twitch"){
     const parent=window.location.hostname||"freezzgames.github.io";
-    return "https://player.twitch.tv/?"+new URLSearchParams({channel,parent,autoplay:"false",muted:"false"}).toString();
+    return "https://player.twitch.tv/?"+new URLSearchParams({channel:stream.twitchChannel,parent,autoplay:"false",muted:"false"}).toString();
   }
-  if(stream[2]==="YouTube"){
-    const channelIdMatch=url.match(/youtube\.com\/channel\/([^/?#]+)/i);
-    if(channelIdMatch?.[1]){
-      return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:channelIdMatch[1],autoplay:"0",rel:"0",playsinline:"1"}).toString();
-    }
+  if(stream.youtubeChannel){
+    return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:stream.youtubeChannel,autoplay:"0",rel:"0",playsinline:"1"}).toString();
   }
   return "";
 }
+
 function openLivePopup(name:string):void{
   liveSelected=name;
   livePopupOpen=true;
@@ -647,19 +654,25 @@ function closeLivePopup():void{
 }
 function livePopupMarkup():string{
   if(!livePopupOpen||!liveSelected)return "";
-  const stream=streams.find(s=>s[1]===liveSelected);
+  const stream=streams.find(s=>s.name===liveSelected);
   if(!stream)return "";
-  const embed=liveEmbedUrl(stream);
+  const source=(livePopupSource==="youtube"?"youtube":"twitch") as "twitch"|"youtube";
+  const embed=liveEmbedUrl(stream,source);
+  const external=source==="youtube"?stream.youtube:stream.twitch;
   return `<div class="live-popup-overlay" data-live-popup-overlay>
     <section class="live-popup" role="dialog" aria-modal="true" aria-label="LIVE playback">
       <header class="live-popup-header">
-        <div><span class="live-popup-kicker">LIVE</span><strong>${escapeHtml(stream[1])}</strong><small>${escapeHtml(stream[2])}</small></div>
+        <div><span class="live-popup-kicker">LIVE</span><strong>${escapeHtml(stream.name)}</strong><small>${source==="youtube"?"YouTube":"Twitch"}</small></div>
         <button class="live-popup-close" data-live-popup-close type="button" aria-label="Закрыть">×</button>
       </header>
+      <div class="live-popup-source-tabs">
+        <button class="tg-button ${source==="twitch"?"":"secondary"}" data-live-popup-source="twitch" type="button">Twitch</button>
+        <button class="tg-button ${source==="youtube"?"":"secondary"}" data-live-popup-source="youtube" type="button">YouTube</button>
+      </div>
       <div class="live-popup-video">
         ${embed
-          ? `<iframe src="${escapeHtml(embed)}" title="${escapeHtml(stream[1])}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
-          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер пока недоступен</strong><span>Этот канал не предоставляет универсальный embed без идентификатора канала.</span><button class="tg-button" data-live-external type="button">Открыть канал</button></div>`}
+          ? `<iframe src="${escapeHtml(embed)}" title="${escapeHtml(stream.name)} — ${source}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
+          : `<div class="live-popup-unavailable"><div class="live-popup-icon">${icon("video")}</div><strong>Встроенный плеер недоступен</strong><span>Канал доступен на ${source}, но универсальный embed для него не задан.</span><button class="tg-button" data-live-external type="button">Открыть ${source}</button></div>`}
       </div>
     </section>
   </div>`;
@@ -727,7 +740,10 @@ function bind(){
     x.onclick=function(e){e.stopPropagation();};
   });
   document.querySelectorAll<HTMLElement>("[data-live-open]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"");};
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"",x.dataset.liveSource==="youtube"?"youtube":"twitch");};
+  });
+  document.querySelectorAll<HTMLElement>("[data-live-popup-source]").forEach(function(x){
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();livePopupSource=x.dataset.livePopupSource==="youtube"?"youtube":"twitch";render();};
   });
   document.querySelectorAll<HTMLElement>("[data-live-popup-close]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();closeLivePopup();};
@@ -736,8 +752,8 @@ function bind(){
     if(e.target===e.currentTarget)closeLivePopup();
   });
   document.querySelector("[data-live-external]")?.addEventListener("click",function(){
-    const stream=streams.find(s=>s[1]===liveSelected);
-    const url=stream?.[3];if(!url)return;
+    const stream=streams.find(s=>s.name===liveSelected);
+    const url=stream?(livePopupSource==="youtube"?stream.youtube:stream.twitch):"";if(!url)return;
     const tg=getTelegramWebApp();
     if(tg?.openLink)tg.openLink(url,{try_instant_view:false});else window.open(url,"_blank","noopener,noreferrer");
   });
