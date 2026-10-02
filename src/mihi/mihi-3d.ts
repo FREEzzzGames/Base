@@ -73,8 +73,8 @@ export class Mihi3DView{
 
       const scene=new THREE.Scene();
       const camera=new THREE.PerspectiveCamera(22,1,0.01,100);
-      camera.position.set(0,1.05,3.0);
-      camera.lookAt(0,0.82,0);
+      camera.position.set(0,1.0,4.8);
+      camera.lookAt(0,0.9,0);
 
       scene.add(new THREE.HemisphereLight(0xffffff,0x182033,2.4));
       const key=new THREE.DirectionalLight(0xffffff,2.5);
@@ -137,8 +137,8 @@ export class Mihi3DView{
         renderer.setClearColor(0x000000,0);
         const scene=new THREE.Scene();
         const camera=new THREE.PerspectiveCamera(22,1,0.01,100);
-        camera.position.set(0,1.25,3.4);
-        camera.lookAt(0,0.95,0);
+        camera.position.set(0,1.0,4.8);
+        camera.lookAt(0,0.9,0);
         scene.add(new THREE.HemisphereLight(0xffffff,0x182033,2.4));
         const light=new THREE.DirectionalLight(0xffffff,2.5);
         light.position.set(2,3,4);
@@ -163,7 +163,7 @@ export class Mihi3DView{
     model.position.sub(center);
     model.position.y-=size.y*0.08;
     const targetHeight=Math.max(size.y,0.001);
-    model.scale.setScalar(1.55/targetHeight);
+    model.scale.setScalar(0.93/targetHeight);
     model.rotation.y=0.08;
     this.scene!.add(model);
     this.model=model;
@@ -231,7 +231,7 @@ export class Mihi3DView{
     group.add(badge);
 
     group.position.y=-0.05;
-    group.scale.setScalar(1.05);
+    group.scale.setScalar(0.63);
     const platformMaterial=new THREE.MeshStandardMaterial({color:0x101827,roughness:0.35,metalness:0.55,transparent:true,opacity:0.92});
     const platform=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.62,0.045,48),platformMaterial);
     platform.position.y=0.01;
