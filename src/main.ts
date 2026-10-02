@@ -399,18 +399,12 @@ function render(){
       <header class="topbar">
         <div class="topbar-left">
           <button class="profile-button" data-profile-toggle type="button" aria-label="Profile">${icon("user","profile-icon")}</button>
-          <div class="brand-avatar" aria-hidden="true">F</div>
-          <div class="brand-title">
-            <strong>FREEzzz</strong>
-            <small>Platform</small>
-          </div>
+          <nav class="lang-switch" aria-label="Language">
+            <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
+            <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
+            <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
+          </nav>
         </div>
-
-        <nav class="lang-switch" aria-label="Language">
-          <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
-          <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
-          <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
-        </nav>
         ${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="Переключить режим"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?"РАЗРАБ":"ПОЛЬЗ."}</small></button>`:""}
       </header>
       <nav class="bottom-nav ${view==="game"?"bottom-nav-game":""} ${view==="game"&&gameNavRevealed?"game-nav-revealed":""}" aria-label="Portal navigation">
