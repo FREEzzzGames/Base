@@ -376,6 +376,7 @@ function render(){
 
     </div>`;
 
+  window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   bind();
   window.dispatchEvent(new CustomEvent("freezzz:chat-sync",{detail:{messages:chatMessages}}));
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
