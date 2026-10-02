@@ -9,7 +9,7 @@ const SWIPE_AXIS_RATIO=1.35;
 function isSwipeExcluded(target:EventTarget|null):boolean{
   return target instanceof Element && Boolean(
     target.closest(
-      "button,a,input,textarea,select,option,[contenteditable="true"]," +
+      "button,a,input,textarea,select,option,[contenteditable=true]," +
       ".topbar,.bottom-nav,.live-popup-overlay,.live-popup,[data-no-swipe]"
     )
   );
