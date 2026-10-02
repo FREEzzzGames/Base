@@ -4,7 +4,7 @@ import "./styles.css";
 import { initPortalPalette } from "./design-system/theme";
 import { PORTAL_BUILD_ID, PORTAL_VERSION } from "./build-info";
 import { renderDeveloperDiagnostics } from "./developer-tools";
-import { icon, streams, type LiveStream } from "./portal-ui";
+import { icon, streams } from "./portal-ui";
 import { applyLayout, getLayoutBlockInfos, getLayoutOverride, loadLayoutOverrides, saveLayoutOverrides, type LayoutOverride } from "./developer-layout";
 import { getTelegramWebApp, initTelegramBridge, openExternalUrl } from "./platform-bridge";
 import { bindPortalSwipeNavigation } from "./portal-navigation";
