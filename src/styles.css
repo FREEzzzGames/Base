@@ -4012,3 +4012,214 @@ main{
   left:52px!important;
   right:auto!important;
 }
+
+
+/* ================================================================
+   MULTI-WINDOW WORKSPACE — additive layer over the FIX BASE
+   ================================================================ */
+.portal-mw-layer{
+  position:fixed!important;
+  inset:0!important;
+  z-index:3000!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+.portal-mw{
+  position:fixed!important;
+  pointer-events:auto!important;
+  box-sizing:border-box!important;
+  min-width:180px!important;
+  max-width:calc(100vw - 8px)!important;
+  max-height:calc(100vh - 70px)!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:12px!important;
+  background:rgba(12,18,26,.96)!important;
+  color:#fff!important;
+  box-shadow:0 12px 35px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.04)!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+.portal-mw-head{
+  height:36px!important;
+  min-height:36px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:6px!important;
+  padding:0 7px 0 10px!important;
+  background:rgba(25,34,45,.96)!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+  touch-action:none!important;
+  user-select:none!important;
+  cursor:move!important;
+}
+.portal-mw-head strong{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:12px!important;
+}
+.portal-mw-head button{
+  width:27px!important;
+  height:27px!important;
+  min-width:27px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:6px!important;
+  background:transparent!important;
+  color:#fff!important;
+  font-weight:700!important;
+}
+.portal-mw-head button.active{background:rgba(51,144,236,.75)!important}
+.portal-mw-head button:active{background:rgba(255,255,255,.16)!important}
+.portal-mw-live-body{
+  width:100%!important;
+  height:calc(100% - 36px)!important;
+  min-height:0!important;
+  background:#05070a!important;
+}
+.portal-mw-live-body iframe{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  border:0!important;
+}
+.portal-mw-empty{
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  color:var(--tg-theme-hint-color,#8d99a6)!important;
+  font-size:12px!important;
+}
+.portal-mw-chat{
+  display:grid!important;
+  grid-template-rows:36px minmax(0,1fr) 44px!important;
+}
+.portal-mw-chat-list{
+  min-height:0!important;
+  overflow:auto!important;
+  padding:7px!important;
+  scrollbar-width:none!important;
+}
+.portal-mw-chat-list::-webkit-scrollbar{display:none}
+.portal-mw-chat-list p{
+  margin:0 0 6px!important;
+  padding:7px 8px!important;
+  border-radius:8px!important;
+  background:rgba(31,43,56,.88)!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+}
+.portal-mw-chat-list b{display:block!important;font-size:10px!important}
+.portal-mw-chat-list span{display:block!important;margin-top:2px!important}
+.portal-mw-chat form{
+  display:flex!important;
+  gap:5px!important;
+  padding:5px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+.portal-mw-chat input{
+  min-width:0!important;
+  flex:1!important;
+  height:34px!important;
+  padding:0 9px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:7px!important;
+  background:#182330!important;
+  color:#fff!important;
+  outline:none!important;
+}
+.portal-mw-chat form button{
+  width:38px!important;
+  height:34px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:var(--tg-theme-button-color,#3390ec)!important;
+  color:var(--tg-theme-button-text-color,#fff)!important;
+  font-weight:700!important;
+}
+.portal-mw-radio{
+  display:grid!important;
+  grid-template-rows:32px minmax(0,1fr)!important;
+}
+.portal-mw-radio .portal-mw-head{height:32px!important;min-height:32px!important}
+.portal-mw-radio-body{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  padding:5px 7px 5px 10px!important;
+  min-width:0!important;
+}
+.portal-mw-radio-body span{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+}
+.portal-mw-radio-body div{display:flex!important;gap:3px!important;flex:0 0 auto!important}
+.portal-mw-radio-body button{
+  width:30px!important;
+  height:30px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:6px!important;
+  background:#303b48!important;
+  color:#fff!important;
+}
+.portal-mw-radio-body button:active{background:#465463!important}
+.portal-mw-hud-toggle{
+  position:absolute!important;
+  right:-30px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  z-index:1400!important;
+  width:28px!important;
+  height:54px!important;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  border-radius:0 8px 8px 0!important;
+  background:rgba(9,15,22,.92)!important;
+  color:#fff!important;
+  font-size:20px!important;
+  line-height:1!important;
+  box-shadow:4px 0 12px rgba(0,0,0,.28)!important;
+}
+.portal-workspace-hud-collapsed{
+  grid-template-columns:14px minmax(0,1fr)!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar{
+  width:14px!important;
+  min-width:14px!important;
+  overflow:visible!important;
+  z-index:150!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar .portal-toolbar-main{
+  width:56px!important;
+  transform:translateX(-42px)!important;
+}
+.portal-workspace-hud-collapsed > .portal-toolbar .portal-mw-hud-toggle{
+  right:-30px!important;
+}
+.portal-workspace-hud-collapsed > main{
+  grid-column:2!important;
+}
+@media(max-width:699px){
+  .portal-mw{
+    max-width:calc(100vw - 8px)!important;
+  }
+  .portal-mw-live{
+    width:min(300px,calc(100vw - 8px))!important;
+    height:min(205px,calc(100vh - 120px))!important;
+  }
+  .portal-mw-chat{
+    width:min(286px,calc(100vw - 8px))!important;
+    height:min(245px,calc(100vh - 100px))!important;
+  }
+  .portal-mw-radio{
+    width:min(330px,calc(100vw - 8px))!important;
+  }
+}
