@@ -176,7 +176,7 @@ function renderProfileCard(){
   const liveHtml=liveItems.length?liveItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} виз.</small></div>`).join(""):`<p class="profile-empty">Пока нет просмотров.</p>`;
   const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
   return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
-    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="'+T("close")+'>'+icon("error","profile-close-icon")+'</button>
+    <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="${T("close")}">${icon("error","profile-close-icon")}</button>
     <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
     <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
@@ -251,7 +251,7 @@ function render(){
       <div class="content portal-layout" data-portal-layout="chat">
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
-          <button class="tg-button secondary" data-view="home">'+icon("home","button-icon")+'</button>
+          <button class="tg-button secondary" data-view="home" type="button" aria-label="HOME">${icon("home","button-icon")}</button>
         </div>
         <div class="chat portal-block" data-portal-block="messages">${chatMessages.map(m=>`<p><span class="chat-emoji" aria-hidden="true">${chatEmoji(m)}</span><span class="chat-message-body"><b>${escapeHtml(m.author)}</b><br>${escapeHtml(m.message)}</span></p>`).join("")}</div>
         <form id="chatform" class="portal-block" data-portal-block="composer">
