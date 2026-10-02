@@ -2713,8 +2713,9 @@ main::-webkit-scrollbar{display:none}
 .home-card:active{transform:none!important}
 .home-card-head{display:flex;align-items:center;gap:9px;min-height:34px;margin:0}
 .home-card-icon{width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec))}
-.home-card-icon .ui-icon{width:24px!important;height:24px!important}
-.home-card-head strong{margin:0!important;color:var(--tg-theme-text-color,#222);font-size:16px!important;line-height:1.2;overflow:visible!important;text-overflow:clip!important;white-space:normal}
+.home-card-icon .ui-icon{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;flex:0 0 24px!important}
+.home-card-icon .portal-illustration{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;flex:0 0 24px!important}
+.home-card-head strong{margin:0!important;color:var(--tg-theme-text-color,#222);font-size:16px!important;line-height:1.2;min-width:0;flex:1 1 auto;overflow-wrap:anywhere;white-space:normal}
 .home-live-preview{display:grid!important;gap:0!important;padding:6px 0 0!important}
 .home-live-row{min-height:48px;display:grid!important;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:9px;padding:5px 0;border-top:1px solid var(--tg-theme-section-separator-color,rgba(0,0,0,.08))}
 .home-live-row:first-child{border-top:0}
@@ -2725,6 +2726,7 @@ main::-webkit-scrollbar{display:none}
 .home-chat-preview,.home-game-preview,.home-radio-preview,.home-library-preview{display:flex!important;align-items:center;gap:8px;min-height:28px;margin-top:5px!important;color:var(--tg-theme-hint-color,#707579);font-size:13px}
 .home-chat-preview b,.home-game-preview b{color:var(--tg-theme-text-color,#222)}
 .home-chat-preview span,.home-game-preview small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-chat-preview,.home-game-preview,.home-radio-preview,.home-library-preview{min-width:0;max-width:100%;overflow:hidden}
 .section-head{min-height:44px;margin-bottom:8px;padding:0 2px}
 .section-head h1,.section-head h2{font-size:20px;line-height:1.2}
 .section-head p{font-size:13px;line-height:1.3}
