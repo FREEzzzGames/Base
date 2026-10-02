@@ -47,6 +47,7 @@ export interface TelegramWebAppBridge{
   isFullscreen?:boolean;
   isExpanded?:boolean;
   isActive?:boolean;
+  isOrientationLocked?:boolean;
   viewportHeight?:number;
   viewportStableHeight?:number;
   safeAreaInset?:{top?:number;bottom?:number;left?:number;right?:number};
@@ -145,6 +146,7 @@ export function initTelegramBridge():void{
   tg.ready?.();
   tg.expand?.();
   tg.disableVerticalSwipes?.();
+  tg.lockOrientation?.();
   tg.setHeaderColor?.(tg.themeParams?.bg_color||"bg_color");
   tg.setBackgroundColor?.(tg.themeParams?.bg_color||"bg_color");
   tg.setBottomBarColor?.(tg.themeParams?.bottom_bar_bg_color||tg.themeParams?.secondary_bg_color||"secondary_bg_color");
