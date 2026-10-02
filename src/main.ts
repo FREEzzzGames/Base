@@ -296,7 +296,11 @@ function render(){
         })
       : [];
     body=`
-      <div class="content portal-layout" data-portal-layout="radio">
+      <div class="content portal-layout radio-portal" data-portal-layout="radio">
+        <video class="radio-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+          <source src="https://cdn.pixabay.com/video/2019/10/02/27466-363961185_large.mp4" type="video/mp4">
+        </video>
+        <div class="radio-background-overlay" aria-hidden="true"></div>
         <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div></div>
         <section class="radio-panel">
           <div class="radio-heading">
