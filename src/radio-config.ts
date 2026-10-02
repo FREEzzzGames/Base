@@ -1,0 +1,1 @@
+export const RADIO_GENRES=["pop","rock","dance","electronic","house","techno","trance","hip-hop","jazz","blues","classical","metal","indie","alternative","ambient","disco","funk","soul","reggae","country","folk","oldies","80s","90s","news","talk","chillout","lounge","soundtrack"] as const;
