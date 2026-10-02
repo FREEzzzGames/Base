@@ -387,7 +387,7 @@ function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
   const primary=urls.youtube||urls.twitch;
   return `<img class="stream-avatar-image ${className}" data-stream-avatar="1" data-stream-avatar-twitch="${escapeHtml(urls.twitch)}" src="${escapeHtml(primary)}" alt="" aria-hidden="true" loading="lazy">`;
 }
-function homeCard(v:View,e:string,t:string,content:string){
+function homeCard(v:View,_e:string,t:string,_content:string){
   const backgrounds:Partial<Record<View,string>>={
     live:portalVideoUrl("live"),
     chat:portalVideoUrl("chat"),
@@ -398,10 +398,7 @@ function homeCard(v:View,e:string,t:string,content:string){
   const background=backgrounds[v];
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}">
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
-    <span class="home-card-content">
-      <span class="home-card-head"><span class="home-card-icon">${e}</span><strong>${t}</strong></span>
-      ${content}
-    </span>
+    <span class="home-card-title">${t}</span>
   </button>`;
 }
 function refreshHomeContent(){
