@@ -8,21 +8,8 @@ export function illustration(name:string,className=""){
   const file=PORTAL_ILLUSTRATIONS[name]||"neutral-info";
   return `<img class="portal-illustration ${className}" src="./assets/tabler/${file}.png" alt="" aria-hidden="true" loading="lazy">`;
 }
-export const PORTAL_GLYPHS:Record<string,string>={
-  user:"○",
-  video:"▣",
-  chat:"◫",
-  game:"◇",
-  radio:"◉",
-  library:"▤",
-  home:"⌂",
-  settings:"✣",
-  rocket:"△",
-  zap:"✦"
-};
 export function icon(name:string,className=""){
-  const glyph=PORTAL_GLYPHS[name]||PORTAL_GLYPHS.video;
-  return `<span class="ui-icon ${className}" aria-hidden="true">${glyph}</span>`;
+  return `<span class="ui-icon ${className}" aria-hidden="true">${illustration(name)}</span>`;
 }
 
 export type LiveStream={icon:string;name:string;twitch:string;youtube:string;twitchChannel:string;youtubeChannel?:string};
