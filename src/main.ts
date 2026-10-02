@@ -362,6 +362,7 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
+      ${renderPortalToolbar()}
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
@@ -594,7 +595,6 @@ function bind(){
       x.onclick=e=>{e.preventDefault();e.stopPropagation();setGameFontSize((x.dataset.gameFontSize as GameFontSize)||"normal");};
     });
   }
-    bindPortalSwipeNavigation(document.querySelector<HTMLElement>(".app-shell")!,view,nextView=>portalEvents.emit("navigation:changed",{view:nextView}));
 }
 
 function chatEmoji(m:{author:string;message:string}):string{
