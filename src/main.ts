@@ -55,6 +55,7 @@ let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language")
 try{const tg=getTelegramWebApp();const code=tg?.initDataUnsafe?.user?.language_code?.toUpperCase()||"";if(!localStorage.getItem("freezzz:language")){if(code.startsWith("DE"))lang="DE";else if(code.startsWith("EN"))lang="EN";}}catch{}
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
+let languageMenuOpen=false;
 let portalProfile:PortalProfile=loadPortalProfile();
 syncPortalIdentity(portalProfile);
 startPortalSession(portalProfile);
@@ -196,12 +197,14 @@ function renderPortalToolbar(){
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
       </div>
       <div class="portal-toolbar-actions">
-        <div class="portal-toolbar-language" role="group" aria-label="${T("language")}">
-          <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
-          <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
-          <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+        <div class="portal-toolbar-language-wrap">
+          <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
+          <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
+            <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
+            <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
+            <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+          </div>
         </div>
-        <button class="portal-toolbar-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("user","portal-toolbar-icon")}</button>
       </div>
     </div>
   </nav>`;
@@ -226,7 +229,7 @@ function render(){
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
-          <h1>${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
+          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
           <p>${T("homeDescription")}</p>
           </div>
         </section>
