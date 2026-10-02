@@ -2229,3 +2229,51 @@ main{
   .game-choices button{min-height:48px}
   .game-font-largest .game-rpg .game-dialog p{font-size:16px}
 }
+
+
+/* HEADER LANGUAGE REWORK */
+.topbar-left .lang-switch{
+  position:static;
+  left:auto;
+  transform:none;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:0;
+  min-width:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.topbar-left .lang-switch button{
+  min-width:0;
+  width:auto;
+  height:38px;
+  padding:0 2px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  color:var(--tg-muted);
+  font:inherit;
+  font-size:16px;
+  font-weight:700;
+  line-height:1;
+}
+.topbar-left .lang-switch button.active{
+  background:transparent;
+  box-shadow:none;
+  color:var(--tg-button-color);
+}
+.topbar-left .lang-switch button:focus-visible{
+  outline:2px solid var(--tg-button-color);
+  outline-offset:4px;
+  border-radius:3px;
+}
+.brand-avatar{display:none!important}
+.brand-title{display:none!important}
+
+@media(max-width:520px){
+  .topbar-left .lang-switch{gap:11px}
+  .topbar-left .lang-switch button{height:36px;font-size:15px}
+}
