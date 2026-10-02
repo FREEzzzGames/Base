@@ -78,7 +78,7 @@ let livePopupSource:"twitch"|"youtube"="twitch";
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 let homeRefreshTimer:number|null=null;
 let gameState=loadGameState();
-let gameTab:GameTab=portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?${portalSession.gameTab} as GameTab:"story";
+let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
 
 type GameFontSize="normal"|"large"|"largest";
 let gameFontSize:GameFontSize=(()=>{try{const v=localStorage.getItem("freezzz:game-font-size");return v==="large"||v==="largest"?v:"normal";}catch{return "normal";}})();
