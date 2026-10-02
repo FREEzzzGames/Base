@@ -218,7 +218,6 @@ function render(){
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
             <source src="https://cdn.pixabay.com/video/2023/02/25/152174-802335605_tiny.mp4" type="video/mp4">
           </video>
-          <div class="home-hero-overlay" aria-hidden="true"></div>
           <div class="home-hero-content">
           <div class="home-hero-top">
             <div class="home-hero-brand">
