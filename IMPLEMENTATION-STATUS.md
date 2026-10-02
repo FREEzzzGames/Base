@@ -14,9 +14,9 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 
 - [x] 01 Source of Truth — Base/main fixed as the only repository.
 - [x] 02 Architecture Foundation — module contract, registry, event bus and platform state introduced without rewriting existing module mechanics.
-- [~] 03 Full Audit — in progress; route, dependency, runtime and UI audit continues.
-- [~] 04 Green CI — workflow contains typecheck/build/release-smoke gates; production run still requires external GitHub Actions confirmation.
-- [~] 05 Reproducible Build — deterministic build manifest and release smoke are implemented; production verification pending.
+- [x] 03 Full Audit — route, dependency, runtime and UI audit completed for the current architecture pass.
+- [x] 04 Green CI — validation and Pages deployment gates are active; current release is verified by GitHub Actions.
+- [x] 05 Reproducible Build — deterministic build manifest, release smoke and SHA gate are implemented.
 - [x] Constructor concept removed from runtime and CSS.
 - [x] Local developer diagnostics isolated behind `VITE_FREEZZ_DEV_TOOLS=1`.
 - [x] Portal economy remains excluded.
