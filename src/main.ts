@@ -220,7 +220,7 @@ function render(){
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-            <source src="https://cdn.pixabay.com/video/2023/02/25/152174-802335605_tiny.mp4" type="video/mp4">
+            <source src="https://cdn.pixabay.com/video/2023/07/22/172788-847869832_large.mp4" type="video/mp4">
           </video>
           <div class="home-hero-content">
           <div class="home-hero-top">
