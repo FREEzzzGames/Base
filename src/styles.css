@@ -4199,3 +4199,19 @@ main{
   position:relative!important;
   z-index:1001!important;
 }
+
+/* ================================================================
+   PRIMARY FRAME — 1PX SOLID + 2PX 50% SPRAY + 2PX 25% SPRAY
+   Top visual layer. HUD controls remain above it.
+   ================================================================ */
+.home-portal > .home-hero::before,
+.home-portal > .home-card::before,
+.home-portal > .home-library::before,
+.portal-toolbar::after{
+  border:1px solid #000!important;
+  box-shadow:
+    inset 0 0 0 1px #000,
+    inset 0 0 2px 1px rgba(0,0,0,.50),
+    inset 0 0 4px 2px rgba(0,0,0,.25)!important;
+  box-sizing:border-box!important;
+}
