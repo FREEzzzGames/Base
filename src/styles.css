@@ -3061,3 +3061,19 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child .portal-toolbar-icon{
   filter:drop-shadow(0 0 4px rgba(255,32,32,.70)) drop-shadow(0 0 12px rgba(255,32,32,.546))!important;
 }
+
+
+/* TOOLBAR ICONS — pure white. */
+.portal-toolbar-icon,
+.portal-toolbar-item,
+.portal-toolbar-language-button{
+  color:#ffffff!important;
+}
+.portal-toolbar-icon{
+  filter:none!important;
+}
+.portal-toolbar-item.active .portal-toolbar-icon,
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child .portal-toolbar-icon,
+.portal-toolbar-language-button .portal-toolbar-icon{
+  filter:none!important;
+}
