@@ -300,7 +300,7 @@ function render(){
       : [];
     body=`
       <div class="content portal-layout" data-portal-layout="radio">
-        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div><button class="tg-button secondary" data-view="home">'+icon("home","button-icon")+'</button></div>
+        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div></div>
         <section class="radio-panel">
           <div class="radio-heading">
             <div><span class="radio-kicker">FREEzzz RADIO</span><h3>${T("internetRadio")}</h3><p>${T("radioChoose")}</p></div>
