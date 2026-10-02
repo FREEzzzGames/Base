@@ -323,7 +323,7 @@ function renderDeveloperPanel(){
     telegram:portalState.telegram,online:portalState.online,
     modules:PORTAL_MODULES.map(module=>module.id),developerMode,
     selectedBlock:developerSelectedBlock,blocks:portalBlockInfos()
-  });
+  },lang);
 }
 function toggleDeveloperMode(){
   developerMode=!developerMode;
@@ -507,7 +507,7 @@ function render(){
       </nav>
       ${view==="game"?`<button class="game-nav-reveal ${gameNavRevealed?"is-active":""}" type="button" aria-label="${T("showMenu")}" title="${T("swipeHint")}">⌃</button>`:""}
       <main>${body}</main>
-      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml})}
+      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
       ${profileOpen?renderProfileCard():""}
 
