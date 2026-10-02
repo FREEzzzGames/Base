@@ -476,38 +476,41 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="profile-button" data-profile-toggle type="button" aria-label="${T("profile")}">${icon("user","profile-icon")}</button>
-        </div>
-        <div class="topbar-right">
-          <nav class="lang-switch" aria-label="${T("language")}">
-            <button data-lang="RU" class="${lang==="RU"?"active":""}">RU</button>
-            <button data-lang="DE" class="${lang==="DE"?"active":""}">DE</button>
-            <button data-lang="EN" class="${lang==="EN"?"active":""}">EN</button>
+      <header class="topbar portal-topbar">
+        <div class="topbar-main">
+          <div class="topbar-left">
+            <button class="profile-button" data-profile-toggle type="button" aria-label="\${T("profile")}" title="\${T("profile")}">\${icon("user","profile-icon")}</button>
+          </div>
+          <nav class="topbar-nav" aria-label="Portal navigation">
+            <button class="topbar-nav-item \${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
+              \${icon("home","nav-icon")}<span>HOME</span>
+            </button>
+            <button class="topbar-nav-item \${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">
+              \${icon("video","nav-icon")}<span>LIVE</span>
+            </button>
+            <button class="topbar-nav-item \${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
+              \${icon("chat","nav-icon")}<span>CHAT</span>
+            </button>
+            <button class="topbar-nav-item \${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">
+              \${icon("game","nav-icon")}<span>GAME</span>
+            </button>
+            <button class="topbar-nav-item \${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
+              \${icon("radio","nav-icon")}<span>RADIO</span>
+            </button>
+            \${DEVELOPER_TOOLS_ENABLED&&developerMode?\`<button class="topbar-nav-item \${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Конструктор" title="LAYOUT">
+              \${icon("editor","nav-icon")}<span>EDIT</span>
+            </button>\`:""}
           </nav>
-${DEVELOPER_TOOLS_ENABLED?`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="${T("constructor")}"><span>${developerMode?"DEV":"USER"}</span><small>${developerMode?T("developer"):T("user")}</small></button>`:""}
+          <div class="topbar-right">
+            <nav class="lang-switch" aria-label="\${T("language")}">
+              <button data-lang="RU" class="\${lang==="RU"?"active":""}">RU</button>
+              <button data-lang="DE" class="\${lang==="DE"?"active":""}">DE</button>
+              <button data-lang="EN" class="\${lang==="EN"?"active":""}">EN</button>
+            </nav>
+            \${DEVELOPER_TOOLS_ENABLED?\`<button class="dev-mode-toggle" data-dev-mode-toggle type="button" aria-label="\${T("constructor")}" title="\${T("constructor")}"><span>\${developerMode?"DEV":"USER"}</span><small>\${developerMode?T("developer"):T("user")}</small></button>\`:""}
+          </div>
         </div>
       </header>
-      <nav class="bottom-nav ${view==="game"?"bottom-nav-game":""} ${view==="game"&&gameNavRevealed?"game-nav-revealed":""}" aria-label="Portal navigation">
-        <button class="bottom-nav-item ${view==="chat"?"active":""}" data-view="chat" aria-label="Chat" title="CHAT">
-          ${icon("chat","nav-icon")}<span>CHAT</span>
-        </button>
-        <button class="bottom-nav-item ${view==="live"?"active":""}" data-view="live" aria-label="Live" title="LIVE">
-          ${icon("video","nav-icon")}<span>LIVE</span>
-        </button>
-        <button class="bottom-nav-item ${view==="game"?"active":""}" data-view="game" aria-label="Game" title="GAME">
-          ${icon("game","nav-icon")}<span>GAME</span>
-        </button>
-        <button class="bottom-nav-item ${view==="radio"?"active":""}" data-view="radio" aria-label="Radio" title="RADIO">
-          ${icon("radio","nav-icon")}<span>RADIO</span>
-        </button>
-        ${DEVELOPER_TOOLS_ENABLED&&developerMode?`<button class="bottom-nav-item ${developerOpen?"active":""}" data-developer-toggle type="button" aria-label="Конструктор" title="LAYOUT">${icon("editor","nav-icon")}<span>EDIT</span></button>`:""}
-        <button class="bottom-nav-item bottom-nav-home ${view==="home"?"active":""}" data-view="home" aria-label="Home" title="HOME">
-          ${icon("home","nav-icon")}<span>HOME</span>
-        </button>
-      </nav>
-      ${view==="game"?`<button class="game-nav-reveal ${gameNavRevealed?"is-active":""}" type="button" aria-label="${T("showMenu")}" title="${T("swipeHint")}">⌃</button>`:""}
       <main>${body}</main>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${developerOpen&&developerMode?renderDeveloperPanel():""}
@@ -667,7 +670,7 @@ function bind(){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerOpen=!developerOpen;render();};
   });
   bindDeveloperCanvas();
-  bindGameNavGesture();
+  // Navigation is permanently available in the unified top bar.
   document.querySelectorAll<HTMLElement>("[data-dev-block]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();developerSelectedBlock=x.dataset.devBlock||"";render();};
   });
