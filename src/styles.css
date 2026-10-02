@@ -3365,3 +3365,203 @@ main::-webkit-scrollbar{display:none}
   .portal-toolbar-nav{gap:1px}
   .portal-toolbar-item{min-width:46px}
 }
+
+
+/* ================================================================
+   FINAL MOBILE UI PASS
+   Compact, deterministic sizing for Telegram Mini App screens.
+   ================================================================ */
+.portal-toolbar-main{
+  width:min(100%,760px);
+  min-height:52px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:4px;
+}
+.portal-toolbar-nav{
+  min-width:0;
+  display:grid;
+  grid-template-columns:repeat(6,minmax(44px,1fr));
+  align-items:center;
+  gap:2px;
+  overflow:visible;
+  padding:3px 0;
+  touch-action:manipulation;
+}
+.portal-toolbar-item{
+  width:100%;
+  min-width:44px;
+  min-height:44px;
+  height:44px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:transparent;
+  color:var(--tg-theme-hint-color,#707579);
+}
+.portal-toolbar-item .portal-toolbar-icon{
+  width:22px;
+  height:22px;
+}
+.portal-toolbar-item.active{
+  background:var(--tg-theme-secondary-bg-color,#f1f1f1);
+  color:var(--tg-theme-link-color,var(--tg-theme-button-color,#3390ec));
+}
+.portal-toolbar-item span{display:none}
+.portal-toolbar-actions{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.portal-toolbar-language button{
+  min-width:28px;
+  width:28px;
+  min-height:32px;
+  height:32px;
+  padding:0;
+}
+.portal-toolbar-profile{
+  width:40px;
+  min-width:40px;
+  height:40px;
+  min-height:40px;
+}
+.portal-toolbar-profile .portal-toolbar-icon{width:23px;height:23px}
+
+.home-hero{
+  padding:12px!important;
+}
+.home-hero-top{min-height:32px}
+.home-hero h1{
+  margin:5px 0 3px;
+  font-size:clamp(24px,6vw,29px);
+}
+.home-hero p{font-size:13px;line-height:1.3}
+.home-card{
+  padding:10px!important;
+  min-height:0!important;
+}
+.home-card-head{
+  min-height:32px;
+  gap:8px;
+}
+.home-card-icon{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  min-height:28px!important;
+}
+.home-card-head strong{font-size:16px!important}
+.home-live-preview{padding-top:2px!important}
+.home-live-row{min-height:44px;padding:4px 0}
+.home-live-row i,.home-live-row .home-stream-avatar{
+  width:38px!important;height:38px!important;
+}
+.home-chat-preview,
+.home-game-preview,
+.home-radio-preview,
+.home-library-preview{
+  margin:3px 0 0 36px!important;
+  min-height:25px;
+  gap:7px;
+  font-size:12px!important;
+}
+.home-chat-preview b,
+.home-game-preview b,
+.home-radio-preview b,
+.home-library-preview b{
+  font-size:14px!important;
+}
+.home-chat-preview span,
+.home-game-preview span,
+.home-radio-preview span,
+.home-library-preview span,
+.home-game-preview small,
+.home-radio-preview small,
+.home-library-preview small{
+  font-size:12px!important;
+}
+
+/* Internal screens use one consistent content rhythm. */
+.portal-layout{
+  max-width:680px;
+  padding-bottom:calc(12px + var(--tg-content-safe-area-inset-bottom,0px));
+}
+.section-head{
+  min-height:40px;
+  margin-bottom:7px;
+}
+.section-head h1,.section-head h2{font-size:20px}
+.section-head p{font-size:12px}
+.radio-panel{
+  padding:12px!important;
+  border-radius:12px!important;
+}
+.radio-heading h3{font-size:22px!important}
+.radio-heading p{font-size:13px!important;line-height:1.35}
+.radio-carousel{margin-top:8px!important}
+.radio-now-playing{
+  padding:12px!important;
+  border-radius:12px!important;
+}
+.radio-now-playing h3{font-size:19px!important}
+.radio-now-playing p{font-size:13px!important;line-height:1.4}
+.radio-player-controls{
+  gap:6px!important;
+  flex-wrap:wrap;
+}
+.radio-player-controls .tg-button{
+  min-height:44px;
+  padding:0 12px;
+}
+.inline-form{
+  gap:6px!important;
+}
+.inline-form input{
+  min-width:0;
+  font-size:16px!important;
+}
+.radio-genres{
+  gap:6px!important;
+}
+.radio-genres button{
+  min-height:40px!important;
+  padding:0 13px!important;
+  border-radius:20px!important;
+}
+.profile-overlay{
+  padding:8px!important;
+  padding-top:calc(8px + var(--tg-content-safe-area-inset-top,0px))!important;
+  padding-bottom:calc(8px + var(--tg-content-safe-area-inset-bottom,0px))!important;
+}
+.profile-card-expanded{
+  max-height:calc(var(--tg-viewport-stable-height,100vh) - 16px)!important;
+  overflow:auto!important;
+}
+.profile-close{
+  width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;
+}
+@media(max-width:430px){
+  .portal-toolbar-main{grid-template-columns:minmax(0,1fr) 40px}
+  .portal-toolbar-nav{grid-template-columns:repeat(6,minmax(40px,1fr));gap:1px}
+  .portal-toolbar-item{min-width:40px;height:42px;min-height:42px}
+  .portal-toolbar-item .portal-toolbar-icon{width:21px;height:21px}
+  .portal-toolbar-language button{min-width:27px;width:27px}
+  .portal-toolbar-language{gap:0}
+  .home-card{padding:9px!important}
+}
+@media(max-width:360px){
+  .portal-toolbar-language{display:none}
+  .portal-toolbar-main{grid-template-columns:minmax(0,1fr) 40px}
+  .portal-toolbar-nav{grid-template-columns:repeat(6,minmax(38px,1fr))}
+  .portal-toolbar-item{min-width:38px;height:40px;min-height:40px}
+  .portal-toolbar-item .portal-toolbar-icon{width:20px;height:20px}
+  .home-chat-preview,
+  .home-game-preview,
+  .home-radio-preview,
+  .home-library-preview{margin-left:34px!important}
+}
