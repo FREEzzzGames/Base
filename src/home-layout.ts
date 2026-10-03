@@ -126,7 +126,7 @@ export function resizeHomeBoundary(node:HomeLayoutNode,id:HomeBlockId,edge:Resiz
   const cloned=cloneHomeLayout(node);
   function walk(n:HomeLayoutNode):boolean{
     if(n.type==="leaf")return false;
-    const axis:n["direction"]=edge==="left"||edge==="right"?"row":"column";
+    const axis:SplitDirection=edge==="left"||edge==="right"?"row":"column";
     if(n.direction===axis){
       const firstHas=contains(n.first,id);
       const secondHas=contains(n.second,id);
