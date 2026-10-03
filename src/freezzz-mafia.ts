@@ -385,7 +385,15 @@ function drawSelect(){
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
    const artScale=Math.max(1.05,Math.min(1.65,cardW/220));
-   drawMafiaMember({face:h.face,tie:h.color},x+cardW/2,y+cardH*.72,frame+i*4,artScale);
+   // Медленное вращение аватарки вокруг центральной вертикальной оси.
+   // Используем мягкое сжатие по X: персонаж не меняет высоту и остаётся пиксельным.
+   const spin=performance.now()/1000*.95+i*0.8;
+   const spinX=Math.max(.12,Math.abs(Math.cos(spin)));
+   ctx.save();
+   ctx.translate(x+cardW/2,y+cardH*.72);
+   ctx.scale(spinX,1);
+   drawMafiaMember({face:h.face,tie:h.color},0,0,frame+i*4,artScale);
+   ctx.restore();
    tx(familyText[h.family].desc,x+cardW/2,y+cardH*.86,menuTextSize(.012,9,14),h.color,"center");
    tx(h.ability,x+cardW/2,y+cardH*.91,menuTextSize(.011,8,12),"#7e898d","center");
  });
