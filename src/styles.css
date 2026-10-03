@@ -4857,3 +4857,13 @@ main{
   max-height:60px!important;
 }
 \n
+
+/* TOOLBAR — final icon scale: 2x */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon{
+  width:48px!important;
+  height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+}
+\n
