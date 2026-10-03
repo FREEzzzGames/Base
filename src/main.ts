@@ -15,6 +15,7 @@ import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
+import { mountFreezzzArena } from "./freezzz-arena";
 
 initTelegramBridge();
 initVisualComfort();
@@ -83,6 +84,7 @@ let radioActivityName="";
 let livePopups:LivePopupState[]=[];
 const PORTAL_NICKNAME="d3tr01t";
 let hudHidden=false;
+let freezzzArenaCleanup:(()=>void)|null=null;
 let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let radioBrowser:RadioBrowserClient|null=null;
@@ -203,6 +205,7 @@ function renderPortalToolbar(){
 }
 function render(){
   savePortalSessionSnapshot();
+  if(freezzzArenaCleanup){ freezzzArenaCleanup(); freezzzArenaCleanup=null; }
   let body="";
 
   if(view==="home"){
@@ -343,6 +346,10 @@ function render(){
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   mountPersistentBackgroundVideos();
   bind();
+  if(view==="game"){
+    const host=document.querySelector<HTMLElement>(".game-story-block");
+    if(host)freezzzArenaCleanup=mountFreezzzArena(host);
+  }
   if(view==="game"){
   }
   bindHudTouchGesture();
