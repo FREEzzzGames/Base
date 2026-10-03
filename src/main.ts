@@ -514,6 +514,34 @@ function bind(){
     const host=document.querySelector("#radio-audio-host");
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
+  document.querySelectorAll<HTMLElement>("[data-portal-card]").forEach(function(card){
+    let pressed=false;
+    const release=()=>{
+      if(!pressed)return;
+      pressed=false;
+      card.dataset.pressed="false";
+      window.setTimeout(()=>{if(card.dataset.pressed==="false")delete card.dataset.pressed;},220);
+    };
+    card.addEventListener("pointerdown",()=>{
+      pressed=true;
+      card.dataset.pressed="true";
+    });
+    card.addEventListener("pointerup",release);
+    card.addEventListener("pointercancel",release);
+    card.addEventListener("pointerleave",release);
+    card.addEventListener("keydown",e=>{
+      if(e.key!=="Enter"&&e.key!==" ")return;
+      e.preventDefault();
+      if(e.repeat)return;
+      pressed=true;
+      card.dataset.pressed="true";
+    });
+    card.addEventListener("keyup",e=>{
+      if(e.key!=="Enter"&&e.key!==" ")return;
+      e.preventDefault();
+      release();
+    });
+  });
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
           e.preventDefault();
