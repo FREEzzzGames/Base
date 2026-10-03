@@ -15,7 +15,7 @@ import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
-import { mountFreezzzArena } from "./freezzz-arena";
+import { mountFreezzzMafia } from "./freezzz-arena";
 
 initTelegramBridge();
 initVisualComfort();
@@ -262,9 +262,9 @@ function render(){
     body=`
       <div class="content portal-layout game-portal" data-portal-layout="game">
         <div class="section-head portal-block game-section-head" data-portal-block="header">
-          <div><h2>GAME</h2><p>FREEzzz ARENA · 16-BIT FIGHTING</p></div>
+          <div><h2>GAME</h2><p>FREEzzz MAFIA · 2D PLATFORMER</p></div>
         </div>
-        <div class="portal-block game-story-block" data-portal-block="game" aria-label="FREEzzz Arena"></div>
+        <div class="portal-block game-story-block" data-portal-block="game" aria-label="FREEzzz Mafia platformer"></div>
       </div>`;
   }
   if(view==="radio"){
@@ -351,7 +351,7 @@ function render(){
   bind();
   if(view==="game"){
     const host=document.querySelector<HTMLElement>(".game-story-block");
-    if(host)freezzzArenaCleanup=mountFreezzzArena(host);
+    if(host)freezzzArenaCleanup=mountFreezzzMafia(host);
   }
   if(view==="game"){
   }
