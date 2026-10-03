@@ -57,8 +57,19 @@ function clamp(n:number,a:number,b:number){return Math.max(a,Math.min(b,n))}
 function dist(a:number,b:number,c:number,d:number){return Math.hypot(a-c,b-d)}
 function esc(v:string){return v.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]||c))}
 
+type RpgQuality={name:"web"|"tv"|"low";fps:number;rain:number;sparks:number;bloom:boolean};
+const RpgEnv=(()=>{
+  const ua=navigator.userAgent||"";
+  const tv=/SmartTV|Tizen|Web0S|WebOS|NetCast|HbbTV|BRAVIA|Viera|Aquos|GoogleTV|Android TV/i.test(ua)
+    || matchMedia("(min-width:1600px) and (pointer:coarse)").matches;
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const low=(navigator.hardwareConcurrency||8)<=4 || Number((navigator as Navigator & {deviceMemory?:number}).deviceMemory||8)<=4;
+  const quality:RpgQuality=tv?{name:"tv",fps:30,rain:12,sparks:5,bloom:false}:reduced||low?{name:"low",fps:45,rain:18,sparks:7,bloom:false}:{name:"web",fps:60,rain:34,sparks:10,bloom:true};
+  return {quality};
+})();
+
 export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
- const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0;
+ const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0,lastFrame=0;\n const quality=RpgEnv.quality; let activeCanvas:HTMLCanvasElement|null=null; let activeContext:CanvasRenderingContext2D|null=null;
  const keys=new Set<string>(),sparks:Spark[]=[],orbs:Orb[]=[];let enemies:Enemy[]=[];let boss:Enemy|null=null;
  let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false,attackFx=0,skillFx=0,skillHit=false,damageFlash=0;
  const joy={x:0,y:0,active:false};let joyPointer=-1;
@@ -75,8 +86,8 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  }
  function buildMenu(){
    s.screen="menu";
-   host.innerHTML='<section class="rpgx" data-rpg-screen="menu"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / LV '+s.level+'</span><span class="rpgx-badge">3 CHAPTERS</span></div><div class="rpgx-menu"><div class="rpgx-logo"><small>FREEzzz GRAPHICS LAB</small><strong>NEON<br>CHRONICLES</strong><i>PLAYABLE CYBERPUNK RPG · PIXEL COMIC</i></div><button class="rpgx-btn primary" data-rpg-level>ENTER CHAPTER</button><button class="rpgx-btn" data-rpg-character>CHARACTER</button><div class="rpgx-menu-meta"><span>MOVE</span><span>COMBAT</span><span>BOSS</span></div></div></div></section>';
-   host.querySelector("[data-rpg-level]")?.addEventListener("click",buildLevel);
+   host.innerHTML='<section class="rpgx rpgx-quality-'+quality.name+'" data-rpg-screen="menu"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / LV '+s.level+'</span><span class="rpgx-badge">3 CHAPTERS</span></div><div class="rpgx-menu"><div class="rpgx-logo"><small>FREEzzz GRAPHICS LAB</small><strong>NEON<br>CHRONICLES</strong><i>PLAYABLE CYBERPUNK RPG · PIXEL COMIC</i></div><button class="rpgx-btn primary" data-rpg-level>ENTER CHAPTER</button><button class="rpgx-btn" data-rpg-character>CHARACTER</button><div class="rpgx-menu-meta"><span>MOVE</span><span>COMBAT</span><span>BOSS</span></div></div></div></section>';
+   activeCanvas=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"); activeContext=activeCanvas?.getContext("2d",{alpha:false})||null;\n   host.querySelector("[data-rpg-level]")?.addEventListener("click",buildLevel);
    host.querySelector("[data-rpg-character]")?.addEventListener("click",buildCharacter);
  }
  function buildLevel(){
@@ -89,12 +100,12 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  function buildCharacter(){
    s.screen="character";
    host.innerHTML='<section class="rpgx-character"><header class="rpgx-char-head"><button class="rpgx-icon" data-rpg-back>←</button><div><small>CHARACTER MENU</small><strong>ARIA / VOIDWALKER</strong></div><span>LV '+s.level+'</span></header><div class="rpgx-char-grid"><section class="rpgx-portrait"><canvas class="rpgx-char-canvas" width="96" height="128"></canvas><div class="rpgx-equip e1">WEAPON<br><b>AETHER BLADE</b></div><div class="rpgx-equip e2">CORE<br><b>VOID HEART</b></div></section><section class="rpgx-stats"><div class="rpgx-xp"><span>XP <b>'+s.xp+'%</b></span><i><em style="width:'+s.xp+'%"></em></i></div><div class="rpgx-meter"><label>HP <b>'+Math.round(s.hp)+'</b></label><i><em style="width:'+s.hp+'%;background:#ff2020"></em></i></div><div class="rpgx-meter"><label>MANA <b>'+Math.round(s.mana)+'</b></label><i><em style="width:'+s.mana+'%"></em></i></div><div class="rpgx-meter"><label>STAMINA <b>'+Math.round(s.stamina)+'</b></label><i><em style="width:'+s.stamina+'%"></em></i></div><div class="rpgx-stat-grid"><div><small>STR</small><b>24</b></div><div><small>AGI</small><b>31</b></div><div><small>INT</small><b>28</b></div><div><small>VIT</small><b>19</b></div></div></section></div><div class="rpgx-items"><div class="rpgx-item"><b>✦</b><span>AETHER BLADE</span><small>+18 DMG</small></div><div class="rpgx-item"><b>◇</b><span>VOID HEART</span><small>+12 MANA</small></div><div class="rpgx-item"><b>◈</b><span>PHASE CLOAK</span><small>+8 EVADE</small></div><div class="rpgx-item"><b>✧</b><span>NEON SIGIL</span><small>+6 CRIT</small></div></div><button class="rpgx-action" data-rpg-chapter>OPEN CHAPTER</button></section>';
-   const c=host.querySelector<HTMLCanvasElement>(".rpgx-char-canvas"),x=c?.getContext("2d");if(c&&x){x.imageSmoothingEnabled=false;x.fillStyle="#070707";x.fillRect(0,0,96,128);for(let i=0;i<18;i++){x.fillStyle=i%2?"#111":"#080808";x.fillRect(i*6,0,2,128)}sprite(x,HERO,32,26,4)}
+   const c=host.querySelector<HTMLCanvasElement>(".rpgx-char-canvas"),x=c?.getContext("2d",{alpha:false});if(c&&x){x.imageSmoothingEnabled=false;x.fillStyle="#070707";x.fillRect(0,0,96,128);for(let i=0;i<18;i++){x.fillStyle=i%2?"#111":"#080808";x.fillRect(i*6,0,2,128)}sprite(x,HERO,32,26,4)}
    host.querySelector("[data-rpg-back]")?.addEventListener("click",buildMenu);
    host.querySelector("[data-rpg-chapter]")?.addEventListener("click",buildLevel);
  }
  function buildPlay(){
-   host.innerHTML='<section class="rpgx rpgx-play"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-play-hud"><div><b id="rpg-chapter">CHAPTER 01</b><span id="rpg-objective">DRONES 0/8</span></div><div class="rpgx-bars"><i><em id="rpg-hp"></em></i><i><em id="rpg-mana"></em></i></div></div><div class="rpgx-bossbar" id="rpg-bossbar" hidden><b id="rpg-boss-name"></b><i><em id="rpg-boss-hp"></em></i></div><div class="rpgx-touch"><div class="rpgx-joystick" data-rpg-joy><i></i></div><div class="rpgx-actions"><button data-rpg-attack>ATK</button><button data-rpg-skill>SKILL</button><button data-rpg-dash>DASH</button></div></div><div class="rpgx-play-top"><button data-rpg-exit>EXIT</button></div></div></section>';
+   host.innerHTML='<section class="rpgx rpgx-play rpgx-quality-'+quality.name+'"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-play-hud"><div><b id="rpg-chapter">CHAPTER 01</b><span id="rpg-objective">DRONES 0/8</span></div><div class="rpgx-bars"><i><em id="rpg-hp"></em></i><i><em id="rpg-mana"></em></i></div></div><div class="rpgx-bossbar" id="rpg-bossbar" hidden><b id="rpg-boss-name"></b><i><em id="rpg-boss-hp"></em></i></div><div class="rpgx-touch"><div class="rpgx-joystick" data-rpg-joy><i></i></div><div class="rpgx-actions"><button data-rpg-attack>ATK</button><button data-rpg-skill>SKILL</button><button data-rpg-dash>DASH</button></div></div><div class="rpgx-play-top"><button data-rpg-exit>EXIT</button></div></div></section>';
    bindPlay();
  }
  function bindPlay(){
@@ -121,7 +132,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    if(boss&&dist(px,py,boss.x,boss.y)<range+5){boss.hp-=power;boss.hit=.12;burst(boss.x,boss.y,16);if(boss.hp<=0)finishLevel()}
    shake=.22;flash=.12;
  }
- function burst(x:number,y:number,n:number){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=8+Math.random()*28;sparks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.25+Math.random()*.45})}}
+ function burst(x:number,y:number,n:number){const count=Math.max(1,Math.round(n*quality.sparks/10));for(let i=0;i<count;i++){const a=Math.random()*6.28,v=8+Math.random()*28;sparks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.25+Math.random()*.45})}}
  function finishLevel(){won=true;s.screen="level";s.level++;s.xp=clamp(s.xp+15,0,100);s.chapter=s.chapter>=3?1:s.chapter+1;save(s);buildVictory()}
  function buildVictory(){
    host.innerHTML='<section class="rpgx-character rpgx-level-screen"><header class="rpgx-char-head"><div><small>MISSION COMPLETE</small><strong>'+esc(LEVELS[(s.chapter+1)%3].name)+'</strong></div><span>LV '+s.level+'</span></header><div class="rpgx-level-art"><div class="rpgx-comic-tag">CLEAR</div><h2>MISSION<br>COMPLETE</h2><p>THE ENEMY CORE COLLAPSED. THE NEXT CHAPTER IS READY.</p><div class="rpgx-objective"><small>REWARD</small><b>XP +15 · LEVEL UP · NEW CHAPTER UNLOCKED</b></div><button class="rpgx-action" data-rpg-next>CONTINUE</button><button class="rpgx-action" data-rpg-menu>MAIN MENU</button></div></section>';
@@ -198,7 +209,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
   x.strokeStyle="rgba(255,32,32,.36)";
   for(let i=0;i<5;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*48,108);x.stroke()}
   // Rain and atmospheric streaks
-  for(let i=0;i<34;i++){
+  for(let i=0;i<quality.rain;i++){
     const rx=(i*37+Math.floor(elapsed*(32+i%7)))%200-2,ry=(i*19+Math.floor(elapsed*(20+i%5)))%82;
     x.fillStyle=i%5===0?"rgba(255,32,32,.7)":"rgba(255,255,255,.42)";
     x.fillRect(rx,ry,1,2+i%3);
@@ -213,14 +224,17 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
   // Pixel lamps with restrained bloom.
   for(const lx of [28,166]){
     x.fillStyle="#242424";x.fillRect(lx,61,1,19);x.fillRect(lx-2,61,5,2);
-    const lg=x.createRadialGradient(lx,63,0,lx,63,10);
-    lg.addColorStop(0,"rgba(255,32,32,.20)");lg.addColorStop(1,"rgba(255,32,32,0)");
-    x.fillStyle=lg;x.fillRect(lx-10,53,20,20);x.fillStyle="#ff2020";x.fillRect(lx,62,1,2);
+    if(quality.bloom){const lg=x.createRadialGradient(lx,63,0,lx,63,10);lg.addColorStop(0,"rgba(255,32,32,.20)");lg.addColorStop(1,"rgba(255,32,32,0)");x.fillStyle=lg;x.fillRect(lx-10,53,20,20)}
+    x.fillStyle="#ff2020";x.fillRect(lx,62,1,2);
   }
 }
 function draw(now:number){
-   const c=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"),x=c?.getContext("2d");if(!c||!x)return;
-   const dt=Math.min(.033,(now-last)/1000);last=now;elapsed+=dt;
+   if(!alive)return;
+   const frameInterval=1000/quality.fps;
+   if(lastFrame&&now-lastFrame<frameInterval){raf=requestAnimationFrame(draw);return}
+   lastFrame=now;
+   const c=activeCanvas,x=activeContext;if(!c||!x)return;
+   const dt=Math.min(.05,(now-last)/1000);last=now;elapsed+=dt;
    if(s.screen!=="play"){
      x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);x.fillStyle="#050505";x.fillRect(0,0,W,H);
      drawBackground(x,elapsed);
