@@ -521,11 +521,11 @@ function drawSelect(){
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
 
-   // Персонаж больше и никогда не исчезает при повороте: только лёгкий эффект глубины.
-   const avatarTop=y+cardH*.20;
-   const avatarBottom=y+cardH*.67;
+   // Персонаж начинается заметно ниже имени: зоны не пересекаются даже на узком экране.
+   const avatarTop=y+cardH*.30;
+   const avatarBottom=y+cardH*.68;
    const avatarZoneH=avatarBottom-avatarTop;
-   const artScale=Math.max(1.05,Math.min(1.38,cardW/235));
+   const artScale=Math.max(.92,Math.min(1.16,cardW/255));
    const spin=performance.now()/1000*.42+i*.8;
    const spinX=.72+.28*Math.abs(Math.cos(spin));
    c.save();
