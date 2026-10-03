@@ -3559,16 +3559,6 @@ main{
   box-shadow:none!important;
 }
 
-/* TOUCH-FIRST NAVIGATION — the HUD is always visible; no collapse handle. */
-.portal-toolbar-item,
-.portal-toolbar-language-button,
-.home-portal > .home-card,
-.home-portal > .home-hero,
-.home-portal > .home-library{
-  touch-action:manipulation!important;
-  -webkit-tap-highlight-color:transparent!important;
-}
-
 /* HOME SCREEN-FIT — keep the approved compact portal scale on tall touch screens. */
 .home-portal{
   height:clamp(300px,52vw,620px)!important;
@@ -3591,17 +3581,6 @@ main{
   }
 }
 
-/* TOUCH HUD — swipe left on the bar to hide; swipe right from the left edge to reveal. */
-.portal-workspace.portal-hud-hidden{
-  grid-template-columns:0 minmax(0,1fr)!important;
-}
-.portal-workspace.portal-hud-hidden > main{
-  padding-left:1px!important;
-}
-.portal-workspace.portal-hud-hidden > main > .home-portal{
-  width:100%!important;
-}
-
 /* HOME BLOCKS — square edges, preserve all other geometry */
 .home-portal > .home-hero,
 .home-portal > .home-card,
@@ -3609,31 +3588,6 @@ main{
   border-radius:0!important;
 }
 
-/* BOTTOM HUD — single authoritative toolbar layout */
-.portal-home-workspace,
-.portal-route-workspace{
-  grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr)!important;
-}
-.portal-workspace > main{
-  grid-column:1!important;
-  grid-row:1!important;
-  width:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  height:100%!important;
-  padding-left:max(1px,var(--tg-content-safe-area-inset-left,0px))!important;
-  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
-  padding-top:1px!important;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
-}
-.portal-workspace.portal-hud-hidden > main{
-  padding-bottom:1px!important;
-}
-.portal-workspace.portal-hud-hidden > main > .home-portal{
-  width:100%!important;
-  height:100%!important;
-}
 /* HOME HERO — automatic internal scaling and alignment */
 .home-hero{
   container-type:size!important;
@@ -3984,4 +3938,3 @@ main{
   margin:0!important;
   align-self:center!important;
 }
-
