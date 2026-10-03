@@ -9,13 +9,13 @@ type Phase="select"|"fight"|"result";
 type Fighter={
   id:FighterId; name:string; tag:string; speed:number; power:number; guard:number;
   accent:string; skin:string; skinHi:string; skinShadow:string; gear:string; gearHi:string;
-  build:number; head:number;
+  build:number; head:number; burstName:string; burstColor:string;
 };
 const W=640,H=448;
 const fighters:Record<FighterId,Fighter>={
-  vex:{id:"vex",name:"VEX",tag:"URBAN RUNNER",speed:8,power:5,guard:4,accent:"#54d6d8",skin:"#a96858",skinHi:"#d18b70",skinShadow:"#6e4038",gear:"#182027",gearHi:"#36444b",build:0,head:0},
-  ruma:{id:"ruma",name:"RUMA",tag:"DESERT GUARDIAN",speed:5,power:8,guard:7,accent:"#c58b48",skin:"#996149",skinHi:"#c98563",skinShadow:"#5f3b31",gear:"#57422f",gearHi:"#866644",build:1,head:1},
-  korr:{id:"korr",name:"KORR",tag:"INDUSTRIAL HEAVY",speed:3,power:9,guard:9,accent:"#d86c35",skin:"#705047",skinHi:"#9b6d59",skinShadow:"#402f2b",gear:"#30383d",gearHi:"#59636a",build:2,head:2}
+  vex:{id:"vex",name:"VEX",tag:"URBAN RUNNER",speed:8,power:5,guard:4,accent:"#54d6d8",skin:"#a96858",skinHi:"#d18b70",skinShadow:"#6e4038",gear:"#182027",gearHi:"#36444b",build:0,head:0,burstName:"RUSH",burstColor:"#7ff7f7"},
+  ruma:{id:"ruma",name:"RUMA",tag:"DESERT GUARDIAN",speed:5,power:8,guard:7,accent:"#c58b48",skin:"#996149",skinHi:"#c98563",skinShadow:"#5f3b31",gear:"#57422f",gearHi:"#866644",build:1,head:1,burstName:"GUARDIAN",burstColor:"#f0bd73"},
+  korr:{id:"korr",name:"KORR",tag:"INDUSTRIAL HEAVY",speed:3,power:9,guard:9,accent:"#d86c35",skin:"#705047",skinHi:"#9b6d59",skinShadow:"#402f2b",gear:"#30383d",gearHi:"#59636a",build:2,head:2,burstName:"OVERDRIVE",burstColor:"#ff995f"}
 };
 const palette=["#07090b","#0e1215","#171d21","#242d32","#38434a","#59656b","#7d898d","#aab1b4","#d5d8d7","#f0eee7"];
 type Input={left:boolean;right:boolean;guard:boolean;burst:boolean;};
@@ -267,7 +267,7 @@ function bar(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,v:number,fl
   const fill=Math.round((w-2)*clamp(v,0,1));if(fill<=0)return;
   rect(ctx,flip?x+w-1-fill:x+1,y+1,fill,6,accent);
 }
-function hud(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,hpA:number,hpB:number,time:number,round:number,scoreA:number,scoreB:number){
+function hud(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,hpA:number,hpB:number,time:number,round:number,scoreA:number,scoreB:number,energyA=0,energyB=0){
   rect(ctx,0,0,W,34,"#050708");
   text(ctx,a.name,8,4,8,"#f0eee7");text(ctx,a.tag,8,16,5,a.accent);
   text(ctx,b.name,312,4,8,"#f0eee7","right");text(ctx,b.tag,312,16,5,b.accent,"right");
@@ -275,6 +275,8 @@ function hud(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,hpA:number,hpB:num
   rect(ctx,149,4,22,22,"#11171b");text(ctx,String(Math.max(0,Math.ceil(time))).padStart(2,"0"),160,8,8,"#f0eee7","center");
   text(ctx,"R"+round,160,18,5,"#7e898d","center");
   text(ctx,String(scoreA)+" : "+String(scoreB),160,28,5,"#7e898d","center");
+  text(ctx,"ENERGY",48,25,4,a.accent);bar(ctx,68,26,40,energyA/100,false,a.accent);
+  text(ctx,"ENERGY",212,25,4,b.accent,"right");bar(ctx,224,26,40,energyB/100,true,b.accent);
 }
 
 function drawEmblem(ctx:CanvasRenderingContext2D,id:FighterId,cx:number,cy:number,active:boolean){
@@ -321,15 +323,22 @@ function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
 function frameForSelection(id:FighterId){
   return id==="vex"?2:id==="ruma"?7:12;
 }
+function drawFightIntro(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,frame:number){
+  ctx.save();ctx.scale(2,2);ctx.fillStyle="#050708";ctx.fillRect(0,0,320,224);
+  text(ctx,"FREEzzz ARENA",160,55,8,"#7e898d","center");
+  text(ctx,a.name,70,78,18,a.accent,"center");text(ctx,"VS",160,86,10,"#f0eee7","center");text(ctx,b.name,250,78,18,b.accent,"center");
+  drawSprite(ctx,a,70,177,frame,false,false,1.05);drawSprite(ctx,b,250,177,frame+8,true,false,1.05);
+  text(ctx,"GET READY",160,204,7,"#d5d8d7","center");ctx.restore();
+}
 function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number){
   ctx.save();ctx.scale(2,2);
   ctx.fillStyle="#07090b";ctx.fillRect(0,0,W,H);
-  text(ctx,"ROUND COMPLETE",160,42,10,"#7e898d","center");
+  text(ctx,finalMatch?"MATCH COMPLETE":"ROUND COMPLETE",160,42,10,"#7e898d","center");
   text(ctx,winner.name,160,66,24,winner.accent,"center");
   text(ctx,"WIN",160,96,12,"#f0eee7","center");
   drawSprite(ctx,winner,160,181,4,false,false,1);
   text(ctx,scoreA+" : "+scoreB,160,194,8,"#d5d8d7","center");
-  text(ctx,"ENTER  NEXT ROUND     ESC  SELECT",160,211,6,"#7e898d","center");
+  text(ctx,finalMatch?"ENTER  NEW MATCH     ESC  SELECT":"ENTER  NEXT ROUND     ESC  SELECT",160,211,6,"#7e898d","center");
   ctx.restore();
 }
 
@@ -341,14 +350,15 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
   const canvas=root.querySelector<HTMLCanvasElement>("canvas")!;const ctx=canvas.getContext("2d",{alpha:false})!;ctx.imageSmoothingEnabled=true;
   let phase:Phase="select",selected:FighterId="vex",enemy:FighterId="ruma";
   let hpA=100,hpB=100,time=60,round=1,scoreA=0,scoreB=0,frame=0,last=performance.now(),raf=0,coolA=0,coolB=0,winner:FighterId=selected;
+  let energyA=0,energyB=0,intro=0,finalMatch=false,flashA=0,flashB=0;
 
   function nextEnemy(id:FighterId){return id==="vex"?"ruma":id==="ruma"?"korr":"vex" as FighterId;}
-  function startRound(){enemy=nextEnemy(selected);phase="fight";hpA=100;hpB=100;time=60;coolA=0;coolB=0;xA=92;xB=228;}
+  function startRound(){enemy=nextEnemy(selected);phase="fight";hpA=100;hpB=100;time=60;coolA=0;coolB=0;energyA=0;energyB=0;flashA=0;flashB=0;xA=88;xB=232;intro=1.1;finalMatch=false;}
   function startGame(){scoreA=0;scoreB=0;round=1;startRound();}
   function cycle(dir:number){const ids:FighterId[]=["vex","ruma","korr"],i=ids.indexOf(selected);selected=ids[(i+dir+3)%3];}
   function setKey(e:KeyboardEvent,down:boolean){
     if(e.key==="ArrowLeft")input.left=down;if(e.key==="ArrowRight")input.right=down;if(e.key.toLowerCase()==="g")input.guard=down;if(e.key===" "||e.key.toLowerCase()==="x")input.burst=down;
-    if(down&&e.key==="Enter"){if(phase==="select")startGame();else if(phase==="result"){if(scoreA>=2||scoreB>=2){phase="select";scoreA=0;scoreB=0;round=1;}else{round++;startRound();}}}
+    if(down&&e.key==="Enter"){if(phase==="select")startGame();else if(phase==="result"){if(finalMatch){phase="select";scoreA=0;scoreB=0;round=1;}else{round++;startRound();}}}
     if(down&&e.key==="Escape")phase="select";
   }
   const keydown=(e:KeyboardEvent)=>{if(["ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();setKey(e,true);};
@@ -363,10 +373,11 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
   });
 
   function update(dt:number){
-    frame++;
+    frame++;flashA=Math.max(0,flashA-dt);flashB=Math.max(0,flashB-dt);
     if(phase==="select"){if(input.left){input.left=false;cycle(-1);}if(input.right){input.right=false;cycle(1);}return;}
     if(phase==="result")return;
-    time-=dt;
+    if(intro>0){intro=Math.max(0,intro-dt);return;}
+    time=Math.max(0,time-dt);
     const f=fighters[selected],e=fighters[enemy],speed=25+f.speed*2;
     if(input.left)xA-=speed*dt;if(input.right)xA+=speed*dt;xA=clamp(xA,42,278);
     const dir=xA<xB?-1:1;
@@ -376,21 +387,38 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
       if(xA<xB){xA=mid-27;xB=mid+27;}else{xA=mid+27;xB=mid-27;}
     }
     coolA=Math.max(0,coolA-dt);coolB=Math.max(0,coolB-dt);
-    if(input.burst&&coolA<=0){input.burst=false;coolA=.42;const d=Math.abs(xA-xB);if(d<52)hpB-=Math.max(5,f.power*.95-(input.guard?1:0));else xA=clamp(xA+dir*20,42,278);}
-    if(Math.abs(xA-xB)<46&&coolB<=0){coolB=.72;if(!input.guard)hpA-=Math.max(3,e.power*.52);}
+    energyA=clamp(energyA+dt*(input.guard?3:1.2),0,100);
+    energyB=clamp(energyB+dt*1.4,0,100);
+    if(input.burst&&coolA<=0&&energyA>=35){
+      input.burst=false;energyA-=35;coolA=.55;
+      const d=Math.abs(xA-xB);
+      if(d<58){const damage=f.power*(f.id==="vex"?1.05:f.id==="ruma"?1.18:1.28);hpB-=damage*(input.guard?.45:1);flashB=.12;}
+      else xA=clamp(xA+dir*(f.id==="vex"?26:f.id==="ruma"?18:13),42,278);
+    }
+    if(Math.abs(xA-xB)<48&&coolB<=0){coolB=.9;hpA-=Math.max(1,e.power*(input.guard?.18:.42));energyB=clamp(energyB+8,0,100);flashA=.08;}
     if(hpA<=0||hpB<=0||time<=0){
       winner=hpA>=hpB?selected:enemy;
       if(winner===selected)scoreA++;else scoreB++;
+      finalMatch=scoreA>=2||scoreB>=2;
       phase="result";
     }
   }
   let xA=92,xB=228;
   function render(t:number){
-    update(Math.min(.05,(t-last)/1000));last=t;
+    const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);
     if(phase==="select")drawSelect(ctx,selected);
     else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB);
-    else{drawArena(ctx,t);ctx.save();ctx.scale(2,2);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,184,frame+2,true,false,1.18);drawSprite(ctx,fighters[selected],xA,184,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1.18);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");ctx.restore();}
-    raf=requestAnimationFrame(render);
+    else if(intro>0)drawFightIntro(ctx,fighters[selected],fighters[enemy],frame);
+    else{
+      drawArena(ctx,t);ctx.save();ctx.scale(2,2);
+      hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB,energyA,energyB);
+      drawSprite(ctx,fighters[enemy],xB,184,frame+4,true,false,1.18);
+      drawSprite(ctx,fighters[selected],xA,184,frame,false,false,1.18);
+      if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");
+      if(input.burst)text(ctx,fighters[selected].burstName,xA,188,5,fighters[selected].burstColor,"center");
+      ctx.restore();
+    }
+  raf=requestAnimationFrame(render);
   }
   raf=requestAnimationFrame(render);
   const resize=()=>{const box=root.querySelector<HTMLElement>(".freezzz-arena-screen");if(!box)return;canvas.style.width="100%";canvas.style.height="100%";};
