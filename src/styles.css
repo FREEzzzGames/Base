@@ -5814,3 +5814,18 @@ html.visual-comfort-enabled video{
 @media (prefers-reduced-motion:reduce){
   .rpgx-canvas{transform:none}
 }
+
+
+/* FREEzzz Arena — isolated game surface */
+.freezzz-arena{width:100%;min-height:620px;background:#050708;border:1px solid #252c30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden;contain:layout paint style}
+.freezzz-arena-screen{width:min(960px,100%);aspect-ratio:320/224;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.freezzz-arena-canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;background:#07090b}
+.freezzz-arena-scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.16) 3px);mix-blend-mode:multiply}
+.freezzz-arena-controls{width:min(960px,100%);display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.freezzz-arena-controls button{min-width:64px;height:36px;border:1px solid #343d42;border-radius:0;background:#0b0f12;color:#d5d8d7;font:700 10px monospace;touch-action:none}
+.freezzz-arena-controls button:active{background:#1b2328;border-color:#7e898d}
+@media (max-width:700px){
+  .freezzz-arena{min-height:560px}
+  .freezzz-arena-screen{width:100%}
+  .freezzz-arena-controls button{min-width:58px;height:40px}
+}
