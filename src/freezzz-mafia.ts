@@ -710,7 +710,7 @@ function drawWorld(m:Mission){
  const camX=clamp(player.x-viewWidth/(2*scale),0,map.w-viewWidth/scale);
  const camY=clamp(player.y-viewHeight/(2*scale),0,map.h-viewHeight/scale);
  ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
- if(districtMapImage?.complete&&districtMapImage.naturalWidth>0)ctx.drawImage(districtMapImage,0,0,1500,1180);else drawTopDownBackground();
+ drawTopDownBackground();
  const [exitX,exitY]=topDownExit();
  rect(exitX-24,exitY-24,48,48,"#151d21");rect(exitX-17,exitY-17,34,34,hero().color);
  tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
