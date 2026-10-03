@@ -4993,3 +4993,19 @@ main{
   }
 }
 
+/* HOME HERO — requested typography scale */
+.home-hero-kicker{
+  font-size:clamp(16px,6.4cqh,28px)!important;
+}
+.home-hero h1.home-hero-profile-trigger{
+  font-size:min(68px,16cqh,14cqw)!important;
+}
+.home-hero p{
+  font-size:clamp(13.5px,5.4cqh,24px)!important;
+}
+@container (max-width:360px){
+  .home-hero-kicker{font-size:clamp(14px,6cqh,24px)!important}
+  .home-hero h1.home-hero-profile-trigger{font-size:min(60px,16cqh,16cqw)!important}
+  .home-hero p{font-size:clamp(12px,5cqh,21px)!important}
+}
+
