@@ -25,6 +25,8 @@ const input:Input={left:false,right:false,guard:false,burst:false};
 function clamp(v:number,a:number,b:number){return Math.max(a,Math.min(b,v));}
 function shade(hex:string,n:number){const x=hex.replace("#","");const r=parseInt(x.slice(0,2),16),g=parseInt(x.slice(2,4),16),b=parseInt(x.slice(4,6),16);const f=clamp(n,0,1);return "rgb("+Math.round(r*f)+","+Math.round(g*f)+","+Math.round(b*f)+")";}
 function rect(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,c:string){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function ellipse(ctx:CanvasRenderingContext2D,x:number,y:number,rx:number,ry:number,c:string,rot=0){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.fill();}
+function limb(ctx:CanvasRenderingContext2D,x1:number,y1:number,x2:number,y2:number,w:number,c:string){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
 function poly(ctx:CanvasRenderingContext2D,pts:number[],c:string){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=2)ctx.lineTo(pts[i],pts[i+1]);ctx.closePath();ctx.fill();}
 function text(ctx:CanvasRenderingContext2D,s:string,x:number,y:number,size=8,c="#d5d8d7",align:CanvasTextAlign="left"){ctx.font="700 "+size+"px monospace";ctx.textAlign=align;ctx.textBaseline="top";ctx.fillStyle=c;ctx.fillText(s,x,y);}
 function pixel(ctx:CanvasRenderingContext2D,x:number,y:number,c:string){rect(ctx,x,y,1,1,c);}
@@ -255,7 +257,7 @@ function drawFightIntro(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,frame:n
   drawSprite(ctx,a,70,177,frame,false,false,1.08,"guard");drawSprite(ctx,b,250,177,frame+8,true,false,1.08,"guard");
   text(ctx,"GET READY",160,204,7,"#d5d8d7","center");ctx.restore();
 }
-function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number,finalMatch:boolean){
+function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number,finalMatch:boolean,frame:number){
   ctx.save();ctx.scale(2,2);
   ctx.fillStyle="#07090b";ctx.fillRect(0,0,W,H);
   text(ctx,finalMatch?"MATCH COMPLETE":"ROUND COMPLETE",160,42,10,"#7e898d","center");
@@ -332,7 +334,7 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
   function render(t:number){
     const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);
     if(phase==="select")drawSelect(ctx,selected);
-    else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB,finalMatch);
+    else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB,finalMatch,frame);
     else if(intro>0)drawFightIntro(ctx,fighters[selected],fighters[enemy],frame);
     else{
       drawArena(ctx,t);ctx.save();ctx.scale(2,2);
