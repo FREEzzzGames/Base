@@ -3986,3 +3986,38 @@ main{
   margin:0!important;
 }
 
+/* TOOLBAR — video is background only; controls always sit above it. */
+.portal-workspace > .portal-toolbar{
+  position:absolute!important;
+  z-index:1100!important;
+  isolation:isolate!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.portal-workspace > .portal-toolbar-background-video{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+}
+.portal-workspace > .portal-toolbar::after{
+  z-index:1!important;
+  pointer-events:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-main{
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:auto!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav,
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
+  position:relative!important;
+  z-index:3!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-button,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu{
+  pointer-events:auto!important;
+}
+
