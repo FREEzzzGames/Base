@@ -84,6 +84,43 @@ const shared:Mission[]=[
 ];
 
 const allMissions=[...personal,...shared];
+
+type Platform=[number,number,number,number];
+interface TestFloorLayout{
+  platforms:Platform[];
+  spawn:[number,number];
+  exit:[number,number];
+  accents:string;
+}
+
+/* TEST BUILD: one fully playable 3-floor level per family.
+ * The campaign data already contains the later missions; these four are the
+ * first concrete level slices used for the current gameplay test.
+ */
+const testFloorLayouts:Record<FamilyId,TestFloorLayout[][]>={
+  valenti:[
+    [{platforms:[[0,396,640,16],[32,334,210,10],[300,286,150,10],[478,338,130,10],[92,226,170,10],[350,174,190,10],[44,116,180,10],[286,88,170,10],[478,122,140,10]],spawn:[65,360],exit:[560,95],accents:"OFFICE"},
+     {platforms:[[0,396,640,16],[55,344,150,10],[230,304,160,10],[430,346,155,10],[110,242,190,10],[360,206,170,10],[35,144,160,10],[250,108,210,10],[500,150,105,10]],spawn:[55,360],exit:[565,108],accents:"RECORDS"},
+     {platforms:[[0,396,640,16],[40,350,130,10],[210,310,160,10],[430,348,160,10],[100,246,150,10],[300,198,170,10],[475,240,125,10],[180,122,170,10],[410,92,180,10]],spawn:[50,360],exit:[560,92],accents:"ROOFTOP"}],
+  ],
+  moretti:[
+    [{platforms:[[0,396,640,16],[0,338,150,12],[180,350,170,12],[390,326,120,12],[535,300,105,12],[90,244,170,10],[315,218,150,10],[470,166,150,10],[250,108,170,10]],spawn:[48,360],exit:[570,108],accents:"STREET"},
+     {platforms:[[0,396,640,16],[35,350,180,10],[255,350,125,10],[430,350,175,10],[80,274,120,10],[245,238,180,10],[470,274,120,10],[150,150,150,10],[365,116,210,10]],spawn:[55,360],exit:[570,116],accents:"BLOCK"},
+     {platforms:[[0,396,640,16],[70,330,150,10],[280,310,120,10],[460,336,140,10],[120,236,180,10],[350,220,180,10],[55,132,155,10],[260,96,150,10],[455,122,145,10]],spawn:[60,360],exit:[550,96],accents:"ROOFTOP"}],
+  ],
+  rossi:[
+    [{platforms:[[0,396,640,16],[40,340,160,10],[235,318,145,10],[420,342,180,10],[90,250,160,10],[300,230,170,10],[500,260,100,10],[180,142,170,10],[400,106,190,10]],spawn:[60,360],exit:[565,106],accents:"DEPOT"},
+     {platforms:[[0,396,640,16],[20,350,120,10],[170,330,160,10],[370,350,120,10],[510,318,110,10],[80,250,170,10],[300,270,130,10],[455,210,150,10],[230,130,190,10]],spawn:[45,360],exit:[555,130],accents:"WAREHOUSE"},
+     {platforms:[[0,396,640,16],[45,346,160,10],[260,330,140,10],[455,350,145,10],[115,250,150,10],[330,228,160,10],[500,180,110,10],[185,120,155,10],[395,90,190,10]],spawn:[55,360],exit:[555,90],accents:"ROOF"}],
+  ],
+  bellini:[
+    [{platforms:[[0,396,640,16],[25,346,130,10],[190,326,150,10],[385,344,120,10],[520,316,100,10],[80,250,170,10],[315,236,145,10],[475,178,140,10],[245,110,190,10]],spawn:[48,360],exit:[560,110],accents:"DOCK"},
+     {platforms:[[0,396,640,16],[0,350,110,10],[145,340,120,10],[300,350,150,10],[485,330,150,10],[70,270,130,10],[250,250,170,10],[455,220,140,10],[170,132,180,10],[405,100,180,10]],spawn:[40,360],exit:[560,100],accents:"WAREHOUSE"},
+     {platforms:[[0,396,640,16],[55,348,150,10],[245,318,125,10],[420,346,175,10],[110,250,150,10],[310,220,170,10],[505,250,95,10],[175,126,160,10],[405,90,190,10]],spawn:[60,360],exit:[565,90],accents:"EXIT ROUTE"}],
+  ]
+};
+
+const rankNames=[
 const rankNames=["RECRUIT","RUNNER","SOLDIER","OPERATOR","CAPO","UNDERBOSS"];
 const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",damage:3,rate:14,mag:14,cost:450},{name:"REVOLVER",damage:5,rate:28,mag:6,cost:700},{name:"SMG",damage:2,rate:7,mag:24,cost:1100},{name:"SHOTGUN",damage:8,rate:34,mag:5,cost:1400},{name:"CARBINE",damage:6,rate:16,mag:10,cost:1800}];
 
@@ -161,11 +198,17 @@ function drawHud(m:Mission){
  tx("FLOOR "+(floor+1)+"/3, "+m.objective.toUpperCase(),18,57,8,"#aab1b4");
 }
 
+function getTestLayout():TestFloorLayout{
+ const familyId=hero().family;
+ return testFloorLayouts[familyId][Math.min(floor,2)];
+}
+
 function drawWorld(m:Mission){
  drawBackdrop();drawHud(m);
- const platforms=[[0,396,640,16],[40,330,180,10],[270,290,160,10],[470,340,130,10],[120,220,170,10],[350,180,190,10],[30,120,180,10],[260,95,170,10],[470,125,140,10]];
- platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
- const targetX=560,targetY=95;
+ const layout=getTestLayout();
+ layout.platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
+ tx(layout.accents,612,57,6,"#59656b","right");
+ const [targetX,targetY]=layout.exit;
  if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-45,targetX,targetY,"#9f83d6",2);tx("ROUTE",targetX,targetY-18,7,"#9f83d6","center");}
  if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-7,e.y-35,14,2,"#54d6d8"));}
  rect(targetX-8,targetY-8,16,16,hero().color);tx("EXIT",targetX,targetY+18,7,hero().color,"center");
@@ -190,13 +233,17 @@ function drawPlayer(){
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];enemies=[];
- const m=currentMission(),base=3+floor;
+ const m=currentMission(),base=2+floor;
  const types=m.enemies;
+ const layout=getTestLayout();
  for(let i=0;i<base+2;i++){
    const type=types[i%types.length];const hp=18+(i%3)*12+(save.rank*3);
-   enemies.push({type,x:100+i*82%500,y:390-(i%4)*55,hp,maxHp:hp,vx:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
+   const x=92+(i*97+floor*41)%500;
+   const y=layout.platforms[(i+1)%layout.platforms.length][1];
+   enemies.push({type,x,y,hp,maxHp:hp,vx:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
  }
- player={x:65,y:360,vx:0,vy:0,hp:Math.min(player.maxHp,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,grounded:false,cool:0,ability:0,facing:1};
+ const [spawnX,spawnY]=layout.spawn;
+ player={x:spawnX,y:spawnY,vx:0,vy:0,hp:Math.min(player.maxHp,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,grounded:false,cool:0,ability:0,facing:1};
 }
 
 function fire(){
@@ -224,7 +271,7 @@ function update(dt:number){
  if(player.ability>0&&hero().id==="massimo")player.vx*=1.04;
  player.vy+=.42;player.x=clamp(player.x+player.vx,18,622);player.y+=player.vy;
  player.grounded=false;
- const plats=[[0,396,640,16],[40,330,180,10],[270,290,160,10],[470,340,130,10],[120,220,170,10],[350,180,190,10],[30,120,180,10],[260,95,170,10],[470,125,140,10]];
+ const plats=getTestLayout().platforms;
  for(const p of plats)if(player.vy>=0&&player.y>=p[1]&&player.y<=p[1]+12&&player.x>=p[0]&&player.x<=p[0]+p[2]){player.y=p[1];player.vy=0;player.grounded=true;}
  for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life-=dt;if(b.from==="enemy"&&Math.abs(b.x-player.x)<15&&Math.abs(b.y-(player.y-40))<25){b.life=0;hurt(7);}}
  bullets=bullets.filter(b=>b.life>0&&b.x>-10&&b.x<W+10);
@@ -241,7 +288,8 @@ function update(dt:number){
  if(enemies.length===0){objectiveProgress=1;}
  floorTimer+=dt;
  const m=currentMission();
- const reachedExit=player.x>600&&player.y<145;
+ const [exitX,exitY]=getTestLayout().exit;
+ const reachedExit=Math.abs(player.x-exitX)<28&&Math.abs(player.y-exitY)<28;
  const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
  if(objectiveDone){
    if(floor<2){floor++;spawnFloor();}else completeMission();
@@ -277,7 +325,15 @@ function advanceDialogue(){
  const m=currentMission();
  if(mode==="shop"){mode="play";dialogueOpen=false;return;}
  if(mode==="family"){mode="briefing";dialogueIndex=0;dialogueOpen=true;return;}
- if(mode==="result"){dialogueOpen=false;nextMission();return;}
+ if(mode==="result"){
+   dialogueOpen=false;
+   if(m.number===1){
+     mode="select";selected=null;save.hero=null;storeSave();
+   }else{
+     nextMission();
+   }
+   return;
+ }
  if(!dialogueOpen){dialogueOpen=true;dialogueIndex=0;return;}
  dialogueIndex++;
  if(dialogueIndex>=m.dialogue.length){dialogueOpen=false;if(mode==="briefing"){mode="play";floor=0;spawnFloor();}else if(mode==="play"){}}
@@ -344,7 +400,7 @@ function drawResult(){
  tx("RANK · "+rankNames[rank()],320,226,10,hero().color,"center");tx("TOTAL CASH · $"+save.money,320,250,9,"#f0eee7","center");
  if(m.number===10)tx("THE FOUR FAMILIES ARE NOW CONNECTED.",320,290,7,"#aab1b4","center");
  if(m.number===13)tx("CHAPTER I COMPLETE",320,290,11,hero().color,"center");
- tx("TAP · CONTINUE",320,350,8,"#f0eee7","center");
+ tx(m.number===1?"TEST LEVEL COMPLETE · TAP TO RETURN":"TAP · CONTINUE",320,350,8,"#f0eee7","center");
 }
 
 function buyOrSelectWeapon(n:number){
