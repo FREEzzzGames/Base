@@ -4563,7 +4563,7 @@ main{
   padding-left:max(1px,var(--tg-content-safe-area-inset-left,0px))!important;
   padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
   padding-top:1px!important;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
+  padding-bottom:calc(85px + env(safe-area-inset-bottom,0px))!important;
 }
 .portal-workspace > .portal-toolbar{
   position:absolute!important;
@@ -5117,4 +5117,9 @@ button,
     max-height:36px!important;
     flex-basis:36px!important;
   }
+}
+
+/* HOME/BAR — preserve the approved 1px separation above the bottom bar. */
+.portal-workspace > main{
+  padding-bottom:calc(85px + env(safe-area-inset-bottom,0px))!important;
 }
