@@ -4805,7 +4805,7 @@ main{
 
 .home-card[data-pressed="true"],
 .home-card:active{
-  transform:translate3d(0,var(--home-key-depth),var(--home-key-depth)) scale(.995);
+  transform:translate3d(var(--home-key-depth),var(--home-key-depth),var(--home-key-depth)) scale(.995);
   transition-duration:75ms;
 }
 
