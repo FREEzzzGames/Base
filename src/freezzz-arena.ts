@@ -1,7 +1,9 @@
-/* FREEzzz ARENA — complete three-fighter vertical slice.
- * One arena. Three original fighters. 320x224 logical framebuffer.
- * Visual pipeline: layered human silhouette -> material shading -> pixel clusters
- * -> restrained palette -> nearest-neighbour presentation.
+/* FREEzzz MAFIA — vertical 2D platformer foundation.
+ * Three original visual characters from the locked Arena graphics.
+ * Four fictional families. Three-floor missions. Enemy archetypes, career,
+ * weapons, armor, money, shop and mission progression.
+ *
+ * The setting is fictionalized: no real criminal organization is represented.
  */
 
 type FighterId="vex"|"ruma"|"korr";
@@ -133,224 +135,273 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
   if(pose==="hit"){rect(ctx,15+lean,-93,4,2,"#f0eee7");rect(ctx,19+lean,-90,3,2,"#7e898d");}
   ctx.restore();
 }
-function drawArena(ctx:CanvasRenderingContext2D,t:number){
-  ctx.save();ctx.scale(2,2);
-  const g=ctx.createLinearGradient(0,0,0,224);
-  g.addColorStop(0,"#030507");g.addColorStop(.30,"#0c1317");g.addColorStop(.58,"#202a2f");g.addColorStop(1,"#070a0c");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 
-  // Deep ceiling: large architectural bands instead of an empty black field.
-  rect(ctx,0,34,W,2,"#66747a");
-  rect(ctx,0,36,W,4,"#0a0e11");
-  rect(ctx,0,40,W,1,"#344047");
-  for(let y=48;y<128;y+=10)rect(ctx,0,y,W,1,y%20===8?"#273238":"#121a1e");
-  for(let x=-12;x<W+24;x+=38){
-    rect(ctx,x,51,3,78,"#172126");
-    rect(ctx,x+4,56,20,2,"#303c42");
-    rect(ctx,x+7,61,14,1,"#59666c");
-    rect(ctx,x+10,68,8,1,"#28343a");
-  }
+type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
+type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
+type WeaponId="pocket"|"service"|"revolver"|"smg"|"shotgun"|"carbine";
+type GameMode="select"|"mission"|"shop"|"result";
+type MissionState="briefing"|"play"|"complete";
+type Family={id:FamilyId;name:string;accent:string;desc:string;bonus:string;};
+type Weapon={id:WeaponId;name:string;damage:number;rate:number;range:number;mag:number;cost:number;rank:number;skill:number;spread:number;};
+type Armor={name:string;hp:number;cost:number;rank:number;};
+type Enemy={type:EnemyType;name:string;hp:number;speed:number;damage:number;range:number;cooldown:number;reward:number;};
+type PlayerState={family:FamilyId;fighter:FighterId;rank:number;xp:number;money:number;hp:number;armor:number;weapon:WeaponId;skill:number;floor:number;x:number;y:number;vy:number;shots:number;};
 
-  // Large distant light banks and moving specular points.
-  for(const x of [43,107,213,277]){
-    rect(ctx,x-2,48,4,76,"#11191d");
-    rect(ctx,x-9,51,18,2,"#3c484e");
-    rect(ctx,x-6,56,12,2,"#69767b");
-    rect(ctx,x-4,60,8,1,"#aeb6b7");
-  }
-  for(let i=0;i<28;i++){
-    const x=(i*47+t*.018)%W;
-    const y=44+(i%6)*11;
-    rect(ctx,x,y,1+(i%3),1,"#536168");
-  }
+const families:Record<FamilyId,Family>={
+  valenti:{id:"valenti",name:"VALENTI",accent:"#54d6d8",desc:"Fast operators and couriers.",bonus:"+speed / +pistol skill"},
+  moretti:{id:"moretti",name:"MORETTI",accent:"#c58b48",desc:"Disciplined street veterans.",bonus:"+health / +revolver skill"},
+  rossi:{id:"rossi",name:"ROSSI",accent:"#d86c35",desc:"Heavy hitters with strong defenses.",bonus:"+armor / +shotgun skill"},
+  bellini:{id:"bellini",name:"BELLINI",accent:"#9f83d6",desc:"Technical specialists and marksmen.",bonus:"+accuracy / +rifle skill"}
+};
 
-  // Mid-ground platform with depth rails.
-  rect(ctx,0,126,W,3,"#59656b");
-  rect(ctx,0,130,W,2,"#11181c");
-  rect(ctx,0,145,W,1,"#3a454b");
-  rect(ctx,0,160,W,2,"#12191d");
-  for(let x=16;x<W;x+=32){rect(ctx,x,132,2,30,"#202a2f");rect(ctx,x-7,138,16,2,"#313c42");}
+const weapons:Record<WeaponId,Weapon>={
+  pocket:{id:"pocket",name:"POCKET 9",damage:7,rate:.28,range:125,mag:8,cost:0,rank:1,skill:0,spread:1},
+  service:{id:"service",name:"SERVICE",damage:10,rate:.32,range:145,mag:10,cost:350,rank:2,skill:1,spread:1},
+  revolver:{id:"revolver",name:"REVOLVER",damage:16,rate:.55,range:155,mag:6,cost:650,rank:3,skill:2,spread:.5},
+  smg:{id:"smg",name:"SMG",damage:6,rate:.12,range:135,mag:24,cost:1100,rank:4,skill:3,spread:3},
+  shotgun:{id:"shotgun",name:"SHOTGUN",damage:25,rate:.75,range:95,mag:5,cost:1450,rank:5,skill:4,spread:8},
+  carbine:{id:"carbine",name:"CARBINE",damage:21,rate:.42,range:190,mag:12,cost:2200,rank:6,skill:5,spread:1}
+};
 
-  // Foreground floor, perspective grid and illuminated edge.
-  rect(ctx,0,174,W,3,"#080b0d");
-  rect(ctx,0,177,W,47,"#050708");
-  for(let y=184;y<224;y+=8)rect(ctx,0,y,W,1,"#161e22");
-  for(let x=0;x<W;x+=16)rect(ctx,x,177,1,47,"#12191d");
-  for(let i=0;i<12;i++){
-    const x=8+i*27;
-    rect(ctx,x,177,1,47,"#1d272c");
-    if(i%2===0)rect(ctx,x-5,181,11,1,"#3a464c");
-  }
-  rect(ctx,0,177,W,1,"#6a767a");
+const armors:Armor[]=[
+  {name:"LIGHT VEST",hp:20,cost:500,rank:2},
+  {name:"STREET VEST",hp:40,cost:1000,rank:4},
+  {name:"HEAVY VEST",hp:70,cost:1800,rank:6}
+];
 
-  // Original arena title plates.
-  text(ctx,"FREEzzz ARENA",8,42,7,"#a0aaad");
-  text(ctx,"SECTOR 03",312,42,7,"#a0aaad","right");
-  text(ctx,"FIGHT DECK",160,54,5,"#556268","center");
-  ctx.restore();
-}
-function bar(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,v:number,flip=false,accent="#d5d8d7"){
-  rect(ctx,x,y,w,8,"#07090b");rect(ctx,x+1,y+1,w-2,6,"#293137");
-  const fill=Math.round((w-2)*clamp(v,0,1));if(fill<=0)return;
-  rect(ctx,flip?x+w-1-fill:x+1,y+1,fill,6,accent);
-}
-function hud(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,hpA:number,hpB:number,time:number,round:number,scoreA:number,scoreB:number,energyA=0,energyB=0){
-  rect(ctx,0,0,W,34,"#050708");
-  text(ctx,a.name,8,4,8,"#f0eee7");text(ctx,a.tag,8,16,5,a.accent);
-  text(ctx,b.name,312,4,8,"#f0eee7","right");text(ctx,b.tag,312,16,5,b.accent,"right");
-  bar(ctx,48,6,92,hpA/100,false,a.accent);bar(ctx,272,6,92,hpB/100,true,b.accent);
-  rect(ctx,149,4,22,22,"#11171b");text(ctx,String(Math.max(0,Math.ceil(time))).padStart(2,"0"),160,8,8,"#f0eee7","center");
-  text(ctx,"R"+round,160,18,5,"#7e898d","center");
-  text(ctx,String(scoreA)+" : "+String(scoreB),160,28,5,"#7e898d","center");
-  text(ctx,"ENERGY",48,25,4,a.accent);bar(ctx,68,26,40,energyA/100,false,a.accent);
-  text(ctx,"ENERGY",212,25,4,b.accent,"right");bar(ctx,224,26,40,energyB/100,true,b.accent);
-}
+const enemyCatalog:Record<EnemyType,Enemy>={
+  brawler:{type:"brawler",name:"BRAWLER",hp:34,speed:36,damage:9,range:24,cooldown:1.0,reward:12},
+  shooter:{type:"shooter",name:"SHOOTER",hp:28,speed:18,damage:7,range:120,cooldown:1.25,reward:18},
+  heavy:{type:"heavy",name:"HEAVY",hp:85,speed:14,damage:15,range:28,cooldown:1.45,reward:30},
+  rusher:{type:"rusher",name:"RUSHER",hp:25,speed:62,damage:11,range:22,cooldown:1.1,reward:20},
+  guard:{type:"guard",name:"GUARD",hp:48,speed:12,damage:10,range:110,cooldown:1.0,reward:24},
+  sniper:{type:"sniper",name:"SNIPER",hp:24,speed:5,damage:32,range:260,cooldown:4.2,reward:45},
+  suppressor:{type:"suppressor",name:"SUPPRESSOR",hp:42,speed:8,damage:4,range:180,cooldown:.35,reward:35},
+  flanker:{type:"flanker",name:"FLANKER",hp:30,speed:48,damage:8,range:25,cooldown:.85,reward:25}
+};
 
-function drawEmblem(ctx:CanvasRenderingContext2D,id:FighterId,cx:number,cy:number,active:boolean){
-  const f=fighters[id];
-  ctx.save();
-  ctx.globalAlpha=active?.95:.65;
-  ctx.strokeStyle=f.accent;
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  if(id==="vex"){ctx.moveTo(cx,cy-15);ctx.lineTo(cx+12,cy-5);ctx.lineTo(cx+8,cy+13);ctx.lineTo(cx-8,cy+13);ctx.lineTo(cx-12,cy-5);ctx.closePath();}
-  else if(id==="ruma"){ctx.moveTo(cx,cy-16);ctx.lineTo(cx+14,cy);ctx.lineTo(cx,cy+16);ctx.lineTo(cx-14,cy);ctx.closePath();}
-  else{ctx.moveTo(cx-15,cy-8);ctx.lineTo(cx,cy-17);ctx.lineTo(cx+15,cy-8);ctx.lineTo(cx+11,cy+11);ctx.lineTo(cx,cy+17);ctx.lineTo(cx-11,cy+11);ctx.closePath();}
-  ctx.stroke();
-  rect(ctx,cx-2,cy-2,4,4,f.accent);
-  ctx.restore();
-}
-function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
-  ctx.save();ctx.scale(2,2);
-  ctx.fillStyle="#050607";ctx.fillRect(0,0,W,H);
-  rect(ctx,0,0,W,2,"#7b8588");
-  text(ctx,"SELECT FIGHTER",160,8,13,"#f0eee7","center");
-  text(ctx,"FREEzzz ARENA",160,25,6,"#8b969a","center");
-  text(ctx,"THREE ORIGINAL FIGHTERS",160,34,5,"#566168","center");
+type Mob={enemy:EnemyType;x:number;y:number;hp:number;cooldown:number;dir:number;shotFlash:number;};
+type Bullet={x:number;y:number;vx:number;damage:number;enemy:boolean;life:number;};
 
-  const ids:FighterId[]=["vex","ruma","korr"];
-  ids.forEach((id,i)=>{
-    const f=fighters[id],x=54+i*106,active=id===selected;
-    // Poster-like card with a dark portrait field and faction mark.
-    rect(ctx,x-49,46,98,137,active?"#151d21":"#0b1013");
-    rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
-    rect(ctx,x-44,51,88,87,"#070b0d");
-    drawEmblem(ctx,id,x,72,active);
-    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.26,"idle");
-    rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
-    text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
-    text(ctx,f.tag,x,161,5,f.accent,"center");
-    text(ctx,"SPD "+f.speed+"  PWR "+f.power+"  GRD "+f.guard,x,171,4,"#7e898d","center");
-  });
-  text(ctx,"◀  ▶   SELECT",80,204,6,"#d5d8d7","center");
-  text(ctx,"ENTER   START",240,204,6,"#d5d8d7","center");
-  ctx.restore();
+const floorNames=["STREET","BACK ROOMS","ROOFTOP"];
+const W2=640,H2=448;
+const platformY=[352,250,148];
+const input2={left:false,right:false,up:false,down:false,fire:false};
+let familySelected:FamilyId="valenti";
+
+function moneyText(n:number){return "$"+Math.max(0,Math.floor(n)).toLocaleString("en-US");}
+function rankName(rank:number){return ["RECRUIT","RUNNER","SOLDIER","OPERATOR","CAPO","UNDERBOSS"][Math.min(5,rank-1)]||"RECRUIT";}
+function xpForRank(rank:number){return 100+rank*80;}
+
+function drawBackground(ctx:CanvasRenderingContext2D,t:number,floor:number){
+  ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);
+  const sky=ctx.createLinearGradient(0,0,0,H2);sky.addColorStop(0,"#06080b");sky.addColorStop(1,"#20282c");ctx.fillStyle=sky;ctx.fillRect(0,0,W2,H2);
+  // Keep the locked industrial pixel language, but stage it as a platformer.
+  for(let x=0;x<W2;x+=32){rect(ctx,x,58,2,250,"#151d21");if(x%64===0)rect(ctx,x+5,80,21,2,"#2d383d");}
+  for(let y=70;y<310;y+=22)rect(ctx,0,y,W2,1,"#11191d");
+  for(let i=0;i<10;i++){const x=(i*71+t*.008)%W2;rect(ctx,x,46+(i%4)*18,3,2,"#6b777c");}
+  const py=platformY[floor];
+  rect(ctx,0,py+8,W2,H2-py-8,"#080b0d");
+  rect(ctx,0,py,W2,3,"#687479");
+  rect(ctx,0,py+4,W2,2,"#182126");
+  for(let x=0;x<W2;x+=24){rect(ctx,x,py+7,1,H2-py-7,"#131b1f");}
+  // background architecture differs by floor.
+  if(floor===0){for(let x=24;x<620;x+=80){rect(ctx,x,py-95,46,95,"#0d1317");rect(ctx,x+7,py-78,30,42,"#182126");}}
+  if(floor===1){for(let x=18;x<620;x+=92){rect(ctx,x,py-135,4,135,"#39464c");rect(ctx,x+12,py-115,52,3,"#202b30");}}
+  if(floor===2){rect(ctx,0,py-70,W2,4,"#39464c");for(let x=12;x<620;x+=58){rect(ctx,x,py-66,2,66,"#1b2429");}}
+  text(ctx,"FREEzzz CITY",8,42,6,"#727e82");
+  text(ctx,floorNames[floor]+" / 03",312,42,6,"#a0aaad","right");
 }
 
-function frameForSelection(id:FighterId){
-  return id==="vex"?2:id==="ruma"?7:12;
-}
-function drawFightIntro(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,frame:number){
-  ctx.save();ctx.scale(2,2);ctx.fillStyle="#050708";ctx.fillRect(0,0,320,224);
-  text(ctx,"FREEzzz ARENA",160,55,8,"#7e898d","center");
-  text(ctx,a.name,70,78,18,a.accent,"center");text(ctx,"VS",160,86,10,"#f0eee7","center");text(ctx,b.name,250,78,18,b.accent,"center");
-  drawSprite(ctx,a,70,177,frame,false,false,1.08,"guard");drawSprite(ctx,b,250,177,frame+8,true,false,1.08,"guard");
-  text(ctx,"GET READY",160,204,7,"#d5d8d7","center");ctx.restore();
-}
-function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number,finalMatch:boolean,frame:number){
-  ctx.save();ctx.scale(2,2);
-  ctx.fillStyle="#07090b";ctx.fillRect(0,0,W,H);
-  text(ctx,finalMatch?"MATCH COMPLETE":"ROUND COMPLETE",160,42,10,"#7e898d","center");
-  text(ctx,winner.name,160,66,24,winner.accent,"center");
-  text(ctx,"WIN",160,96,12,"#f0eee7","center");
-  drawSprite(ctx,winner,160,181,frame,false,false,1.18,"victory");
-  text(ctx,scoreA+" : "+scoreB,160,194,8,"#d5d8d7","center");
-  text(ctx,finalMatch?"ENTER  NEW MATCH     ESC  SELECT":"ENTER  NEXT ROUND     ESC  SELECT",160,211,6,"#7e898d","center");
-  ctx.restore();
+function drawPlatformPlayer(ctx:CanvasRenderingContext2D,f:Fighter,p:PlayerState,frame:number){
+  const pose:Pose=input2.fire?"burst":input2.left||input2.right?"move":"idle";
+  drawSprite(ctx,f,p.x,p.y,frame,false,false,1.02,pose);
+  if(input2.fire){rect(ctx,p.x+22,p.y-76,12,3,f.accent);}
 }
 
-export function mountFreezzzArena(host:HTMLElement):()=>void{
+function drawMob(ctx:CanvasRenderingContext2D,m:Mob,frame:number){
+  const e=enemyCatalog[m.enemy];
+  const fake:Fighter=m.enemy==="heavy"||m.enemy==="guard"?fighters.korr:m.enemy==="sniper"?fighters.ruma:fighters.vex;
+  const pose:Pose=m.shotFlash>0?"burst":m.enemy==="brawler"||m.enemy==="rusher"||m.enemy==="flanker"?"move":"guard";
+  ctx.save();ctx.globalAlpha=.9;drawSprite(ctx,fake,m.x,m.y,frame+7,m.dir<0,false,.72,pose);ctx.restore();
+  const w=m.enemy==="heavy"?38:30;
+  rect(ctx,m.x-w/2,m.y-137,w,4,"#07090b");
+  rect(ctx,m.x-w/2,m.y-137,w*clamp(m.hp/e.hp,0,1),4,"#b9c0c2");
+  text(ctx,e.name,m.x,m.y-149,4,"#9aa4a7","center");
+}
+
+function drawHUD2(ctx:CanvasRenderingContext2D,p:PlayerState,mission:number){
+  rect(ctx,0,0,W2,35,"#050708");
+  text(ctx,rankName(p.rank),8,5,8,"#f0eee7");text(ctx,p.family.toUpperCase(),8,18,5,families[p.family].accent);
+  text(ctx,moneyText(p.money),312,5,8,"#f0eee7","right");text(ctx,"R"+p.rank+"  "+p.xp+"/"+xpForRank(p.rank)+" XP",312,18,5,"#8f9a9e","right");
+  rect(ctx,126,6,72,7,"#1a2226");rect(ctx,127,7,70*clamp(p.hp/100,0,1),5,families[p.family].accent);
+  text(ctx,"HP",116,6,4,"#8f9a9e","right");
+  text(ctx,weapons[p.weapon].name,8,37,5,"#d5d8d7");
+  text(ctx,"MISSION "+mission+" · "+floorNames[p.floor],160,37,5,"#7e898d","center");
+  text(ctx,"ARMOR "+Math.max(0,p.armor),312,37,5,"#7e898d","right");
+}
+
+function spawnMobs(floor:number):Mob[]{
+  const sets:EnemyType[][]=[
+    ["brawler","shooter","rusher","brawler"],
+    ["shooter","heavy","flanker","guard","rusher"],
+    ["sniper","suppressor","heavy","flanker","guard","shooter"]
+  ];
+  return sets[floor].map((type,i)=>({enemy:type,x:110+i*92,y:platformY[floor],hp:enemyCatalog[type].hp,cooldown:.7+i*.35,dir:i%2? -1:1,shotFlash:0}));
+}
+
+export function mountFreezzzMafia(host:HTMLElement):()=>void{
   host.innerHTML="";
-  const root=document.createElement("section");root.className="freezzz-arena";
-  root.innerHTML='<div class="freezzz-arena-screen"><canvas class="freezzz-arena-canvas" width="'+W+'" height="'+H+'" aria-label="FREEzzz Arena"></canvas><div class="freezzz-arena-scanlines"></div></div><div class="freezzz-arena-controls"><button data-arena="left">◀</button><button data-arena="right">▶</button><button data-arena="guard">GUARD</button><button data-arena="burst">BURST</button><button data-arena="start">START</button></div>';
+  const root=document.createElement("section");root.className="freezzz-mafia";
+  root.innerHTML='<div class="freezzz-mafia-screen"><canvas width="'+W2+'" height="'+H2+'" aria-label="FREEzzz Mafia platformer"></canvas><div class="freezzz-mafia-scanlines"></div></div><div class="freezzz-mafia-controls"><button data-mafia="left">◀</button><button data-mafia="right">▶</button><button data-mafia="up">JUMP</button><button data-mafia="fire">FIRE</button><button data-mafia="shop">SHOP</button></div>';
   host.append(root);
-  const inline=document.createElement("style");inline.textContent=".freezzz-arena{min-height:0!important;height:auto!important;justify-content:flex-start!important;gap:8px!important;padding:0!important}.freezzz-arena-screen{width:100%!important;aspect-ratio:320/224!important;flex:none!important}.freezzz-arena-canvas{image-rendering:pixelated!important;image-rendering:crisp-edges!important}.freezzz-arena-controls{padding:0 0 8px}@media(max-width:700px){.freezzz-arena-controls{gap:5px}.freezzz-arena-controls button{min-width:58px!important;height:44px!important}}";root.append(inline);const canvas=root.querySelector<HTMLCanvasElement>("canvas")!;const ctx=canvas.getContext("2d",{alpha:false})!;ctx.imageSmoothingEnabled=false;
-  let phase:Phase="select",selected:FighterId="vex",enemy:FighterId="ruma";
-  let hpA=100,hpB=100,time=60,round=1,scoreA=0,scoreB=0,frame=0,last=performance.now(),raf=0,coolA=0,coolB=0,winner:FighterId=selected;
-  let energyA=0,energyB=0,intro=0,finalMatch=false,flashA=0,flashB=0,burstTimer=0,hitTimerA=0,hitTimerB=0;
+  const style=document.createElement("style");style.textContent='.freezzz-mafia{width:100%;background:#050708;border:1px solid #252c30;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}.freezzz-mafia-screen{width:100%;aspect-ratio:640/448;position:relative;overflow:hidden}.freezzz-mafia-screen canvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}.freezzz-mafia-scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.14) 3px)}.freezzz-mafia-controls{width:100%;display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.freezzz-mafia-controls button{min-width:62px;height:40px;border:1px solid #343d42;border-radius:0;background:#0b0f12;color:#d5d8d7;font:700 10px monospace;touch-action:none}.freezzz-mafia-controls button:active{background:#1b2328;border-color:#7e898d}@media(max-width:700px){.freezzz-mafia-controls button{min-width:58px;height:44px}}';root.append(style);
+  const canvas=root.querySelector<HTMLCanvasElement>("canvas")!;const ctx=canvas.getContext("2d",{alpha:false})!;ctx.imageSmoothingEnabled=false;
 
-  function nextEnemy(id:FighterId){return id==="vex"?"ruma":id==="ruma"?"korr":"vex" as FighterId;}
-  function startRound(){const opponents:FighterId[]=selected==="vex"?["ruma","korr"]:selected==="ruma"?["korr","vex"]:["vex","ruma"];enemy=opponents[Math.min(round-1,1)];phase="fight";hpA=100;hpB=100;time=60;coolA=0;coolB=0;energyA=0;energyB=0;flashA=0;flashB=0;burstTimer=0;hitTimerA=0;hitTimerB=0;xA=88;xB=232;intro=1.25;finalMatch=false;}
-  function startGame(){scoreA=0;scoreB=0;round=1;startRound();}
-  function cycle(dir:number){const ids:FighterId[]=["vex","ruma","korr"],i=ids.indexOf(selected);selected=ids[(i+dir+3)%3];}
-  function setKey(e:KeyboardEvent,down:boolean){
-    if(e.key==="ArrowLeft")input.left=down;if(e.key==="ArrowRight")input.right=down;if(e.key.toLowerCase()==="g")input.guard=down;if(e.key===" "||e.key.toLowerCase()==="x")input.burst=down;
-    if(down&&e.key==="Enter"){if(phase==="select")startGame();else if(phase==="result"){if(finalMatch){phase="select";scoreA=0;scoreB=0;round=1;}else{round++;startRound();}}}
-    if(down&&e.key==="Escape")phase="select";
+  let mode:GameMode="select",missionState:MissionState="briefing",frame=0,last=performance.now(),raf=0;
+  let mission=1,mobs:Mob[]=[],bullets:Bullet[]=[],floorClear=false,fireCooldown=0,missionTimer=0,notice="",noticeTimer=0;
+  let player:PlayerState={family:"valenti",fighter:"vex",rank:1,xp:0,money:150,hp:100,armor:0,weapon:"pocket",skill:0,floor:0,x:80,y:platformY[0],vy:0,shots:0};
+
+  function configureFamily(id:FamilyId){
+    familySelected=id;
+    const map:Record<FamilyId,FighterId>={valenti:"vex",moretti:"ruma",rossi:"korr",bellini:"vex"};
+    player.family=id;player.fighter=map[id];player.rank=1;player.xp=0;player.money=150;player.hp=100;player.armor=0;player.weapon="pocket";player.skill=0;player.floor=0;player.x=80;player.y=platformY[0];player.vy=0;
   }
-  const keydown=(e:KeyboardEvent)=>{if(["ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();setKey(e,true);};
-  const keyup=(e:KeyboardEvent)=>setKey(e,false);
-  window.addEventListener("keydown",keydown);window.addEventListener("keyup",keyup);
-
-  root.querySelectorAll<HTMLButtonElement>("[data-arena]").forEach(btn=>{
-    const a=btn.dataset.arena||"";
-    const press=()=>{if(a==="left")input.left=true;if(a==="right")input.right=true;if(a==="guard")input.guard=true;if(a==="burst")input.burst=true;if(a==="start"){if(phase==="select")startGame();else if(phase==="result"){if(scoreA>=2||scoreB>=2){phase="select";scoreA=0;scoreB=0;round=1;}else{round++;startRound();}}}};
-    const release=()=>{if(a==="left")input.left=false;if(a==="right")input.right=false;if(a==="guard")input.guard=false;if(a==="burst")input.burst=false;};
-    btn.addEventListener("pointerdown",press);btn.addEventListener("pointerup",release);btn.addEventListener("pointercancel",release);btn.addEventListener("pointerleave",release);
-  });
-
+  function startMission(){missionState="briefing";mode="mission";player.floor=0;player.x=70;player.y=platformY[0];player.hp=Math.min(100,player.hp+20);mobs=spawnMobs(0);bullets=[];missionTimer=0;floorClear=false;notice="MISSION "+mission+" · "+floorNames[0];noticeTimer=2;}
+  function beginPlay(){missionState="play";missionTimer=0;}
+  function completeMission(){
+    missionState="complete";mode="result";
+    const reward=500+mission*250;
+    player.money+=reward;player.xp+=120+mission*40;
+    while(player.xp>=xpForRank(player.rank)&&player.rank<6){player.xp-=xpForRank(player.rank);player.rank++;notice="PROMOTED · "+rankName(player.rank);noticeTimer=2.2;}
+    notice="MISSION COMPLETE  +"+moneyText(reward);noticeTimer=3;
+  }
+  function openShop(){mode="shop";}
+  function buyWeapon(id:WeaponId){
+    const w=weapons[id];if(player.rank<w.rank||player.skill<w.skill||player.money<w.cost)return;
+    player.money-=w.cost;player.weapon=id;notice="EQUIPPED · "+w.name;noticeTimer=1.5;
+  }
+  function buyArmor(a:Armor){
+    if(player.rank<a.rank||player.money<a.cost)return;
+    player.money-=a.cost;player.armor=a.hp;player.hp=Math.min(100+Math.floor(a.hp*.25),player.hp+25);notice="EQUIPPED · "+a.name;noticeTimer=1.5;
+  }
+  function shoot(){
+    const w=weapons[player.weapon];if(fireCooldown>0)return;
+    fireCooldown=w.rate;player.shots++;
+    const dir=input2.left?-1:1;
+    bullets.push({x:player.x+dir*24,y:player.y-78,vx:dir*(190+w.range*.15),damage:w.damage*(1+player.skill*.06),enemy:false,life:w.range/1000});
+  }
+  function hurtPlayer(d:number){
+    const absorb=Math.min(player.armor,d*.55);player.armor-=absorb;const left=d-absorb;player.hp-=left;
+    if(player.hp<=0){player.hp=100;player.money=Math.max(0,player.money-100);startMission();}
+  }
+  function updateMobs(dt:number){
+    for(const m of mobs){
+      const e=enemyCatalog[m.enemy];m.cooldown=Math.max(0,m.cooldown-dt);m.shotFlash=Math.max(0,m.shotFlash-dt);
+      const dx=player.x-m.x,dist=Math.abs(dx);m.dir=dx<0?-1:1;
+      if(m.enemy==="brawler"||m.enemy==="rusher"||m.enemy==="flanker"){
+        const speed=e.speed*(m.enemy==="flanker"?1.15:1);
+        if(dist>e.range)m.x+=Math.sign(dx)*speed*dt;
+        if(m.enemy==="flanker"&&dist>60)m.x+=Math.sin(frame*.03+m.x)*18*dt;
+      }else if(m.enemy==="sniper"){
+        if(dist<160)m.x-=Math.sign(dx)*e.speed*dt;
+      }else if(m.enemy==="shooter"||m.enemy==="guard"||m.enemy==="suppressor"){
+        if(dist<e.range*.55)m.x-=Math.sign(dx)*e.speed*dt;
+        else if(dist>e.range*.8)m.x+=Math.sign(dx)*e.speed*dt;
+      }else if(m.enemy==="heavy"&&dist>e.range)m.x+=Math.sign(dx)*e.speed*dt;
+      m.x=clamp(m.x,30,610);
+      if(m.cooldown<=0&&dist<=e.range){
+        m.cooldown=e.cooldown;m.shotFlash=.12;
+        if(m.enemy==="sniper"){
+          if(dist>70)bullets.push({x:m.x,y:m.y-82,vx:Math.sign(dx)*280,damage:e.damage,enemy:true,life:.95});
+        }else if(e.range>40){
+          bullets.push({x:m.x,y:m.y-78,vx:Math.sign(dx)*120,damage:e.damage,enemy:true,life:1.1});
+        }else hurtPlayer(e.damage);
+      }
+    }
+  }
+  function updateBullets(dt:number){
+    bullets=bullets.filter(b=>{
+      b.x+=b.vx*dt;b.life-=dt;if(b.life<=0||b.x<0||b.x>W2)return false;
+      if(!b.enemy){
+        for(const m of mobs){if(Math.abs(b.x-m.x)<18&&Math.abs(b.y-(m.y-72))<55){m.hp-=b.damage;b.life=0;break;}}
+      }else if(Math.abs(b.x-player.x)<20&&Math.abs(b.y-(player.y-72))<52){hurtPlayer(b.damage);return false;}
+      return b.life>0;
+    });
+  }
   function update(dt:number){
-    frame++;flashA=Math.max(0,flashA-dt);flashB=Math.max(0,flashB-dt);burstTimer=Math.max(0,burstTimer-dt);hitTimerA=Math.max(0,hitTimerA-dt);hitTimerB=Math.max(0,hitTimerB-dt);
-    if(phase==="select"){if(input.left){input.left=false;cycle(-1);}if(input.right){input.right=false;cycle(1);}return;}
-    if(phase==="result")return;
-    if(intro>0){intro=Math.max(0,intro-dt);return;}
-    time=Math.max(0,time-dt);
-    const f=fighters[selected],e=fighters[enemy],speed=25+f.speed*2;
-    if(input.left)xA-=speed*dt;if(input.right)xA+=speed*dt;xA=clamp(xA,42,278);
-    const dir=xA<xB?-1:1;
-    xB+=Math.sin(frame*.016)*dt*6;xB=clamp(xB,82,266);
-    if(Math.abs(xA-xB)<54){
-      const mid=(xA+xB)/2;
-      if(xA<xB){xA=mid-27;xB=mid+27;}else{xA=mid+27;xB=mid-27;}
-    }
-    coolA=Math.max(0,coolA-dt);coolB=Math.max(0,coolB-dt);
-    energyA=clamp(energyA+dt*(input.guard?3:1.2),0,100);
-    energyB=clamp(energyB+dt*1.4,0,100);
-    if(input.burst&&coolA<=0&&energyA>=35){
-      input.burst=false;energyA-=35;coolA=.55;burstTimer=.18;
-      const d=Math.abs(xA-xB);
-      if(d<58){const damage=f.power*(f.id==="vex"?1.05:f.id==="ruma"?1.18:1.28);hpB-=damage*(input.guard?.45:1);flashB=.12;hitTimerB=.13;}
-      else xA=clamp(xA+dir*(f.id==="vex"?26:f.id==="ruma"?18:13),42,278);
-    }
-    if(Math.abs(xA-xB)<48&&coolB<=0){coolB=.9;hpA-=Math.max(1,e.power*(input.guard?.18:.42));energyB=clamp(energyB+8,0,100);flashA=.08;hitTimerA=.09;}
-    if(hpA<=0||hpB<=0||time<=0){
-      winner=hpA>=hpB?selected:enemy;
-      if(winner===selected)scoreA++;else scoreB++;
-      finalMatch=scoreA>=2||scoreB>=2;
-      phase="result";
+    frame++;fireCooldown=Math.max(0,fireCooldown-dt);noticeTimer=Math.max(0,noticeTimer-dt);
+    if(mode!=="mission"||missionState!=="play")return;
+    if(input2.left)player.x-=70*dt;if(input2.right)player.x+=70*dt;player.x=clamp(player.x,25,615);
+    if(input2.up&&player.y>=platformY[player.floor]){player.vy=-185;input2.up=false;}
+    player.vy+=460*dt;player.y+=player.vy*dt;
+    const ground=platformY[player.floor];if(player.y>ground){player.y=ground;player.vy=0;}
+    if(input2.fire)shoot();
+    updateMobs(dt);updateBullets(dt);
+    mobs=mobs.filter(m=>{
+      if(m.hp>0)return true;
+      player.money+=enemyCatalog[m.enemy].reward;player.xp+=12+Math.round(enemyCatalog[m.enemy].reward/3);
+      return false;
+    });
+    if(!mobs.length&&!floorClear){
+      floorClear=true;
+      if(player.floor<2){
+        player.floor++;player.x=55;player.y=platformY[player.floor];mobs=spawnMobs(player.floor);floorClear=false;notice="FLOOR "+(player.floor+1)+" · "+floorNames[player.floor];noticeTimer=2;
+      }else completeMission();
     }
   }
-  let xA=92,xB=228;
+
   function render(t:number){
-    const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);
-    if(phase==="select")drawSelect(ctx,selected);
-    else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB,finalMatch,frame);
-    else if(intro>0)drawFightIntro(ctx,fighters[selected],fighters[enemy],frame);
-    else{
-      drawArena(ctx,t);ctx.save();ctx.scale(2,2);
-      hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB,energyA,energyB);
-      const poseA:Pose=burstTimer>0?"burst":hitTimerA>0?"hit":input.guard?"guard":(input.left||input.right)?"move":"idle";
-      const poseB:Pose=hitTimerB>0?"hit":Math.abs(xA-xB)<60?"guard":"idle";
-      drawSprite(ctx,fighters[enemy],xB,184,frame+5,true,false,1.32,poseB);
-      drawSprite(ctx,fighters[selected],xA,184,frame,false,false,1.32,poseA);
-      if(input.guard)text(ctx,"GUARD",xA,202,5,fighters[selected].accent,"center");
-      if(burstTimer>0)text(ctx,fighters[selected].burstName,xA,193,5,fighters[selected].burstColor,"center");
-      ctx.restore();
+    const dt=Math.min(.04,(t-last)/1000);last=t;update(dt);
+    ctx.clearRect(0,0,W2,H2);
+    if(mode==="select"){
+      ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);text(ctx,"FOUR FAMILIES",320,26,16,"#f0eee7","center");text(ctx,"CHOOSE YOUR NEW MEMBER",320,49,7,"#7e898d","center");
+      const ids:FamilyId[]=["valenti","moretti","rossi","bellini"];
+      ids.forEach((id,i)=>{const x=80+i*160,a=id===familySelected,f=fighters[id==="valenti"?"vex":id==="moretti"?"ruma":id==="rossi"?"korr":"vex"];rect(ctx,x-68,82,136,190,a?"#151d21":"#0b1013");rect(ctx,x-68,82,136,3,a?families[id].accent:"#263137");text(ctx,families[id].name,x,95,10,a?"#f0eee7":"#aeb5b7","center");text(ctx,families[id].desc,x,113,5,"#8d989c","center");drawSprite(ctx,f,x,225,frame+i*4,false,false,.85,"idle");text(ctx,families[id].bonus,x,250,5,families[id].accent,"center");});text(ctx,"◀ ▶ SELECT    ENTER START",320,300,7,"#d5d8d7","center");text(ctx,"Career platformer · fictional city · 3 floors",320,320,5,"#58646a","center");
+    }else if(mode==="shop"){
+      ctx.fillStyle="#07090b";ctx.fillRect(0,0,W2,H2);text(ctx,"ARMORY & OUTFITTER",320,22,14,"#f0eee7","center");text(ctx,moneyText(player.money),320,43,8,"#d5d8d7","center");
+      const ids:WeaponId[]=["pocket","service","revolver","smg","shotgun","carbine"];ids.forEach((id,i)=>{const w=weapons[id],x=58+(i%3)*210,y=72+Math.floor(i/3)*82,ok=player.rank>=w.rank&&player.skill>=w.skill;rect(ctx,x-88,y,176,66,ok?"#10171b":"#090d10");text(ctx,w.name,x-78,y+8,7,ok?"#f0eee7":"#626c70");text(ctx,"DMG "+w.damage+"  MAG "+w.mag,x-78,y+23,5,"#8d989c");text(ctx,w.cost?moneyText(w.cost):"STARTER",x+78,y+23,5,w.cost?"#d5d8d7":"#687277","right");text(ctx,"R"+w.rank+"  SK"+w.skill,x-78,y+40,5,families[player.family].accent);if(player.weapon===id)text(ctx,"EQUIPPED",x+78,y+40,5,"#d5d8d7","right");});
+      armors.forEach((a,i)=>{const x=100+i*220;const y=245;rect(ctx,x-90,y,180,55,"#10171b");text(ctx,a.name,x-78,y+8,7,"#f0eee7");text(ctx,"HP +"+a.hp,x-78,y+24,5,"#8d989c");text(ctx,moneyText(a.cost),x+78,y+24,5,"#d5d8d7","right");});
+      text(ctx,"1-6 WEAPONS   7-9 ARMOR   ENTER BUY   ESC BACK",320,320,6,"#7e898d","center");
+    }else if(mode==="result"){
+      ctx.fillStyle="#07090b";ctx.fillRect(0,0,W2,H2);text(ctx,"MISSION COMPLETE",320,68,16,"#f0eee7","center");text(ctx,"+"+moneyText(500+mission*250),320,104,12,"#d5d8d7","center");text(ctx,"RANK "+rankName(player.rank),320,130,9,families[player.family].accent,"center");text(ctx,"ENTER NEXT MISSION   S SHOP",320,186,7,"#7e898d","center");
+    }else{
+      drawBackground(ctx,t,player.floor);drawHUD2(ctx,player,mission);
+      for(const b of bullets)rect(ctx,b.x,b.y,7,2,b.enemy?"#d86c35":families[player.family].accent);
+      for(const m of mobs)drawMob(ctx,m,frame);
+      drawPlatformPlayer(ctx,fighters[player.fighter],player,frame);
+      if(noticeTimer>0)text(ctx,notice,320,92,10,"#f0eee7","center");
+      if(missionState==="briefing"){rect(ctx,60,150,520,110,"rgba(0,0,0,.82)");text(ctx,"MISSION "+mission,320,170,12,"#f0eee7","center");text(ctx,"CLEAR ALL THREE FLOORS",320,194,7,families[player.family].accent,"center");text(ctx,"ENTER TO START",320,224,6,"#d5d8d7","center");}
     }
-  raf=requestAnimationFrame(render);
+    raf=requestAnimationFrame(render);
   }
-  raf=requestAnimationFrame(render);
-  const resize=()=>{const box=root.querySelector<HTMLElement>(".freezzz-arena-screen");if(!box)return;canvas.style.width="100%";canvas.style.height="100%";};
-  const ro=new ResizeObserver(resize);ro.observe(root);resize();
-  return ()=>{cancelAnimationFrame(raf);ro.disconnect();window.removeEventListener("keydown",keydown);window.removeEventListener("keyup",keyup);input.left=false;input.right=false;input.guard=false;input.burst=false;host.innerHTML="";};
+
+  function key(e:KeyboardEvent,down:boolean){
+    if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")input2.left=down;
+    if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")input2.right=down;
+    if(e.key==="ArrowUp"||e.key.toLowerCase()==="w")input2.up=down;
+    if(e.key===" "||e.key.toLowerCase()==="f")input2.fire=down;
+    if(down&&e.key==="Enter"){
+      if(mode==="select")startMission();
+      else if(mode==="mission"&&missionState==="briefing")beginPlay();
+      else if(mode==="result"){mission++;startMission();}
+      else if(mode==="shop")mode="mission";
+    }
+    if(down&&e.key.toLowerCase()==="s"){if(mode==="mission"||mode==="result")openShop();}
+    if(down&&e.key==="Escape"){if(mode==="shop")mode="mission";else mode="select";}
+    if(down&&mode==="select"&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){const ids:FamilyId[]=["valenti","moretti","rossi","bellini"];let i=ids.indexOf(familySelected);i=(i+(e.key==="ArrowRight"?1:-1)+4)%4;configureFamily(ids[i]);}
+    if(down&&mode==="shop"){const keys=["1","2","3","4","5","6"];const idx=keys.indexOf(e.key);if(idx>=0)buyWeapon((["pocket","service","revolver","smg","shotgun","carbine"] as WeaponId[])[idx]);if(["7","8","9"].includes(e.key))buyArmor(armors[Number(e.key)-7]);}
+  }
+  const kd=(e:KeyboardEvent)=>{if(["ArrowLeft","ArrowRight","ArrowUp"," "].includes(e.key))e.preventDefault();key(e,true);};
+  const ku=(e:KeyboardEvent)=>key(e,false);
+  window.addEventListener("keydown",kd);window.addEventListener("keyup",ku);
+
+  root.querySelectorAll<HTMLButtonElement>("[data-mafia]").forEach(btn=>{
+    const a=btn.dataset.mafia||"";
+    const down=()=>{if(a==="left")input2.left=true;if(a==="right")input2.right=true;if(a==="up")input2.up=true;if(a==="fire")input2.fire=true;if(a==="shop")openShop();};
+    const up=()=>{if(a==="left")input2.left=false;if(a==="right")input2.right=false;if(a==="up")input2.up=false;if(a==="fire")input2.fire=false;};
+    btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",up);
+  });
+  configureFamily("valenti");raf=requestAnimationFrame(render);
+  return ()=>{cancelAnimationFrame(raf);window.removeEventListener("keydown",kd);window.removeEventListener("keyup",ku);input2.left=input2.right=input2.up=input2.down=input2.fire=false;host.innerHTML="";};
 }
