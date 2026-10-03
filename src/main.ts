@@ -492,6 +492,10 @@ function updateHomeClock(){
 }
 function toggleHud(){
   hudHidden=!hudHidden;
+  if(hudHidden&&view!=="home"){
+    portalEvents.emit("navigation:changed",{view:"home"});
+    return;
+  }
   document.querySelector<HTMLElement>(".portal-workspace")?.classList.toggle("portal-hud-hidden",hudHidden);
   const button=document.querySelector<HTMLButtonElement>("[data-hud-toggle]");
   if(button){
