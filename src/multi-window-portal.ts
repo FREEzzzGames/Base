@@ -129,19 +129,25 @@ function intercept(){
   document.addEventListener("click",e=>{
     const el=(e.target as HTMLElement).closest<HTMLElement>("[data-view]");
     if(!el)return;
-    const id=el.dataset.view as MiniId;
-    if(id!=="live"&&id!=="chat"&&id!=="radio")return;
+    const id=el.dataset.view as "live"|"chat"|"radio"|"game"|"library";
+    if(!["live","chat","radio","game","library"].includes(id))return;
 
-    // HOME cards open floating mini windows; HUD navigation keeps the
-    // original full-screen route behavior.
+    // HOME cards: LIVE/CHAT/RADIO open floating mini windows.
+    // GAME/LIBRARY enter their full-screen route directly.
     if(el.closest(".portal-toolbar")){
-      windows[id].open=false;
-      render();
+      if(id==="live"||id==="chat"||id==="radio"){
+        windows[id].open=false;
+        render();
+      }
       return;
     }
 
     e.preventDefault();
     e.stopImmediatePropagation();
+    if(id==="game"||id==="library"){
+      window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:id}}));
+      return;
+    }
     if(id==="live"&&!liveName)liveName=streams[0]?.name||"";
     toggle(id);
   },true);
