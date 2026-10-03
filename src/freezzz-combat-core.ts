@@ -26,7 +26,7 @@ export interface HsShot {
   vy:number;
   damage:number;
   life:number;
-  owner:"player"|"enemy";
+  from:"player"|"enemy";
   penetration:number;
   weaponId:string;
   shotId:number;
@@ -132,12 +132,12 @@ export function traceShot(s:HsShot,dt:number,obstacles:HsObstacle[]){
   s.x=nx;s.y=ny;s.life-=dt;
   return {blocked:false,hitObstacle:false};
 }
-export function spawnShots(x:number,y:number,angle:number,w:HsWeaponDef,owner:"player"|"enemy",shotId:number){
+export function spawnShots(x:number,y:number,angle:number,w:HsWeaponDef,from:"player"|"enemy",shotId:number){
   const out:HsShot[]=[];
   for(let i=0;i<w.pellets;i++){
     const u=Math.random()*2-1;
     const a=angle+u*w.spread;
-    out.push({x,y,vx:Math.cos(a)*w.muzzleSpeed,vy:Math.sin(a)*w.muzzleSpeed,damage:w.damage,life:w.range/w.muzzleSpeed,owner,penetration:w.penetration,weaponId:w.id,shotId:shotId+i,hitIds:new Set()});
+    out.push({x,y,vx:Math.cos(a)*w.muzzleSpeed,vy:Math.sin(a)*w.muzzleSpeed,damage:w.damage,life:w.range/w.muzzleSpeed,from,penetration:w.penetration,weaponId:w.id,shotId:shotId+i,hitIds:new Set()});
   }
   return out;
 }
