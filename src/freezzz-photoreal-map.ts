@@ -8,7 +8,7 @@ const E=(c:CanvasRenderingContext2D,x:number,y:number,rx:number,ry:number,f:stri
 function asphalt(c:CanvasRenderingContext2D,r:PhotoRoad[]){
  for(let ri=0;ri<r.length;ri++){const q=r[ri];const g=c.createLinearGradient(q.x,q.y,q.x+(q.w>q.h?q.w:0),q.y+(q.h>q.w?q.h:0));g.addColorStop(0,"#3e4344");g.addColorStop(.5,"#454a4b");g.addColorStop(1,"#3b4041");R(c,q.x+3,q.y+3,q.w-6,q.h-6,g as unknown as string);
   const n=Math.max(6,Math.floor((q.w+q.h)/110));for(let i=0;i<n;i++){const horizontal=q.w>q.h;const x=horizontal?q.x+18+(i*83)%Math.max(20,q.w-36):q.x+q.w*.35+((i*17)%7);const y=horizontal?q.y+q.h*.30+((i*19)%7):q.y+18+(i*71)%Math.max(20,q.h-36);const w=8+(i%5)*7;L(c,x,y,x+(horizontal?w:2),y+(horizontal?2:w),"rgba(20,24,24,.20)",1);if(i%4===0)E(c,x+3,y+2,5+(i%3)*2,2,"rgba(15,18,18,.11)",.2)}
-  if(horizontal){for(let i=0;i<3;i++)L(c,q.x+18,q.y+q.h*.28+i*2,q.x+q.w-20,q.y+q.h*.28+i*2,"rgba(25,28,28,.09)",1)}else{for(let i=0;i<3;i++)L(c,q.x+q.w*.32+i*2,q.y+18,q.x+q.w*.32+i*2,q.y+q.h-20,"rgba(25,28,28,.09)",1)}
+  if(q.w>q.h){for(let i=0;i<3;i++)L(c,q.x+18,q.y+q.h*.28+i*2,q.x+q.w-20,q.y+q.h*.28+i*2,"rgba(25,28,28,.09)",1)}else{for(let i=0;i<3;i++)L(c,q.x+q.w*.32+i*2,q.y+18,q.x+q.w*.32+i*2,q.y+q.h-20,"rgba(25,28,28,.09)",1)}
  }
 }
 function curbAndSidewalk(c:CanvasRenderingContext2D,r:PhotoRoad[]){for(const q of r){const h=q.w>q.h,span=h?q.w:q.h;for(let i=0;i<span;i+=32){if(h){L(c,q.x+i,q.y-3,q.x+i+16,q.y-3,"rgba(90,93,89,.34)",1);L(c,q.x+i+2,q.y+q.h+3,q.x+i+18,q.y+q.h+3,"rgba(72,76,73,.34)",1)}else{L(c,q.x-3,q.y+i,q.x-3,q.y+i+16,"rgba(90,93,89,.34)",1);L(c,q.x+q.w+3,q.y+i,q.x+q.w+3,q.y+i+16,"rgba(72,76,73,.34)",1)}}}}
