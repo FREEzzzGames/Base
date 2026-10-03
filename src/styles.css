@@ -5829,3 +5829,18 @@ html.visual-comfort-enabled video{
   .freezzz-arena-screen{width:100%}
   .freezzz-arena-controls button{min-width:58px;height:40px}
 }
+
+
+/* FREEzzz MAFIA game surface — scoped, preserves locked portal shell */
+.freezzz-mafia-frame{position:relative;width:100%;max-width:640px;margin:0 auto;background:#07090b;border:1px solid #273136;overflow:hidden;image-rendering:pixelated}
+.freezzz-mafia-canvas{display:block;width:100%;height:auto;aspect-ratio:640/448;background:#07090b;image-rendering:pixelated}
+.freezzz-mafia-ui{position:absolute;inset:0;pointer-events:none}
+.mafia-select-grid{position:absolute;left:3%;right:3%;bottom:5%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;pointer-events:auto}
+.mafia-select-grid button,.mafia-action button,.mafia-controls button{appearance:none;border:1px solid #39464b;background:#11181b;color:#f0eee7;font:700 10px monospace;padding:9px 5px;min-height:38px;touch-action:manipulation}
+.mafia-select-grid button:hover,.mafia-select-grid button:focus,.mafia-action button:hover,.mafia-controls button:focus{border-color:#54d6d8;background:#1a2327}
+.mafia-select-grid small{display:block;color:#7d898d;font-size:7px;margin-top:3px}
+.mafia-action{position:absolute;left:4%;right:4%;bottom:5%;display:flex;justify-content:center;pointer-events:auto}
+.mafia-action button{min-width:190px;border-color:#54d6d8}
+.mafia-controls{position:absolute;left:3%;right:3%;bottom:3%;display:grid;grid-template-columns:repeat(6,1fr);gap:5px;pointer-events:auto}
+.mafia-controls button{min-height:36px;padding:6px 2px}
+@media(max-width:520px){.mafia-select-grid{grid-template-columns:repeat(2,1fr)}.mafia-controls{grid-template-columns:repeat(3,1fr);bottom:2%}.mafia-controls button{min-height:34px}}
