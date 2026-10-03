@@ -35,7 +35,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
       '<div class="rpgx-meter"><label>HP <b>',s.hp,'</b></label><i><em style="width:',s.hp,'%;background:#ff4668"></em></i></div>',
       '<div class="rpgx-meter"><label>MANA <b>',s.mana,'</b></label><i><em style="width:',s.mana,'%;background:#8b7dff"></em></i></div>',
       '<div class="rpgx-meter"><label>STAMINA <b>',s.stamina,'</b></label><i><em style="width:',s.stamina,'%;background:#35e0c0"></em></i></div>',
-      '<div class="rpgx-stat-grid>',["STR 24","AGI 31","INT 28","VIT 19","LUCK 17","CRIT 12%"].map(v=>'<div><small>'+v.split(" ")[0]+'</small><b>'+v.split(" ").slice(1).join(" ")+'</b></div>').join(""),'</div></section></div>',
+      '<div class="rpgx-stat-grid">',["STR 24","AGI 31","INT 28","VIT 19","LUCK 17","CRIT 12%"].map(v=>'<div><small>'+v.split(" ")[0]+'</small><b>'+v.split(" ").slice(1).join(" ")+'</b></div>').join(""),'</div></section></div>',
       '<div class="rpgx-tabs"><button class="active">EQUIPMENT</button><button>ABILITIES</button><button>INVENTORY</button></div>',
       '<div class="rpgx-items">',["✦|AETHER BLADE|LEGENDARY · +18 DMG","◇|VOID HEART|EPIC · +12 MANA","◈|PHASE CLOAK|RARE · +8 EVADE","✧|NEON SIGIL|MYTHIC · +6 CRIT"].map(v=>{const a=v.split("|");return '<div class="rpgx-item"><b>'+a[0]+'</b><span>'+a[1]+'</span><small>'+a[2]+'</small></div>'}).join(""),'</div>',
       '<button class="rpgx-action" data-rpg-pulse>TRIGGER COMBAT VFX</button></section>'
