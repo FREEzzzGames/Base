@@ -11,7 +11,7 @@ type Objective="reach"|"find"|"clear"|"escort"|"defend"|"recover"|"escape"|"surv
 interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:string; ability:string; abilityDesc:string; bio:string; }
 interface Dialogue{speaker:string;text:string}
 interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string; ru:string; desc:string; objective:Objective; floors:[string,string,string]; enemies:EnemyType[]; reward:number; xp:number; dialogue:Dialogue[]; optional?:string; }
-interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;cool:number;shootCool:number;dir:number}
+interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;facing:number}
 interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
@@ -125,13 +125,14 @@ const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",
 
 let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRenderingContext2D|null=null;
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
-let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
+let frame=0,last=0,raf=0,cleanup:()=>void=()=>{};
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,facing:1};
 let enemies:Enemy[]=[],bullets:Bullet[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
-let touch={left:false,right:false,jump:false,fire:false,ability:false};
+let touch={left:false,right:false,jump:false,ability:false};
+let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
@@ -211,6 +212,13 @@ function getTestLayout():TestFloorLayout{
 }
 
 function drawWorld(m:Mission){
+ // Масштаб по высоте: игровая сцена занимает всю высоту Telegram Mini App.
+ // Камера следует за игроком по X, поэтому широкая логическая сцена естественно
+ // обрезается по бокам, а не сжимается по вертикали.
+ const scale=viewHeight/H;
+ const cameraX=clamp(player.x*scale-viewWidth*.5,0,Math.max(0,W*scale-viewWidth));
+ ctx.save();ctx.beginPath();ctx.rect(0,0,viewWidth,viewHeight);ctx.clip();
+ ctx.translate(-cameraX,0);ctx.scale(scale,scale);
  drawBackdrop();drawHud(m);
  const layout=getTestLayout();
  layout.platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
@@ -222,20 +230,21 @@ function drawWorld(m:Mission){
  enemies.forEach(drawEnemy);drawPlayer();
  bullets.forEach(b=>rect(b.x,b.y,5,2,b.from==="player"?hero().color:"#d86c35"));
  if(flash>0){rect(0,0,W,H,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
+ ctx.restore();
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
- const faces:Record<EnemyType,string>={brawler:"#9c5f4e",shooter:"#6d8790",heavy:"#8a6b43",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
  const ties:Record<EnemyType,string>={brawler:"#b94f46",shooter:"#6d8790",heavy:"#c58b48",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
- return {face:faces[type],tie:ties[type]};
+ return {face:"#9a6554",tie:ties[type]};
 }
 function drawEnemy(e:Enemy){
- const v=enemyVisual(e.type);drawMafiaMember(v,e.x,e.y,frame,.56);
- tx(enemyRu(e.type),e.x,e.y-86,5,v.tie,"center");
- rect(e.x-12,e.y-80,24,2,"#20282c");rect(e.x-12,e.y-80,24*clamp(e.hp/e.maxHp,0,1),2,v.tie);
+ const v=enemyVisual(e.type);
+ drawMafiaMember(v,e.x,e.y,frame,.56);
+ if(!e.falling){rect(e.x-12,e.y-80,24,2,"#20282c");rect(e.x-12,e.y-80,24*clamp(e.hp/e.maxHp,0,1),2,v.tie);}
 }
 function drawPlayer(){
  const x=player.x,y=player.y;drawMafiaMember(heroVisual(),x,y,frame,.82);
- const gunX=x+player.facing*26;line(x+player.facing*12,y-52,gunX,y-52,"#9ba3a5",5);
+ const gunX=x+Math.cos(aimAngle)*28,gunY=y-44+Math.sin(aimAngle)*28;
+ line(x+Math.cos(aimAngle)*12,y-44+Math.sin(aimAngle)*12,gunX,gunY,"#9ba3a5",5);
  if(player.ability>0)tx(hero().ability,x,y-104,7,hero().color,"center");
 }
 function spawnFloor(){
@@ -247,7 +256,7 @@ function spawnFloor(){
    const type=types[i%types.length];const hp=18+(i%3)*12+(save.rank*3);
    const x=92+(i*97+floor*41)%500;
    const y=layout.platforms[(i+1)%layout.platforms.length][1];
-   enemies.push({type,x,y,hp,maxHp:hp,vx:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
+   enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
  }
  const [spawnX,spawnY]=layout.spawn;
  player={x:spawnX,y:spawnY,vx:0,vy:0,hp:Math.min(player.maxHp,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,grounded:false,cool:0,ability:0,facing:1};
@@ -255,8 +264,11 @@ function spawnFloor(){
 
 function fire(){
  if(mode!=="play"||player.cool>0)return;
- const w=weapons[save.weapon];if(player.ammo<=0){player.ammo=w.mag;player.cool=18;return;}
- player.ammo--;player.cool=w.rate;bullets.push({x:player.x+player.facing*22,y:player.y-44,vx:player.facing*7,vy:0,from:"player",life:80});
+ const w=weapons[save.weapon];
+ if(player.ammo<=0){player.ammo=w.mag;player.cool=12;return;}
+ player.ammo--;player.cool=w.rate;
+ const speed=7;
+ bullets.push({x:player.x+Math.cos(aimAngle)*22,y:player.y-44+Math.sin(aimAngle)*22,vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
 }
 function useAbility(){
  if(mode!=="play"||player.ability>0)return;
@@ -270,11 +282,12 @@ function hurt(amount:number){
 
 function update(dt:number){
  frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);
- const left=keys.has("ArrowLeft")||keys.has("a")||touch.left,right=keys.has("ArrowRight")||keys.has("d")||touch.right;
+ const left=touch.left,right=touch.right;
  if(left){player.vx=-2.6;player.facing=-1;}else if(right){player.vx=2.6;player.facing=1;}else player.vx*=.75;
- if((keys.has("ArrowUp")||keys.has("w")||touch.jump)&&player.grounded){player.vy=-9;player.grounded=false;}
- if(keys.has(" ")||keys.has("f")||touch.fire)fire();
- if(keys.has("e")||touch.ability)useAbility();
+ if(touch.jump&&player.grounded){player.vy=-9;player.grounded=false;}
+ // Стрельба полностью автоматическая: направление задаёт сенсорное кольцо.
+ if(mode==="play")fire();
+ if(touch.ability)useAbility();
  if(player.ability>0&&hero().id==="massimo")player.vx*=1.04;
  player.vy+=.42;player.x=clamp(player.x+player.vx,18,622);player.y+=player.vy;
  player.grounded=false;
@@ -283,6 +296,7 @@ function update(dt:number){
  for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life-=dt;if(b.from==="enemy"&&Math.abs(b.x-player.x)<15&&Math.abs(b.y-(player.y-40))<25){b.life=0;hurt(7);}}
  bullets=bullets.filter(b=>b.life>0&&b.x>-10&&b.x<W+10);
  for(const e of enemies){
+   if(e.falling){e.vy+=.5*dt;e.y+=e.vy*dt;continue;}
    e.cool-=dt;e.shootCool-=dt;
    const dx=player.x-e.x;
    if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker")e.x+=Math.sign(dx)*(e.type==="rusher"?.9:.45);
@@ -290,8 +304,11 @@ function update(dt:number){
    if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){e.shootCool=e.type==="suppressor"?28:65;bullets.push({x:e.x,y:e.y-40,vx:Math.sign(dx||1)*3.2,vy:0,from:"enemy",life:110});}
    if(Math.abs(e.x-player.x)<24&&Math.abs(e.y-player.y)<40&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
  }
- for(const b of bullets)if(b.from==="player")for(const e of enemies)if(Math.abs(b.x-e.x)<16&&Math.abs(b.y-(e.y-35))<30){e.hp-=weapons[save.weapon].damage;b.life=0;if(e.hp<=0){save.money+=25;save.xp+=18;}}
- enemies=enemies.filter(e=>e.hp>0);
+ for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<16&&Math.abs(b.y-(e.y-35))<30){
+   e.hp-=weapons[save.weapon].damage;b.life=0;
+   if(e.hp<=0){e.falling=true;e.vy=-4.5;save.money+=25;save.xp+=18;}
+ }
+ enemies=enemies.filter(e=>!e.falling||e.y<520);
  if(enemies.length===0){objectiveProgress=1;}
  floorTimer+=dt;
  const m=currentMission();
@@ -478,6 +495,14 @@ function bindButtons(){
    if(a==="shop"){mode="shop";render();}
  });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
+ const sensor=root?.querySelector<HTMLElement>(".mafia-aim-sensor");
+ if(sensor){
+   const setAim=(e:PointerEvent)=>{const r=sensor.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);if(Math.hypot(dx,dy)<10)return;aimAngle=Math.atan2(dy,dx);aimActive=true;};
+   sensor.addEventListener("pointerdown",e=>{e.preventDefault();aimPointerId=e.pointerId;sensor.setPointerCapture(e.pointerId);setAim(e);});
+   sensor.addEventListener("pointermove",e=>{if(e.pointerId===aimPointerId)setAim(e);});
+   const stop=(e:PointerEvent)=>{if(e.pointerId===aimPointerId){aimPointerId=null;aimActive=false;}};
+   sensor.addEventListener("pointerup",stop);sensor.addEventListener("pointercancel",stop);
+ }
 }
 function resizeCanvas(){
  if(!root||!canvas||!ctx)return;
@@ -497,7 +522,7 @@ function render(){
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">ДЕЙСТВИЕ</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div>';
+   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div><div class="mafia-aim-sensor" aria-label="Сенсорное наведение"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div>';
  }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
