@@ -158,7 +158,7 @@ function savePortalSessionSnapshot(){
 }
 
 function renderPortalToolbar(){
-  const items:Array<[View,string,string]>= [
+  const items:Array<[View,string,string]>=[
     ["game","game","GAME"],
     ["live","video","LIVE"],
     ["chat","chat","CHAT"],
@@ -166,25 +166,20 @@ function renderPortalToolbar(){
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"]
   ];
-  const left=items.slice(0,3);
-  const right=items.slice(3);
-  const button=([target,iconName,label]:[View,string,string])=>`<button class="portal-bar-button ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-bar-icon")}</button>`;
-  return `<nav class="portal-bar" aria-label="FREEzzz navigation">
-    <video class="portal-bar-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
-    <div class="portal-bar-surface" aria-hidden="true"></div>
-    <div class="portal-bar-nav" role="tablist">
-      ${left.map(button).join("")}
-      <div class="portal-bar-language">
-        <button class="portal-bar-button portal-bar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">
-          ${icon("languages","portal-bar-icon")}
-        </button>
-        <div class="portal-bar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
-          <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
-          <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
-          <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+  return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
+    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
+    <div class="portal-toolbar-main">
+      <div class="portal-toolbar-nav" role="tablist">
+        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
+        <div class="portal-toolbar-language-wrap">
+          <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
+          <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
+            <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
+            <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
+            <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+          </div>
         </div>
       </div>
-      ${right.map(button).join("")}
     </div>
   </nav>`;
 }
@@ -441,7 +436,26 @@ window.setInterval(updateHomeClock,1000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bindHudTouchGesture(){
-  // Portal BAR is persistent. It must never disappear from the Mini App viewport.
+  if(hudGestureBound)return;
+  hudGestureBound=true;
+  let startX=0,startY=0,tracking=false,triggered=false;
+  document.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;
+  },{passive:true});
+  document.addEventListener("pointermove",e=>{
+    if(!tracking||triggered)return;
+    const dx=e.clientX-startX,dy=e.clientY-startY;
+    if(Math.abs(dx)>Math.abs(dy)+8)return;
+    if(!hudHidden&&startY>=window.innerHeight-72&&dy>44){
+      triggered=true;hudHidden=true;document.querySelector<HTMLElement>(".portal-workspace")?.classList.add("portal-hud-hidden");
+    }else if(hudHidden&&startY>=window.innerHeight-28&&dy<-44){
+      triggered=true;hudHidden=false;document.querySelector<HTMLElement>(".portal-workspace")?.classList.remove("portal-hud-hidden");
+    }
+  },{passive:true});
+  const end=()=>{tracking=false;};
+  document.addEventListener("pointerup",end,{passive:true});
+  document.addEventListener("pointercancel",end,{passive:true});
 }
 function updateHomeClock(){
   if(view!=="home")return;
@@ -479,9 +493,7 @@ function bind(){
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
-      // Tapping the already-open module closes it back to HOME.
-      const target=next===view&&next!=="home"?"home":next;
-      portalEvents.emit("navigation:changed",{view:target});
+      portalEvents.emit("navigation:changed",{view:next});
     };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
