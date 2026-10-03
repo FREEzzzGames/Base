@@ -5263,3 +5263,76 @@ button,
   stroke:currentColor!important;
   stroke-width:1.9!important;
 }
+
+/* ================================================================
+   TYPOGRAPHY AUTHORITY — FREEzzz Portal
+   Body/UI: Space Mono
+   Accent/display: Nothing Font by Dmitriy Sychiov (Sychoff)
+   The Sychoff font is intentionally referenced by family name here;
+   the licensed webfont asset must live in the project before it can
+   be bundled locally.
+   ================================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+
+:root{
+  --portal-font-body:"Space Mono",monospace;
+  --portal-font-accent:"Nothing Font","Space Mono",monospace;
+}
+
+html,
+body,
+#app,
+#app input,
+#app textarea,
+#app select,
+#app button{
+  font-family:var(--portal-font-body)!important;
+}
+
+/* Accent/display positions. */
+.home-hero-kicker,
+.home-hero-clock,
+.home-hero-profile-trigger,
+.home-card-title,
+.section-head h2,
+.section-head h3,
+.profile-card h2,
+.profile-card h3,
+.radio-kicker,
+.radio-heading h3,
+.radio-now-playing h3,
+.game-intro h2,
+.game-section-head h2,
+.game-tabs button,
+.portal-toolbar-language-menu button,
+.chat p b{
+  font-family:var(--portal-font-accent)!important;
+}
+
+/* Keep functional text/data in Space Mono. */
+.home-hero p,
+.home-card,
+.section-head p,
+.stream,
+.stream small,
+.chat,
+.chat-message-body,
+.radio-heading p,
+.radio-now-playing p,
+.radio-genres button,
+.radio-search input,
+.profile-card,
+.profile-card small,
+.profile-row,
+.tg-button,
+.game-portal p,
+.game-portal small,
+.game-portal button,
+.game-portal input{
+  font-family:var(--portal-font-body)!important;
+}
+
+/* Preserve emoji as system glyphs instead of forcing dot-matrix rendering. */
+.chat-emoji{
+  font-family:system-ui,sans-serif!important;
+}
