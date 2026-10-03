@@ -202,28 +202,23 @@ function limb(x1:number,y1:number,x2:number,y2:number,w:number,c:string){
 interface MafiaVisual{face:string;tie:string;suit?:string;}
 function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scale=1){
  if(!ctx)return;
- ctx.save();
- ctx.translate(Math.round(cx),Math.round(ground));
- ctx.scale(scale,scale);
- ctx.translate(0,Math.sin(frame*.08)*.35);
- ellipse(0,0,24,3,"rgba(0,0,0,.72)");
- limb(6,-43,10,-9,11,"#181b1e");limb(-6,-43,-10,-9,11,"#181b1e");
- rect(5,-10,12,3,"#080a0c");rect(-17,-10,12,3,"#080a0c");
- const suit=m.suit||"#1b1e22";
- poly([-19,-83,-12,-89,-5,-56,0,-50,5,-56,12,-89,19,-83,12,-51,0,-45,-12,-51],suit);
- poly([-9,-82,0,-68,9,-82,6,-51,0,-46,-6,-51],"#f0eee7");
- poly([-7,-78,0,-68,7,-78,4,-52,-4,-52],"#d5d8d7");
- rect(-2,-68,4,19,m.tie);rect(-9,-56,18,3,"#0e1114");
- limb(-19,-76,-28,-48,8,suit);limb(19,-76,28,-48,8,suit);
- ellipse(-29,-44,5,6,m.face);ellipse(29,-44,5,6,m.face);
- rect(-7,-98,14,14,m.face);ellipse(0,-105,12,13,m.face);
- rect(-16,-117,32,5,"#111417");rect(-11,-124,22,8,"#171b1f");rect(-18,-119,36,3,"#080a0c");
- rect(-9,-107,18,3,"#c98563");rect(-8,-100,4,2,"#171b1f");rect(4,-100,4,2,"#171b1f");
- rect(-3,-96,6,2,"#6b4038");rect(-6,-92,12,2,"#d5a08b");
- poly([-10,-82,-2,-68,-7,-62,-14,-80],"#30353a");poly([10,-82,2,-68,7,-62,14,-80],"#30353a");
- rect(10,-72,5,4,m.tie);rect(-14,-77,2,12,"#596166");rect(12,-77,2,12,"#596166");rect(-2,-50,4,2,m.tie);
+ ctx.save();ctx.translate(Math.round(cx),Math.round(ground));ctx.scale(scale,scale);
+ ellipse(0,1,22,6,"rgba(0,0,0,.62)");
+ const step=Math.sin(frame*.18)*2.2,suit=m.suit||"#1b1e22",dark="#14191b";
+ limb(-6,-8,-9+step,-27,6,dark);limb(6,-8,9-step,-27,6,dark);
+ rect(-14+step,-30,9,4,"#080b0d");rect(5-step,-30,9,4,"#080b0d");
+ poly([-17,-31,-13,-43,-8,-48,0,-45,8,-48,13,-43,17,-31,10,-15,0,-11,-10,-15],suit);
+ poly([-9,-43,0,-34,9,-43,6,-17,0,-13,-6,-17],"#e1dfd6");
+ poly([-6,-42,0,-34,6,-42,3,-18,-3,-18],"#c8cbc5");
+ rect(-2,-35,4,16,m.tie);line(-10,-20,10,-20,"#30373a",2);
+ limb(-15,-39,-27,-22,7,suit);limb(15,-39,27,-22,7,suit);
+ ellipse(-28,-20,5,5,m.face);ellipse(28,-20,5,5,m.face);
+ ellipse(0,-57,9,10,m.face);rect(-10,-66,20,5,"#101416");rect(-7,-72,14,7,"#1a2022");rect(-13,-67,26,3,"#080b0d");
+ rect(-7,-57,4,2,"#15191b");rect(3,-57,4,2,"#15191b");rect(-4,-51,8,2,"#75483f");
+ rect(-13,-39,3,11,"#5d6668");rect(10,-39,3,11,"#5d6668");rect(-2,-18,4,3,m.tie);
  ctx.restore();
 }
+
 function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
 
 function drawBackdrop(){
@@ -350,128 +345,65 @@ function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
 }
 
 function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;wall:string;kind:string},index:number){
-  const isLow=b.kind==="low",isSchool=b.kind==="school";
-  const type=index%6;
-
-  // Глубокая тень и цоколь дают зданию массу, а не вид плоского квадрата.
-  rect(b.x+16,b.y+18,b.w,b.h,"#293033");
-  rect(b.x+9,b.y+10,b.w,b.h,"#596264");
-  rect(b.x,b.y,b.w,b.h,b.wall);
-  rect(b.x+4,b.y+4,b.w-8,Math.min(26,b.h*.22),b.roof);
-  rect(b.x+4,b.y+Math.min(27,b.h-12),b.w-8,5,"#252d2f");
-  rect(b.x+5,b.y+b.h-12,b.w-10,12,"#252b2d");
-
-  if(isSchool){
-    const cols=Math.max(7,Math.floor((b.w-34)/43));
-    const gap=(b.w-32)/cols;
-    for(let c=0;c<cols;c++){
-      const wx=b.x+16+c*gap;
-      drawFacadeWindow(wx,b.y+48,27,24,(c+index)%4);
-    }
-    // Центральный вход, козырёк и боковые входы.
-    const cx=b.x+b.w*.5;
-    rect(cx-32,b.y+b.h-38,64,38,"#d2cec1");
-    rect(cx-24,b.y+b.h-33,48,33,"#4c392b");
-    rect(cx-37,b.y+b.h-41,74,5,"#596467");
-    rect(cx-8,b.y+b.h-29,16,29,"#76553b");
-    rect(b.x+16,b.y+10,92,12,"#727b7d");
-    tx("ШКОЛА",b.x+62,b.y+19,9,"#ddd9cf","center");
-    // Флаг/мачта и хозяйственный блок.
-    rect(b.x+b.w-30,b.y-12,3,18,"#4e5758");
-    line(b.x+b.w-27,b.y-11,b.x+b.w-8,b.y-8,"#687476",1);
-    return;
-  }
-
-  // Основной фасад. Каждая серия получает другой ритм секций.
-  const cols=isLow?Math.max(4,Math.floor((b.w-30)/44)):Math.max(4,Math.floor((b.w-30)/44));
-  const rows=isLow?1:Math.max(2,Math.floor((b.h-54)/31));
-  const gap=(b.w-30)/cols;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const wx=b.x+15+c*gap;
-      const wy=b.y+46+r*31;
-      const pattern=(type+c+r*2)%7;
-
-      if(pattern===1 || pattern===4){
-        // Остеклённая лоджия.
-        rect(wx-2,wy-2,30,25,"#283335");
-        rect(wx,wy,26,20,"#566d70");
-        rect(wx+2,wy+2,22,16,pattern===1?"#789596":"#4f676a");
-        for(let k=1;k<4;k++)line(wx+2+k*5.5,wy+2,wx+2+k*5.5,wy+18,"#bdc3bd",1);
-        rect(wx-2,wy+20,30,3,"#9b9b92");
-      }else if(pattern===6 && !isLow){
-        // Закрытый балкон.
-        rect(wx-2,wy-2,31,25,"#303a3c");
-        rect(wx,wy,27,20,"#708083");
-        rect(wx+3,wy+3,21,14,"#4b686c");
-        for(let k=1;k<5;k++)line(wx+3+k*4.2,wy+2,wx+3+k*4.2,wy+18,"#c0c4bd",1);
-      }else{
-        drawFacadeWindow(wx,wy,25,20,(pattern+index)%5);
-      }
-
-      // Случайные кондиционеры и бытовые детали.
-      if((index+c*3+r*5)%17===0){
-        rect(wx+20,wy+5,8,5,"#b4b5af");
-        rect(wx+21,wy+4,6,2,"#d1d0c6");
-      }
-      if((index+c*7+r)%23===0){
-        rect(wx+4,wy+22,18,2,"#7e5c43");
-        rect(wx+7,wy+24,2,5,"#554438");
-        rect(wx+19,wy+24,2,5,"#554438");
-      }
-    }
-  }
-
-  // Вертикальные швы панелей — ключевой признак типовой панели.
-  if(b.kind==="panel"){
-    for(let sx=b.x+gap;sx<b.x+b.w;sx+=gap){
-      line(sx,b.y+43,sx,b.y+b.h-13,"#596163",1);
-      line(sx+1,b.y+43,sx+1,b.y+b.h-13,"rgba(230,230,220,.18)",1);
-    }
-    for(let sy=b.y+45;sy<b.y+b.h-14;sy+=31)
-      line(b.x+5,sy,b.x+b.w-5,sy,"rgba(30,36,38,.35)",1);
-  }
-
-  // Кирпичная серия: тонкая сетка кладки и более тёплые торцы.
-  if(b.kind==="brick"){
-    for(let yy=b.y+43;yy<b.y+b.h-13;yy+=9){
-      const off=((yy-b.y)/9)%2?0:6;
-      for(let xx=b.x+5+off;xx<b.x+b.w-5;xx+=12)
-        rect(xx,yy,9,1,"rgba(130,110,85,.34)");
-    }
-  }
-
-  // Подъезды. Они не повторяются идеально симметрично.
-  const doors=Math.max(1,Math.floor(b.w/108));
-  for(let d=0;d<doors;d++){
-    const dx=b.x+(d+.5)*b.w/doors;
-    const doorType=(index+d)%3;
-    rect(dx-17,b.y+b.h-36,34,36,"#d0ccc0");
-    rect(dx-11,b.y+b.h-31,22,31,doorType===0?"#4c382a":doorType===1?"#3d4748":"#594431");
-    rect(dx-16,b.y+b.h-38,32,5,"#656e70");
-    rect(dx-7,b.y+b.h-14,14,2,"#806b51");
-    if(doorType===2){
-      rect(dx-21,b.y+b.h-44,42,5,"#858b89");
-      rect(dx-17,b.y+b.h-43,34,2,"#b2b1a8");
-    }
-  }
-
-  // Крыша: парапет, венткамеры, трубы и телевизионные антенны.
-  rect(b.x+7,b.y+2,b.w-14,3,"#303739");
-  const vents=Math.max(1,Math.floor(b.w/145));
-  for(let v=0;v<vents;v++){
-    const vx=b.x+38+v*(b.w-76)/Math.max(1,vents-1);
-    rect(vx,b.y-5,24,9,"#555f60");
-    rect(vx+3,b.y-9,18,5,"#6c7576");
-    rect(vx+7,b.y-13,3,6,"#4e5758");
-    line(vx+10,b.y-12,vx+27,b.y-15,"#626c6d",1);
-  }
-  if(type===2||type===5){
-    const ax=b.x+b.w*.72;
-    rect(ax,b.y-18,2,14,"#4f595a");
-    line(ax+2,b.y-16,ax+17,b.y-20,"#646d6d",1);
-    line(ax+2,b.y-12,ax+17,b.y-8,"#646d6d",1);
-  }
+ if(!ctx)return;
+ const low=b.kind==="low",school=b.kind==="school",brick=b.kind==="brick";
+ const depth=Math.max(14,Math.min(24,b.h*.10));
+ const roof=brick?"#66635d":school?"#70736c":b.roof;
+ const wall=brick?"#5a5048":school?"#777a70":b.wall;
+ poly([b.x+12,b.y+15,b.x+b.w+12,b.y+15,b.x+b.w+12,b.y+b.h+depth,b.x+12,b.y+b.h+depth],"rgba(8,12,13,.34)");
+ rect(b.x+7,b.y+8,b.w,b.h,"#202728");
+ poly([b.x,b.y+b.h-18,b.x+b.w,b.y+b.h-18,b.x+b.w+8,b.y+b.h+depth,b.x+8,b.y+b.h+depth],wall);
+ poly([b.x+b.w-18,b.y,b.x+b.w,b.y+8,b.x+b.w+8,b.y+b.h+depth,b.x+b.w-8,b.y+b.h+depth],low?"#41494a":"#343c3e");
+ rect(b.x,b.y,b.w,b.h-18,roof);
+ rect(b.x+5,b.y+5,b.w-10,b.h-28,school?"#797c73":brick?"#615e58":"#596366");
+ rect(b.x+8,b.y+8,b.w-16,b.h-34,"rgba(35,42,43,.24)");
+ rect(b.x+4,b.y+4,b.w-8,5,"#353d3e");
+ rect(b.x+4,b.y+b.h-24,b.w-8,6,"#3b4344");
+ if(!school){
+   if(!brick){
+     const gx=Math.max(42,Math.floor(b.w/6)),gy=low?24:30;
+     for(let x=b.x+gx;x<b.x+b.w-4;x+=gx)line(x,b.y+10,x,b.y+b.h-30,"rgba(190,196,191,.16)",1);
+     for(let y=b.y+gy;y<b.y+b.h-28;y+=gy)line(b.x+7,y,b.x+b.w-7,y,"rgba(20,27,28,.28)",1);
+   }else{
+     for(let y=b.y+13;y<b.y+b.h-30;y+=10){
+       const off=((y-b.y)/10)%2?0:7;
+       for(let x=b.x+9+off;x<b.x+b.w-8;x+=14)line(x,y,x+9,y,"rgba(210,174,134,.30)",1);
+     }
+   }
+ }
+ const modules=Math.max(1,Math.floor(b.w/135));
+ for(let i=0;i<modules;i++){
+   const x=b.x+24+i*(b.w-48)/Math.max(1,modules-1),y=b.y+18+(i%2)*28;
+   rect(x,y,30,18,"#444d4e");rect(x+4,y+3,22,11,"#747b79");rect(x+8,y+5,14,7,"#303839");
+   for(let k=0;k<4;k++)rect(x+7+k*5,y+12,2,4,"#202728");
+ }
+ const sx=b.x+b.w*.66,sy=b.y+b.h*.52;
+ rect(sx,sy,34,22,"#343d3f");rect(sx+4,sy+4,26,13,"#626a69");
+ line(sx+8,sy+8,sx+25,sy+8,"#a1a59e",1);line(sx+8,sy+12,sx+20,sy+12,"#41494a",1);
+ if(index%2===0){const ax=b.x+b.w*.78;line(ax,b.y+10,ax,b.y-16,"#3e4748",2);line(ax,b.y-13,ax+18,b.y-17,"#596364",1);line(ax,b.y-13,ax+15,b.y-7,"#596364",1);}
+ rect(b.x+b.w*.48,b.y+b.h*.40,38,30,"#353d3e");
+ rect(b.x+b.w*.48+4,b.y+b.h*.40+4,30,22,"#686f6d");
+ rect(b.x+b.w*.48+8,b.y+b.h*.40+8,22,14,"#252d2e");
+ const cols=Math.max(3,Math.floor((b.w-28)/42)),gap=(b.w-24)/cols;
+ for(let c=0;c<cols;c++){
+   const wx=b.x+12+c*gap,wy=b.y+b.h-14,ww=Math.min(22,gap-8);
+   rect(wx,wy,ww,10,"#202829");rect(wx+2,wy+2,ww-4,5,(c+index)%4===0?"#91a29d":(c+index)%4===1?"#718789":"#485f63");
+   line(wx+ww*.5,wy+2,wx+ww*.5,wy+7,"#bec4bc",1);
+ }
+ if(!school&&!low)for(let c=1;c<cols;c+=3){
+   const bx=b.x+10+c*gap,by=b.y+b.h-23;rect(bx,by,26,3,"#9b9e98");
+   for(let k=0;k<4;k++)line(bx+3+k*6,by,bx+3+k*6,by-9,"#747b79",1);
+ }
+ for(let c=0;c<cols;c++)if((c+index)%7===0){
+   const ax=b.x+14+c*gap;rect(ax,b.y+b.h-2,12,5,"#a4a39b");rect(ax+2,b.y+b.h-5,8,3,"#c4c1b6");
+ }
+ const doors=school?Math.max(1,Math.floor(b.w/160)):Math.max(1,Math.floor(b.w/115));
+ for(let d=0;d<doors;d++){
+   const dx=b.x+(d+.5)*b.w/doors;
+   rect(dx-13,b.y+b.h+depth-22,26,22,"#292f30");rect(dx-9,b.y+b.h+depth-19,18,19,(d+index)%3===0?"#72533a":"#4a5758");
+   rect(dx-17,b.y+b.h+depth-25,34,4,"#737977");
+ }
+ if(school){rect(b.x+18,b.y+b.h-29,92,12,"#5f6868");tx("ШКОЛА",b.x+64,b.y+b.h-20,8,"#dedbd1","center");}
 }
 
 function drawTopDownBackground(){
