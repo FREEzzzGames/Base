@@ -671,12 +671,6 @@ function bind(){
   }
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
-      if(homeLayoutSuppressClick){
-        e.preventDefault();
-        e.stopPropagation();
-        homeLayoutSuppressClick=false;
-        return;
-      }
       if(homeLayoutEditMode&&x.closest(".home-portal")){e.preventDefault();e.stopPropagation();return;}
       e.preventDefault();
       e.stopPropagation();
