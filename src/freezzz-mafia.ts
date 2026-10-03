@@ -1,5 +1,6 @@
 import { portalVideoUrl } from "./video-assets";
 import { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
+import { drawPhotorealDistrict } from "./freezzz-photoreal-map";
 import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
@@ -503,6 +504,7 @@ function drawTopDownBackground(){
  }
  // Архитектура — главный слой карты.
  for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
+ drawPhotorealDistrict(ctx!,m.buildings,m.roads);
 
  function drawUrbanMicroArchitecture(){
    // Дополнительный проход: фасадные выступы, балконы, кондиционеры,
@@ -702,8 +704,6 @@ function drawTopDownBackground(){
  rect(1372,380,68,5,"#31393a");rect(1390,365,10,4,"#e3d8a3");rect(1412,365,10,4,"#e3d8a3");
  rect(1384,350,3,22,"#53686a");rect(1428,350,3,22,"#53686a");
 
- tx("ГВАРДЕЙСКИЙ КВАРТАЛ",750,24,18,"#f0eee7","center");
- tx("ЖИЛОЙ МАССИВ · ШКОЛА · ДВОРЫ · ТРАНСПОРТ",750,46,10,"#c4c9c7","center");
   drawDistrictMicroDetails(ctx!,m.buildings,m.roads);
 }
 function drawWorld(m:Mission){
