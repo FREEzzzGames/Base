@@ -5870,3 +5870,19 @@ html.visual-comfort-enabled video{
 .mafia-controls{position:absolute;left:3%;right:3%;bottom:3%;display:grid;grid-template-columns:repeat(6,1fr);gap:5px;pointer-events:auto}
 .mafia-controls button{min-height:36px;padding:6px 2px}
 @media(max-width:520px){.mafia-select-grid{grid-template-columns:repeat(2,1fr)}.mafia-controls{grid-template-columns:repeat(3,1fr);bottom:2%}.mafia-controls button{min-height:34px}}
+
+/* FREEzzz МАФИЯ — level cheat / navigation */
+.portal-game-fullscreen .mafia-level-menu{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;box-sizing:border-box;padding:4vh 4vw 3vh;background:#07090b;color:#f0eee7}
+.portal-game-fullscreen .mafia-level-title{text-align:center;font:700 clamp(24px,4vw,40px)/1.1 monospace;margin-bottom:1vh}
+.portal-game-fullscreen .mafia-level-list{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:1vh 0 2vh;align-content:start}
+.portal-game-fullscreen .mafia-level-item{min-height:56px;text-align:left;padding:7px 10px;border:1px solid #39464b;background:#0b1013;color:#f0eee7;font:700 clamp(12px,1.8vw,18px) monospace;cursor:pointer}
+.portal-game-fullscreen .mafia-level-item.selected{border-color:#54d6d8;background:#182226}
+.portal-game-fullscreen .mafia-level-item.done{opacity:.9}
+.portal-game-fullscreen .mafia-level-item small{display:block;margin-top:5px;color:#7e898d;font-size:clamp(8px,1.1vw,12px)}
+.portal-game-fullscreen .mafia-level-actions{display:flex;justify-content:center}
+.portal-game-fullscreen .mafia-level-actions button{min-width:220px;padding:12px 18px;background:#0b1013;border:1px solid #f0eee7;color:#f0eee7;font:700 clamp(12px,1.8vw,18px) monospace}
+@media(max-width:700px){
+ .portal-game-fullscreen .mafia-level-list{grid-template-columns:1fr}
+ .portal-game-fullscreen .mafia-controls{grid-template-columns:repeat(3,1fr)!important;width:min(48vw,330px)!important}
+ .portal-game-fullscreen .mafia-controls button{font-size:11px!important}
+}
