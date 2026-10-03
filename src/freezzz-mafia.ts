@@ -129,7 +129,7 @@ let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
-let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,facing:1};
+let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1};
 let enemies:Enemy[]=[],bullets:Bullet[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,ability:false};
