@@ -330,7 +330,7 @@ function drawFightIntro(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,frame:n
   drawSprite(ctx,a,70,177,frame,false,false,1.05);drawSprite(ctx,b,250,177,frame+8,true,false,1.05);
   text(ctx,"GET READY",160,204,7,"#d5d8d7","center");ctx.restore();
 }
-function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number){
+function drawResult(ctx:CanvasRenderingContext2D,winner:Fighter,scoreA:number,scoreB:number,finalMatch:boolean){
   ctx.save();ctx.scale(2,2);
   ctx.fillStyle="#07090b";ctx.fillRect(0,0,W,H);
   text(ctx,finalMatch?"MATCH COMPLETE":"ROUND COMPLETE",160,42,10,"#7e898d","center");
@@ -407,7 +407,7 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
   function render(t:number){
     const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);
     if(phase==="select")drawSelect(ctx,selected);
-    else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB);
+    else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB,finalMatch);
     else if(intro>0)drawFightIntro(ctx,fighters[selected],fighters[enemy],frame);
     else{
       drawArena(ctx,t);ctx.save();ctx.scale(2,2);
