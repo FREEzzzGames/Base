@@ -227,7 +227,7 @@ function render(){
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
-          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
+          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">d3tr01t</h1>
           <p>${T("homeDescription")}</p>
           </div>
         </section>
