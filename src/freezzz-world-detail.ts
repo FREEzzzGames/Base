@@ -12,7 +12,7 @@ function roadWear(c:CanvasRenderingContext2D,roads:DistrictRoad[]){
  cracks.forEach(([a,b,d,e])=>{L(c,a,b,d,e,"rgba(25,29,29,.42)");L(c,a+6,b,a+2,b+5,"rgba(25,29,29,.3)")});
  roads.forEach((r,i)=>{const horizontal=r.w>r.h,span=horizontal?r.w:r.h;for(let n=0;n<span/46;n++){const q=12+n*46;if(horizontal)L(c,r.x+q,r.y+2,r.x+q+11,r.y+3,"rgba(65,69,66,.24)");else L(c,r.x+2,r.y+q,r.x+3,r.y+q+11,"rgba(65,69,66,.24)")}})
 }
-function drain(c:CanvasRenderingContext2D,x:number,y:number,rot=0){c.save();c.translate(x,y);c.rotate(rot);E(c,0,0,10,5,"#444948");E(c,0,-1,8,3,"#777a76");for(let i=-5;i<=5;i+=3)L(c,i,-2,i+2,"#303535",1);c.restore()}
+function drain(c:CanvasRenderingContext2D,x:number,y:number,rot=0){c.save();c.translate(x,y);c.rotate(rot);E(c,0,0,10,5,"#444948");E(c,0,-1,8,3,"#777a76");for(let i=-5;i<=5;i+=3)L(c,i,-2,i+2,2,"#303535",1);c.restore()}
 function pole(c:CanvasRenderingContext2D,x:number,y:number,h:number,i:number){R(c,x-2,y-h,4,h,"#343a3b");R(c,x-11,y-h+6,22,4,"#41494a");R(c,x-7,y-h+2,14,4,"#232a2b");R(c,x-5,y-h+1,10,2,i%2?"#c0a668":"#d0bb70");L(c,x-9,y-h+10,x-9,y-h+30,"#4a5152",2);L(c,x+9,y-h+10,x+9,y-h+30,"#4a5152",2)}
 function wire(c:CanvasRenderingContext2D,x1:number,y1:number,x2:number,y2:number,drop:number){c.strokeStyle="rgba(30,38,39,.4)";c.lineWidth=1;c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+drop,x2,y2);c.stroke()}
 function sign(c:CanvasRenderingContext2D,x:number,y:number,type:"P"|"X"){R(c,x-1,y-28,2,28,"#3c4344");R(c,x-8,y-36,16,12,"#d6d6cf");R(c,x-6,y-34,12,8,type==="P"?"#6d8587":"#9a6b50");c.fillStyle="#ece9df";c.font="700 7px monospace";c.textAlign="center";c.fillText(type,x,y-27)}
