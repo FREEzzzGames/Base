@@ -5462,3 +5462,40 @@ a{
   border-color:#ff2020!important;
 }
 
+/* ================================================================
+   HUD COLLAPSE FIX — HOME NEVER COLLAPSES WITH THE BAR
+   The BAR is an overlay. Hiding it must not change HOME geometry.
+   ================================================================ */
+.portal-workspace.portal-hud-hidden{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+}
+.portal-workspace.portal-hud-hidden > main{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:1px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.portal-workspace.portal-hud-hidden > main > .home-portal{
+  display:grid!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  gap:1px!important;
+}
+.portal-workspace.portal-hud-hidden > .portal-toolbar{
+  transform:translateY(calc(100% + 2px))!important;
+  pointer-events:none!important;
+}
+.portal-workspace.portal-hud-hidden > .portal-hud-toggle{
+  transform:translateX(-50%)!important;
+}
