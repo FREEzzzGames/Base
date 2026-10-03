@@ -1,4 +1,5 @@
 import { portalVideoUrl } from "./video-assets";
+import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
  * without rewriting the renderer.
@@ -12,9 +13,9 @@ type Objective="reach"|"find"|"clear"|"escort"|"defend"|"recover"|"escape"|"surv
 interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:string; ability:string; abilityDesc:string; bio:string; }
 interface Dialogue{speaker:string;text:string}
 interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string; ru:string; desc:string; objective:Objective; floors:[string,string,string]; enemies:EnemyType[]; reward:number; xp:number; dialogue:Dialogue[]; optional?:string; }
-interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean}
-interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number}
-interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number}
+interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
+interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
+interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
 interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
@@ -151,14 +152,14 @@ const testFloorLayouts:Record<FamilyId,TestFloorLayout[][]>={
 };
 
 const rankNames=["RECRUIT","RUNNER","SOLDIER","OPERATOR","CAPO","UNDERBOSS"];
-const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",damage:3,rate:14,mag:14,cost:450},{name:"REVOLVER",damage:5,rate:28,mag:6,cost:700},{name:"SMG",damage:2,rate:7,mag:24,cost:1100},{name:"SHOTGUN",damage:8,rate:34,mag:5,cost:1400},{name:"CARBINE",damage:6,rate:16,mag:10,cost:1800}];
+const weapons=HS_WEAPONS.map(w=>({name:w.name,damage:w.damage,rate:w.fireInterval,mag:w.magazine,cost:w.cost}));
 
 let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRenderingContext2D|null=null;
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
-let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1};
+let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,ability:false};
@@ -251,7 +252,7 @@ function drawHudOverlay(m:Mission){
  const fs=Math.max(10,Math.min(18,viewWidth*.019));
  tx("FREEzzz МАФИЯ",18,15,fs,hero().color);tx(hero().name,viewWidth*.20,15,fs,"#f0eee7");tx(rankRu(rankNames[rank()]),viewWidth*.36,15,fs*.82,"#aab1b4");
  tx("$"+save.money,viewWidth*.48,15,fs*.82,"#d9b86c");tx("ЗДОРОВЬЕ "+Math.max(0,Math.round(player.hp)),viewWidth*.62,15,fs*.72,"#d5d8d7");
- tx("БРОНЯ "+player.armor,viewWidth*.80,15,fs*.72,"#9f83d6");tx("АВТО",viewWidth*.94,15,fs*.72,hero().color,"right");
+ tx("БРОНЯ "+Math.round(player.armor),viewWidth*.80,15,fs*.72,"#9f83d6");tx("МАГ "+player.combat.ammo+"/"+player.combat.reserve,viewWidth*.94,15,fs*.72,hero().color,"right");
  tx("ЭТАЖ "+(floor+1)+"/3 · "+objectiveRu(m.objective),18,62,fs*.82,"#aab1b4");
 }
 function portraitScale(){return Math.max(.85,Math.min(2.15,Math.min(viewWidth/360,viewHeight/780)));}
@@ -695,7 +696,7 @@ function drawWorld(m:Mission){
  rect(exitX-24,exitY-24,48,48,"#151d21");rect(exitX-17,exitY-17,34,34,hero().color);
  tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
  enemies.forEach(drawEnemy);drawPlayer();
- bullets.forEach(b=>{rect(b.x-3,b.y-3,Math.max(6,portraitScale()*4),Math.max(4,portraitScale()*3),b.from==="player"?hero().color:"#d86c35");});
+ bullets.forEach(b=>{line(b.x-b.vx*1.8,b.y-b.vy*1.8,b.x,b.y,b.from==="player"?hero().color:"#d86c35",Math.max(1,portraitScale()*1.4));rect(b.x-2,b.y-2,4,4,b.from==="player"?hero().color:"#d86c35");});
  ctx.restore();drawHudOverlay(m);drawSpeech();
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
@@ -757,27 +758,29 @@ function spawnFloor(){
  const types=currentMission().enemies;
  const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360]];
  for(let i=0;i<Math.min(spots.length,2+floor+2);i++){
-  const type=types[i%types.length],hp=18+(i%3)*12+(save.rank*3),[x,y]=spots[i];
-  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
+  const type=types[i%types.length],hp=38+(i%3)*16+(save.rank*4),[x,y]=spots[i];
+  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
  }
- player={x:420,y:400,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,weaponSwap:0,facing:1,grounded:true};
+ player={x:420,y:400,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
 }
 function fire(){
- if(mode!=="play"||player.cool>0)return;
- const w=weapons[save.weapon];
- if(player.ammo<=0){player.ammo=w.mag;player.cool=12;return;}
- player.ammo--;player.cool=w.rate;
+ if(mode!=="play")return;
+ const w=HS_WEAPONS[save.weapon];
+ if(player.combat.reloadTimer>0)return;
+ if(!consumeShot(player.combat,w))return;
+ player.ammo=player.combat.ammo;
  const scale=portraitScale();
- const speed=7*scale;
  const handX=player.x+player.facing*29*scale;
  const handY=player.y-44*scale;
- bullets.push({x:handX,y:handY,vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
+ const angle=recoilAngle(aimAngle,player.combat);
+ for(const shot of spawnShots(handX,handY,angle,w,"player",player.combat.shotCounter*100))bullets.push({...shot});
 }
 function switchWeapon(){
  if(mode!=="play"||player.weaponSwap>0)return;
  save.weapon=(save.weapon+1)%weapons.length;
- player.ammo=weapons[save.weapon].mag;
- player.weaponSwap=120;
+ player.combat=createCombatState(HS_WEAPONS[save.weapon]);
+ player.ammo=player.combat.ammo;
+ player.weaponSwap=90;
  storeSave();
 }
 function useAbility(){
@@ -803,35 +806,63 @@ function hurt(amount:number){
 function update(dt:number){
  frame++;speechCooldown=Math.max(0,speechCooldown-dt);if(speech)speech.timer-=dt;
  if(mode==="play"&&frame%420===0){const lines=heroLines[selected||"antonio"];say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);}
- player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
+ const weapon=HS_WEAPONS[save.weapon];
+ stepWeapon(player.combat,weapon,dt);
+ player.ammo=player.combat.ammo;
+ player.cool=player.combat.fireTimer;
+ player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
  const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
  if(Math.abs(moveX)>.12||Math.abs(moveY)>.12){
-  const len=Math.hypot(moveX,moveY)||1,moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
+  const len=Math.hypot(moveX,moveY)||1;
+  const moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
   player.x=moved[0];player.y=moved[1];
   if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
  }
  if(mode==="play")fire();if(touch.ability)useAbility();
- for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life-=dt;if(b.from==="enemy"&&Math.abs(b.x-player.x)<18*scale&&Math.abs(b.y-player.y)<24*scale){b.life=0;hurt(7);}}
+ const obstacles=topDownObstacles();
+ for(const b of bullets){
+  const result=traceShot(b,dt,obstacles);
+  if(result.blocked){b.life=0;continue;}
+  if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20*scale){b.life=0;hurt(Math.max(3,b.damage*.38));}
+  if(b.from==="player"){
+   for(let i=0;i<enemies.length;i++){
+    const e=enemies[i];if(e.falling||b.hitIds.has(i))continue;
+    if(Math.hypot(b.x-e.x,b.y-e.y)<24*scale){
+      b.hitIds.add(i);e.hp-=b.damage;b.damage*=.62;b.penetration-=.12;
+      if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
+      if(b.penetration<=0)b.life=0;break;
+    }
+   }
+  }
+ }
  bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<topDownMap().w+30&&b.y>-30&&b.y<topDownMap().h+30);
- for(const e of enemies){
+ for(let i=0;i<enemies.length;i++){
+  const e=enemies[i];
   if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
   e.cool-=dt;e.shootCool-=dt;
   const dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;
-  if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker"){
-   const q=moveTopDown(e.x,e.y,dx/dist*(e.type==="rusher"?1:.55)*scale,dy/dist*(e.type==="rusher"?1:.55)*scale,15*scale);e.x=q[0];e.y=q[1];
-  }else if(dist<260*scale){
-   const q=moveTopDown(e.x,e.y,dx/dist*.22*scale,dy/dist*.22*scale,15*scale);e.x=q[0];e.y=q[1];
+  const visible=lineOfSight(e.x,e.y,player.x,player.y,obstacles);
+  updateAi(e.ai,dt,visible,dist,player.x,player.y);
+  if(e.ai.state==="retreat"){
+   const q=moveTopDown(e.x,e.y,-dx/dist*.7*scale+(-dy/dist)*e.ai.strafe*.35*scale,-dy/dist*.7*scale+(dx/dist)*e.ai.strafe*.35*scale,15*scale);e.x=q[0];e.y=q[1];
+  }else if(e.ai.state==="chase"||e.ai.state==="attack"){
+   const mult=e.type==="rusher"?1:e.type==="brawler"?.72:e.type==="flanker"?.62:.22;
+   const side=e.ai.strafe*(visible?.28:0);
+   const q=moveTopDown(e.x,e.y,(dx/dist*mult-dy/dist*side)*scale,(dy/dist*mult+dx/dist*side)*scale,15*scale);e.x=q[0];e.y=q[1];
+  }else if(!visible&&e.ai.alert>0){
+   const d2=Math.hypot(e.ai.lastSeenX-e.x,e.ai.lastSeenY-e.y)||1;
+   const q=moveTopDown(e.x,e.y,(e.ai.lastSeenX-e.x)/d2*.3*scale,(e.ai.lastSeenY-e.y)/d2*.3*scale,15*scale);e.x=q[0];e.y=q[1];
   }
-  if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){
-   e.shootCool=e.type==="suppressor"?28:65;
-   bullets.push({x:e.x,y:e.y,vx:dx/dist*3.2*scale,vy:dy/dist*3.2*scale,from:"enemy",life:110});
+  if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0&&visible){
+   e.shootCool=e.type==="suppressor"?24:e.type==="sniper"?95:62;
+   const a=Math.atan2(dy,dx)+(Math.random()-.5)*(e.type==="sniper"?.025:.11);
+   const ew=HS_WEAPONS[e.type==="sniper"?5:e.type==="suppressor"?3:1];
+   for(const shot of spawnShots(e.x,e.y,a,ew,"enemy",frame*100+i))bullets.push({...shot});
   }
-  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
+  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?16:8);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
  }
- for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<22*scale&&Math.abs(b.y-e.y)<24*scale){
-  e.hp-=weapons[save.weapon].damage;b.life=0;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
- }
- enemies=enemies.filter(e=>!e.falling||e.y<topDownMap().h+80);if(enemies.length===0)objectiveProgress=1;
+ enemies=enemies.filter(e=>!e.falling||e.y<topDownMap().h+80);
+ if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
  const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
  const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
@@ -1046,7 +1077,7 @@ function handleKey(e:KeyboardEvent){
    if(e.key==="Enter"&&selected)beginSelected();
    return;
  }
- if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}
+ if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}\n if(mode==="play"&&(e.key==="r"||e.key==="R"))startReload(player.combat,HS_WEAPONS[save.weapon]);\n if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g)say("ГРАНАТА","player",player.x,player.y-45);}\n
  if(e.key==="Escape"){mode="select";dialogueOpen=false;renderCanvas();return;}
  if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else fire();return;}
  keys.add(e.key);
