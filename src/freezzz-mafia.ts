@@ -683,29 +683,93 @@ function drawEnemy(e:Enemy){
 }
 function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:number){
  if(!ctx)return;
- // Чисто визуальный слой: стилизованный пиксельный силуэт без изменения игровой логики.
- const lengths=[20,23,27,30,28,32];
- const bodies=[7,7,6,7,9,7];
- const length=lengths[kind]||22;
- const body=bodies[kind]||7;
+ // Реальные силуэты используются только как визуальные ориентиры:
+ // pistol → Beretta-92-подобный профиль; revolver → классический барабан;
+ // SMG → компактный MP5-подобный профиль; shotgun → pump-action;
+ // carbine → классическая деревянно-металлическая карабинная компоновка.
+ // Это оригинальные игровые силуэты, а не копии конкретных моделей.
+ const skins=[
+  {body:"#566064",metal:"#a5abad",grip:"#292e30",accent:"#54d6d8"},
+  {body:"#4e5559",metal:"#9da4a6",grip:"#25292b",accent:"#c58b48"},
+  {body:"#3f4447",metal:"#b0b3ae",grip:"#2b2725",accent:"#d8b86c"},
+  {body:"#4b5558",metal:"#a9afb0",grip:"#302b27",accent:"#d86c35"},
+  {body:"#5a4b3a",metal:"#7f8583",grip:"#3b2c23",accent:"#9f83d6"},
+  {body:"#3e484b",metal:"#b1b6b5",grip:"#24292a",accent:"#54d6d8"}
+ ];
+ const skin=skins[kind]||skins[0];
+ const lengths=[32,38,42,49,55,61];
+ const length=lengths[kind]||36;
+ const h=Math.max(5,Math.round((kind===4?9:kind===3?8:6)*sc));
  ctx.save();
  ctx.translate(handX,handY);
  ctx.rotate(angle);
- // Тень/контур
- rect(-5,-body/2-2,length+9,body+4,"#101417");
- // Основной корпус
- const metal=kind===2?"#6e7477":kind===4?"#7d6750":"#596368";
- rect(0,-body/2,length,body,metal);
- // Верхняя линия и передняя часть
- rect(4,-body/2-2,Math.max(8,length-9),2,"#aeb5b6");
- rect(length-4,-body/2-1,5,body+2,"#20272a");
- // Рукоять
- const gripX=Math.max(4,Math.min(length-5,kind===4?9:11));
- poly([gripX,-body/2+1,gripX+7,-body/2+1,gripX+5,body+5,gripX-2,body+3],"#24292b");
- // Небольшая цветовая маркировка выбранного предмета
- rect(5,0,Math.min(8,length-8),2,hero().color);
- // Дульная часть
- rect(length-1,-1,4,2,"#161b1e");
+ ctx.lineJoin="round";
+ ctx.lineCap="round";
+ // Grounded shadow/outline gives the weapon a readable RTS sprite silhouette.
+ rect(-5,-h/2-3,length+10,h+8,"rgba(6,9,10,.75)");
+
+ if(kind===0){
+   // Compact service pistol: slide, open ejection area, trigger guard, grip.
+   rect(0,-h/2,length-7,h,skin.body);
+   rect(3,-h/2-2,length-13,2,"#c0c5c4");
+   rect(length-9,-h/2-1,6,h+2,skin.metal);
+   rect(length-4,-1,5,2,"#22282a");
+   poly([8,h/2-1,17,h/2-1,14,h/2+12,7,h/2+10],skin.grip);
+   ellipse(11,h/2+4,4,2,"#14191a");
+   rect(5,-h/2+1,9,2,skin.accent);
+ }else if(kind===1){
+   // Full-size pistol with longer slide and pronounced frame.
+   rect(0,-h/2,length-8,h,skin.body);
+   rect(2,-h/2-2,length-15,3,skin.metal);
+   poly([length-14,-h/2,length-5,-h/2,length-2,0,length-8,h/2,length-14,h/2],skin.metal);
+   poly([8,h/2-1,18,h/2-1,15,h/2+14,7,h/2+11],skin.grip);
+   rect(5,h/2-1,10,2,skin.accent);
+   line(6,0,14,0,"#171d1f",1);
+ }else if(kind===2){
+   // Revolver: barrel + frame + clearly visible cylinder.
+   rect(0,-h/2,length-15,h,skin.metal);
+   rect(5,-h/2-2,length-20,2,"#d0d1cc");
+   rect(length-15,-h/2-1,10,h+2,skin.body);
+   ellipse(length-10,0,6,6,skin.metal);
+   ellipse(length-10,0,3,3,"#34383a");
+   for(let k=0;k<6;k++){const q=k*Math.PI/3;ellipse(length-10+Math.cos(q)*4,Math.sin(q)*4,1.2,1.2,"#303537");}
+   poly([4,h/2-1,13,h/2-1,10,h/2+13,3,h/2+10],skin.grip);
+   rect(0,-1,6,2,skin.accent);
+ }else if(kind===3){
+   // Compact SMG: receiver, magazine, stock and long barrel.
+   rect(2,-h/2,length-9,h,skin.body);
+   rect(0,-h/2-2,25,2,skin.metal);
+   rect(length-10,-2,10,4,"#202628");
+   poly([9,h/2-1,17,h/2-1,15,h/2+12,7,h/2+10],skin.grip);
+   poly([2,-h/2,10,-h/2,5,-h/2-7,-2,-h/2-6],skin.body);
+   rect(4,-h/2+1,12,2,skin.accent);
+   // magazine
+   poly([20,h/2-1,28,h/2-1,25,h/2+11,18,h/2+9],skin.grip);
+ }else if(kind===4){
+   // Pump shotgun: long tube, wooden fore-end, receiver and butt.
+   rect(3,-h/2,length-8,h,skin.metal);
+   rect(13,-h/2-2,length-14,3,skin.metal);
+   rect(10,-h/2+1,18,h-2,skin.body);
+   rect(18,h/2-1,17,4,skin.grip);
+   poly([2,-h/2,10,-h/2,7,-h/2-7,-3,-h/2-5],skin.body);
+   poly([4,h/2-1,13,h/2-1,11,h/2+13,3,h/2+10],skin.grip);
+   for(let k=0;k<4;k++)line(13+k*4,-h/2+2,13+k*4,h/2-2,"rgba(210,170,115,.28)",1);
+   rect(4,0,11,2,skin.accent);
+ }else{
+   // Classic carbine: stock, receiver, long barrel and front sight.
+   poly([0,-h/2,15,-h/2,20,0,15,h/2,0,h/2-1],skin.metal);
+   rect(17,-h/2+1,length-20,h-2,skin.body);
+   rect(length-6,-2,8,4,skin.metal);
+   poly([7,h/2-1,18,h/2-1,15,h/2+13,4,h/2+9],skin.grip);
+   rect(23,h/2-1,10,3,skin.grip);
+   rect(length-1,-h/2-5,3,7,skin.metal);
+   line(19,0,length-5,0,"#c1c5c3",1);
+   rect(6,-h/2+1,11,2,skin.accent);
+ }
+
+ // Small highlights separate metal from paint and keep each weapon readable at phone scale.
+ rect(Math.max(4,length*.55),-1,Math.max(3,length*.18),1,"rgba(235,238,235,.45)");
+ rect(length-3,-1,3,2,"#151a1c");
  ctx.restore();
 }
 function drawPlayer(){
