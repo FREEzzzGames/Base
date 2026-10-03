@@ -334,8 +334,11 @@ function fire(){
  const w=weapons[save.weapon];
  if(player.ammo<=0){player.ammo=w.mag;player.cool=12;return;}
  player.ammo--;player.cool=w.rate;
- const speed=7*portraitScale();
- bullets.push({x:player.x+Math.cos(aimAngle)*22*portraitScale(),y:player.y-44*portraitScale()+Math.sin(aimAngle)*22*portraitScale(),vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
+ const scale=portraitScale();
+ const speed=7*scale;
+ const handX=player.x+player.facing*29*scale;
+ const handY=player.y-44*scale;
+ bullets.push({x:handX,y:handY,vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
 }
 function switchWeapon(){
  if(mode!=="play"||player.weaponSwap>0)return;
