@@ -136,6 +136,7 @@ const completedKey="freezzz:mafia-save:v2";
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function rank(){return Math.min(rankNames.length-1,Math.floor(save.xp/650));}
+function rankRu(r:string){const map:Record<string,string>={RECRUIT:"НОВИЧОК",RUNNER:"ПОСЛАННИК",SOLDIER:"БОЕЦ",OPERATOR:"ОПЕРАТИВНИК",CAPO:"КАПО",UNDERBOSS:"ПРАВАЯ РУКА"};return map[r]||r;}
 function objectiveRu(o:Objective){const map:Record<Objective,string>={find:"НАЙТИ",recover:"ЗАБРАТЬ",escort:"СОПРОВОЖДАТЬ",clear:"ЗАЧИСТИТЬ",reach:"ДОБРАТЬСЯ",defend:"ЗАЩИТИТЬ",survive:"ВЫЖИТЬ",escape:"ОТХОД"};return map[o]||o.toUpperCase();}
 function currentMission():Mission{return allMissions[missionIndex]||shared[2];}
 function hero(){return heroes[selected||"antonio"];}
@@ -193,7 +194,7 @@ function drawBackdrop(){
 
 function drawHud(m:Mission){
  rect(8,8,624,34,"rgba(5,7,8,.92)");
- tx("FREEzzz МАФИЯ",18,15,9,hero().color);tx(hero().name,142,15,9,"#f0eee7");tx(rankNames[rank()],220,15,8,"#aab1b4");
+ tx("FREEzzz МАФИЯ",18,15,9,hero().color);tx(hero().name,142,15,9,"#f0eee7");tx(rankRu(rankNames[rank()]),220,15,8,"#aab1b4");
  tx("$"+save.money,322,15,8,"#d9b86c");tx("ЗДОРОВЬЕ "+Math.max(0,Math.round(player.hp)),410,15,8,"#d5d8d7");tx("БРОНЯ "+player.armor,490,15,8,"#9f83d6");tx("ПАТРОНЫ "+player.ammo,548,15,8,hero().color);
  tx("ЭТАЖ "+(floor+1)+"/3, "+objectiveRu(m.objective),18,57,8,"#aab1b4");
 }
@@ -377,7 +378,7 @@ function drawBriefing(){
  const m=currentMission();panel(35,48,570,350);
  tx("МИССИЯ "+String(m.number).padStart(2,"0"),55,68,9,hero().color);
  tx(m.ru,55,91,19,"#f0eee7");
- tx("ЦЕЛЬ · "+m.objective.toUpperCase(),55,174,9,hero().color);
+ tx("ЦЕЛЬ · "+objectiveRu(m.objective),55,174,9,hero().color);
  m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),55,210+i*42,7,"#59656b");tx(floorRu(f),125,208+i*42,9,"#f0eee7");});
  tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,55,345,8,"#d9b86c");
  tx("НАЖМИТЕ, ЧТОБЫ НАЧАТЬ",55,372,8,hero().color);
@@ -397,7 +398,7 @@ function drawShop(){
 function drawResult(){
  const m=currentMission();panel(50,55,540,330);tx("МИССИЯ ЗАВЕРШЕНА",320,82,17,hero().color,"center");tx(m.ru,320,110,10,"#f0eee7","center");
  tx("+$"+m.reward,320,160,15,"#d9b86c","center");tx("+"+m.xp+" XP",320,188,11,"#aab1b4","center");
- tx("РАНГ · "+rankNames[rank()],320,226,10,hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,320,250,9,"#f0eee7","center");
+ tx("РАНГ · "+rankRu(rankNames[rank()]),320,226,10,hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,320,250,9,"#f0eee7","center");
  if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",320,290,7,"#aab1b4","center");
  if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",320,290,11,hero().color,"center");
  tx(m.number===1?"ТЕСТОВЫЙ УРОВЕНЬ ЗАВЕРШЁН · НАЖМИТЕ ДЛЯ ВОЗВРАТА":"НАЖМИТЕ · ПРОДОЛЖИТЬ",320,350,8,"#f0eee7","center");
