@@ -159,11 +159,12 @@ function savePortalSessionSnapshot(){
 
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
-    ["radio","radio","RADIO"],
-    ["library","library","LIBRARY"],
     ["game","game","GAME"],
+    ["live","video","LIVE"],
     ["chat","chat","CHAT"],
-    ["live","video","LIVE"]
+    ["home","home","HOME"],
+    ["radio","radio","RADIO"],
+    ["library","library","LIBRARY"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
