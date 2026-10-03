@@ -2778,8 +2778,10 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 }
 .home-hero-top{
   top:11px!important;
-  left:11px!important;
   right:11px!important;
+  bottom:11px!important;
+  left:11px!important;
+  height:auto!important;
 }
 .home-hero-brand{
   position:relative!important;
