@@ -475,27 +475,29 @@ function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:nu
 function drawSelect(){
  const c=ctx;if(!c)return;
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
- const gapX=viewWidth*.035,padX=viewWidth*.06,cardW=(viewWidth-padX*2-gapX)/2;
- const gapY=viewHeight*.02,top=viewHeight*.18,cardH=Math.min(viewHeight*.265,(viewHeight-top-viewHeight*.18-gapY)/2);
+ const padX=viewWidth*.06,gapX=viewWidth*.04;
+ const top=viewHeight*.17,gridH=viewHeight*.55,gapY=viewHeight*.018;
+ const cardW=(viewWidth-padX*2-gapX)/2;
+ const cardH=(gridH-gapY)/2;
  tx("ЧЕТЫРЕ СЕМЬИ",viewWidth/2,viewHeight*.045,menuTextSize(.045,28,40),"#f0eee7","center");
  tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
  ids.forEach((id,i)=>{
-   const h=heroes[id],col=i%2,row=Math.floor(i/2),x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
-   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");rect(x,y,cardW,4,a?h.color:"#263137");
+   const h=heroes[id],col=i%2,row=Math.floor(i/2);
+   const x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
+   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
+   rect(x,y,cardW,4,a?h.color:"#263137");
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
-   const artScale=Math.max(1.05,Math.min(1.65,cardW/220));
-   // Медленное вращение аватарки вокруг центральной вертикальной оси.
-   // Используем мягкое сжатие по X: персонаж не меняет высоту и остаётся пиксельным.
-   const spin=performance.now()/1000*.95+i*0.8;
-   const spinX=Math.max(.12,Math.abs(Math.cos(spin)));
+   const artScale=Math.max(.9,Math.min(1.45,cardW/235));
+   const spin=performance.now()/1000*.72+i*0.8;
+   const spinX=Math.max(.14,Math.abs(Math.cos(spin)));
    c.save();
-   c.translate(x+cardW/2,y+cardH*.72);
+   c.translate(x+cardW/2,y+cardH*.69);
    c.scale(spinX,1);
    drawMafiaMember({face:h.face,tie:h.color},0,0,frame+i*4,artScale);
    c.restore();
-   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.86,menuTextSize(.012,9,14),h.color,"center");
-   tx(h.ability,x+cardW/2,y+cardH*.91,menuTextSize(.011,8,12),"#7e898d","center");
+   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.012,9,14),h.color,"center");
+   tx(h.ability,x+cardW/2,y+cardH*.90,menuTextSize(.011,8,12),"#7e898d","center");
  });
 }
 function drawLevels(){
@@ -518,19 +520,29 @@ function drawLevels(){
 function drawFamily(){
  const h=hero();
  rect(0,0,viewWidth,viewHeight,"#07090b");
- tx("ИСТОРИЯ СЕМЬИ",viewWidth/2,viewHeight*.055,menuTextSize(.04,28,38),h.color,"center");
- tx(h.family.toUpperCase(),viewWidth/2,viewHeight*.13,menuTextSize(.052,34,52),"#f0eee7","center");
- tx(h.name,viewWidth/2,viewHeight*.205,menuTextSize(.028,20,30),"#aab1b4","center");
- const maxChars=Math.max(24,Math.floor(viewWidth/15));
- const lh=menuTextSize(.022,22,30);
- let y=viewHeight*.30;
- drawWrapped(familyText[h.family].intro,viewWidth/2,y,maxChars,lh,menuTextSize(.025,18,26),"#f0eee7","center");
- y+=lh*2.3;
- drawWrapped(h.bio,viewWidth/2,y,maxChars,lh,menuTextSize(.022,17,24),"#c2c7c8","center");
- y+=lh*3.2;
+ const title=menuTextSize(.04,28,38);
+ const familySize=menuTextSize(.052,34,52);
+ const nameSize=menuTextSize(.028,20,30);
+ tx("ИСТОРИЯ СЕМЬИ",viewWidth/2,viewHeight*.055,title,h.color,"center");
+ tx(h.family.toUpperCase(),viewWidth/2,viewHeight*.135,familySize,"#f0eee7","center");
+ tx(h.name,viewWidth/2,viewHeight*.205,nameSize,"#aab1b4","center");
+
+ const maxChars=Math.max(25,Math.floor(viewWidth/14.5));
+ const bodySize=menuTextSize(.025,18,26);
+ const bodyLine=bodySize*1.38;
+ const smallSize=menuTextSize(.022,16,23);
+ const smallLine=smallSize*1.38;
+ let y=viewHeight*.285;
+
+ const introRows=drawWrapped(familyText[h.family].intro,viewWidth/2,y,maxChars,bodyLine,bodySize,"#f0eee7","center");
+ y+=introRows*bodyLine+viewHeight*.055;
+
+ const bioRows=drawWrapped(h.bio,viewWidth/2,y,maxChars,smallLine,smallSize,"#c2c7c8","center");
+ y+=bioRows*smallLine+viewHeight*.06;
+
  tx("СПОСОБНОСТЬ · "+h.ability,viewWidth/2,y,menuTextSize(.025,18,26),h.color,"center");
- y+=lh*1.6;
- drawWrapped(h.abilityDesc,viewWidth/2,y,maxChars,lh,menuTextSize(.021,16,22),"#aab1b4","center");
+ y+=menuTextSize(.025,18,26)*1.8;
+ drawWrapped(h.abilityDesc,viewWidth/2,y,maxChars,smallLine,smallSize,"#aab1b4","center");
 }
 function drawBriefing(){
  const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");
@@ -630,7 +642,7 @@ function render(){
  resizeCanvas();
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="levels">УРОВНИ</button><button data-action="cheat">ЧИТ: ВСЁ</button><button data-action="exit">ВЫХОД</button></div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button><button data-action="levels">УРОВНИ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="play"){
