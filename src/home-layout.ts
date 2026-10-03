@@ -20,7 +20,7 @@ const split=(direction:SplitDirection,ratio:number,first:HomeLayoutNode,second:H
 });
 
 function clampRatio(value:number):number{
-  return Math.max(.12,Math.min(.88,Number.isFinite(value)?value:.5));
+  return Math.max(.05,Math.min(.95,Number.isFinite(value)?value:.5));
 }
 
 function defaultDesktop():HomeLayoutNode{
@@ -132,15 +132,19 @@ export type ResizeEdge="left"|"right"|"top"|"bottom";
 
 export function resizeHomeBoundary(node:HomeLayoutNode,id:HomeBlockId,edge:ResizeEdge,delta:number):HomeLayoutNode{
   const cloned=cloneHomeLayout(node);
+  const axis:SplitDirection=edge==="left"||edge==="right"?"row":"column";
+  const movesBoundaryTowardFirst=(edge==="left"||edge==="top");
   function walk(n:HomeLayoutNode):boolean{
     if(n.type==="leaf")return false;
-    const axis:SplitDirection=edge==="left"||edge==="right"?"row":"column";
     if(n.direction===axis){
       const firstHas=contains(n.first,id);
       const secondHas=contains(n.second,id);
       if(firstHas!==secondHas){
-        const positive=(edge==="right"&&firstHas)||(edge==="left"&&secondHas)||(edge==="bottom"&&firstHas)||(edge==="top"&&secondHas);
-        if(positive){
+        const blockIsFirst=firstHas;
+        const boundaryMovesFirst=blockIsFirst
+          ? !movesBoundaryTowardFirst
+          : movesBoundaryTowardFirst;
+        if(boundaryMovesFirst){
           n.ratio=clampRatio(n.ratio+delta);
           return true;
         }
