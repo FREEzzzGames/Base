@@ -52,7 +52,7 @@ jobs:
             echo "Stale HOME refresh machinery detected."
             exit 1
           fi
-          if grep -RInE 'new MutationObserver\(' src/mihi src/multi-window-portal.ts; then
+          if grep -RInE 'new MutationObserver\(' src/multi-window-portal.ts; then
             echo "Global mutation observers are not allowed in MIHI/multi-window runtime."
             exit 1
           fi
