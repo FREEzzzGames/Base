@@ -3730,7 +3730,7 @@ main{
     min-height:78px!important;
     max-height:78px!important;
   }
-  .portal-workspace > .portal-bar-nav{
+  .portal-workspace > .portal-bar > .portal-bar-surface + .portal-bar-nav{
     padding:4px 0!important;
   }
   .portal-workspace > .portal-bar-icon,
