@@ -226,69 +226,73 @@ function drawHudOverlay(m:Mission){
  tx("ЭТАЖ "+(floor+1)+"/3 · "+objectiveRu(m.objective),18,62,fs*.82,"#aab1b4");
 }
 function portraitScale(){return Math.max(.85,Math.min(2.15,Math.min(viewWidth/360,viewHeight/780)));}
-function portraitPlatforms(){
- const w=viewWidth,h=viewHeight;
- const margin=w*.045;
- const base=h*.88;
- const phase=(floor*37)%80;
- return [
-   [0,base,w,h-base],
-   [w*.08,h*.73,w*.43,18],
-   [w*.50,h*.62,w*.38,18],
-   [w*.16,h*.51,w*.42,18],
-   [w*.54,h*.39,w*.38,18],
-   [w*.08,h*.28,w*.32,18],
-   [w*.48,h*.19,w*.43,18],
- ].map((p,i)=>[clamp(p[0]+((phase+i*11)%18-9),margin,w-margin-p[2]),p[1],p[2],p[3]]);
+function topDownMap(){
+ const w=1320,h=900;
+ const roads=[{x:0,y:330,w:1320,h:150},{x:555,y:0,w:180,h:900}];
+ const buildings=[
+  {x:70,y:70,w:250,h:190,roof:"#173e47",wall:"#20272b"},
+  {x:870,y:70,w:280,h:200,roof:"#173e47",wall:"#20272b"},
+  {x:95,y:590,w:260,h:190,roof:"#173e47",wall:"#20272b"},
+  {x:900,y:610,w:250,h:180,roof:"#173e47",wall:"#20272b"},
+  {x:390,y:80,w:105,h:150,roof:"#263b40",wall:"#252a2d"},
+  {x:770,y:570,w:90,h:150,roof:"#263b40",wall:"#252a2d"}];
+ return {w,h,roads,buildings,river:{x:735,y:0,w:115,h:900},bridge:{x:700,y:360,w:185,h:90}};
 }
-function portraitExit(){
- const p=portraitPlatforms()[6];
- return [p[0]+p[2]*.72,p[1]-portraitScale()*10];
+function topDownExit(){return [1070,520];}
+function topDownObstacles(){
+ const m=topDownMap(),out:{x:number;y:number;w:number;h:number}[]=[];
+ for(const b of m.buildings)out.push({x:b.x,y:b.y,w:b.w,h:b.h});
+ out.push({x:m.river.x,y:m.river.y,w:m.river.w,h:m.bridge.y});
+ out.push({x:m.river.x,y:m.bridge.y+m.bridge.h,w:m.river.w,h:m.h-(m.bridge.y+m.bridge.h)});
+ return out;
 }
-function drawPortraitBackground(){
- const w=viewWidth,h=viewHeight;
- // Фоновое видео библиотеки остаётся видимым под игровой архитектурой.
- rect(0,0,w,h,"rgba(8,11,13,.34)");
- // Вертикальная архитектура: высокий коридор/дворец, чтобы экран телефона
- // работал как полноценная игровая сцена, без пустых полос.
- for(let i=0;i<11;i++){
-   const x=i*w/10;
-   rect(x,h*.08,(i%2?2:1),h*.72,"#10171a");
+function circleRectHit(x:number,y:number,r:number,o:{x:number;y:number;w:number;h:number}){
+ const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));
+ return (x-nx)*(x-nx)+(y-ny)*(y-ny)<r*r;
+}
+function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
+ const m=topDownMap(),obs=topDownObstacles();
+ let nx=clamp(x+dx,r,m.w-r),ny=clamp(y+dy,r,m.h-r);
+ if(!obs.some(o=>circleRectHit(nx,y,r,o)))x=nx;
+ if(!obs.some(o=>circleRectHit(x,ny,r,o)))y=ny;
+ return [x,y];
+}
+function drawTopDownBackground(){
+ const m=topDownMap(),tile=24;
+ rect(0,0,m.w,m.h,"#43a64d");
+ for(let y=0;y<m.h;y+=tile)for(let x=0;x<m.w;x+=tile){
+  if(((x/tile)+(y/tile)+floor)%5===0)rect(x+4,y+6,3,3,"#2e8740");
+  if(((x/tile)*3+(y/tile))%7===0)rect(x+15,y+13,2,2,"#69bf58");
  }
- for(let i=0;i<7;i++){
-   const y=h*(.14+i*.105);
-   line(0,y,w,y,"#182125",1);
+ rect(m.river.x,m.river.y,m.river.w,m.river.h,"#1689d7");
+ for(let y=12;y<m.h;y+=32)line(m.river.x+12,y,m.river.x+m.river.w-12,y+6,"#62c9ef",2);
+ rect(m.river.x-8,0,8,m.h,"#d7d0a4");rect(m.river.x+m.river.w,0,8,m.h,"#d7d0a4");
+ for(const rd of m.roads)rect(rd.x,rd.y,rd.w,rd.h,"#d7d8df");
+ for(let y=340;y<470;y+=24)for(let x=0;x<m.w;x+=24)rect(x+2,y+2,18,18,"#e9e9ef");
+ for(let x=565;x<730;x+=24)for(let y=0;y<m.h;y+=24)rect(x+2,y+2,18,18,"#e9e9ef");
+ rect(m.bridge.x,m.bridge.y,m.bridge.w,m.bridge.h,"#a95d2e");
+ for(let x=m.bridge.x+8;x<m.bridge.x+m.bridge.w;x+=34){rect(x,m.bridge.y+8,18,m.bridge.h-16,"#d97732");rect(x,m.bridge.y+4,18,7,"#f09a43");}
+ for(const b of m.buildings){
+  rect(b.x+8,b.y+10,b.w,b.h,"#687076");rect(b.x,b.y,b.w,b.h,b.wall);rect(b.x+8,b.y+8,b.w-16,58,b.roof);
+  for(let rx=b.x+18;rx<b.x+b.w-12;rx+=30)line(rx,b.y+10,rx+22,b.y+56,"#2a6970",4);
+  rect(b.x+b.w*.38,b.y+b.h-45,b.w*.24,45,"#f0eee7");rect(b.x+b.w*.44,b.y+b.h-38,b.w*.12,38,"#5c4024");
  }
- rect(0,h*.9,w,h*.1,"#12191c");
- for(let i=0;i<12;i++){
-   const x=i*w/12;
-   rect(x,h*.90,w/12-3,h*.035,"#202b30");
- }
- // Арочные проёмы.
- for(let i=0;i<4;i++){
-   const x=w*(.08+i*.27);
-   rect(x,h*.22,w*.11,h*.22,"#0d1316");
-   ellipse(x+w*.055,h*.22,w*.055,h*.08,"#0d1316");
- }
+ const trees=[[45,45],[360,55],[1190,45],[40,520],[420,540],[1180,520],[380,820],[1210,830]];
+ for(const [x,y] of trees){ellipse(x,y,20,17,"#176f39");rect(x-4,y+10,8,18,"#6b4428");ellipse(x-10,y-8,12,10,"#23964b");ellipse(x+9,y-6,13,11,"#23964b");}
 }
 function drawWorld(m:Mission){
  if(!ctx)return;
- drawPortraitBackground();
- const ps=portraitPlatforms();
- ps.forEach((p,i)=>{
-   rect(p[0],p[1],p[2],p[3],i===0?"#263136":"#303b40");
-   rect(p[0],p[1],p[2],3,i===0?hero().color:"#8b6a43");
-   if(i>0)line(p[0]+6,p[1]+7,p[0]+p[2]-6,p[1]+7,"#151b1e",1);
- });
- const [targetX,targetY]=portraitExit();
- rect(targetX-10,targetY-18,20,18,"#151d21");
- rect(targetX-6,targetY-14,12,14,hero().color);
- tx("ВЫХОД",targetX,targetY-25,Math.max(10,portraitScale()*5),"#f0eee7","center");
- if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-portraitScale()*42,targetX,targetY,"#9f83d6",3);tx("МАРШРУТ",targetX,targetY-38,Math.max(10,portraitScale()*6),"#9f83d6","center");}
- if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-9,e.y-portraitScale()*38,18,3,"#54d6d8"));}
+ const map=topDownMap(),scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820)));
+ const camX=clamp(player.x-viewWidth/(2*scale),0,map.w-viewWidth/scale);
+ const camY=clamp(player.y-viewHeight/(2*scale),0,map.h-viewHeight/scale);
+ ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
+ drawTopDownBackground();
+ const [exitX,exitY]=topDownExit();
+ rect(exitX-24,exitY-24,48,48,"#151d21");rect(exitX-17,exitY-17,34,34,hero().color);
+ tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
  enemies.forEach(drawEnemy);drawPlayer();
- bullets.forEach(b=>{rect(b.x-2,b.y-2,Math.max(5,portraitScale()*5),Math.max(3,portraitScale()*3),b.from==="player"?hero().color:"#d86c35");});
- drawHudOverlay(m);
+ bullets.forEach(b=>{rect(b.x-3,b.y-3,Math.max(6,portraitScale()*4),Math.max(4,portraitScale()*3),b.from==="player"?hero().color:"#d86c35");});
+ ctx.restore();drawHudOverlay(m);
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
@@ -320,17 +324,13 @@ function drawPlayer(){
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];enemies=[];
- const m=currentMission(),base=2+floor,ps=portraitPlatforms(),scale=portraitScale();
- const types=m.enemies;
- for(let i=0;i<base+2;i++){
-   const type=types[i%types.length],hp=18+(i%3)*12+(save.rank*3);
-   const p=ps[1+(i%Math.max(1,ps.length-1))];
-   const x=p[0]+p[2]*(.18+.62*((i*37)%10)/10);
-   const y=p[1];
-   enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
+ const types=currentMission().enemies;
+ const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360]];
+ for(let i=0;i<Math.min(spots.length,2+floor+2);i++){
+  const type=types[i%types.length],hp=18+(i%3)*12+(save.rank*3),[x,y]=spots[i];
+  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
  }
- const p=ps[0];
- player={x:viewWidth*.14,y:p[1],vx:0,vy:0,hp:Math.min(100+save.armor*5,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,weaponSwap:0,facing:1,grounded:true};
+ player={x:420,y:400,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,weaponSwap:0,facing:1,grounded:true};
 }
 function fire(){
  if(mode!=="play"||player.cool>0)return;
@@ -372,54 +372,38 @@ function hurt(amount:number){
 
 function update(dt:number){
  frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
- const scale=portraitScale();
- const speed=2.6*scale;
- if(Math.abs(moveX)>.12){player.vx=moveX*speed;player.facing=moveX<0?-1:1;}
- else player.vx*=.78;
- if((touch.jump||moveY<-.45)&&player.grounded){player.vy=-9.2*scale;player.grounded=false;}
- if(mode==="play")fire();
- if(touch.ability)useAbility();
- player.vy+=.42*scale;
- player.x=clamp(player.x+player.vx,18,viewWidth-18);
- player.y+=player.vy;
- player.grounded=false;
- const plats=portraitPlatforms();
- for(const p of plats){
-   if(player.vy>=0&&player.y>=p[1]-4&&player.y<=p[1]+Math.max(16,12*scale)&&player.x>=p[0]-4&&player.x<=p[0]+p[2]+4){
-     player.y=p[1];player.vy=0;player.grounded=true;
-   }
+ const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
+ if(Math.abs(moveX)>.12||Math.abs(moveY)>.12){
+  const len=Math.hypot(moveX,moveY)||1,moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
+  player.x=moved[0];player.y=moved[1];
+  if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
  }
- for(const b of bullets){
-   b.x+=b.vx;b.y+=b.vy;b.life-=dt;
-   if(b.from==="enemy"&&Math.abs(b.x-player.x)<18*scale&&Math.abs(b.y-(player.y-42*scale))<30*scale){b.life=0;hurt(7);}
- }
- bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<viewWidth+30&&b.y>-30&&b.y<viewHeight+30);
+ if(mode==="play")fire();if(touch.ability)useAbility();
+ for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life-=dt;if(b.from==="enemy"&&Math.abs(b.x-player.x)<18*scale&&Math.abs(b.y-player.y)<24*scale){b.life=0;hurt(7);}}
+ bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<topDownMap().w+30&&b.y>-30&&b.y<topDownMap().h+30);
  for(const e of enemies){
-   if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
-   e.cool-=dt;e.shootCool-=dt;
-   const dx=player.x-e.x;
-   if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker")e.x+=Math.sign(dx)*(e.type==="rusher"?.9:.45)*scale;
-   else if(Math.abs(dx)<180*scale)e.x+=Math.sign(dx)*.18*scale;
-   if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){
-     e.shootCool=e.type==="suppressor"?28:65;
-     bullets.push({x:e.x,y:e.y-40*scale,vx:Math.sign(dx||1)*3.2*scale,vy:0,from:"enemy",life:110});
-   }
-   if(Math.abs(e.x-player.x)<24*scale&&Math.abs(e.y-player.y)<40*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
+  if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
+  e.cool-=dt;e.shootCool-=dt;
+  const dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;
+  if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker"){
+   const q=moveTopDown(e.x,e.y,dx/dist*(e.type==="rusher"?1:.55)*scale,dy/dist*(e.type==="rusher"?1:.55)*scale,15*scale);e.x=q[0];e.y=q[1];
+  }else if(dist<260*scale){
+   const q=moveTopDown(e.x,e.y,dx/dist*.22*scale,dy/dist*.22*scale,15*scale);e.x=q[0];e.y=q[1];
+  }
+  if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){
+   e.shootCool=e.type==="suppressor"?28:65;
+   bullets.push({x:e.x,y:e.y,vx:dx/dist*3.2*scale,vy:dy/dist*3.2*scale,from:"enemy",life:110});
+  }
+  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
  }
- for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<18*scale&&Math.abs(b.y-(e.y-35*scale))<32*scale){
-   e.hp-=weapons[save.weapon].damage;b.life=0;
-   if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
+ for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<22*scale&&Math.abs(b.y-e.y)<24*scale){
+  e.hp-=weapons[save.weapon].damage;b.life=0;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
  }
- enemies=enemies.filter(e=>!e.falling||e.y<viewHeight+80);
- if(enemies.length===0)objectiveProgress=1;
+ enemies=enemies.filter(e=>!e.falling||e.y<topDownMap().h+80);if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
- const m=currentMission(),[exitX,exitY]=portraitExit();
- const reachedExit=Math.abs(player.x-exitX)<32*scale&&Math.abs(player.y-exitY)<38*scale;
+ const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
  const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
- if(objectiveDone){
-   if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}
-   else completeMission();
- }
+ if(objectiveDone){if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}else completeMission();}
 }
 function completeMission(){
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
