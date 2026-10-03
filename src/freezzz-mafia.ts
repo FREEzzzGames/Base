@@ -682,10 +682,13 @@ function resizeCanvas(){
 }
 function render(){
  if(!root)return;
- root.innerHTML='<div class="freezzz-mafia-frame">'+(mode==="select"?'<video class="mafia-menu-live-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>':"")+'<canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui"></div></div>';
+ root.innerHTML='<div class="freezzz-mafia-frame">'+(mode==="select"?'<video class="mafia-menu-live-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>':mode==="play"?'<video class="mafia-level-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>':"")+'<canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui"></div></div>';
  if(mode==="select"){
    const bg=root.querySelector<HTMLVideoElement>(".mafia-menu-live-bg");
    if(bg){bg.src=portalVideoUrl("live");bg.play().catch(()=>{});}
+ }else if(mode==="play"){
+   const bg=root.querySelector<HTMLVideoElement>(".mafia-level-bg");
+   if(bg){bg.src=portalVideoUrl("library");bg.play().catch(()=>{});}
  }
  canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;
  resizeCanvas();
