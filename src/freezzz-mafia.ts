@@ -549,7 +549,7 @@ function drawDialogue(){
  rect(bx+4,by+4,bubbleW-8,bubbleH-8,"#101518");
  // Хвост комикса.
  const tailX=d.speaker===hero().name?bx+bubbleW*.72:bx+bubbleW*.24;
- poly([[tailX-18,by+bubbleH],[tailX,by+bubbleH+Math.min(34,viewHeight*.025)],[tailX+12,by+bubbleH]],"#101518");
+ poly([tailX-18,by+bubbleH,tailX,by+bubbleH+Math.min(34,viewHeight*.025),tailX+12,by+bubbleH],"#101518");
  rect(bx,by,bubbleW,5,accent);
  tx(speaker,bx+22,by+30,menuTextSize(.024,17,27),accent,"left");
  drawWrapped(d.text,bx+22,by+72,Math.max(25,Math.floor(viewWidth/17)),menuTextSize(.026,19,30),menuTextSize(.028,20,32),"#f0eee7","left");
