@@ -217,7 +217,6 @@ function resetHomeLayout(){
   render();
 }
 function finishHomeLayoutEdit(){
-  markHomeLayoutCustomized();
   saveHomeLayout(homeLayout);
   homeLayoutEditMode=false;
   homeLayoutFocusedBlock=null;
