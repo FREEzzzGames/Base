@@ -165,7 +165,7 @@ function poly(points:number[],c:string){
 function limb(x1:number,y1:number,x2:number,y2:number,w:number,c:string){
  if(!ctx)return;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap="square";ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
 }
-interface MafiaVisual{face:string;tie:string;}
+interface MafiaVisual{face:string;tie:string;suit?:string;}
 function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scale=1){
  if(!ctx)return;
  ctx.save();ctx.translate(cx,ground);ctx.scale(scale,scale);
@@ -173,11 +173,12 @@ function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scal
  ellipse(0,0,24,3,"rgba(0,0,0,.72)");
  limb(6,-43,10,-9,11,"#181b1e");limb(-6,-43,-10,-9,11,"#181b1e");
  rect(5,-10,12,3,"#080a0c");rect(-17,-10,12,3,"#080a0c");
- poly([-19,-83,-12,-89,-5,-56,0,-50,5,-56,12,-89,19,-83,12,-51,0,-45,-12,-51],"#1b1e22");
+ const suit=m.suit||"#1b1e22";
+ poly([-19,-83,-12,-89,-5,-56,0,-50,5,-56,12,-89,19,-83,12,-51,0,-45,-12,-51],suit);
  poly([-9,-82,0,-68,9,-82,6,-51,0,-46,-6,-51],"#f0eee7");
  poly([-7,-78,0,-68,7,-78,4,-52,-4,-52],"#d5d8d7");
  rect(-2,-68,4,19,m.tie);rect(-9,-56,18,3,"#0e1114");
- limb(-19,-76,-28,-48,8,"#1b1e22");limb(19,-76,28,-48,8,"#1b1e22");
+ limb(-19,-76,-28,-48,8,suit);limb(19,-76,28,-48,8,suit);
  ellipse(-29,-44,5,6,m.face);ellipse(29,-44,5,6,m.face);
  rect(-7,-98,14,14,m.face);ellipse(0,-105,12,13,m.face);
  rect(-16,-117,32,5,"#111417");rect(-11,-124,22,8,"#171b1f");rect(-18,-119,36,3,"#080a0c");
@@ -186,6 +187,7 @@ function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scal
  poly([-10,-82,-2,-68,-7,-62,-14,-80],"#30353a");poly([10,-82,2,-68,7,-62,14,-80],"#30353a");
  rect(10,-72,5,4,m.tie);rect(-14,-77,2,12,"#596166");rect(12,-77,2,12,"#596166");rect(-2,-50,4,2,m.tie);
  ctx.restore();
+ drawHudOverlay(m);
 }
 function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
 
@@ -211,6 +213,14 @@ function getTestLayout():TestFloorLayout{
  return testFloorLayouts[familyId][0][Math.min(floor,2)];
 }
 
+function drawHudOverlay(m:Mission){
+ rect(8,8,viewWidth-16,40,"rgba(5,7,8,.92)");
+ const fs=Math.max(10,Math.min(18,viewWidth*.019));
+ tx("FREEzzz МАФИЯ",18,15,fs,hero().color);tx(hero().name,viewWidth*.20,15,fs,"#f0eee7");tx(rankRu(rankNames[rank()]),viewWidth*.36,15,fs*.82,"#aab1b4");
+ tx("$"+save.money,viewWidth*.48,15,fs*.82,"#d9b86c");tx("ЗДОРОВЬЕ "+Math.max(0,Math.round(player.hp)),viewWidth*.62,15,fs*.72,"#d5d8d7");
+ tx("БРОНЯ "+player.armor,viewWidth*.80,15,fs*.72,"#9f83d6");tx("АВТО",viewWidth*.94,15,fs*.72,hero().color,"right");
+ tx("ЭТАЖ "+(floor+1)+"/3 · "+objectiveRu(m.objective),18,62,fs*.82,"#aab1b4");
+}
 function drawWorld(m:Mission){
  // Масштаб по высоте: игровая сцена занимает всю высоту Telegram Mini App.
  // Камера следует за игроком по X, поэтому широкая логическая сцена естественно
@@ -219,7 +229,7 @@ function drawWorld(m:Mission){
  const cameraX=clamp(player.x*scale-viewWidth*.5,0,Math.max(0,W*scale-viewWidth));
  ctx.save();ctx.beginPath();ctx.rect(0,0,viewWidth,viewHeight);ctx.clip();
  ctx.translate(-cameraX,0);ctx.scale(scale,scale);
- drawBackdrop();drawHud(m);
+ drawBackdrop();
  const layout=getTestLayout();
  layout.platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
  tx(layout.accents,612,57,6,"#59656b","right");
@@ -233,8 +243,9 @@ function drawWorld(m:Mission){
  ctx.restore();
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
+ const suits:Record<EnemyType,string>={brawler:"#30242a",shooter:"#26323a",heavy:"#40352a",rusher:"#3a2024",guard:"#28342e",sniper:"#302a40",suppressor:"#403323",flanker:"#26313d"};
  const ties:Record<EnemyType,string>={brawler:"#b94f46",shooter:"#6d8790",heavy:"#c58b48",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
- return {face:"#9a6554",tie:ties[type]};
+ return {face:"#9a6554",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
  const v=enemyVisual(e.type);
