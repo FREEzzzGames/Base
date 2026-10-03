@@ -14,7 +14,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;cool:number;shootCool:number;dir:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;facing:number}
-interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[]}
+interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 const W=640,H=448;
 const heroes:Record<HeroId,Hero>={
@@ -126,15 +126,21 @@ const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",
 let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRenderingContext2D|null=null;
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
-let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[]};
+let viewWidth=640,viewHeight=448;
+let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,facing:1};
 let enemies:Enemy[]=[],bullets:Bullet[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,fire:false,ability:false};
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
+function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
+function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
+function missionIndexForHero(h:HeroId){const savedId=save.resumeMission?.[h];const savedIndex=savedId?allMissions.findIndex(m=>m.id===savedId):-1;if(savedIndex>=0&&!save.completed.includes(allMissions[savedIndex].id))return savedIndex;const first=personal.findIndex(m=>m.hero===h&&!save.completed.includes(m.id));if(first>=0)return first;const jointOrder=["joint_11","joint_12","joint_13"];const nextJoint=jointOrder.find(id=>!save.completed.includes(id));return nextJoint?allMissions.findIndex(m=>m.id===nextJoint):0;}
+function saveResumeState(){if(!selected)return;save.resumeMission={...(save.resumeMission||{}),[selected]:currentMission().id};save.resumeFloor={...(save.resumeFloor||{}),[selected]:Math.max(0,Math.min(2,floor))};storeSave();}
+function setResumeMission(index:number,floorNumber=0){if(!selected)return;const m=allMissions[index];if(!m)return;save.resumeMission={...(save.resumeMission||{}),[selected]:m.id};save.resumeFloor={...(save.resumeFloor||{}),[selected]:floorNumber};storeSave();}
 function rank(){return Math.min(rankNames.length-1,Math.floor(save.xp/650));}
 function rankRu(r:string){const map:Record<string,string>={RECRUIT:"НОВИЧОК",RUNNER:"ПОСЛАННИК",SOLDIER:"БОЕЦ",OPERATOR:"ОПЕРАТИВНИК",CAPO:"КАПО",UNDERBOSS:"ПРАВАЯ РУКА"};return map[r]||r;}
 function objectiveRu(o:Objective){const map:Record<Objective,string>={find:"НАЙТИ",recover:"ЗАБРАТЬ",escort:"СОПРОВОЖДАТЬ",clear:"ЗАЧИСТИТЬ",reach:"ДОБРАТЬСЯ",defend:"ЗАЩИТИТЬ",survive:"ВЫЖИТЬ",escape:"ОТХОД"};return map[o]||o.toUpperCase();}
@@ -293,39 +299,43 @@ function update(dt:number){
  const reachedExit=Math.abs(player.x-exitX)<28&&Math.abs(player.y-exitY)<28;
  const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
  if(objectiveDone){
-   if(floor<2){floor++;spawnFloor();}else completeMission();
+   if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}else completeMission();
  }
 }
 
 function completeMission(){
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
  if(!save.completed.includes(m.id))save.completed.push(m.id);
- save.rank=rank();storeSave();dialogueIndex=0;dialogueOpen=true;
+ save.rank=rank();
+ const h=selected;
+ if(h){const next=missionIndexForHero(h);setResumeMission(next,0);}
+ dialogueIndex=0;dialogueOpen=true;storeSave();
 }
 function nextMission(){
- const h=selected!;
- const donePersonal=personal.filter(m=>m.hero===h&&save.completed.includes(m.id)).length;
- if(donePersonal<10){
-   missionIndex=personal.findIndex(m=>m.hero===h&&!save.completed.includes(m.id));
- }else{
-   const jointOrder=["joint_11","joint_12","joint_13"];
-   const nextJoint=jointOrder.find(id=>!save.completed.includes(id));
-   missionIndex=nextJoint?allMissions.findIndex(m=>m.id===nextJoint):-1;
-   if(missionIndex<0){mode="select";dialogueOpen=false;storeSave();return;}
- }
+ const h=selected!;missionIndex=missionIndexForHero(h);
  if(missionIndex<0)missionIndex=0;
+ setResumeMission(missionIndex,0);
  mode="briefing";dialogueIndex=0;dialogueOpen=true;
 }
 function beginSelected(){
- save.hero=selected;save.rank=rank();storeSave();
- const first=personal.findIndex(m=>m.hero===selected&&!save.completed.includes(m.id));
- missionIndex=first>=0?first:personal.findIndex(m=>m.hero===selected);
- mode="family";dialogueIndex=0;dialogueOpen=true;
+ const h=selected;if(!h)return;
+ save.hero=h;save.rank=rank();missionIndex=missionIndexForHero(h);
+ if(storySeen(h)){
+   floor=Math.max(0,Math.min(2,save.resumeFloor?.[h]??0));
+   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();
+ }else{
+   mode="family";dialogueIndex=0;dialogueOpen=false;
+ }
+ storeSave();
 }
 function advanceDialogue(){
  const m=currentMission();
  if(mode==="shop"){mode="play";dialogueOpen=false;return;}
- if(mode==="family"){mode="briefing";dialogueIndex=0;dialogueOpen=true;return;}
+ if(mode==="family"){
+   if(selected)markStorySeen(selected);
+   floor=Math.max(0,Math.min(2,save.resumeFloor?.[selected!]??0));
+   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();return;
+ }
  if(mode==="result"){
    dialogueOpen=false;
    if(m.number===1){
@@ -343,9 +353,12 @@ function missionForHero():Mission{const m=currentMission();return m;}
 function startMissionById(id:string){const i=allMissions.findIndex(m=>m.id===id);if(i>=0){missionIndex=i;mode="briefing";dialogueIndex=0;dialogueOpen=true;}}
 
 function renderCanvas(){
- if(!ctx)return;const m=currentMission();
- if(mode==="play"){drawWorld(m);return;}
- rect(0,0,W,H,"#07090b");
+ if(!ctx)return;resizeCanvas();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,viewWidth,viewHeight);
+ const m=currentMission();
+ if(mode==="play"){
+   const scale=Math.min(viewWidth/W,viewHeight/H),ox=(viewWidth-W*scale)/2,oy=(viewHeight-H*scale)/2;
+   ctx.save();ctx.translate(ox,oy);ctx.scale(scale,scale);drawWorld(m);ctx.restore();return;
+ }
  if(mode==="select"){drawSelect();return;}
  if(mode==="family"){drawFamily();return;}
  if(mode==="briefing"){drawBriefing();return;}
@@ -353,55 +366,72 @@ function renderCanvas(){
  if(mode==="result"){drawResult();return;}
 }
 function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
+function menuTextSize(base:number,min:number,max:number){return Math.max(min,Math.min(max,viewWidth*base));}
+function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:number,size:number,color:string,align:CanvasTextAlign="left"){
+ const words=text.split(/\s+/);let line="";let row=0;
+ for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars){tx(line,x,y+row*lineHeight,size,color,align);line=word;row++;}else line=next;}
+ if(line)tx(line,x,y+row*lineHeight,size,color,align);
+ return row+1;
+}
 function drawSelect(){
- tx("ЧЕТЫРЕ СЕМЬИ",W/2,26,16,"#f0eee7","center");tx("ВЫБЕРИТЕ ПЕРСОНАЖА",W/2,49,7,"#7e898d","center");
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
- ids.forEach((id,i)=>{const h=heroes[id],x=80+i*160,a=id===selected;
-   rect(x-68,82,136,190,a?"#151d21":"#0b1013");rect(x-68,82,136,3,a?h.color:"#263137");
-   tx(h.family.toUpperCase(),x,94,8,a?"#f0eee7":"#aeb5b7","center");tx(h.name,x,111,6,h.color,"center");
-   drawMafiaMember({face:h.face,tie:h.color},x,238,frame+i*4,.58);
-   tx(familyText[h.family].desc,x,259,5,h.color,"center");
-   tx(h.ability,x,267,4,"#7e898d","center");
+ const gapX=viewWidth*.035,padX=viewWidth*.06,cardW=(viewWidth-padX*2-gapX)/2;
+ const gapY=viewHeight*.02,top=viewHeight*.18,cardH=Math.min(viewHeight*.265,(viewHeight-top-viewHeight*.18-gapY)/2);
+ tx("ЧЕТЫРЕ СЕМЬИ",viewWidth/2,viewHeight*.045,menuTextSize(.045,28,40),"#f0eee7","center");
+ tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
+ ids.forEach((id,i)=>{
+   const h=heroes[id],col=i%2,row=Math.floor(i/2),x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
+   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");rect(x,y,cardW,4,a?h.color:"#263137");
+   tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
+   tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
+   const artScale=Math.max(1.05,Math.min(1.65,cardW/220));
+   drawMafiaMember({face:h.face,tie:h.color},x+cardW/2,y+cardH*.72,frame+i*4,artScale);
+   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.86,menuTextSize(.012,9,14),h.color,"center");
+   tx(h.ability,x+cardW/2,y+cardH*.91,menuTextSize(.011,8,12),"#7e898d","center");
  });
- tx("НАЖМИТЕ НА ПЕРСОНАЖА",W/2,306,7,"#d5d8d7","center");
- tx("КЛАССИЧЕСКИЕ КОСТЮМЫ · 4 СЕМЬИ · 3 ЭТАЖА",W/2,323,5,"#58646a","center");
 }
 function drawFamily(){
- const h=hero();panel(44,54,552,340);
- tx(h.family.toUpperCase(),320,78,18,h.color,"center");tx(h.name,320,103,12,"#f0eee7","center");tx(familyText[h.family].desc,320,126,8,"#aab1b4","center");
- tx("ИСТОРИЯ СЕМЬИ",320,157,9,h.color,"center");
- const lines=[familyText[h.family].intro,h.bio,"Способность: "+h.ability,"• "+h.abilityDesc];
- lines.forEach((s,i)=>tx(s,320,190+i*28,9,i===0?"#f0eee7":"#aab1b4","center"));
- tx("ПРОПУСТИТЬ",320,370,8,h.color,"center");
+ const h=hero();
+ rect(0,0,viewWidth,viewHeight,"#07090b");
+ tx("ИСТОРИЯ СЕМЬИ",viewWidth/2,viewHeight*.055,menuTextSize(.04,28,38),h.color,"center");
+ tx(h.family.toUpperCase(),viewWidth/2,viewHeight*.13,menuTextSize(.052,34,52),"#f0eee7","center");
+ tx(h.name,viewWidth/2,viewHeight*.205,menuTextSize(.028,20,30),"#aab1b4","center");
+ const maxChars=Math.max(24,Math.floor(viewWidth/15));
+ const lh=menuTextSize(.022,22,30);
+ let y=viewHeight*.30;
+ drawWrapped(familyText[h.family].intro,viewWidth/2,y,maxChars,lh,menuTextSize(.025,18,26),"#f0eee7","center");
+ y+=lh*2.3;
+ drawWrapped(h.bio,viewWidth/2,y,maxChars,lh,menuTextSize(.022,17,24),"#c2c7c8","center");
+ y+=lh*3.2;
+ tx("СПОСОБНОСТЬ · "+h.ability,viewWidth/2,y,menuTextSize(.025,18,26),h.color,"center");
+ y+=lh*1.6;
+ drawWrapped(h.abilityDesc,viewWidth/2,y,maxChars,lh,menuTextSize(.021,16,22),"#aab1b4","center");
 }
 function drawBriefing(){
- const m=currentMission();panel(35,48,570,350);
- tx("МИССИЯ "+String(m.number).padStart(2,"0"),55,68,9,hero().color);
- tx(m.ru,55,91,19,"#f0eee7");
- tx("ЦЕЛЬ · "+objectiveRu(m.objective),55,174,9,hero().color);
- m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),55,210+i*42,7,"#59656b");tx(floorRu(f),125,208+i*42,9,"#f0eee7");});
- tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,55,345,8,"#d9b86c");
- tx("НАЖМИТЕ, ЧТОБЫ НАЧАТЬ",55,372,8,hero().color);
+ const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");
+ tx("МИССИЯ "+String(m.number).padStart(2,"0"),viewWidth*.07,viewHeight*.07,menuTextSize(.025,18,26),hero().color);
+ tx(m.ru,viewWidth*.07,viewHeight*.15,menuTextSize(.042,28,44),"#f0eee7");
+ tx("ЦЕЛЬ · "+objectiveRu(m.objective),viewWidth*.07,viewHeight*.28,menuTextSize(.024,17,25),hero().color);
+ m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),viewWidth*.07,viewHeight*(.36+i*.07),menuTextSize(.018,13,20),"#59656b");tx(floorRu(f),viewWidth*.20,viewHeight*(.355+i*.07),menuTextSize(.024,16,25),"#f0eee7");});
+ tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,viewWidth*.07,viewHeight*.72,menuTextSize(.021,15,22),"#d9b86c");
  if(dialogueOpen)drawDialogue();
 }
 function drawDialogue(){
  const m=currentMission(),d=m.dialogue[Math.min(dialogueIndex,m.dialogue.length-1)];if(!d)return;
- rect(20,292,600,125,"rgba(5,7,8,.97)");rect(20,292,600,3,hero().color);
- tx(speakerRu(d.speaker),36,308,9,hero().color);tx(d.text,36,335,10,"#f0eee7");
- tx("НАЖМИТЕ",590,391,7,"#59656b","right");
+ rect(viewWidth*.04,viewHeight*.65,viewWidth*.92,viewHeight*.25,"rgba(5,7,8,.97)");rect(viewWidth*.04,viewHeight*.65,viewWidth*.92,4,hero().color);
+ tx(speakerRu(d.speaker),viewWidth*.07,viewHeight*.68,menuTextSize(.022,16,24),hero().color);
+ drawWrapped(d.text,viewWidth*.07,viewHeight*.73,Math.max(24,Math.floor(viewWidth/16)),menuTextSize(.023,18,27),menuTextSize(.024,17,26),"#f0eee7");
 }
 function drawShop(){
- panel(35,45,570,355);tx("АРСЕНАЛ",55,67,16,hero().color);tx("ДЕНЬГИ $"+save.money,575,69,9,"#d9b86c","right");
- weapons.forEach((w,i)=>{const y=105+i*40;const owned=save.weapon>=i;tx(String(i+1),55,y,8,"#59656b");tx(weaponRu(w.name),78,y,9,"#f0eee7");tx("$"+w.cost,275,y,8,"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",380,y,8,owned?hero().color:"#aab1b4");});
- tx("НАЗАД · ВЫБОР 1–6",55,374,7,"#59656b");
+ rect(0,0,viewWidth,viewHeight,"#07090b");tx("АРСЕНАЛ",viewWidth*.07,viewHeight*.08,menuTextSize(.04,26,38),hero().color);tx("ДЕНЬГИ $"+save.money,viewWidth*.93,viewHeight*.08,menuTextSize(.022,15,24),"#d9b86c","right");
+ weapons.forEach((w,i)=>{const y=viewHeight*(.18+i*.075);const owned=save.weapon>=i;tx(String(i+1),viewWidth*.07,y,menuTextSize(.02,14,20),"#59656b");tx(weaponRu(w.name),viewWidth*.13,y,menuTextSize(.023,16,24),"#f0eee7");tx("$"+w.cost,viewWidth*.58,y,menuTextSize(.021,15,22),"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",viewWidth*.78,y,menuTextSize(.021,15,22),owned?hero().color:"#aab1b4");});
 }
 function drawResult(){
- const m=currentMission();panel(50,55,540,330);tx("МИССИЯ ЗАВЕРШЕНА",320,82,17,hero().color,"center");tx(m.ru,320,110,10,"#f0eee7","center");
- tx("+$"+m.reward,320,160,15,"#d9b86c","center");tx("+"+m.xp+" XP",320,188,11,"#aab1b4","center");
- tx("РАНГ · "+rankRu(rankNames[rank()]),320,226,10,hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,320,250,9,"#f0eee7","center");
- if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",320,290,7,"#aab1b4","center");
- if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",320,290,11,hero().color,"center");
- tx(m.number===1?"ТЕСТОВЫЙ УРОВЕНЬ ЗАВЕРШЁН · НАЖМИТЕ ДЛЯ ВОЗВРАТА":"НАЖМИТЕ · ПРОДОЛЖИТЬ",320,350,8,"#f0eee7","center");
+ const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");tx("МИССИЯ ЗАВЕРШЕНА",viewWidth/2,viewHeight*.18,menuTextSize(.045,28,40),hero().color,"center");tx(m.ru,viewWidth/2,viewHeight*.27,menuTextSize(.032,21,32),"#f0eee7","center");
+ tx("+$"+m.reward,viewWidth/2,viewHeight*.39,menuTextSize(.04,26,38),"#d9b86c","center");tx("+"+m.xp+" XP",viewWidth/2,viewHeight*.46,menuTextSize(.026,18,26),"#aab1b4","center");
+ tx("РАНГ · "+rankRu(rankNames[rank()]),viewWidth/2,viewHeight*.54,menuTextSize(.023,16,24),hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,viewWidth/2,viewHeight*.59,menuTextSize(.021,15,22),"#f0eee7","center");
+ if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",viewWidth/2,viewHeight*.68,menuTextSize(.02,14,22),"#aab1b4","center");
+ if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",viewWidth/2,viewHeight*.68,menuTextSize(.026,18,26),hero().color,"center");
 }
 
 function buyOrSelectWeapon(n:number){
@@ -425,22 +455,43 @@ function handleKey(e:KeyboardEvent){
  keys.add(e.key);
 }
 function keyup(e:KeyboardEvent){keys.delete(e.key);}
+function exitToPortal(){
+ saveResumeState();
+ mode="select";dialogueOpen=false;
+ window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}));
+}
 function bindButtons(){
- root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;beginSelected();});
- root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{const a=el.dataset.action;if(a==="advance")advanceDialogue();if(a==="shop"){mode="shop";renderCanvas();}});
+ root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;render();});
+ root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{
+   const a=el.dataset.action;
+   if(a==="play"&&selected)beginSelected();
+   if(a==="exit")exitToPortal();
+   if(a==="advance")advanceDialogue();
+   if(a==="shop"){mode="shop";render();}
+ });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
+}
+function resizeCanvas(){
+ if(!root||!canvas||!ctx)return;
+ const w=Math.max(320,root.clientWidth||window.innerWidth);
+ const h=Math.max(480,root.clientHeight||window.innerHeight);
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+ viewWidth=w;viewHeight=h;
 }
 function render(){
  if(!root)return;
- root.innerHTML='<div class="freezzz-mafia-frame"><canvas class="freezzz-mafia-canvas" width="'+W+'" height="'+H+'"></canvas><div class="freezzz-mafia-ui"></div></div>';
+ root.innerHTML='<div class="freezzz-mafia-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui"></div></div>';
  canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;
+ resizeCanvas();
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button></div>';
+ }else if(mode==="family"){
+   ui.innerHTML='<div class="mafia-action"><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="play"){
    ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">ДЕЙСТВИЕ</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div>';
  }else{
-   ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(mode==="family"?"ПРОПУСТИТЬ":dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
+   ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
  bindButtons();renderCanvas();
 }
@@ -450,7 +501,7 @@ function setup(){
  render();raf=requestAnimationFrame(loop);
  cleanup=()=>{cancelAnimationFrame(raf);};
 }
-export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
+export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{saveResumeState();cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
  const map:Record<string,string>={OFFICE:"ОФИС","UPPER OFFICE":"ВЕРХНИЙ ОФИС",ESCAPE:"ОТХОД","FRONT OFFICE":"ПЕРЕДНИЙ ОФИС","RECORD ROOM":"АРХИВ",ROOFTOP:"КРЫША",STREET:"УЛИЦА",BLOCK:"КВАРТАЛ","BACK STREET":"ЗАДНЯЯ УЛИЦА",GARAGE:"ГАРАЖ",ENTRANCE:"ВХОД",STORAGE:"СКЛАД",BAR:"БАР","BACK ROOM":"ЗАДНЯЯ КОМНАТА",ALLEY:"ПЕРЕУЛОК",WAREHOUSE:"СКЛАД",DEPOT:"ДЕПО","LOADING BAY":"ПОГРУЗОЧНАЯ ЗОНА","UPPER CATWALK":"ВЕРХНЯЯ ПЛОЩАДКА","CONTROL ROOM":"ЦЕНТР УПРАВЛЕНИЯ","SERVICE FLOOR":"СЛУЖЕБНЫЙ ЭТАЖ","UPPER FLOOR":"ВЕРХНИЙ ЭТАЖ","LOCKED FLOOR":"ЗАКРЫТЫЙ ЭТАЖ","ROOF ACCESS":"ВЫХОД НА КРЫШУ","MEETING FLOOR":"ЭТАЖ ВСТРЕЧИ","ROSSI HQ":"ШТАБ РОССИ","MORETTI HQ":"ШТАБ МОРЕТТИ","VALENTI OFFICE":"ОФИС ВАЛЕНТИ","PORT":"ПОРТ","CONTAINER YARD":"КОНТЕЙНЕРНЫЙ ДВОР","CONTROL FLOOR":"ЭТАЖ УПРАВЛЕНИЯ","SERVICE HALL":"СЛУЖЕБНЫЙ КОРИДОР","MEETING ROOM":"КОМНАТА ВСТРЕЧИ","SERVICE TUNNEL":"СЛУЖЕБНЫЙ ТОННЕЛЬ","NIGHT DOCK":"НОЧНОЙ ПРИЧАЛ","CRANE FLOOR":"ЭТАЖ КРАНА","NIGHT STREET":"НОЧНАЯ УЛИЦА","DISTRICT":"РАЙОН","CROSSING":"ПЕРЕКРЁСТОК","ARCHIVE":"АРХИВ","HIDDEN ROOM":"СКРЫТАЯ КОМНАТА","SECURE ARCHIVE":"ЗАКРЫТЫЙ АРХИВ","FINAL FLOOR":"ФИНАЛЬНЫЙ ЭТАЖ","ENTRY":"ВХОД","CROSSROADS":"ПЕРЕКРЁСТОК","SPLIT LEVEL":"РАЗДЕЛЁННЫЙ ЭТАЖ","OUTER BLOCK":"ВНЕШНИЙ КВАРТАЛ"};
  return map[s]||s;
 }
