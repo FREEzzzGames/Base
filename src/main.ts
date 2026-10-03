@@ -170,6 +170,9 @@ function homeLayoutIsDefault():boolean{
   const defaults=defaultHomeLayout();
   return JSON.stringify(homeLayout)===JSON.stringify(defaults);
 }
+function homeLayoutHandles():string{
+  return `<span class="home-layout-resize-handle home-layout-resize-left" data-layout-resize="left" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-right" data-layout-resize="right" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-top" data-layout-resize="top" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-bottom" data-layout-resize="bottom" aria-hidden="true"></span>`;
+}
 function homeLayoutBlockAttrs(id:HomeBlockId):string{
   return `data-home-layout-block="${id}"`;
 }
@@ -314,6 +317,7 @@ function render(){
           <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
           <p>${T("homeDescription")}</p>
           </div>
+          ${homeLayoutHandles()}
         </section>
         ${homeCard("live")}
         ${homeCard("chat")}
@@ -476,6 +480,7 @@ function homeCard(v:Exclude<View,"home">){
   return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}" ${homeLayoutBlockAttrs(v as HomeBlockId)}>
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
     <span class="home-card-title">${title}</span>
+    ${homeLayoutHandles()}
   </button>`;
 }
 async function getRadioBrowser():Promise<RadioBrowserClient>{
