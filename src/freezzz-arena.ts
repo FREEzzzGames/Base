@@ -80,8 +80,8 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
   // Torso is tapered rather than rectangular: chest, ribs, abdomen.
   const shoulder=f.build===2?23:f.build===1?21:19;
   const waist=f.build===2?13:f.build===1?12:10;
-  poly(ctx,[-shoulder,-78,shoulder,-78,shoulder-4,-61,waist+6,-42,waist,-37,-waist,-37,-waist-6,-42,-shoulder+4,-61],f.gear);
-  poly(ctx,[-shoulder+4,-73,0,-69,shoulder-4,-73,shoulder-7,-59,5,-48,-5,-48,-shoulder+7,-59],f.gearHi);
+  poly(ctx,[-shoulder,-76,shoulder,-76,shoulder-5,-60,waist+5,-43,waist,-37,-waist,-37,-waist-5,-43,-shoulder+5,-60],f.gear);
+  poly(ctx,[-shoulder+4,-71,0,-67,shoulder-4,-71,shoulder-7,-59,5,-49,-5,-49,-shoulder+7,-59],f.gearHi);
   poly(ctx,[-4,-67,4,-67,7,-48,2,-44,-2,-44,-7,-48],shade(f.gear,.58));
   // Costume construction lines.
   rect(ctx,-9,-61,18,2,shade(f.gearHi,.82));
@@ -98,13 +98,13 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
 
   // Neck and head: smaller neck, cheekbones and jaw to avoid the robotic cube look.
   rect(ctx,-6,-86,12,10,f.skinShadow);
-  const hw=f.head===2?12:11;
-  poly(ctx,[-hw,-105,-6,-108,6,-108,hw,-104,hw+2,-94,hw,-84,7,-77,0,-74,-7,-77,-hw,-84,-hw-2,-94],f.skin);
-  poly(ctx,[-hw+2,-101,-5,-104,5,-104,hw-2,-100,hw-1,-91,6,-82,-5,-82,-hw+1,-91],f.skinHi);
+  const hw=f.head===2?10:9;
+  poly(ctx,[-hw,-103,-5,-106,5,-106,hw,-102,hw+2,-94,hw,-85,6,-79,0,-76,-6,-79,-hw,-85,-hw-2,-94],f.skin);
+  poly(ctx,[-hw+2,-100,-4,-102,4,-102,hw-2,-99,hw-1,-92,5,-84,-5,-84,-hw+1,-92],f.skinHi);
   // Ears and jaw planes.
-  rect(ctx,-hw-3,-96,3,8,f.skinShadow);rect(ctx,hw,-96,3,8,shade(f.skinShadow,.86));
-  rect(ctx,-7,-82,14,4,f.skinShadow);
-  rect(ctx,-hw+1,-86,5,3,shade(f.skinHi,.78));rect(ctx,hw-6,-86,5,3,shade(f.skinShadow,.84));
+  rect(ctx,-hw-3,-96,3,7,f.skinShadow);rect(ctx,hw,-96,3,7,shade(f.skinShadow,.86));
+  rect(ctx,-6,-83,12,4,f.skinShadow);
+  rect(ctx,-hw+1,-87,4,3,shade(f.skinHi,.78));rect(ctx,hw-5,-87,4,3,shade(f.skinShadow,.84));
 
   // Hair / headgear silhouette.
   if(f.id==="vex"){
@@ -120,14 +120,14 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
   }
 
   // Face: brows, eyes, nose, mouth and cheek pixels.
-  rect(ctx,-8,-98,6,2,"#201817");rect(ctx,2,-98,6,2,"#201817");
-  rect(ctx,-7,-96,3,2,"#ece8df");rect(ctx,4,-96,3,2,"#ece8df");
-  rect(ctx,-2,-94,4,6,f.skinShadow);
-  rect(ctx,-6,-88,4,2,f.skinHi);rect(ctx,2,-88,4,2,shade(f.skinShadow,.86));
-  rect(ctx,-5,-83,10,2,f.skinShadow);
-  rect(ctx,-4,-81,8,1,shade(f.skinHi,.7));
-  if(f.id==="korr"){rect(ctx,-10,-90,20,3,f.gearHi);rect(ctx,-7,-86,14,2,f.skinShadow);}
-  if(f.id==="ruma"){rect(ctx,-11,-84,22,2,shade(f.accent,.9));}
+  rect(ctx,-7,-96,5,2,"#201817");rect(ctx,2,-96,5,2,"#201817");
+  rect(ctx,-6,-94,2,2,"#ece8df");rect(ctx,3,-94,2,2,"#ece8df");
+  rect(ctx,-2,-92,4,5,f.skinShadow);
+  rect(ctx,-5,-86,3,2,f.skinHi);rect(ctx,2,-86,3,2,shade(f.skinShadow,.86));
+  rect(ctx,-5,-81,10,2,f.skinShadow);
+  rect(ctx,-3,-79,6,1,shade(f.skinHi,.7));
+  if(f.id==="korr"){rect(ctx,-9,-88,18,3,f.gearHi);rect(ctx,-6,-84,12,2,f.skinShadow);}
+  if(f.id==="ruma"){rect(ctx,-10,-83,20,2,shade(f.accent,.9));}
 
   // Individual costume identity.
   if(f.id==="vex"){
@@ -314,6 +314,10 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
     if(input.left)xA-=speed*dt;if(input.right)xA+=speed*dt;xA=clamp(xA,42,278);
     const dir=xA<xB?-1:1;
     xB+=Math.sin(frame*.016)*dt*6;xB=clamp(xB,82,266);
+    if(Math.abs(xA-xB)<54){
+      const mid=(xA+xB)/2;
+      if(xA<xB){xA=mid-27;xB=mid+27;}else{xA=mid+27;xB=mid-27;}
+    }
     coolA=Math.max(0,coolA-dt);coolB=Math.max(0,coolB-dt);
     if(input.burst&&coolA<=0){input.burst=false;coolA=.42;const d=Math.abs(xA-xB);if(d<52)hpB-=Math.max(5,f.power*.95-(input.guard?1:0));else xA=clamp(xA+dir*20,42,278);}
     if(Math.abs(xA-xB)<46&&coolB<=0){coolB=.72;if(!input.guard)hpA-=Math.max(3,e.power*.52);}
