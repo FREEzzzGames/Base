@@ -507,22 +507,24 @@ function drawSelect(){
    rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
    rect(x,y,cardW,4,a?h.color:"#263137");
 
-   // Фиксированные непересекающиеся зоны карточки:
-   // 1 — семья, 2 — имя, 3 — аватар, 4 — описание, 5 — способность.
+   // Карточка имеет жёсткие независимые зоны: заголовок → имя → персонаж → описание → способность.
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
 
-   const avatarZoneY=y+cardH*.47;
-   const artScale=Math.max(.82,Math.min(1.28,cardW/255));
-   const spin=performance.now()/1000*.72+i*.8;
-   const spinX=Math.max(.14,Math.abs(Math.cos(spin)));
+   // Персонаж больше и никогда не исчезает при повороте: только лёгкий эффект глубины.
+   const avatarTop=y+cardH*.20;
+   const avatarBottom=y+cardH*.67;
+   const avatarZoneH=avatarBottom-avatarTop;
+   const artScale=Math.max(1.05,Math.min(1.38,cardW/235));
+   const spin=performance.now()/1000*.42+i*.8;
+   const spinX=.72+.28*Math.abs(Math.cos(spin));
    c.save();
    c.beginPath();
-   c.rect(x+8,y+56,cardW-16,cardH*.48);
+   c.rect(x+8,avatarTop,cardW-16,avatarZoneH);
    c.clip();
-   c.translate(x+cardW/2,avatarZoneY);
+   c.translate(x+cardW/2,avatarBottom);
    c.scale(spinX,1);
-   drawMafiaMember({face:h.face,tie:h.color},0,0,frame+i*4,artScale);
+   drawMafiaMember({face:h.face,tie:h.color,suit:"#20262b"},0,0,frame+i*4,artScale);
    c.restore();
 
    tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.011,8,13),h.color,"center");
