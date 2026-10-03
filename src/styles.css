@@ -5545,3 +5545,65 @@ h1,h2,h3,h4,h5,h6,
   -webkit-text-fill-color:#ff2020!important;
   text-shadow:none!important;
 }
+
+/* VISUAL COMFORT LAYER — independent accessibility/media attenuation */
+.visual-comfort-control{
+  position:fixed!important;
+  left:8px!important;
+  bottom:calc(84px + var(--safe-bottom,0px) + 8px)!important;
+  z-index:1300!important;
+  width:44px!important;
+  height:32px!important;
+  min-width:44px!important;
+  min-height:32px!important;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.65)!important;
+  border-radius:6px!important;
+  background:rgba(0,0,0,.72)!important;
+  color:#fff!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  font-family:var(--portal-font-body,monospace)!important;
+  font-size:7px!important;
+  line-height:1!important;
+  letter-spacing:.05em!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.visual-comfort-mark{
+  width:12px!important;
+  height:12px!important;
+  display:block!important;
+  border:1.5px solid currentColor!important;
+  border-radius:50%!important;
+  box-shadow:inset 0 0 0 2px transparent!important;
+}
+.visual-comfort-control[data-enabled="true"]{
+  border-color:#ff2020!important;
+  color:#ff2020!important;
+}
+.visual-comfort-control:active{
+  transform:translate3d(2px,2px,0)!important;
+}
+html.visual-comfort-enabled::after{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:100!important;
+  pointer-events:none!important;
+  background:rgba(0,0,0,var(--visual-comfort-overlay,.045))!important;
+  backdrop-filter:brightness(var(--visual-comfort-brightness,.84)) contrast(var(--visual-comfort-contrast,.92)) saturate(var(--visual-comfort-saturation,.72))!important;
+  -webkit-backdrop-filter:brightness(var(--visual-comfort-brightness,.84)) contrast(var(--visual-comfort-contrast,.92)) saturate(var(--visual-comfort-saturation,.72))!important;
+  transition:background .4s ease,backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease!important;
+}
+html.visual-comfort-enabled video{
+  filter:grayscale(.10) brightness(var(--visual-comfort-brightness,.84)) contrast(var(--visual-comfort-contrast,.92)) saturate(var(--visual-comfort-saturation,.72))!important;
+  transition:filter .45s ease!important;
+}
+@media (prefers-reduced-motion:reduce){
+  html.visual-comfort-enabled video{
+    filter:grayscale(.16) brightness(var(--visual-comfort-brightness,.84)) contrast(var(--visual-comfort-contrast,.92)) saturate(var(--visual-comfort-saturation,.72))!important;
+  }
+}
