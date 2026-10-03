@@ -4657,9 +4657,9 @@ main{
 }
 @media(max-width:699px){
   .home-portal[data-home-layout-active="1"]{
-    height:clamp(420px,130vw,760px)!important;
-    min-height:420px!important;
-    max-height:760px!important;
+    height:calc(100dvh - 2px)!important;
+    min-height:0!important;
+    max-height:none!important;
   }
 }
 
