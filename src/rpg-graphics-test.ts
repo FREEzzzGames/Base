@@ -130,6 +130,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
     raf=requestAnimationFrame(frame);
   }
   function draw(dt:number){
+    if(root.dataset.rpgScreen==="character")return;
     const night=.18+.52*(Math.sin(s.time*Math.PI*2-Math.PI/2)*.5+.5);
     ctx.fillStyle="#050712";ctx.fillRect(0,0,W,H);
     ctx.save();
