@@ -12,7 +12,6 @@ import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalVi
 import { pt } from "./portal-i18n";
 import { createMihiModule } from "./mihi/mihi-module";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
-import { loadHomeLayout, saveHomeLayout, defaultHomeLayout, layoutRects, resizeHomeBoundary, swapHomeBlocks, type HomeBlockId, type HomeLayoutMode, type HomeLayoutState, type ResizeEdge } from "./home-layout";
 
 initTelegramBridge();
 
@@ -82,14 +81,6 @@ let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
 let hudHidden=false;
 let hudGestureBound=false;
-let homeLayout:HomeLayoutState=loadHomeLayout();
-let homeLayoutEditMode=false;
-let homeLayoutCustomized=false;
-let homeLayoutPointer:{id:HomeBlockId;startX:number;startY:number;edge?:ResizeEdge;active:boolean}={id:"hero",startX:0,startY:0,active:false};
-let homeLayoutModeAtRender:HomeLayoutMode=window.innerWidth<=699?"mobile":"desktop";
-try{homeLayoutCustomized=localStorage.getItem("freezzz:home-layout-customized")==="1";}catch{}
-let homeLayoutTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
-let homeLayoutFocusedBlock:HomeBlockId|null=null;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
@@ -166,174 +157,6 @@ function savePortalSessionSnapshot(){
   }catch{}
 }
 
-function currentHomeLayoutMode():HomeLayoutMode{
-  return window.innerWidth<=699?"mobile":"desktop";
-}
-function homeLayoutIsDefault():boolean{
-  return !homeLayoutCustomized;
-}
-function markHomeLayoutCustomized():void{
-  homeLayoutCustomized=true;
-  try{localStorage.setItem("freezzz:home-layout-customized","1");}catch{}
-}
-function homeLayoutHandles():string{
-  return `<span class="home-layout-resize-handle home-layout-resize-left" data-layout-resize="left" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-right" data-layout-resize="right" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-top" data-layout-resize="top" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-bottom" data-layout-resize="bottom" aria-hidden="true"></span>`;
-}
-function homeLayoutBlockAttrs(id:HomeBlockId):string{
-  const focused=homeLayoutEditMode&&homeLayoutFocusedBlock===id?"1":"0";
-  return `data-home-layout-block="${id}" data-home-layout-focused="${focused}"`;
-}
-function applyHomeLayoutGeometry(){
-  if(view!=="home")return;
-  const custom=homeLayoutEditMode||!homeLayoutIsDefault();
-  const home=document.querySelector<HTMLElement>(".home-portal");
-  if(!home)return;
-  home.dataset.homeLayoutActive=custom?"1":"0";
-  if(!custom)return;
-  const gap=1.5;
-  for(const rect of layoutRects(homeLayout[currentHomeLayoutMode()])){
-    const el=document.querySelector<HTMLElement>(`[data-home-layout-block="${rect.id}"]`);
-    if(!el)continue;
-    el.style.left=`calc(${rect.x}% + ${gap}px)`;
-    el.style.top=`calc(${rect.y}% + ${gap}px)`;
-    el.style.width=`calc(${rect.width}% - ${gap*2}px)`;
-    el.style.height=`calc(${rect.height}% - ${gap*2}px)`;
-  }
-}
-function beginHomeLayoutEdit(focus:HomeBlockId|null=null){
-  if(view!=="home")return;
-  homeLayoutEditMode=true;
-  homeLayoutFocusedBlock=focus;
-  render();
-}
-function resetHomeLayout(){
-  homeLayout=defaultHomeLayout();
-  homeLayoutCustomized=false;
-  try{localStorage.removeItem("freezzz:home-layout-customized");}catch{}
-  saveHomeLayout(homeLayout);
-  homeLayoutEditMode=false;
-  homeLayoutFocusedBlock=null;
-  render();
-}
-function finishHomeLayoutEdit(){
-  saveHomeLayout(homeLayout);
-  homeLayoutEditMode=false;
-  homeLayoutFocusedBlock=null;
-  render();
-}
-function toggleHomeLayoutEdit(id:HomeBlockId){
-  if(homeLayoutEditMode&&homeLayoutFocusedBlock===id){
-    finishHomeLayoutEdit();
-    return;
-  }
-  beginHomeLayoutEdit(id);
-}
-function bindHomeLayoutEditor(){
-  if(view!=="home")return;
-  const home=document.querySelector<HTMLElement>(".home-portal");
-  if(!home)return;
-  home.dataset.homeLayoutEdit=homeLayoutEditMode?"1":"0";
-  document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(el=>{
-    el.addEventListener("contextmenu",e=>e.preventDefault());
-    el.addEventListener("pointerdown",e=>{
-      if(e.pointerType==="mouse"&&e.button!==0)return;
-      const id=el.dataset.homeLayoutBlock as HomeBlockId;
-      if(!id)return;
-      const now=Date.now();
-      const previous=homeLayoutTap;
-      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=650&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48);
-
-      if(!homeLayoutEditMode){
-        if(!isSecond){
-          homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        homeLayoutTap=null;
-        toggleHomeLayoutEdit(id);
-        return;
-      }
-
-      if(homeLayoutFocusedBlock!==id){
-        if(!isSecond){
-          homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        homeLayoutTap=null;
-        homeLayoutFocusedBlock=id;
-        render();
-        return;
-      }
-
-      if(isSecond){
-        e.preventDefault();
-        e.stopPropagation();
-        homeLayoutTap=null;
-        finishHomeLayoutEdit();
-        return;
-      }
-      homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
-      e.preventDefault();
-      e.stopPropagation();
-      const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
-      homeLayoutPointer={id,startX:e.clientX,startY:e.clientY,edge,active:true};
-      el.setPointerCapture?.(e.pointerId);
-      el.classList.toggle("home-layout-resizing",Boolean(edge));
-      el.classList.toggle("home-layout-dragging",!edge);
-    });
-
-    el.addEventListener("pointermove",e=>{
-      if(!homeLayoutEditMode||!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
-      const mode=currentHomeLayoutMode();
-      const edge=homeLayoutPointer.edge;
-
-      if(edge){
-        const host=home.getBoundingClientRect();
-        const delta=(edge==="left"||edge==="right")
-          ?(e.clientX-homeLayoutPointer.startX)/Math.max(1,host.width)
-          :(e.clientY-homeLayoutPointer.startY)/Math.max(1,host.height);
-        const signed=(edge==="left"||edge==="top")?-delta:delta;
-        const next=resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed);
-        homeLayout={...homeLayout,[mode]:next};
-        markHomeLayoutCustomized();
-        homeLayoutPointer.startX=e.clientX;
-        homeLayoutPointer.startY=e.clientY;
-        applyHomeLayoutGeometry();
-        return;
-      }
-
-      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
-      if(target&&target!==el)el.dataset.homeLayoutOver=target.dataset.homeLayoutBlock||"";
-      else delete el.dataset.homeLayoutOver;
-    });
-
-    const finishPointer=(e:PointerEvent)=>{
-      if(!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
-      const edge=homeLayoutPointer.edge;
-      homeLayoutPointer.active=false;
-      el.classList.remove("home-layout-resizing","home-layout-dragging");
-      delete el.dataset.homeLayoutOver;
-
-      if(!edge){
-        const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
-        const targetId=target?.dataset.homeLayoutBlock as HomeBlockId|undefined;
-        if(targetId&&targetId!==homeLayoutPointer.id){
-          const mode=currentHomeLayoutMode();
-          homeLayout={...homeLayout,[mode]:swapHomeBlocks(homeLayout[mode],homeLayoutPointer.id,targetId)};
-          markHomeLayoutCustomized();
-        }
-      }
-      saveHomeLayout(homeLayout);
-      render();
-    };
-
-    el.addEventListener("pointerup",finishPointer);
-    el.addEventListener("pointercancel",finishPointer);
-  });
-}
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
     ["radio","radio","RADIO"],
@@ -365,8 +188,8 @@ function render(){
 
   if(view==="home"){
     body=`
-      <div class="content portal-layout home-portal" data-portal-layout="home" data-home-layout-active="${homeLayoutEditMode||!homeLayoutIsDefault()?"1":"0"}">
-        <section class="hero portal-block home-hero" data-portal-block="hero" ${homeLayoutBlockAttrs("hero")}>
+      <div class="content portal-layout home-portal" data-portal-layout="home">
+        <section class="hero portal-block home-hero" data-portal-block="hero">
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
             <source src="${portalVideoUrl("hero")}" type="video/mp4">
           </video>
@@ -380,7 +203,6 @@ function render(){
           <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(portalProfile.identity.username ? `@${portalProfile.identity.username}` : profileDisplayName())}</h1>
           <p>${T("homeDescription")}</p>
           </div>
-          ${homeLayoutHandles()}
         </section>
         ${homeCard("live")}
         ${homeCard("chat")}
@@ -540,10 +362,9 @@ function homeCard(v:Exclude<View,"home">){
   const background=backgrounds[v];
   const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
   const title=titles[v];
-  return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" ${homeLayoutBlockAttrs(v as HomeBlockId)}>
+  return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}">
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
     <span class="home-card-title">${title}</span>
-    ${homeLayoutHandles()}
   </div>`;
 }
 async function getRadioBrowser():Promise<RadioBrowserClient>{
@@ -601,15 +422,7 @@ portalEvents.on("navigation:changed",payload=>{
   portalState.view=payload.view;
   render();
 });
-window.addEventListener("resize",()=>{
-  const next=currentHomeLayoutMode();
-  if(next!==homeLayoutModeAtRender){
-    homeLayoutModeAtRender=next;
-    if(view==="home")render();
-  }else if(view==="home"&&homeLayoutEditMode){
-    applyHomeLayoutGeometry();
-  }
-});
+window.addEventListener("resize",()=>{ if(view==="home")render(); });
 window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
 window.setInterval(()=>flushActivityTracking(),15000);
@@ -645,7 +458,6 @@ function updateHomeClock(){
   clock.textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
 function bind(){
-  bindHomeLayoutEditor();
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
     document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
@@ -671,8 +483,7 @@ function bind(){
   }
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
-      if(homeLayoutEditMode&&x.closest(".home-portal")){e.preventDefault();e.stopPropagation();return;}
-      e.preventDefault();
+          e.preventDefault();
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
