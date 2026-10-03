@@ -503,6 +503,59 @@ function drawTopDownBackground(){
  // Архитектура — главный слой карты.
  for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
 
+ function drawUrbanMicroArchitecture(){
+   // Дополнительный проход: фасадные выступы, балконы, кондиционеры,
+   // водостоки, технические блоки и дворовые ограждения. Всё находится
+   // в той же мировой геометрии, что и коллизии.
+   for(let i=0;i<m.buildings.length;i++){
+     const b=m.buildings[i],low=b.kind==="low",school=b.kind==="school";
+     if(school)continue;
+     // Балконы/лоджии — нерегулярный ритм, чтобы дома не выглядели клонами.
+     const count=Math.max(1,Math.floor(b.w/150));
+     for(let k=0;k<count;k++){
+       const bx=b.x+32+k*((b.w-64)/Math.max(1,count));
+       const by=b.y+b.h*.36+(i%3)*7;
+       rect(bx,by,30,4,"#9a9b93");
+       rect(bx+3,by+4,24,3,"#454e4f");
+       for(let q=0;q<5;q++)line(bx+4+q*5,by+4,bx+4+q*5,by+14,"#7a817f",1);
+       rect(bx+4,by+14,22,3,"#303738");
+     }
+     // Кондиционеры и кабельные трассы.
+     if(i%2===0){
+       const ax=b.x+b.w*.18,ay=b.y+b.h*.48;
+       rect(ax,ay,20,12,"#8c918b");rect(ax+3,ay+3,14,6,"#515a59");
+       line(ax+10,ay+12,ax+15,ay+22,"#5a5f5d",2);
+       line(ax+15,ay+22,ax+28,ay+22,"#5a5f5d",1);
+     }
+     // Водосточная труба.
+     const dx=b.x+b.w*.92;
+     line(dx,b.y+8,dx,b.y+b.h+8,"#333a3b",2);
+     line(dx-2,b.y+b.h+7,dx+8,b.y+b.h+7,"#454b4b",2);
+     // Крыша: вентиляция, технические короба, антенны.
+     const rx=b.x+b.w*.18,ry=b.y+9;
+     rect(rx,ry,24,10,"#3e4647");rect(rx+4,ry-4,16,5,"#596162");
+     if(i%3===0){
+       line(rx+55,ry+5,rx+55,ry-17,"#353d3e",2);
+       line(rx+55,ry-14,rx+70,ry-18,"#4f5959",1);
+       ellipse(rx+55,ry-19,3,2,"#6d7471");
+     }
+     if(!low){
+       const ex=b.x+b.w*.52,ey=b.y+b.h+10;
+       rect(ex-18,ey-3,36,5,"#737773");
+       rect(ex-11,ey+2,22,14,"#3a4243");
+       rect(ex-7,ey+5,14,7,"#59605e");
+     }
+   }
+   // Малые ограждения у подъездов и пешеходных дорожек.
+   const fences=[[20,560,90,0],[548,585,42,0],[742,520,55,0],[1270,510,70,0],[548,925,52,0],[1275,925,65,0]];
+   for(const [x,y,w] of fences){
+     line(x,y,x+w,y,"#5b6668",2);
+     for(let q=0;q<=w;q+=11)line(x+q,y,x+q,y-12,"#687375",2);
+     line(x,y-12,x+w,y-12,"#687375",2);
+   }
+ }
+ drawUrbanMicroArchitecture();
+
  // Дворовые композиции: советские площадки, стихийные тропинки и заросшие края.
  function drawYardPath(x:number,y:number,w:number,h:number){
    rect(x,y,w,h,"#b8a98a");
