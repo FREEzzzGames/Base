@@ -262,50 +262,58 @@ function topDownMap(){
  // собрана из характерных советских 5-этажных панельных/кирпичных домов,
  // малоэтажных корпусов и типовой общеобразовательной школы.
  const roads=[
+  // Главная магистраль и центральная улица.
   {x:0,y:392,w:1500,h:124},
   {x:598,y:0,w:126,h:1180},
-  {x:0,y:850,w:598,h:104},
+  // Нижние внутриквартальные дороги — узкие, чтобы оставить полноценные дворы.
+  {x:0,y:900,w:598,h:54},
+  {x:724,y:900,w:776,h:54},
+  // Северные подъезды.
   {x:82,y:205,w:516,h:68},
   {x:724,y:205,w:776,h:68},
-  {x:724,y:676,w:776,h:72},
-  {x:724,y:830,w:776,h:72},
+  // Средние внутриквартальные улицы.
   {x:72,y:505,w:526,h:62},
+  {x:724,y:676,w:776,h:72},
   {x:1275,y:505,w:225,h:30}
  ];
  const buildings=[
-  // Северная линия.
+  // Северный фронт.
   {x:28,y:24,w:290,h:150,roof:"#4d595d",wall:"#30383b",kind:"panel"},
   {x:338,y:32,w:205,h:142,roof:"#555f62",wall:"#403b39",kind:"brick"},
   {x:770,y:26,w:286,h:148,roof:"#4b575b",wall:"#30383b",kind:"panel"},
   {x:1082,y:38,w:230,h:136,roof:"#555e61",wall:"#3e3a37",kind:"brick"},
   {x:1338,y:58,w:130,h:118,roof:"#4c585c",wall:"#30383b",kind:"panel"},
 
-  // Западный сектор. Между корпусами оставлены реальные проходы.
+  // Западный двор: дома образуют карман вокруг детской площадки.
   {x:30,y:292,w:250,h:82,roof:"#596467",wall:"#41494b",kind:"school"},
   {x:304,y:286,w:226,h:88,roof:"#505b5e",wall:"#393f41",kind:"low"},
   {x:48,y:580,w:270,h:158,roof:"#4b585c",wall:"#30383b",kind:"panel"},
   {x:344,y:580,w:194,h:170,roof:"#525d61",wall:"#403b39",kind:"brick"},
-  {x:34,y:760,w:238,h:80,roof:"#555f62",wall:"#3b4244",kind:"low"},
-  {x:300,y:752,w:238,h:86,roof:"#505b5e",wall:"#383f42",kind:"low"},
 
-  // Восточный сектор. Средняя дорога проходит перед фасадами, а не сквозь них.
+  // Гаражная линия за нижней дорогой.
+  {x:34,y:966,w:238,h:42,roof:"#555f62",wall:"#4a4039",kind:"garage"},
+  {x:300,y:958,w:238,h:48,roof:"#505b5e",wall:"#473e38",kind:"garage"},
+
+  // Восточный двор.
   {x:758,y:292,w:272,h:82,roof:"#535e61",wall:"#3a4143",kind:"low"},
   {x:1058,y:286,w:210,h:86,roof:"#4f5a5e",wall:"#383f42",kind:"low"},
   {x:1298,y:290,w:170,h:82,roof:"#555f62",wall:"#3a4143",kind:"low"},
   {x:760,y:540,w:252,h:126,roof:"#4b585c",wall:"#30383b",kind:"panel"},
   {x:1038,y:540,w:230,h:126,roof:"#505b60",wall:"#403b39",kind:"brick"},
   {x:1290,y:540,w:178,h:126,roof:"#4c595d",wall:"#30383b",kind:"panel"},
-  {x:760,y:750,w:242,h:76,roof:"#555f62",wall:"#3a4143",kind:"low"},
-  {x:1030,y:750,w:238,h:76,roof:"#505b60",wall:"#383f42",kind:"low"},
-  {x:1292,y:750,w:176,h:76,roof:"#535e61",wall:"#3a4143",kind:"low"},
 
-  // Южная линия.
-  {x:30,y:970,w:280,h:154,roof:"#4d595d",wall:"#30383b",kind:"panel"},
-  {x:330,y:962,w:216,h:158,roof:"#525d60",wall:"#403b39",kind:"brick"},
-  {x:760,y:970,w:270,h:154,roof:"#4d595d",wall:"#30383b",kind:"panel"},
-  {x:1052,y:958,w:220,h:166,roof:"#505b60",wall:"#403b39",kind:"brick"},
-  {x:1294,y:946,w:174,h:178,roof:"#4c595d",wall:"#30383b",kind:"panel"}
- ];
+  // Восточная гаражная линия.
+  {x:760,y:958,w:242,h:48,roof:"#555f62",wall:"#4a4039",kind:"garage"},
+  {x:1030,y:954,w:238,h:52,roof:"#505b60",wall:"#473e38",kind:"garage"},
+  {x:1292,y:958,w:176,h:48,roof:"#535e61",wall:"#4a4039",kind:"garage"},
+
+  // Южный фронт — оставлен отдельным от гаражей и дворов.
+  {x:30,y:1018,w:280,h:142,roof:"#4d595d",wall:"#30383b",kind:"panel"},
+  {x:330,y:1010,w:216,h:150,roof:"#525d60",wall:"#403b39",kind:"brick"},
+  {x:760,y:1018,w:270,h:142,roof:"#4d595d",wall:"#30383b",kind:"panel"},
+  {x:1052,y:1008,w:220,h:152,roof:"#505b60",wall:"#403b39",kind:"brick"},
+  {x:1294,y:1000,w:174,h:160,roof:"#4c595d",wall:"#30383b",kind:"panel"}
+
  return {w,h,roads,buildings,river:{x:0,y:0,w:0,h:0},bridge:{x:0,y:0,w:0,h:0}};
 }
 function topDownExit(){return [1365,455];}
@@ -326,16 +334,19 @@ function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
  return [x,y];
 }
 function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
-  rect(x,y,w,h,"#17292d");
-  const frame=variant%3===0?"#d2d1c8":variant%3===1?"#a9b0ae":"#6e7778";
-  rect(x+2,y+2,w-4,h-4,frame);
-  rect(x+4,y+4,w-8,h-8,variant%4===0?"#6f9697":variant%4===1?"#496d72":"#52666a");
-  line(x+w*.5,y+3,x+w*.5,y+h-3,"#263d40",1);
-  if(h>16)line(x+3,y+h*.5,x+w-3,y+h*.5,"#263d40",1);
+  // Более реалистичное стекло: рама, отражение, внутреннее затемнение и лёгкая грязь.
+  rect(x-1,y-1,w+2,h+2,"#1b2325");
+  rect(x,y,w,h,variant%3===0?"#b7b7ae":variant%3===1?"#9fa6a4":"#777f80");
+  rect(x+3,y+3,w-6,h-6,variant%4===0?"#6f9697":variant%4===1?"#496d72":"#52666a");
+  rect(x+5,y+5,Math.max(2,w-12),Math.max(2,h*.24),"rgba(225,235,228,.28)");
+  line(x+w*.5,y+2,x+w*.5,y+h-2,"#304548",1);
+  if(h>16)line(x+2,y+h*.58,x+w-2,y+h*.58,"#304548",1);
+  if(variant%5===0)rect(x+4,y+h-5,Math.max(3,w-8),2,"rgba(35,42,42,.34)");
+  if(variant%7===0)rect(x+6,y+7,4,3,"rgba(245,244,232,.45)");
 }
 
 function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;wall:string;kind:string},index:number){
-  const isLow=b.kind==="low",isSchool=b.kind==="school";
+  const isLow=b.kind==="low",isSchool=b.kind==="school",isGarage=b.kind==="garage";
   const type=index%6;
 
   // Глубокая тень и цоколь дают зданию массу, а не вид плоского квадрата.
@@ -345,6 +356,24 @@ function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;w
   rect(b.x+4,b.y+4,b.w-8,Math.min(26,b.h*.22),b.roof);
   rect(b.x+4,b.y+Math.min(27,b.h-12),b.w-8,5,"#252d2f");
   rect(b.x+5,b.y+b.h-12,b.w-10,12,"#252b2d");
+
+  if(isGarage){
+    // Ряд старых гаражей: разные двери, ржавчина, козырёк и вентиляционные детали.
+    rect(b.x,b.y,b.w,b.h,"#51483f");
+    rect(b.x+4,b.y+4,b.w-8,b.h-8,"#6a6258");
+    const doors=Math.max(2,Math.floor(b.w/52));
+    const gap=b.w/doors;
+    for(let d=0;d<doors;d++){
+      const gx=b.x+d*gap+5;
+      rect(gx,b.y+7,gap-10,b.h-11,d%4===0?"#4f4a46":d%4===1?"#68706e":d%4===2?"#5b4e45":"#74716a");
+      rect(gx+2,b.y+9,gap-14,3,"rgba(220,205,176,.18)");
+      rect(gx+4,b.y+b.h-14,Math.min(10,gap-18),3,"#302d2a");
+      if(d%3===0)rect(gx+gap-16,b.y+12,4,10,"#9b6847");
+    }
+    rect(b.x+4,b.y+2,b.w-8,4,"#393735");
+    for(let rx=b.x+18;rx<b.x+b.w;rx+=45)rect(rx,b.y-2,12,4,"#756d62");
+    return;
+  }
 
   if(isSchool){
     const cols=Math.max(7,Math.floor((b.w-34)/43));
@@ -525,15 +554,13 @@ function drawTopDownBackground(){
  // Дворы, школа и спортзоны.
  rect(835,785,185,150,"#7e9a64");rect(850,800,155,120,"#73915c");rect(865,815,125,90,"#88a66c");
  rect(110,785,235,125,"#789363");rect(122,797,211,101,"#6e8958");
- rect(128,808,199,79,"#a19f8e");rect(133,813,189,69,"#7d9a70");rect(138,818,179,59,"#739062");
- line(227,818,227,877,"#ddd8c1",2);line(138,847,317,847,"#ddd8c1",2);
- rect(145,824,14,7,"#d8d2bb");rect(295,824,14,7,"#d8d2bb");rect(145,858,14,7,"#d8d2bb");rect(295,858,14,7,"#d8d2bb");
+ rect(42,388,220,3,"#6f7a70"); // тонкий зелёный буфер перед магистралью
 
  // Ограждение школьного участка.
- const fenceX=70,fenceY=78,fenceW=500,fenceH=118;
+ const fenceX=18,fenceY=278,fenceW=560,fenceH=104;
  rect(fenceX,fenceY,fenceW,4,"#555e60");rect(fenceX,fenceY+fenceH-4,fenceW,4,"#555e60");
  for(let xx=fenceX;xx<=fenceX+fenceW;xx+=18)rect(xx,fenceY,3,fenceH,"#626b6d");
- rect(286,180,70,16,"#394143");rect(294,184,54,8,"#9b8b6a");
+ rect(312,320,176,42,"#789062");rect(318,326,164,30,"#6c855b");line(400,326,400,356,"#d8d2bb",2);line(318,341,482,341,"#d8d2bb",2);rect(326,331,12,6,"#d8d2bb");rect(462,345,12,6,"#d8d2bb");
 
  // Архитектура — главный слой карты.
  for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
@@ -586,21 +613,21 @@ function drawTopDownBackground(){
    line(cx+45,cy+78,cx+70,cy+83,"#55534b",2);
  }
  // Два разных двора: не зеркальные, чтобы квартал не выглядел процедурным.
- drawYardPath(108,850,96,8);drawYardPath(188,850,8,56);drawYardPath(196,900,70,8);
- drawPlayground(210,880,0);
- drawYardPath(820,852,102,8);drawYardPath(915,852,8,44);drawYardPath(922,895,72,8);
- drawPlayground(930,878,1);
+ drawYardPath(100,756,120,8);drawYardPath(212,756,8,38);drawYardPath(220,790,76,8);
+ drawPlayground(185,790,0);
+ drawYardPath(820,758,112,8);drawYardPath(925,758,8,34);drawYardPath(932,790,86,8);
+ drawPlayground(910,790,1);
 
  // Заросшие края дворов — кусты и высокая трава.
  const shrubs=[
-   [82,860,1.0],[102,905,.8],[118,930,1.15],[286,855,.9],[300,900,1.1],[285,940,.8],
-   [780,860,.9],[805,900,1.15],[810,930,.8],[1008,855,1.0],[1018,900,.9],[1005,935,1.2],
-   [555,865,.8],[575,900,1.0],[690,865,.9],[705,905,.8]
+   [82,760,1.0],[102,810,.8],[118,835,1.15],[286,760,.9],[300,815,1.1],[285,840,.8],
+   [780,765,.9],[805,815,1.15],[810,840,.8],[1008,760,1.0],[1018,812,.9],[1005,840,1.2],
+   [555,770,.8],[575,815,1.0],[690,770,.9],[705,815,.8]
  ] as [number,number,number][];
  for(const [x,y,s] of shrubs)drawBush(x,y,s);
 
  // Старые фонари во дворах.
- const yardLamps=[[92,878],[325,875],[785,882],[1045,880],[565,900],[700,900]];
+ const yardLamps=[[92,775],[325,780],[785,780],[1045,780],[565,790],[700,790]];
  for(const [x,y] of yardLamps){
    rect(x-2,y-25,4,27,"#343b3c");
    rect(x-7,y-30,14,5,"#252b2d");
@@ -608,11 +635,11 @@ function drawTopDownBackground(){
  }
 
  // Маленькие хозяйственные зоны: контейнеры и металлические ограждения.
- const bins2=[[278,870],[315,920],[1008,870],[1045,920]];
+ const bins2=[[278,800],[315,835],[1008,800],[1045,835]];
  for(const [x,y] of bins2){
    rect(x,y,13,15,"#384447");rect(x+2,y-3,9,3,"#596365");
  }
- const railings=[[90,945,75],[1010,944,72]];
+ const railings=[[90,842,75],[1010,842,72]];
  for(const [x,y,w] of railings){
    line(x,y,x+w,y,"#657174",2);
    for(let xx=x;xx<=x+w;xx+=14)line(xx,y,xx,y-12,"#657174",2);
@@ -623,8 +650,8 @@ function drawTopDownBackground(){
  const parking=[
   [220,250,5],[385,250,4],[815,250,4],[1110,250,5],
   [215,548,4],[370,548,4],[800,548,4],[1085,548,5],
-  [220,760,4],[375,760,4],[815,760,4],[1090,760,4],[1320,760,3],
-  [220,980,5],[820,980,5],[1120,970,4]
+  [35,910,5],[300,910,5],[760,910,5],[1035,910,5],[1295,910,4],
+  [220,1040,5],[820,1040,5],[1120,1030,4]
  ];
  for(const [x,y,n] of parking)for(let i=0;i<n;i++){rect(x+i*31,y,2,25,"#b7b8b2");rect(x+i*31+2,y,24,2,"#b7b8b2");}
 
