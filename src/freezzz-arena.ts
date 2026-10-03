@@ -595,7 +595,7 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
       text(ctx,fam.desc,200,219,7,"#f0eee7");
       text(ctx,"ENTER  BEGIN CAREER",320,318,7,"#d5d8d7","center");
       text(ctx,"ESC  RETURN TO FAMILY SELECT",320,332,5,"#58646a","center");
-    }}else if(mode==="shop"){
+    }else if(mode==="shop"){
       ctx.fillStyle="#07090b";ctx.fillRect(0,0,W2,H2);text(ctx,"ARMORY & OUTFITTER",320,22,14,"#f0eee7","center");text(ctx,moneyText(player.money),320,43,8,"#d5d8d7","center");
       const ids:WeaponId[]=["pocket","service","revolver","smg","shotgun","carbine"];ids.forEach((id,i)=>{const w=weapons[id],x=58+(i%3)*210,y=72+Math.floor(i/3)*82,ok=player.rank>=w.rank&&player.skill>=w.skill;rect(ctx,x-88,y,176,66,ok?"#10171b":"#090d10");text(ctx,w.name,x-78,y+8,7,ok?"#f0eee7":"#626c70");text(ctx,"DMG "+w.damage+"  MAG "+w.mag,x-78,y+23,5,"#8d989c");text(ctx,w.cost?moneyText(w.cost):"STARTER",x+78,y+23,5,w.cost?"#d5d8d7":"#687277","right");text(ctx,"R"+w.rank+"  SK"+w.skill,x-78,y+40,5,families[player.family].accent);if(player.weapon===id)text(ctx,"EQUIPPED",x+78,y+40,5,"#d5d8d7","right");});
       armors.forEach((a,i)=>{const x=100+i*220;const y=245;rect(ctx,x-90,y,180,55,"#10171b");text(ctx,a.name,x-78,y+8,7,"#f0eee7");text(ctx,"HP +"+a.hp,x-78,y+24,5,"#8d989c");text(ctx,moneyText(a.cost),x+78,y+24,5,"#d5d8d7","right");});
