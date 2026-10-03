@@ -4008,3 +4008,34 @@ main{
   pointer-events:auto!important;
 }
 
+
+/* TOOLBAR — restore visible navigation icons without changing layout */
+.portal-workspace > .portal-toolbar .portal-toolbar-icon{
+  display:grid!important;
+  place-items:center!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  flex:0 0 48px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  color:#fff!important;
+  pointer-events:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration{
+  display:block!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  color:currentColor!important;
+  stroke:currentColor!important;
+  fill:none!important;
+}
