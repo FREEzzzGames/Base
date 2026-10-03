@@ -509,7 +509,7 @@ function drawSelect(){
  const top=viewHeight*.17,gridH=viewHeight*.55,gapY=viewHeight*.018;
  const cardW=(viewWidth-padX*2-gapX)/2;
  const cardH=(gridH-gapY)/2;
- tx("ЧЕТЫРЕ СЕМЬИ",viewWidth/2,viewHeight*.045,menuTextSize(.045,28,40),"#f0eee7","center");
+ tx("ЧЕТЫРЕ СЫРА, МАЦЕРАРИЙ",viewWidth/2,viewHeight*.045,menuTextSize(.038,24,36),"#f0eee7","center");
  tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
  ids.forEach((id,i)=>{
    const h=heroes[id],col=i%2,row=Math.floor(i/2);
