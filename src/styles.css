@@ -4789,6 +4789,38 @@ main{
 .home-card-title{
   text-shadow:0 3px 8px rgba(0,0,0,.72)!important;
 }
+/* HOME CARDS — physical key press: short press, soft mechanical return. */
+.home-card{
+  --home-key-depth:3px;
+  transform:translate3d(0,0,0);
+  transition:
+    transform 80ms cubic-bezier(.2,.75,.35,1),
+    box-shadow 80ms cubic-bezier(.2,.75,.35,1);
+  will-change:transform;
+  touch-action:manipulation;
+}
+
+.home-card::after{
+  transition:transform 80ms cubic-bezier(.2,.75,.35,1);
+}
+
+.home-card[data-pressed="true"],
+.home-card:active{
+  transform:translate3d(0,var(--home-key-depth),0) scale(.995);
+  transition-duration:75ms;
+}
+
+.home-card[data-pressed="true"]::after,
+.home-card:active::after{
+  transform:translateY(1px);
+}
+
+@media (prefers-reduced-motion:reduce){
+  .home-card,
+  .home-card::after{
+    transition-duration:0ms!important;
+  }
+}
 
 /* Developer nickname — above the large clock; profile interaction is preserved. */
 .home-hero h1.home-hero-profile-trigger{
