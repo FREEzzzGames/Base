@@ -4769,20 +4769,64 @@ main{
   }
 }
 
-/* HOME HERO — requested typography scale */
+/* HOME HERO — compact composition: left text column + unchanged large clock */
+.home-hero-content{
+  padding:7px 6px!important;
+}
+
+/* Small identity label stays in the upper-left corner. */
 .home-hero-kicker{
-  font-size:clamp(16px,6.4cqh,28px)!important;
+  left:0!important;
+  top:0!important;
+  max-width:46%!important;
+  font-size:clamp(12px,3.6cqh,16px)!important;
+  line-height:1!important;
+  letter-spacing:.01em!important;
 }
+
+/* Profile name becomes a separate middle-left element instead of competing with the clock. */
 .home-hero h1.home-hero-profile-trigger{
-  font-size:min(68px,16cqh,14cqw)!important;
+  left:0!important;
+  right:auto!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:46%!important;
+  max-width:46%!important;
+  font-size:clamp(14px,4.6cqh,20px)!important;
+  line-height:1.05!important;
+  letter-spacing:0!important;
 }
+
+/* Description is anchored under the profile and never stretches below the clock. */
 .home-hero p{
-  font-size:clamp(13.5px,5.4cqh,24px)!important;
+  left:0!important;
+  right:auto!important;
+  bottom:6px!important;
+  width:52%!important;
+  max-width:52%!important;
+  font-size:clamp(11px,3.5cqh,15px)!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
 }
+
+/* The large clock is intentionally not changed here. */
 @container (max-width:360px){
-  .home-hero-kicker{font-size:clamp(14px,6cqh,24px)!important}
-  .home-hero h1.home-hero-profile-trigger{font-size:min(60px,16cqh,16cqw)!important}
-  .home-hero p{font-size:clamp(12px,5cqh,21px)!important}
+  .home-hero-kicker{
+    max-width:44%!important;
+    font-size:clamp(11px,3.5cqh,15px)!important;
+  }
+  .home-hero h1.home-hero-profile-trigger{
+    width:47%!important;
+    max-width:47%!important;
+    font-size:clamp(13px,4.5cqh,18px)!important;
+  }
+  .home-hero p{
+    width:54%!important;
+    max-width:54%!important;
+    font-size:clamp(10px,3.4cqh,14px)!important;
+  }
 }
 
 /* TOOLBAR — seven-control order is defined by the DOM in main.ts. */
