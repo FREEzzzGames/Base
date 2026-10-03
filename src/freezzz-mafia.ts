@@ -19,10 +19,10 @@ interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number
 
 const W=640,H=448;
 const heroes:Record<HeroId,Hero>={
- antonio:{id:"antonio",name:"ANTONIO",family:"valenti",color:"#54d6d8",face:"#9a6554",ability:"ТАКТИКА",abilityDesc:"Ненадолго показывает противников и цели.",bio:"Спокойный, наблюдательный и всегда ищет закономерность."},
- massimo:{id:"massimo",name:"MASSIMO",family:"moretti",color:"#c58b48",face:"#b97859",ability:"РЫВОК",abilityDesc:"Короткое ускорение с дополнительным контролем прыжка.",bio:"Прямой, смелый и не любит терять время."},
- salvatore:{id:"salvatore",name:"SALVATORE",family:"rossi",color:"#d86c35",face:"#784d42",ability:"ФОКУС",abilityDesc:"Ненадолго уменьшает разброс и замедляет прицеливание.",bio:"Тихий, осторожный и его трудно застать врасплох."},
- giuseppe:{id:"giuseppe",name:"GIUSEPPE",family:"bellini",color:"#9f83d6",face:"#a86d56",ability:"МАРШРУТ",abilityDesc:"Показывает безопасный путь через текущий этаж.",bio:"Спокойный, технически мыслящий и всегда думает о маршруте."}
+ antonio:{id:"antonio",name:"ANTONIO",family:"valenti",color:"#54d6d8",face:"#9a6554",ability:"ТАКТИЧЕСКИЙ СБОЙ",abilityDesc:"Кратко останавливает противников и их активность.",bio:"Спокойный, наблюдательный и всегда ищет закономерность."},
+ massimo:{id:"massimo",name:"MASSIMO",family:"moretti",color:"#c58b48",face:"#b97859",ability:"РЫВОК",abilityDesc:"Мощный рывок вперёд с прыжком.",bio:"Прямой, смелый и не любит терять время."},
+ salvatore:{id:"salvatore",name:"SALVATORE",family:"rossi",color:"#d86c35",face:"#784d42",ability:"ФОКУС",abilityDesc:"На короткое время сильно замедляет противников.",bio:"Тихий, осторожный и его трудно застать врасплох."},
+ giuseppe:{id:"giuseppe",name:"GIUSEPPE",family:"bellini",color:"#9f83d6",face:"#a86d56",ability:"МАРШРУТ",abilityDesc:"Временно создаёт дополнительный запас защиты.",bio:"Спокойный, технически мыслящий и всегда думает о маршруте."}
 };
 
 const familyText:Record<FamilyId,{desc:string;intro:string}> = {
@@ -695,7 +695,14 @@ function render(){
  }
  bindButtons();renderCanvas();
 }
-function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play")update(dt);renderCanvas();raf=requestAnimationFrame(loop);}
+function updateCombatButtonLabels(){
+ if(!root||mode!=="play")return;
+ const swap=root.querySelector<HTMLElement>('[data-action="swap"]');
+ const special=root.querySelector<HTMLElement>('[data-action="special"]');
+ if(swap)swap.textContent=player.weaponSwap>0?"СМЕНА "+(player.weaponSwap/60).toFixed(1):"СМЕНА";
+ if(special)special.textContent=player.ability>0?"СПЕЦ "+(player.ability/60).toFixed(1):"СПЕЦ";
+}
+function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
 function setup(){
  loadSave();selected=save.hero;
  render();raf=requestAnimationFrame(loop);
