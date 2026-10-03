@@ -4824,3 +4824,31 @@ main{
   touch-action:manipulation!important;
 }
 
+/* TOOLBAR — clean buttons; HOME is the only neon-red button. */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon{
+  filter:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item:nth-child(4){
+  border:1px solid rgba(255,32,32,.72)!important;
+  background:rgba(255,20,20,.16)!important;
+  box-shadow:
+    0 0 5px rgba(255,32,32,.95),
+    0 0 12px rgba(255,32,32,.75),
+    inset 0 0 8px rgba(255,32,32,.24)!important;
+  border-radius:10px!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item:nth-child(4) .portal-toolbar-icon{
+  filter:
+    drop-shadow(0 0 4px rgba(255,32,32,1))
+    drop-shadow(0 0 10px rgba(255,32,32,.9))!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item:nth-child(4):active{
+  background:rgba(255,20,20,.24)!important;
+}
+
