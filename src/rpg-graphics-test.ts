@@ -69,7 +69,8 @@ const RpgEnv=(()=>{
 })();
 
 export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
- const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0,lastFrame=0;\n const quality=RpgEnv.quality; let activeCanvas:HTMLCanvasElement|null=null; let activeContext:CanvasRenderingContext2D|null=null;
+ const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0,lastFrame=0;
+ const quality=RpgEnv.quality; let activeCanvas:HTMLCanvasElement|null=null; let activeContext:CanvasRenderingContext2D|null=null;
  const keys=new Set<string>(),sparks:Spark[]=[],orbs:Orb[]=[];let enemies:Enemy[]=[];let boss:Enemy|null=null;
  let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false,attackFx=0,skillFx=0,skillHit=false,damageFlash=0;
  const joy={x:0,y:0,active:false};let joyPointer=-1;
@@ -87,7 +88,8 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  function buildMenu(){
    s.screen="menu";
    host.innerHTML='<section class="rpgx rpgx-quality-'+quality.name+'" data-rpg-screen="menu"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / LV '+s.level+'</span><span class="rpgx-badge">3 CHAPTERS</span></div><div class="rpgx-menu"><div class="rpgx-logo"><small>FREEzzz GRAPHICS LAB</small><strong>NEON<br>CHRONICLES</strong><i>PLAYABLE CYBERPUNK RPG · PIXEL COMIC</i></div><button class="rpgx-btn primary" data-rpg-level>ENTER CHAPTER</button><button class="rpgx-btn" data-rpg-character>CHARACTER</button><div class="rpgx-menu-meta"><span>MOVE</span><span>COMBAT</span><span>BOSS</span></div></div></div></section>';
-   activeCanvas=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"); activeContext=activeCanvas?.getContext("2d",{alpha:false})||null;\n   host.querySelector("[data-rpg-level]")?.addEventListener("click",buildLevel);
+   activeCanvas=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"); activeContext=activeCanvas?.getContext("2d",{alpha:false})||null;
+   host.querySelector("[data-rpg-level]")?.addEventListener("click",buildLevel);
    host.querySelector("[data-rpg-character]")?.addEventListener("click",buildCharacter);
  }
  function buildLevel(){
