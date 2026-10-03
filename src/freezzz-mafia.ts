@@ -14,7 +14,7 @@ interface Dialogue{speaker:string;text:string}
 interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string; ru:string; desc:string; objective:Objective; floors:[string,string,string]; enemies:EnemyType[]; reward:number; xp:number; dialogue:Dialogue[]; optional?:string; }
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number}
-interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;facing:number}
+interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number}
 interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 const W=640,H=448;
@@ -133,6 +133,8 @@ let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounde
 let enemies:Enemy[]=[],bullets:Bullet[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,ability:false};
+let movePointerId:number|null=null;
+let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
@@ -319,7 +321,7 @@ function spawnFloor(){
    enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
  }
  const p=ps[0];
- player={x:viewWidth*.14,y:p[1],vx:0,vy:0,hp:Math.min(100+save.armor*5,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,facing:1,grounded:true};
+ player={x:viewWidth*.14,y:p[1],vx:0,vy:0,hp:Math.min(100+save.armor*5,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,weaponSwap:0,facing:1,grounded:true};
 }
 function fire(){
  if(mode!=="play"||player.cool>0)return;
@@ -329,10 +331,27 @@ function fire(){
  const speed=7*portraitScale();
  bullets.push({x:player.x+Math.cos(aimAngle)*22*portraitScale(),y:player.y-44*portraitScale()+Math.sin(aimAngle)*22*portraitScale(),vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
 }
+function switchWeapon(){
+ if(mode!=="play"||player.weaponSwap>0)return;
+ save.weapon=(save.weapon+1)%weapons.length;
+ player.ammo=weapons[save.weapon].mag;
+ player.weaponSwap=120;
+ storeSave();
+}
 function useAbility(){
  if(mode!=="play"||player.ability>0)return;
  player.ability=300;
- if(hero().id==="massimo")player.vx=player.facing*10;
+ const h=hero().id;
+ if(h==="antonio"){
+   enemies.forEach(e=>{e.cool=Math.max(e.cool,110);e.shootCool=Math.max(e.shootCool,110);});
+ }else if(h==="massimo"){
+   player.vx=player.facing*10;
+   player.vy=-6.5*portraitScale();
+ }else if(h==="salvatore"){
+   enemies.forEach(e=>{e.vx*=.15;e.shootCool=Math.max(e.shootCool,150);});
+ }else if(h==="giuseppe"){
+   player.armor=Math.max(player.armor,player.maxHp*.35);
+ }
 }
 function hurt(amount:number){
  const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
@@ -340,13 +359,12 @@ function hurt(amount:number){
 }
 
 function update(dt:number){
- frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);
+ frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
  const scale=portraitScale();
  const speed=2.6*scale;
- if(touch.left){player.vx=-speed;player.facing=-1;}
- else if(touch.right){player.vx=speed;player.facing=1;}
+ if(Math.abs(moveX)>.12){player.vx=moveX*speed;player.facing=moveX<0?-1:1;}
  else player.vx*=.78;
- if(touch.jump&&player.grounded){player.vy=-9.2*scale;player.grounded=false;}
+ if((touch.jump||moveY<-.45)&&player.grounded){player.vy=-9.2*scale;player.grounded=false;}
  if(mode==="play")fire();
  if(touch.ability)useAbility();
  player.vy+=.42*scale;
@@ -448,7 +466,7 @@ function startMissionById(id:string){
  floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
  spawnFloor();saveResumeState();storeSave();render();
 }
-function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
+function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
 function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="levels";dialogueOpen=false;render();}
 
 function renderCanvas(){
@@ -607,8 +625,25 @@ function bindButtons(){
    if(a==="level"){startMissionById(el.dataset.level||"");}
    if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="shop";render();}
+   if(a==="swap")switchWeapon();
+   if(a==="special")useAbility();
  });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
+ const moveSensor=root?.querySelector<HTMLElement>(".mafia-touch-move");
+ if(moveSensor){
+   const updateMove=(e:PointerEvent)=>{
+     const r=moveSensor.getBoundingClientRect();
+     const dx=(e.clientX-(r.left+r.width/2))/(r.width*.42);
+     const dy=(e.clientY-(r.top+r.height/2))/(r.height*.42);
+     moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));
+     const stick=moveSensor.querySelector<HTMLElement>(".mafia-touch-stick");
+     if(stick)stick.style.transform='translate('+Math.max(-34,Math.min(34,dx*34))+'px,'+Math.max(-34,Math.min(34,dy*34))+'px)';
+   };
+   const stopMove=(e:PointerEvent)=>{if(e.pointerId===movePointerId){movePointerId=null;moveX=0;moveY=0;touch.jump=false;const stick=moveSensor.querySelector<HTMLElement>(".mafia-touch-stick");if(stick)stick.style.transform='translate(0,0)';}};
+   moveSensor.addEventListener("pointerdown",e=>{e.preventDefault();movePointerId=e.pointerId;moveSensor.setPointerCapture(e.pointerId);updateMove(e);});
+   moveSensor.addEventListener("pointermove",e=>{if(e.pointerId===movePointerId)updateMove(e);});
+   moveSensor.addEventListener("pointerup",stopMove);moveSensor.addEventListener("pointercancel",stopMove);
+ }
  const sensor=root?.querySelector<HTMLElement>(".mafia-aim-sensor");
  if(sensor){
    const setAim=(e:PointerEvent)=>{const r=sensor.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);if(Math.hypot(dx,dy)<10)return;aimAngle=Math.atan2(dy,dx);aimActive=true;};
@@ -654,7 +689,7 @@ function render(){
    }).join("");
    ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div><div class="mafia-aim-sensor" aria-label="Сенсорное наведение"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="swap">СМЕНА</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div>';
  }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
