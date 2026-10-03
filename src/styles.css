@@ -5144,3 +5144,59 @@ button,
     gap:3px!important;
   }
 }
+
+/* HOME SYSTEM — BOTTOM BAR IS A HOME BLOCK.
+   It uses the same 2px white frame as HERO/CARDS/LIBRARY:
+   1px border inside + 1px outline outside.
+   The layout reserves 2px so the outer frame leaves exactly 1px
+   of visible separation from the LIBRARY frame. */
+.portal-workspace > main{
+  padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))!important;
+}
+.portal-workspace > .portal-toolbar{
+  box-sizing:border-box!important;
+  border:1px solid #fff!important;
+  outline:1px solid #fff!important;
+  outline-offset:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-main,
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  box-sizing:border-box!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+/* Keep the bar graphics inside the framed HOME block. */
+.portal-workspace > .portal-toolbar .portal-toolbar-background-video{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  z-index:0!important;
+  pointer-events:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-main{
+  position:relative!important;
+  z-index:2!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  position:relative!important;
+  z-index:3!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
+  position:relative!important;
+  z-index:4!important;
+}
+@media(max-width:699px){
+  .portal-workspace > main{
+    padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
