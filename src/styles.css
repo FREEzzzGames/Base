@@ -4769,15 +4769,15 @@ main{
   }
 }
 
-/* HOME HERO — compact composition: left text column + unchanged large clock */
+/* HOME HERO — compact composition: 3px internal inset from every block edge */
 .home-hero-content{
-  padding:7px 6px!important;
+  padding:3px!important;
 }
 
 /* ECHO — exactly 4x the previous HERO scale. */
 .home-hero-kicker{
-  left:0!important;
-  top:0!important;
+  left:3px!important;
+  top:3px!important;
   max-width:46%!important;
   font-size:clamp(48px,14.4cqh,64px)!important;
   line-height:1!important;
@@ -4787,8 +4787,8 @@ main{
 /* Developer nickname — above the large clock; profile interaction is preserved. */
 .home-hero h1.home-hero-profile-trigger{
   left:auto!important;
-  right:0!important;
-  top:4px!important;
+  right:3px!important;
+  top:3px!important;
   transform:none!important;
   width:48%!important;
   max-width:48%!important;
@@ -4800,9 +4800,9 @@ main{
 
 /* Description is anchored under the profile and never stretches below the clock. */
 .home-hero p{
-  left:0!important;
+  left:3px!important;
   right:auto!important;
-  bottom:6px!important;
+  bottom:3px!important;
   width:52%!important;
   max-width:52%!important;
   font-size:clamp(11px,3.5cqh,15px)!important;
