@@ -15,7 +15,6 @@ import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
-import { mountRpgGraphicsTest } from "./rpg-graphics-test";
 
 initTelegramBridge();
 initVisualComfort();
@@ -84,7 +83,6 @@ let radioActivityName="";
 let livePopups:LivePopupState[]=[];
 const PORTAL_NICKNAME="d3tr01t";
 let hudHidden=false;
-let rpgGraphicsCleanup:(()=>void)|null=null;
 let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let radioBrowser:RadioBrowserClient|null=null;
@@ -260,7 +258,7 @@ function render(){
         <div class="section-head portal-block game-section-head" data-portal-block="header">
           <div><h2>GAME</h2><p>${T("gameSub")}</p></div>
         </div>
-        <div class="portal-block game-story-block" data-portal-block="game" aria-label="RPG graphics test"></div>
+        <div class="portal-block game-story-block" data-portal-block="game" aria-label="FREEzzz Arena"></div>
       </div>`;
   }
   if(view==="radio"){
@@ -331,7 +329,6 @@ function render(){
       </div>`;
   }
 
-  if(rpgGraphicsCleanup){rpgGraphicsCleanup();rpgGraphicsCleanup=null;}
   app.innerHTML=`
     <div class="app-shell">
       <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}">
@@ -347,8 +344,6 @@ function render(){
   mountPersistentBackgroundVideos();
   bind();
   if(view==="game"){
-    const host=document.querySelector<HTMLElement>('[data-portal-layout="game"] .game-story-block');
-    if(host)rpgGraphicsCleanup=mountRpgGraphicsTest(host);
   }
   bindHudTouchGesture();
   updateHomeClock();
