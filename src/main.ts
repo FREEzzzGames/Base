@@ -243,7 +243,12 @@ function bindHomeLayoutEditor(){
       if(!id)return;
       const now=Date.now();
       const previous=homeLayoutTap;
-      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=500&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=32);
+      const isSecond=Boolean(
+        previous&&
+        previous.id===id&&
+        now-previous.time<=750&&
+        Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=32
+      );
       if(homeLayoutEditMode){
         if(!homeLayoutFocusedBlock||homeLayoutFocusedBlock===id){
           const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
@@ -275,7 +280,7 @@ function bindHomeLayoutEditor(){
         homeLayoutSuppressClick=false;
         if(view!=="home")return;
         if(moduleManager.has(id as View))portalEvents.emit("navigation:changed",{view:id as View});
-      },500);
+      },750);
     });
     el.addEventListener("pointermove",e=>{
       if(!homeLayoutEditMode||!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
