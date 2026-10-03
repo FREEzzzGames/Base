@@ -38,13 +38,13 @@ function noise(ctx:CanvasRenderingContext2D,id:FighterId,x:number,y:number,w:num
    not a generic stick figure: shoulders, waist, hands, boots, face planes and material
    highlights are all separate pixel clusters. */
 function poseFor(f:Fighter,frame:number,pose:Pose){
-  const q=frame%24/24,bob=Math.sin(q*Math.PI*2)*.8;
-  if(pose==="guard")return {bob:-1,lean:0,frontArm:-1,backArm:1,frontLeg:0,backLeg:0};
-  if(pose==="burst")return {bob:-2,lean:f.id==="vex"?2:f.id==="ruma"?1:0,frontArm:-3,backArm:2,frontLeg:f.id==="vex"?-2:-1,backLeg:2};
-  if(pose==="hit")return {bob:1,lean:-3,frontArm:2,backArm:-2,frontLeg:2,backLeg:-2};
-  if(pose==="victory")return {bob:-2,lean:-1,frontArm:-5,backArm:-5,frontLeg:0,backLeg:0};
-  if(pose==="move")return {bob:bob-1,lean:q<.5?1:-1,frontArm:q<.5?-2:2,backArm:q<.5?2:-2,frontLeg:q<.5?2:-2,backLeg:q<.5?-2:2};
-  return {bob,lean:0,frontArm:q<.5?0:1,backArm:q<.5?1:0,frontLeg:q<.5?0:1,backLeg:q<.5?1:0};
+  const q=(frame%32)/32,step=q<.5?1:-1,breathe=Math.sin(q*Math.PI*2)*.7;
+  if(pose==="guard")return {bob:-1,lean:f.id==="korr"?-1:-2,frontArm:-10,backArm:5,frontLeg:-5,backLeg:7,stance:7};
+  if(pose==="burst")return {bob:-3,lean:f.id==="vex"?5:f.id==="ruma"?2:-1,frontArm:-18,backArm:8,frontLeg:-8,backLeg:11,stance:10};
+  if(pose==="hit")return {bob:2,lean:-6,frontArm:9,backArm:-7,frontLeg:8,backLeg:-7,stance:5};
+  if(pose==="victory")return {bob:-3,lean:-1,frontArm:-18,backArm:-14,frontLeg:-2,backLeg:3,stance:5};
+  if(pose==="move")return {bob:breathe-2,lean:step*3,frontArm:step*-7,backArm:step*7,frontLeg:step*9,backLeg:step*-8,stance:8};
+  return {bob:breathe,lean:0,frontArm:step*-2,backArm:step*2,frontLeg:step*2,backLeg:step*-2,stance:4};
 }
 
 /* Authored combat sprite: each pose changes the silhouette, limb angles and weight distribution. */
@@ -234,7 +234,7 @@ function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
     rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
     rect(ctx,x-44,51,88,87,"#070b0d");
     drawEmblem(ctx,id,x,72,active);
-    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.2);
+    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.26,"idle");
     rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
     text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
     text(ctx,f.tag,x,161,5,f.accent,"center");
@@ -337,10 +337,12 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
     else{
       drawArena(ctx,t);ctx.save();ctx.scale(2,2);
       hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB,energyA,energyB);
-      drawSprite(ctx,fighters[enemy],xB,184,frame+4,true,false,1.18);
-      drawSprite(ctx,fighters[selected],xA,184,frame,false,false,1.18);
-      if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");
-      if(input.burst)text(ctx,fighters[selected].burstName,xA,188,5,fighters[selected].burstColor,"center");
+      const poseA:Pose=burstTimer>0?"burst":hitTimerA>0?"hit":input.guard?"guard":(input.left||input.right)?"move":"idle";
+      const poseB:Pose=hitTimerB>0?"hit":Math.abs(xA-xB)<60?"guard":"idle";
+      drawSprite(ctx,fighters[enemy],xB,184,frame+5,true,false,1.32,poseB);
+      drawSprite(ctx,fighters[selected],xA,184,frame,false,false,1.32,poseA);
+      if(input.guard)text(ctx,"GUARD",xA,202,5,fighters[selected].accent,"center");
+      if(burstTimer>0)text(ctx,fighters[selected].burstName,xA,193,5,fighters[selected].burstColor,"center");
       ctx.restore();
     }
   raf=requestAnimationFrame(render);
