@@ -246,8 +246,8 @@ function bindHomeLayoutEditor(){
       const isSecond=Boolean(
         previous&&
         previous.id===id&&
-        now-previous.time<=750&&
-        Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=32
+        now-previous.time<=1200&&
+        Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48
       );
       if(homeLayoutEditMode){
         if(!homeLayoutFocusedBlock||homeLayoutFocusedBlock===id){
