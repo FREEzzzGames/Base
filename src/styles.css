@@ -4786,3 +4786,41 @@ main{
 }
 
 /* TOOLBAR — seven-control order is defined by the DOM in main.ts. */
+
+/* LANGUAGE MENU — fixed above the bottom toolbar */
+.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
+  position:relative!important;
+  overflow:visible!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu{
+  position:fixed!important;
+  top:auto!important;
+  right:max(6px,var(--tg-content-safe-area-inset-right,0px))!important;
+  bottom:calc(84px + env(safe-area-inset-bottom,0px) + 6px)!important;
+  left:auto!important;
+  transform:none!important;
+  z-index:2000!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  padding:6px!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu[hidden]{
+  display:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu button{
+  min-width:42px!important;
+  width:42px!important;
+  min-height:42px!important;
+  height:42px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+}
+
