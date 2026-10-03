@@ -3499,7 +3499,7 @@ main{
 }
 
 .portal-workspace > main > .home-portal{
-  height:calc(100% - 79px)!important;
+  height:calc(100dvh - 79px)!important;
   min-height:0!important;
   max-height:none!important;
   margin:0!important;
@@ -3514,7 +3514,7 @@ main{
 
 /* ---------- BAR ---------- */
 .portal-workspace > .portal-bar{
-  position:absolute!important;
+  position:fixed!important;
   left:0!important;
   right:0!important;
   bottom:0!important;
@@ -3723,7 +3723,7 @@ main{
     padding-bottom:79px!important;
   }
   .portal-workspace > main > .home-portal{
-    height:calc(100% - 79px)!important;
+    height:calc(100dvh - 79px)!important;
   }
   .portal-workspace > .portal-bar{
     height:78px!important;
