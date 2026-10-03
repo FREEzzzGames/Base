@@ -2923,8 +2923,14 @@ main{
   box-sizing:border-box!important;
 }
 @media(max-width:699px){
-  main{height:100dvh!important;min-height:0!important;padding-top:1px!important;padding-bottom:1px!important;padding-left:calc(57px + var(--tg-content-safe-area-inset-left,0px))!important;padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important}
-  .home-portal{height:calc(100dvh - 2px)!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;grid-template-areas:"hero hero" "live chat" "game radio" "library library"!important;gap:1px!important}
+  .home-portal{
+    height:calc(100dvh - 2px)!important;
+    min-height:0!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+    grid-template-areas:"hero hero" "live chat" "game radio" "library library"!important;
+    gap:1px!important;
+  }
 }
 
 /* ================================================================
