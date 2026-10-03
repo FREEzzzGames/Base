@@ -328,11 +328,145 @@ function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
  if(!obs.some(o=>circleRectHit(x,ny,r,o)))y=ny;
  return [x,y];
 }
+function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
+  rect(x,y,w,h,"#17292d");
+  const frame=variant%3===0?"#d2d1c8":variant%3===1?"#a9b0ae":"#6e7778";
+  rect(x+2,y+2,w-4,h-4,frame);
+  rect(x+4,y+4,w-8,h-8,variant%4===0?"#6f9697":variant%4===1?"#496d72":"#52666a");
+  line(x+w*.5,y+3,x+w*.5,y+h-3,"#263d40",1);
+  if(h>16)line(x+3,y+h*.5,x+w-3,y+h*.5,"#263d40",1);
+}
+
+function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;wall:string;kind:string},index:number){
+  const isLow=b.kind==="low",isSchool=b.kind==="school";
+  const type=index%6;
+
+  // Глубокая тень и цоколь дают зданию массу, а не вид плоского квадрата.
+  rect(b.x+16,b.y+18,b.w,b.h,"#293033");
+  rect(b.x+9,b.y+10,b.w,b.h,"#596264");
+  rect(b.x,b.y,b.w,b.h,b.wall);
+  rect(b.x+4,b.y+4,b.w-8,Math.min(26,b.h*.22),b.roof);
+  rect(b.x+4,b.y+Math.min(27,b.h-12),b.w-8,5,"#252d2f");
+  rect(b.x+5,b.y+b.h-12,b.w-10,12,"#252b2d");
+
+  if(isSchool){
+    const cols=Math.max(7,Math.floor((b.w-34)/43));
+    const gap=(b.w-32)/cols;
+    for(let c=0;c<cols;c++){
+      const wx=b.x+16+c*gap;
+      drawFacadeWindow(wx,b.y+48,27,24,(c+index)%4);
+    }
+    // Центральный вход, козырёк и боковые входы.
+    const cx=b.x+b.w*.5;
+    rect(cx-32,b.y+b.h-38,64,38,"#d2cec1");
+    rect(cx-24,b.y+b.h-33,48,33,"#4c392b");
+    rect(cx-37,b.y+b.h-41,74,5,"#596467");
+    rect(cx-8,b.y+b.h-29,16,29,"#76553b");
+    rect(b.x+16,b.y+10,92,12,"#727b7d");
+    tx("ШКОЛА",b.x+62,b.y+19,9,"#ddd9cf","center");
+    // Флаг/мачта и хозяйственный блок.
+    rect(b.x+b.w-30,b.y-12,3,18,"#4e5758");
+    line(b.x+b.w-27,b.y-11,b.x+b.w-8,b.y-8,"#687476",1);
+    return;
+  }
+
+  // Основной фасад. Каждая серия получает другой ритм секций.
+  const cols=isLow?Math.max(4,Math.floor((b.w-30)/44)):Math.max(4,Math.floor((b.w-30)/44));
+  const rows=isLow?1:Math.max(2,Math.floor((b.h-54)/31));
+  const gap=(b.w-30)/cols;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const wx=b.x+15+c*gap;
+      const wy=b.y+46+r*31;
+      const pattern=(type+c+r*2)%7;
+
+      if(pattern===1 || pattern===4){
+        // Остеклённая лоджия.
+        rect(wx-2,wy-2,30,25,"#283335");
+        rect(wx,wy,26,20,"#566d70");
+        rect(wx+2,wy+2,22,16,pattern===1?"#789596":"#4f676a");
+        for(let k=1;k<4;k++)line(wx+2+k*5.5,wy+2,wx+2+k*5.5,wy+18,"#bdc3bd",1);
+        rect(wx-2,wy+20,30,3,"#9b9b92");
+      }else if(pattern===6 && !isLow){
+        // Закрытый балкон.
+        rect(wx-2,wy-2,31,25,"#303a3c");
+        rect(wx,wy,27,20,"#708083");
+        rect(wx+3,wy+3,21,14,"#4b686c");
+        for(let k=1;k<5;k++)line(wx+3+k*4.2,wy+2,wx+3+k*4.2,wy+18,"#c0c4bd",1);
+      }else{
+        drawFacadeWindow(wx,wy,25,20,(pattern+index)%5);
+      }
+
+      // Случайные кондиционеры и бытовые детали.
+      if((index+c*3+r*5)%17===0){
+        rect(wx+20,wy+5,8,5,"#b4b5af");
+        rect(wx+21,wy+4,6,2,"#d1d0c6");
+      }
+      if((index+c*7+r)%23===0){
+        rect(wx+4,wy+22,18,2,"#7e5c43");
+        rect(wx+7,wy+24,2,5,"#554438");
+        rect(wx+19,wy+24,2,5,"#554438");
+      }
+    }
+  }
+
+  // Вертикальные швы панелей — ключевой признак типовой панели.
+  if(b.kind==="panel"){
+    for(let sx=b.x+gap;sx<b.x+b.w;sx+=gap){
+      line(sx,b.y+43,sx,b.y+b.h-13,"#596163",1);
+      line(sx+1,b.y+43,sx+1,b.y+b.h-13,"rgba(230,230,220,.18)",1);
+    }
+    for(let sy=b.y+45;sy<b.y+b.h-14;sy+=31)
+      line(b.x+5,sy,b.x+b.w-5,sy,"rgba(30,36,38,.35)",1);
+  }
+
+  // Кирпичная серия: тонкая сетка кладки и более тёплые торцы.
+  if(b.kind==="brick"){
+    for(let yy=b.y+43;yy<b.y+b.h-13;yy+=9){
+      const off=((yy-b.y)/9)%2?0:6;
+      for(let xx=b.x+5+off;xx<b.x+b.w-5;xx+=12)
+        rect(xx,yy,9,1,"rgba(130,110,85,.34)");
+    }
+  }
+
+  // Подъезды. Они не повторяются идеально симметрично.
+  const doors=Math.max(1,Math.floor(b.w/108));
+  for(let d=0;d<doors;d++){
+    const dx=b.x+(d+.5)*b.w/doors;
+    const doorType=(index+d)%3;
+    rect(dx-17,b.y+b.h-36,34,36,"#d0ccc0");
+    rect(dx-11,b.y+b.h-31,22,31,doorType===0?"#4c382a":doorType===1?"#3d4748":"#594431");
+    rect(dx-16,b.y+b.h-38,32,5,"#656e70");
+    rect(dx-7,b.y+b.h-14,14,2,"#806b51");
+    if(doorType===2){
+      rect(dx-21,b.y+b.h-44,42,5,"#858b89");
+      rect(dx-17,b.y+b.h-43,34,2,"#b2b1a8");
+    }
+  }
+
+  // Крыша: парапет, венткамеры, трубы и телевизионные антенны.
+  rect(b.x+7,b.y+2,b.w-14,3,"#303739");
+  const vents=Math.max(1,Math.floor(b.w/145));
+  for(let v=0;v<vents;v++){
+    const vx=b.x+38+v*(b.w-76)/Math.max(1,vents-1);
+    rect(vx,b.y-5,24,9,"#555f60");
+    rect(vx+3,b.y-9,18,5,"#6c7576");
+    rect(vx+7,b.y-13,3,6,"#4e5758");
+    line(vx+10,b.y-12,vx+27,b.y-15,"#626c6d",1);
+  }
+  if(type===2||type===5){
+    const ax=b.x+b.w*.72;
+    rect(ax,b.y-18,2,14,"#4f595a");
+    line(ax+2,b.y-16,ax+17,b.y-20,"#646d6d",1);
+    line(ax+2,b.y-12,ax+17,b.y-8,"#646d6d",1);
+  }
+}
+
 function drawTopDownBackground(){
  const m=topDownMap(),tile=30;
  rect(0,0,m.w,m.h,"#718b5d");
 
- // Базовая сетка земли: очень слабая, чтобы карта не выглядела пустым зелёным полем.
+ // Земля: лёгкая неоднородность, без ощущения процедурной сетки.
  for(let y=0;y<m.h;y+=tile)for(let x=0;x<m.w;x+=tile){
   const q=((x/tile)*17+(y/tile)*11+floor*5)%29;
   if(q<4)rect(x+5,y+8,3,3,"#5f794f");
@@ -340,22 +474,21 @@ function drawTopDownBackground(){
   if(q===17)rect(x+12,y+25,2,2,"#557047");
  }
 
- // Основные дороги: асфальт + два бордюра + дорожная разметка.
+ // Магистрали и внутриквартальные улицы.
  for(const rd of m.roads){
   rect(rd.x,rd.y,rd.w,rd.h,"#c7c8c4");
   rect(rd.x+5,rd.y+5,rd.w-10,rd.h-10,"#777c7b");
   rect(rd.x+10,rd.y+10,rd.w-20,rd.h-20,"#454b4c");
-  rect(rd.x+12,rd.y+12,rd.w-24,rd.h-24,"#424748");
   if(rd.w>rd.h){
-   rect(rd.x+12,rd.y+rd.h*.5-2,rd.w-24,4,"#9c925b");
-   for(let xx=rd.x+24;xx<rd.x+rd.w-24;xx+=70)rect(xx,rd.y+rd.h*.5-2,34,4,"#d6ca7b");
+    rect(rd.x+12,rd.y+rd.h*.5-2,rd.w-24,4,"#9c925b");
+    for(let xx=rd.x+24;xx<rd.x+rd.w-24;xx+=70)rect(xx,rd.y+rd.h*.5-2,34,4,"#d6ca7b");
   }else{
-   rect(rd.x+rd.w*.5-2,rd.y+12,4,rd.h-24,"#9c925b");
-   for(let yy=rd.y+24;yy<rd.y+rd.h-24;yy+=70)rect(rd.x+rd.w*.5-2,yy,4,34,"#d6ca7b");
+    rect(rd.x+rd.w*.5-2,rd.y+12,4,rd.h-24,"#9c925b");
+    for(let yy=rd.y+24;yy<rd.y+rd.h-24;yy+=70)rect(rd.x+rd.w*.5-2,yy,4,34,"#d6ca7b");
   }
  }
 
- // Тротуары: плитка с разбивкой на крупные секции.
+ // Тротуары.
  const sidewalks=[
   {x:0,y:385,w:1500,h:15},{x:0,y:516,w:1500,h:15},
   {x:588,y:0,w:15,h:1180},{x:724,y:0,w:15,h:1180},
@@ -367,11 +500,11 @@ function drawTopDownBackground(){
  for(const q of sidewalks){
   rect(q.x,q.y,q.w,q.h,"#d7d7d2");
   for(let yy=q.y+2;yy<q.y+q.h;yy+=7)
-   for(let xx=q.x+2;xx<q.x+q.w;xx+=27)
-    rect(xx,yy,20,3,((xx+yy)/7)%2?"#b9bbb8":"#e5e3dc");
+    for(let xx=q.x+2;xx<q.x+q.w;xx+=27)
+      rect(xx,yy,20,3,((xx+yy)/7)%2?"#b9bbb8":"#e5e3dc");
  }
 
- // Пешеходные переходы и остановки делают главные улицы читаемыми.
+ // Переходы.
  const crossings=[
   {x:540,y:398,w:42,h:116,vertical:true},
   {x:736,y:350,w:118,h:40,vertical:false},
@@ -379,138 +512,45 @@ function drawTopDownBackground(){
   {x:1110,y:510,w:118,h:40,vertical:false}
  ];
  for(const z of crossings){
-  if(z.vertical){
-   for(let yy=z.y;yy<z.y+z.h;yy+=16)rect(z.x,yy,z.w,8,"#e7e5de");
-  }else{
-   for(let xx=z.x;xx<z.x+z.w;xx+=16)rect(xx,z.y,8,z.h,"#e7e5de");
-  }
+  if(z.vertical)for(let yy=z.y;yy<z.y+z.h;yy+=16)rect(z.x,yy,z.w,8,"#e7e5de");
+  else for(let xx=z.x;xx<z.x+z.w;xx+=16)rect(xx,z.y,8,z.h,"#e7e5de");
  }
 
- // Дворовые проезды и парковочные карманы.
+ // Дворовые проезды.
  const lanes=[
   {x:292,y:225,w:58,h:155},{x:542,y:225,w:34,h:155},
   {x:1060,y:220,w:38,h:165},{x:292,y:748,w:58,h:125},
   {x:545,y:748,w:34,h:130},{x:1038,y:735,w:38,h:135},
   {x:1292,y:735,w:48,h:165},{x:650,y:792,w:78,h:165}
  ];
- for(const q of lanes){
-  rect(q.x,q.y,q.w,q.h,"#9b9e99");
-  rect(q.x+5,q.y+5,q.w-10,q.h-10,"#676b6a");
- }
+ for(const q of lanes){rect(q.x,q.y,q.w,q.h,"#9b9e99");rect(q.x+5,q.y+5,q.w-10,q.h-10,"#676b6a");}
 
- // Два зелёных двора с разной фактурой.
- rect(835,785,185,150,"#7e9a64");
- rect(850,800,155,120,"#73915c");
- rect(865,815,125,90,"#88a66c");
- rect(110,785,235,125,"#789363");
- rect(122,797,211,101,"#6e8958");
+ // Дворы, школа и спортзоны.
+ rect(835,785,185,150,"#7e9a64");rect(850,800,155,120,"#73915c");rect(865,815,125,90,"#88a66c");
+ rect(110,785,235,125,"#789363");rect(122,797,211,101,"#6e8958");
+ rect(128,808,199,79,"#a19f8e");rect(133,813,189,69,"#7d9a70");rect(138,818,179,59,"#739062");
+ line(227,818,227,877,"#ddd8c1",2);line(138,847,317,847,"#ddd8c1",2);
+ rect(145,824,14,7,"#d8d2bb");rect(295,824,14,7,"#d8d2bb");rect(145,858,14,7,"#d8d2bb");rect(295,858,14,7,"#d8d2bb");
 
- // Школьный спортдвор: поле, беговая дорожка и ворота.
- rect(128,808,199,79,"#a19f8e");
- rect(133,813,189,69,"#7d9a70");
- rect(138,818,179,59,"#739062");
- rect(138,818,179,59,"#739062");
- line(227,818,227,877,"#ddd8c1",2);
- line(138,847,317,847,"#ddd8c1",2);
- rect(145,824,14,7,"#d8d2bb");rect(295,824,14,7,"#d8d2bb");
- rect(145,858,14,7,"#d8d2bb");rect(295,858,14,7,"#d8d2bb");
- // Небольшая детская площадка.
- rect(365,800,92,72,"#a7a08b");
- rect(375,810,72,52,"#8d9977");
- rect(386,818,28,7,"#b56e43"); // playground beam
- rect(389,825,5,24,"#6c4d38");
- rect(406,825,5,24,"#6c4d38");
- rect(420,818,20,7,"#6f7f87");
- rect(428,825,5,22,"#6c4d38");
-
- // Ограждение школьной территории и хозяйственной зоны.
+ // Ограждение школьного участка.
  const fenceX=70,fenceY=78,fenceW=500,fenceH=118;
- rect(fenceX,fenceY,fenceW,4,"#555e60");
- rect(fenceX,fenceY+fenceH-4,fenceW,4,"#555e60");
- for(let xx=fenceX;xx<=fenceX+fenceW;xx+=18){rect(xx,fenceY,3,fenceH,"#626b6d");}
- rect(286,180,70,16,"#394143");
- rect(294,184,54,8,"#9b8b6a");
+ rect(fenceX,fenceY,fenceW,4,"#555e60");rect(fenceX,fenceY+fenceH-4,fenceW,4,"#555e60");
+ for(let xx=fenceX;xx<=fenceX+fenceW;xx+=18)rect(xx,fenceY,3,fenceH,"#626b6d");
+ rect(286,180,70,16,"#394143");rect(294,184,54,8,"#9b8b6a");
 
- // Здания. Архитектура намеренно различается: панельный дом, кирпичный дом,
- // торцевой дом, школа и хозяйственные корпуса.
- for(const b of m.buildings){
-  const isSchool=b.kind==="school", isLow=b.kind==="low";
-  // Тень и цоколь.
-  rect(b.x+14,b.y+17,b.w,b.h,"#303638");
-  rect(b.x+7,b.y+9,b.w,b.h,"#656d70");
-  rect(b.x,b.y,b.w,b.h,b.wall);
-  rect(b.x+5,b.y+5,b.w-10,32,b.roof);
-  rect(b.x+5,b.y+37,b.w-10,6,"#22292b");
-  rect(b.x+6,b.y+b.h-9,b.w-12,9,"#252b2d");
+ // Архитектура — главный слой карты.
+ for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
 
-  if(isSchool){
-   // Типовая школа: длинный корпус, центральный вход и крупные окна.
-   const cols=Math.max(6,Math.floor((b.w-42)/46));
-   const gap=(b.w-34)/cols;
-   for(let c=0;c<cols;c++){
-    const wx=b.x+17+c*gap,wy=b.y+49;
-    rect(wx,wy,28,25,"#172a2e");
-    rect(wx+3,wy+3,22,18,"#5b8f91");
-    line(wx+14,wy+3,wx+14,wy+21,"#23484b",1);
-   }
-   rect(b.x+b.w*.5-26,b.y+b.h-34,52,34,"#ddd7ca");
-   rect(b.x+b.w*.5-19,b.y+b.h-29,38,29,"#513d2d");
-   rect(b.x+b.w*.5-22,b.y+b.h-3,44,3,"#a8a49b");
-   rect(b.x+15,b.y+10,86,13,"#697477");
-   tx("ШКОЛА",b.x+b.w*.5,b.y+22,9,"#e3e1d8","center");
-   continue;
-  }
-
-  const cols=Math.max(3,Math.floor((b.w-34)/42));
-  const rows=isLow?1:Math.max(2,Math.floor((b.h-62)/32));
-  const gap=(b.w-32)/cols;
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-   const wx=b.x+16+c*gap,wy=b.y+49+r*32;
-   rect(wx,wy,25,20,"#17292d");
-   rect(wx+3,wy+3,19,14,"#3f7d83");
-   line(wx+12.5,wy+3,wx+12.5,wy+17,"#173c42",1);
-   if((r+c+Math.floor(b.x/50))%4===0)rect(wx+4,wy+4,7,3,"#a7c5bf");
-  }
-
-  // Балконы/лоджии у части домов.
-  if(!isLow && b.w>210){
-   const by=b.y+b.h*.50;
-   for(let bx=b.x+25;bx<b.x+b.w-25;bx+=68){
-    rect(bx,by,34,4,"#1f282a");
-    rect(bx+3,by+4,28,13,"#566164");
-    rect(bx+5,by+6,24,8,"#719397");
-   }
-  }
-
-  // Подъезды: разные двери и козырьки.
-  const doors=Math.max(1,Math.floor(b.w/105));
-  for(let d=0;d<doors;d++){
-   const dx=b.x+(d+.5)*b.w/doors;
-   rect(dx-17,b.y+b.h-34,34,34,"#d6d1c4");
-   rect(dx-11,b.y+b.h-29,22,29,"#503b2b");
-   rect(dx-16,b.y+b.h-36,32,4,"#687174");
-   rect(dx-12,b.y+b.h-3,24,3,"#a09e99");
-  }
-
-  // Технические элементы на крыше.
-  rect(b.x+b.w-45,b.y+10,28,13,"#303a3d");
-  rect(b.x+b.w-39,b.y+6,16,5,"#858f90");
-  if(b.kind==="brick")rect(b.x+18,b.y+10,22,10,"#626d70");
- }
-
- // Парковки: разметка мест и автомобили.
+ // Парковочные места.
  const parking=[
   [220,250,5],[385,250,4],[815,250,4],[1110,250,5],
   [215,548,4],[370,548,4],[800,548,4],[1085,548,5],
   [220,760,4],[375,760,4],[815,760,4],[1090,760,4],[1320,760,3],
   [220,980,5],[820,980,5],[1120,970,4]
  ];
- for(const [x,y,n] of parking){
-  for(let i=0;i<n;i++){
-   rect(x+i*31,y,2,25,"#b7b8b2");
-   rect(x+i*31+2,y,24,2,"#b7b8b2");
-  }
- }
+ for(const [x,y,n] of parking)for(let i=0;i<n;i++){rect(x+i*31,y,2,25,"#b7b8b2");rect(x+i*31+2,y,24,2,"#b7b8b2");}
+
+ // Машины.
  const cars=[
   [250,265,1,"#7a3f3f"],[455,270,-1,"#49606b"],[845,265,1,"#8a7445"],[1260,265,-1,"#52636a"],
   [340,545,1,"#596c54"],[520,548,-1,"#7a5544"],[825,548,1,"#5c6475"],[1225,548,-1,"#7b6845"],
@@ -519,15 +559,14 @@ function drawTopDownBackground(){
  ] as [number,number,number,string][];
  for(const [x,y,dir,color] of cars){
   ctx!.save();ctx!.translate(x,y);if(dir<0)ctx!.scale(-1,1);
-  rect(-25,-11,50,22,"#252d30");
-  rect(-17,-16,29,8,"#34484c");
+  rect(-25,-11,50,22,"#252d30");rect(-17,-16,29,8,"#34484c");
   rect(-12,-13,11,5,color);rect(2,-13,10,5,"#64858a");
   rect(-20,7,9,7,"#151a1c");rect(12,7,9,7,"#151a1c");
   rect(22,-4,3,6,"#d7c66d");rect(-26,-4,3,6,"#8c4a3e");
   ctx!.restore();
  }
 
- // Деревья: три размера и небольшие различия кроны.
+ // Деревья. Кроны не одинаковые.
  const trees=[
   [28,35,1],[345,25,0],[585,85,2],[760,25,1],[1080,25,0],[1460,30,2],
   [30,275,0],[330,275,2],[575,275,1],[785,275,0],[1070,275,2],[1460,275,1],
@@ -540,35 +579,23 @@ function drawTopDownBackground(){
   const s=1+v*.12;
   ellipse(x+6,y+38*s,25*s,7*s,"rgba(25,45,25,.30)");
   rect(x-4,y+11,8,29,"#68442c");
-  ellipse(x,y,27*s,21*s,"#2d783f");
-  ellipse(x-14*s,y-8*s,18*s,16*s,"#3b8b4a");
-  ellipse(x+14*s,y-7*s,18*s,16*s,"#347f43");
-  rect(x-9*s,y-23*s,18*s,4*s,"#4e9a51");
+  ellipse(x,y,27*s,21*s,"#2d783f");ellipse(x-14*s,y-8*s,18*s,16*s,"#3b8b4a");
+  ellipse(x+14*s,y-7*s,18*s,16*s,"#347f43");rect(x-9*s,y-23*s,18*s,4*s,"#4e9a51");
  }
 
- // Скамейки, урны, фонари и остановочный павильон.
+ // Городские мелочи.
  const lamps=[[575,375],[770,375],[575,540],[770,540],[575,780],[770,780],[1060,780],[350,935],[920,935]];
- for(const [x,y] of lamps){
-  rect(x-2,y-22,4,25,"#333a3b");
-  rect(x-8,y-27,16,5,"#252b2d");
-  rect(x-5,y-31,10,4,"#dfc96e");
- }
+ for(const [x,y] of lamps){rect(x-2,y-22,4,25,"#333a3b");rect(x-8,y-27,16,5,"#252b2d");rect(x-5,y-31,10,4,"#dfc96e");}
  const benches=[[405,215],[875,215],[405,765],[1040,765],[375,945],[895,945]];
- for(const [x,y] of benches){
-  rect(x,y,42,5,"#70482e");rect(x+4,y+7,5,12,"#4a3a2d");rect(x+33,y+7,5,12,"#4a3a2d");
- }
+ for(const [x,y] of benches){rect(x,y,42,5,"#70482e");rect(x+4,y+7,5,12,"#4a3a2d");rect(x+33,y+7,5,12,"#4a3a2d");}
  const bins=[[395,235],[900,235],[395,750],[1020,750],[350,935],[920,935]];
  for(const [x,y] of bins)rect(x,y,10,13,"#394447");
 
- // Остановочный павильон с лавкой и рекламной панелью.
- rect(1370,340,72,44,"#4b5658");
- rect(1376,346,60,30,"#a0aaa5");
- rect(1380,350,52,22,"#6d8585");
- rect(1372,380,68,5,"#31393a");
- rect(1390,365,10,4,"#e3d8a3");rect(1412,365,10,4,"#e3d8a3");
+ // Остановка.
+ rect(1370,340,72,44,"#4b5658");rect(1376,346,60,30,"#a0aaa5");rect(1380,350,52,22,"#6d8585");
+ rect(1372,380,68,5,"#31393a");rect(1390,365,10,4,"#e3d8a3");rect(1412,365,10,4,"#e3d8a3");
  rect(1384,350,3,22,"#53686a");rect(1428,350,3,22,"#53686a");
 
- // Название района и малые ориентиры.
  tx("ГВАРДЕЙСКИЙ КВАРТАЛ",750,24,18,"#f0eee7","center");
  tx("ЖИЛОЙ МАССИВ · ШКОЛА · ДВОРЫ · ТРАНСПОРТ",750,46,10,"#c4c9c7","center");
 }
