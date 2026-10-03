@@ -315,7 +315,7 @@ function drawFamily(){
  tx("FAMILY STORY",320,157,9,h.color,"center");
  const lines=[familyText[h.family].intro,h.bio,"Ability: "+h.ability,"• "+h.abilityDesc];
  lines.forEach((s,i)=>tx(s,320,190+i*28,9,i===0?"#f0eee7":"#aab1b4","center"));
- tx("TAP / ENTER TO CONTINUE",320,370,8,h.color,"center");
+ tx("TAP TO CONTINUE",320,370,8,h.color,"center");
 }
 function drawBriefing(){
  const m=currentMission();panel(35,48,570,350);
@@ -324,14 +324,14 @@ function drawBriefing(){
  tx(m.desc,55,145,8,"#d5d8d7");tx("OBJECTIVE · "+m.objective.toUpperCase(),55,174,9,hero().color);
  m.floors.forEach((f,i)=>{tx("FLOOR "+(i+1),55,210+i*42,7,"#59656b");tx(f,125,208+i*42,9,"#f0eee7");});
  tx("REWARD  $"+m.reward+"   XP "+m.xp,55,345,8,"#d9b86c");
- tx("TAP / ENTER TO START",55,372,8,hero().color);
+ tx("TAP TO START",55,372,8,hero().color);
  if(dialogueOpen)drawDialogue();
 }
 function drawDialogue(){
  const m=currentMission(),d=m.dialogue[Math.min(dialogueIndex,m.dialogue.length-1)];if(!d)return;
  rect(20,292,600,125,"rgba(5,7,8,.97)");rect(20,292,600,3,hero().color);
  tx(d.speaker,36,308,9,hero().color);tx(d.text,36,335,10,"#f0eee7");
- tx("TAP / ENTER",590,391,7,"#59656b","right");
+ tx("TAP",590,391,7,"#59656b","right");
 }
 function drawShop(){
  panel(35,45,570,355);tx("ARMORY",55,67,16,hero().color);tx("CASH $"+save.money,575,69,9,"#d9b86c","right");
@@ -344,7 +344,7 @@ function drawResult(){
  tx("RANK · "+rankNames[rank()],320,226,10,hero().color,"center");tx("TOTAL CASH · $"+save.money,320,250,9,"#f0eee7","center");
  if(m.number===10)tx("THE FOUR FAMILIES ARE NOW CONNECTED.",320,290,7,"#aab1b4","center");
  if(m.number===13)tx("CHAPTER I COMPLETE",320,290,11,hero().color,"center");
- tx("TAP / ENTER · CONTINUE",320,350,8,"#f0eee7","center");
+ tx("TAP · CONTINUE",320,350,8,"#f0eee7","center");
 }
 
 function buyOrSelectWeapon(n:number){
