@@ -406,6 +406,11 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");radioError=T("playError");render();},{once:true});
   void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");radioError=T("autoplayError");}).finally(()=>render());
 }
+window.addEventListener("freezzz:navigate",event=>{
+  const next=(event as CustomEvent<{view?:string}>).detail?.view;
+  if(next!=="game"&&next!=="library")return;
+  portalEvents.emit("navigation:changed",{view:next});
+});
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
   if(action==="play")playRadioStation(radioSelectedId);
