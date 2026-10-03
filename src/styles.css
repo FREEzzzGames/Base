@@ -5846,7 +5846,7 @@ html.visual-comfort-enabled video{
 .portal-game-fullscreen .mafia-select-grid button{height:32vh!important;min-height:140px!important;border:0!important;background:transparent!important;color:transparent!important;padding:0!important}
 .portal-game-fullscreen .mafia-controls{left:2vw!important;right:2vw!important;bottom:max(2vh,env(safe-area-inset-bottom))!important;gap:1vw!important;grid-template-columns:repeat(6,1fr)!important}
 .portal-game-fullscreen .mafia-controls button{min-height:8vh!important;height:8vh!important;font-size:clamp(11px,2.2vw,18px)!important;background:rgba(7,9,11,.78)!important;border:1px solid #7d898d!important;touch-action:none!important;user-select:none!important;-webkit-user-select:none!important}
-.portal-game-fullscreen .mafia-action{left:5vw!important;right:5vw!important;bottom:max(4vh,env(safe-area-inset-bottom))!important}
+.portal-game-fullscreen .mafia-action{left:50%!important;right:auto!important;bottom:calc(50% - min(50dvh,35vw))!important;width:min(100vw,calc(100dvh * 1.428571))!important;transform:translateX(-50%)!important;padding:0 5vw!important;box-sizing:border-box!important}
 .portal-game-fullscreen .mafia-action button{width:100%!important;min-height:9vh!important;touch-action:manipulation!important}
 .freezzz-mafia-frame{position:relative;width:100%;max-width:640px;margin:0 auto;background:#07090b;border:1px solid #273136;overflow:hidden;image-rendering:pixelated}
 .freezzz-mafia-canvas{display:block;width:100%;height:auto;aspect-ratio:640/448;background:#07090b;image-rendering:pixelated}
