@@ -646,8 +646,8 @@ function render(){
      const done=save.completed.includes(m.id);
      const floors=m.floors.map((f,n)=>'<span><b>'+String(n+1)+'</b> '+floorRu(f)+'</span>').join("");
      return '<button class="mafia-level-card '+(done?"completed":"")+'" data-action="level" data-level="'+m.id+'" style="--level-accent:'+accent+'">'+
-       '<div class="mafia-level-head"><strong>'+String(m.number).padStart(2,"0")+'</strong><div><b>'+escapeHtml(m.ru)+'</b><small>'+escapeHtml(owner)+'</small></div><i>'+(done?"✓":"")+'</i></div>'+
-       '<div class="mafia-level-meta"><span>ЦЕЛЬ</span><b>'+escapeHtml(objectiveRu(m.objective))+'</b></div>'+
+       '<div class="mafia-level-head"><strong>'+String(m.number).padStart(2,"0")+'</strong><div><b>'+esc(m.ru)+'</b><small>'+esc(owner)+'</small></div><i>'+(done?"✓":"")+'</i></div>'+
+       '<div class="mafia-level-meta"><span>ЦЕЛЬ</span><b>'+esc(objectiveRu(m.objective))+'</b></div>'+
        '<div class="mafia-level-floors">'+floors+'</div>'+
        '<div class="mafia-level-footer"><span>НАГРАДА $'+m.reward+'</span><span>'+m.xp+' XP</span><span>3 ЭТАЖА</span></div>'+
        '</button>';
