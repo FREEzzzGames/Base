@@ -1077,7 +1077,10 @@ function handleKey(e:KeyboardEvent){
    if(e.key==="Enter"&&selected)beginSelected();
    return;
  }
- if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}\n if(mode==="play"&&(e.key==="r"||e.key==="R"))startReload(player.combat,HS_WEAPONS[save.weapon]);\n if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g)say("ГРАНАТА","player",player.x,player.y-45);}\n
+ if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}
+ if(mode==="play"&&(e.key==="r"||e.key==="R"))startReload(player.combat,HS_WEAPONS[save.weapon]);
+ if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g)say("ГРАНАТА","player",player.x,player.y-45);}
+
  if(e.key==="Escape"){mode="select";dialogueOpen=false;renderCanvas();return;}
  if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else fire();return;}
  keys.add(e.key);
