@@ -1,4 +1,5 @@
-import { portalVideoUrl } from "./video-assets";\nimport { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
+import { portalVideoUrl } from "./video-assets";
+import { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
 import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
@@ -703,7 +704,8 @@ function drawTopDownBackground(){
 
  tx("ГВАРДЕЙСКИЙ КВАРТАЛ",750,24,18,"#f0eee7","center");
  tx("ЖИЛОЙ МАССИВ · ШКОЛА · ДВОРЫ · ТРАНСПОРТ",750,46,10,"#c4c9c7","center");
-  drawDistrictMicroDetails(ctx!,m.buildings,m.roads);\n}
+  drawDistrictMicroDetails(ctx!,m.buildings,m.roads);
+}
 function drawWorld(m:Mission){
  if(!ctx)return;
  const map=topDownMap(),scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820)));
