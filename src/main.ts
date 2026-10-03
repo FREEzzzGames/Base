@@ -354,7 +354,7 @@ function render(){
     <div class="app-shell">
       <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}">
         ${renderPortalToolbar()}
-        <main>${body}</main>
+        <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}"><span class="portal-hud-toggle-arrow" aria-hidden="true">${hudHidden?"↑":"↓"}</span></button>
       </div>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
@@ -490,6 +490,19 @@ function updateHomeClock(){
   if(!clock)return;
   clock.textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
+function toggleHud(){
+  hudHidden=!hudHidden;
+  document.querySelector<HTMLElement>(".portal-workspace")?.classList.toggle("portal-hud-hidden",hudHidden);
+  const button=document.querySelector<HTMLButtonElement>("[data-hud-toggle]");
+  if(button){
+    button.setAttribute("aria-pressed",String(hudHidden));
+    const label=hudHidden?"Показать нижний бар":"Скрыть нижний бар";
+    button.setAttribute("aria-label",label);
+    button.title=label;
+    const arrow=button.querySelector<HTMLElement>(".portal-hud-toggle-arrow");
+    if(arrow)arrow.textContent=hudHidden?"↑":"↓";
+  }
+}
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
@@ -515,6 +528,12 @@ function bind(){
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
   bindUniversalPortalPress();
+  document.querySelector<HTMLButtonElement>("[data-hud-toggle]")?.addEventListener("click",e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHud();
+  });
+
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
           e.preventDefault();
