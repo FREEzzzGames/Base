@@ -354,7 +354,7 @@ function render(){
     <div class="app-shell">
       <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}">
         ${renderPortalToolbar()}
-        <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}"><span class="portal-hud-toggle-arrow" aria-hidden="true">${hudHidden?"↑":"↓"}</span></button>
+        <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}">${icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon")}</button>
       </div>
       ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
@@ -503,8 +503,8 @@ function toggleHud(){
     const label=hudHidden?"Показать нижний бар":"Скрыть нижний бар";
     button.setAttribute("aria-label",label);
     button.title=label;
-    const arrow=button.querySelector<HTMLElement>(".portal-hud-toggle-arrow");
-    if(arrow)arrow.textContent=hudHidden?"↑":"↓";
+    const arrow=button.querySelector<HTMLElement>(".portal-hud-toggle-icon");
+    if(arrow)arrow.outerHTML=icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon");
   }
 }
 function bind(){
