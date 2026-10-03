@@ -8,7 +8,7 @@ import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
 import { renderLivePopups, type LivePopupState, type LiveSource } from "./live-runtime";
 import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
-import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
+import { loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace } from "./game-system";
 import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
