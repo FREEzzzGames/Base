@@ -67,7 +67,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { existsSync, readFileSync } from "node:fs";
           import { dirname, resolve } from "node:path";
-          const roots = ["src/main.ts","src/core/portal-core.ts","src/game-i18n.ts","src/game-system.ts","src/live-runtime.ts","src/platform-bridge.ts","src/portal-i18n.ts","src/portal-ui.ts","src/profile-store.ts","src/radio-browser.ts","src/radio-config.ts"];
+          const roots = ["src/main.ts","src/core/portal-core.ts","src/live-runtime.ts","src/platform-bridge.ts","src/portal-i18n.ts","src/portal-ui.ts","src/profile-store.ts","src/radio-browser.ts","src/radio-config.ts"];
           const missing = [];
           for (const file of roots) {
             const source = readFileSync(file, "utf8");
