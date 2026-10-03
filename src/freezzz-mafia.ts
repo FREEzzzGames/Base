@@ -473,7 +473,7 @@ function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:nu
  return row+1;
 }
 function drawSelect(){
- if(!ctx)return;
+ const c=ctx;if(!c)return;
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
  const gapX=viewWidth*.035,padX=viewWidth*.06,cardW=(viewWidth-padX*2-gapX)/2;
  const gapY=viewHeight*.02,top=viewHeight*.18,cardH=Math.min(viewHeight*.265,(viewHeight-top-viewHeight*.18-gapY)/2);
@@ -489,11 +489,11 @@ function drawSelect(){
    // Используем мягкое сжатие по X: персонаж не меняет высоту и остаётся пиксельным.
    const spin=performance.now()/1000*.95+i*0.8;
    const spinX=Math.max(.12,Math.abs(Math.cos(spin)));
-   ctx.save();
-   ctx.translate(x+cardW/2,y+cardH*.72);
-   ctx.scale(spinX,1);
+   c.save();
+   c.translate(x+cardW/2,y+cardH*.72);
+   c.scale(spinX,1);
    drawMafiaMember({face:h.face,tie:h.color},0,0,frame+i*4,artScale);
-   ctx.restore();
+   c.restore();
    tx(familyText[h.family].desc,x+cardW/2,y+cardH*.86,menuTextSize(.012,9,14),h.color,"center");
    tx(h.ability,x+cardW/2,y+cardH*.91,menuTextSize(.011,8,12),"#7e898d","center");
  });
