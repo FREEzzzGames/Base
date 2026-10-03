@@ -77,6 +77,7 @@ let radioActivityName="";
 let liveSelected="";
 let livePopupOpen=false;
 let livePopupSource:"twitch"|"youtube"="twitch";
+const PORTAL_NICKNAME="d3tr01t";
 let hudHidden=false;
 let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
@@ -167,7 +168,7 @@ function renderProfileCard(){
   const radioHtml=radioItems.length?radioItems.map(([name,v])=>`<div class="profile-row"><span>${escapeHtml(name)}</span><small>${formatDuration(v.seconds)} · ${v.visits} прослуш.</small></div>`).join(""):`<p class="profile-empty">Пока нет прослушиваний.</p>`;
   return `<div class="profile-overlay" data-profile-close><section class="profile-card profile-card-expanded" data-profile-card>
     <button class="icon-button profile-close" data-profile-toggle type="button" aria-label="${T("close")}">${icon("close","profile-close-icon")}</button>
-    <div class="profile-identity">${avatar}<div><h2>${escapeHtml(profileDisplayName())}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
+    <div class="profile-identity">${avatar}<div><h2>${escapeHtml(PORTAL_NICKNAME)}</h2>${u.username?`<p>@${escapeHtml(u.username)}</p>`:"<p>Telegram profile</p>"}<small>${u.id?`Telegram ID · ${escapeHtml(String(u.id))}`:"Telegram identity not available"}</small></div></div>
     <div class="profile-stat-grid"><div><b>${s.sessions}</b><small>Сессий</small></div><div><b>${s.game.launches}</b><small>Запусков GAME</small></div><div><b>${formatDuration(s.game.seconds)}</b><small>Время GAME</small></div><div><b>${formatDuration(s.live.totalSeconds)}</b><small>Просмотр LIVE</small></div><div><b>${formatDuration(s.radio.totalSeconds)}</b><small>Радио</small></div><div><b>${s.chat.messagesSent}</b><small>Сообщений CHAT</small></div></div>
     <div class="profile-section"><h3>LIVE</h3>${liveHtml}</div>
     <div class="profile-section"><h3>RADIO</h3>${radioHtml}</div>
@@ -227,7 +228,7 @@ function render(){
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
-          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">d3tr01t</h1>
+          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(PORTAL_NICKNAME)}</h1>
           <p>${T("homeDescription")}</p>
           </div>
         </section>
