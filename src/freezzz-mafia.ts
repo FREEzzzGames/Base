@@ -328,13 +328,25 @@ function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
  return [x,y];
 }
 function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
-  rect(x-2,y-2,w+4,h+4,"#202b2d");
-  rect(x,y,w,h,variant%3===0?"#c8c6bc":variant%3===1?"#aeb4b0":"#747c7d");
-  rect(x+3,y+3,w-6,h-6,variant%4===0?"#719193":variant%4===1?"#4c6e72":"#56686b");
-  rect(x+5,y+5,Math.max(2,w-10),Math.max(2,h*.22),"rgba(231,236,227,.24)");
-  line(x+w*.5,y+2,x+w*.5,y+h-2,"#304548",1);
-  if(h>16)line(x+2,y+h*.58,x+w-2,y+h*.58,"#304548",1);
-  if(variant%5===0)rect(x+4,y+h-5,Math.max(3,w-8),2,"rgba(35,42,42,.32)");
+  // Глубокий оконный проём, стекло, рамы, откосы и бытовые следы.
+  rect(x-3,y-3,w+6,h+6,"#1e2527");
+  rect(x-1,y-1,w+2,h+2,"#4b5557");
+  rect(x,y,w,h,variant%3===0?"#c9c5b9":variant%3===1?"#aeb3ae":"#737c7d");
+  rect(x+3,y+3,w-6,h-6,variant%5===0?"#718f91":variant%5===1?"#415e63":variant%5===2?"#596f72":"#374d51");
+  // Отражение неба и тёмная нижняя часть стекла.
+  rect(x+4,y+4,Math.max(2,w-8),Math.max(2,h*.20),"rgba(230,235,226,.26)");
+  rect(x+4,y+h*.58,Math.max(2,w-8),Math.max(2,h*.34),"rgba(20,29,31,.16)");
+  line(x+w*.5,y+2,x+w*.5,y+h-2,"#26383b",1);
+  if(h>16)line(x+2,y+h*.58,x+w-2,y+h*.58,"#26383b",1);
+  // Откосы.
+  line(x+1,y+1,x+1,y+h-1,"#d0cec4",1);
+  line(x+w-1,y+1,x+w-1,y+h-1,"#51595a",1);
+  if(variant%4===0)rect(x+4,y+h-5,Math.max(3,w-8),2,"rgba(31,38,38,.42)");
+  // Случайные занавески/жалюзи — небольшая неоднородность жилого дома.
+  if(variant%7===2){
+    for(let k=0;k<3;k++)rect(x+4+k*4,y+5,2,Math.max(4,h-9),"rgba(204,202,188,.20)");
+  }
+  if(variant%9===0)rect(x+w*.72,y+h*.22,2,Math.max(3,h*.48),"rgba(38,47,47,.34)");
 }
 
 function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;wall:string;kind:string},index:number){
@@ -544,6 +556,18 @@ function drawTopDownBackground(){
  for(let xx=fenceX;xx<=fenceX+fenceW;xx+=18)rect(xx,fenceY,3,fenceH,"#626b6d");
  rect(286,180,70,16,"#394143");rect(294,184,54,8,"#9b8b6a");
 
+ // Микродетализация квартала: трещины, пятна ремонта, люки и дорожная пыль.
+ const micro=[140,280,420,560,700,840,980,1120,1260,1400];
+ for(let i=0;i<micro.length;i++){
+   const x=micro[i], y=350+(i%4)*128;
+   ellipse(x,y,22+(i%3)*7,4,"rgba(48,50,46,.10)");
+   line(x-16,y-1,x+12,y+(i%2?3:-2),"rgba(46,49,46,.18)",1);
+ }
+ const manholes=[[665,370],[665,690],[1145,385],[1145,690],[365,515],[950,515]];
+ for(const [x,y] of manholes){
+   ellipse(x,y,10,5,"#4c5050");ellipse(x,y-1,7,3,"#696c69");
+   line(x-5,y-1,x+5,y-1,"#363b3b",1);line(x,y-3,x,y+2,"#3a3e3d",1);
+ }
  // Архитектура — главный слой карты.
  for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
 
@@ -664,10 +688,19 @@ function drawTopDownBackground(){
  ] as [number,number,number][];
  for(const [x,y,v] of trees){
   const s=1+v*.12;
-  ellipse(x+6,y+38*s,25*s,7*s,"rgba(25,45,25,.30)");
-  rect(x-4,y+11,8,29,"#68442c");
-  ellipse(x,y,27*s,21*s,"#2d783f");ellipse(x-14*s,y-8*s,18*s,16*s,"#3b8b4a");
-  ellipse(x+14*s,y-7*s,18*s,16*s,"#347f43");rect(x-9*s,y-23*s,18*s,4*s,"#4e9a51");
+  ellipse(x+7,y+40*s,28*s,8*s,"rgba(20,30,20,.30)");
+  rect(x-5,y+10,10,31,"#60402b");
+  rect(x-2,y+8,4,27,"#7a5234");
+  // Неровная крона из нескольких слоёв, с просветами и разной высотой.
+  ellipse(x,y,29*s,22*s,"#295f35");
+  ellipse(x-15*s,y-7*s,19*s,17*s,"#3a7a40");
+  ellipse(x+15*s,y-6*s,19*s,17*s,"#34713c");
+  ellipse(x-3*s,y-18*s,16*s,13*s,"#427f45");
+  ellipse(x+9*s,y+8*s,15*s,12*s,"#2e6838");
+  ellipse(x-18*s,y+5*s,11*s,9*s,"#326d39");
+  rect(x-8*s,y-23*s,17*s,3*s,"#4e8e4c");
+  if(v===2)line(x-1*s,y+2*s,x-15*s,y-11*s,"#5b7040",2);
+  if(v===1)line(x+2*s,y+4*s,x+17*s,y-12*s,"#5b7040",2);
  }
 
  // Городские мелочи.
