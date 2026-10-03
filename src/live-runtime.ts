@@ -60,7 +60,7 @@ export function renderLivePopups(options:{
         '</div>'+
         '<div class="live-popup-video">'+(embed
           ? '<iframe src="'+e(embed)+'" title="'+e(stream.name)+' — '+sourceLabel+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>'
-          : '<div class="live-popup-unavailable"><div class="live-popup-icon">'+icon("video")+'</div><strong>'+tr.unavailable+'</strong><span>'+tr.channel+' '+e(sourceLabel)+'.</span><button class="tg-button" data-live-external="'+e(popup.key)+'" type="button">'+tr.open+' '+e(sourceLabel)+'</button></div>')+
+          : '<div class="live-popup-unavailable"><div class="live-popup-icon">'+icon("robot")+'</div><strong>'+tr.unavailable+'</strong><span>'+tr.channel+' '+e(sourceLabel)+'.</span><button class="tg-button" data-live-external="'+e(popup.key)+'" type="button">'+tr.open+' '+e(sourceLabel)+'</button></div>')+
         '</div></section>';
     }).join("")+
     '</div>';
