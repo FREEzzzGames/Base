@@ -267,6 +267,7 @@ function bindHomeLayoutEditor(){
   });
   document.querySelector("[data-layout-reset]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();resetHomeLayout();});
   document.querySelector("[data-layout-close]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();finishHomeLayoutEdit();});
+  applyHomeLayoutGeometry();
 }
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
