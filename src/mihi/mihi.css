@@ -124,3 +124,53 @@
   }
   .mihi-orb{right:-2px;width:32px;height:32px}
 }
+
+/* MIHI comic speech — 15% opaque background. */
+.mihi-speech{
+  position:absolute;
+  left:50%;
+  bottom:42px;
+  transform:translate(-50%,8px) scale(.96);
+  width:min(270px,calc(100vw - 28px));
+  box-sizing:border-box;
+  padding:9px 12px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:14px;
+  background:rgba(0,0,0,.15);
+  color:#fff;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.35;
+  text-align:center;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
+  pointer-events:none;
+  z-index:120;
+  opacity:0;
+  transition:opacity .18s ease,transform .18s ease;
+}
+.mihi-speech::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-8px;
+  width:14px;
+  height:14px;
+  background:rgba(0,0,0,.15);
+  border-right:1px solid rgba(255,255,255,.28);
+  border-bottom:1px solid rgba(255,255,255,.28);
+  transform:translateX(-50%) rotate(45deg);
+}
+.mihi-speech-show{
+  opacity:1;
+  transform:translate(-50%,0) scale(1);
+}
+@media(max-width:699px){
+  .mihi-speech{
+    bottom:38px;
+    width:min(250px,calc(100vw - 24px));
+    font-size:12px;
+  }
+}
