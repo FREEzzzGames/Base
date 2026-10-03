@@ -5244,3 +5244,22 @@ button,
 }
 .portal-workspace.portal-hud-hidden .portal-hud-toggle{bottom:2px!important}
 .portal-hud-toggle[data-portal-pressed="true"]{background:transparent!important;box-shadow:none!important}
+
+/* HUD TOGGLE — use the same outlined SVG language as HOME icons. */
+.portal-hud-toggle-icon{
+  width:32px!important;
+  height:32px!important;
+  min-width:32px!important;
+  min-height:32px!important;
+  display:block!important;
+  color:#fff!important;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.78))!important;
+  pointer-events:none!important;
+}
+.portal-hud-toggle-icon .portal-illustration{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+}
