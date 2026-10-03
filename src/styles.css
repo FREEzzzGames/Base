@@ -4784,17 +4784,18 @@ main{
   letter-spacing:.01em!important;
 }
 
-/* Profile name becomes a separate middle-left element instead of competing with the clock. */
+/* Developer nickname — above the large clock; profile interaction is preserved. */
 .home-hero h1.home-hero-profile-trigger{
-  left:0!important;
-  right:auto!important;
-  top:50%!important;
-  transform:translateY(-50%)!important;
-  width:46%!important;
-  max-width:46%!important;
+  left:auto!important;
+  right:0!important;
+  top:4px!important;
+  transform:none!important;
+  width:48%!important;
+  max-width:48%!important;
   font-size:clamp(14px,4.6cqh,20px)!important;
   line-height:1.05!important;
   letter-spacing:0!important;
+  text-align:right!important;
 }
 
 /* Description is anchored under the profile and never stretches below the clock. */
