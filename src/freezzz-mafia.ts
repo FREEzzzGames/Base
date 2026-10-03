@@ -305,8 +305,14 @@ function drawEnemy(e:Enemy){
 function drawPlayer(){
  const x=player.x,y=player.y,sc=portraitScale()*.96;
  drawMafiaMember(heroVisual(),x,y,frame,sc);
- const gunX=x+Math.cos(aimAngle)*30*sc,gunY=y-44*sc+Math.sin(aimAngle)*30*sc;
- line(x+Math.cos(aimAngle)*13*sc,y-44*sc+Math.sin(aimAngle)*13*sc,gunX,gunY,"#9ba3a5",Math.max(3,4*sc));
+
+ // Игровой предмет всегда начинается именно от кисти персонажа.
+ const handX=x+player.facing*29*sc;
+ const handY=y-44*sc;
+ const muzzleX=handX+Math.cos(aimAngle)*28*sc;
+ const muzzleY=handY+Math.sin(aimAngle)*28*sc;
+ line(handX,handY,muzzleX,muzzleY,"#9ba3a5",Math.max(3,4*sc));
+
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
 function spawnFloor(){
