@@ -139,7 +139,161 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
 type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
 type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
 type WeaponId="pocket"|"service"|"revolver"|"smg"|"shotgun"|"carbine";
-type GameMode="select"|"mission"|"shop"|"result";
+type GameMode="select"|"family"|"mission"|"shop"|"result";
+type MissionState="briefing"|"play"|"complete";
+type Family={id:FamilyId;name:string;accent:string;desc:string;bonus:string;};
+type Weapon={id:WeaponId;name:string;damage:number;rate:number;range:number;mag:number;cost:number;rank:number;skill:number;spread:number;};
+type Armor={name:string;hp:number;cost:number;rank:number;};
+type Enemy={type:EnemyType;name:string;hp:number;speed:number;damage:number;range:number;cooldown:number;reward:number;};
+type PlayerState={family:FamilyId;fighter:FighterId;rank:number;xp:number;money:number;hp:number;armor:number;weapon:WeaponId;skill:number;floor:number;x:number;y:number;vy:number;shots:number;};
+
+const families:Record<FamilyId,Family>={
+  valenti:{id:"valenti",name:"VALENTI",accent:"#54d6d8",desc:"Financial crime and influence.",bonus:"+speed / +pistol skill"},
+  moretti:{id:"moretti",name:"MORETTI",accent:"#c58b48",desc:"Street crime and protection.",bonus:"+health / +revolver skill"},
+  rossi:{id:"rossi",name:"ROSSI",accent:"#d86c35",desc:"Narcotics network and distribution.",bonus:"+armor / +shotgun skill"},
+  bellini:{id:"bellini",name:"BELLINI",accent:"#9f83d6",desc:"Smuggling and illicit logistics.",bonus:"+accuracy / +rifle skill"}
+}; FREEzzz MAFIA — vertical 2D platformer foundation.
+ * Three original visual characters from the locked Arena graphics.
+ * Four fictional families. Three-floor missions. Enemy archetypes, career,
+ * weapons, armor, money, shop and mission progression.
+ *
+ * The setting is fictionalized: no real criminal organization is represented.
+ */
+
+type FighterId="vex"|"ruma"|"korr";
+type Phase="select"|"fight"|"result";
+type Pose="idle"|"move"|"guard"|"burst"|"hit"|"victory";
+type Fighter={
+  id:FighterId; name:string; tag:string; speed:number; power:number; guard:number;
+  accent:string; skin:string; skinHi:string; skinShadow:string; gear:string; gearHi:string;
+  build:number; head:number; burstName:string; burstColor:string;
+};
+const W=640,H=448;
+const fighters:Record<FighterId,Fighter>={
+  vex:{id:"vex",name:"VEX",tag:"URBAN RUNNER",speed:8,power:5,guard:4,accent:"#54d6d8",skin:"#a96858",skinHi:"#d18b70",skinShadow:"#6e4038",gear:"#182027",gearHi:"#36444b",build:0,head:0,burstName:"RUSH",burstColor:"#7ff7f7"},
+  ruma:{id:"ruma",name:"RUMA",tag:"DESERT GUARDIAN",speed:5,power:8,guard:7,accent:"#c58b48",skin:"#996149",skinHi:"#c98563",skinShadow:"#5f3b31",gear:"#57422f",gearHi:"#866644",build:1,head:1,burstName:"GUARDIAN",burstColor:"#f0bd73"},
+  korr:{id:"korr",name:"KORR",tag:"INDUSTRIAL HEAVY",speed:3,power:9,guard:9,accent:"#d86c35",skin:"#705047",skinHi:"#9b6d59",skinShadow:"#402f2b",gear:"#30383d",gearHi:"#59636a",build:2,head:2,burstName:"OVERDRIVE",burstColor:"#ff995f"}
+};
+const palette=["#07090b","#0e1215","#171d21","#242d32","#38434a","#59656b","#7d898d","#aab1b4","#d5d8d7","#f0eee7"];
+type Input={left:boolean;right:boolean;guard:boolean;burst:boolean;};
+const input:Input={left:false,right:false,guard:false,burst:false};
+
+function clamp(v:number,a:number,b:number){return Math.max(a,Math.min(b,v));}
+function shade(hex:string,n:number){const x=hex.replace("#","");const r=parseInt(x.slice(0,2),16),g=parseInt(x.slice(2,4),16),b=parseInt(x.slice(4,6),16);const f=clamp(n,0,1);return "rgb("+Math.round(r*f)+","+Math.round(g*f)+","+Math.round(b*f)+")";}
+function rect(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,c:string){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function ellipse(ctx:CanvasRenderingContext2D,x:number,y:number,rx:number,ry:number,c:string,rot=0){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.fill();}
+function limb(ctx:CanvasRenderingContext2D,x1:number,y1:number,x2:number,y2:number,w:number,c:string){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function poly(ctx:CanvasRenderingContext2D,pts:number[],c:string){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=2)ctx.lineTo(pts[i],pts[i+1]);ctx.closePath();ctx.fill();}
+function text(ctx:CanvasRenderingContext2D,s:string,x:number,y:number,size=8,c="#d5d8d7",align:CanvasTextAlign="left"){ctx.font="700 "+size+"px monospace";ctx.textAlign=align;ctx.textBaseline="top";ctx.fillStyle=c;ctx.fillText(s,x,y);}
+function pixel(ctx:CanvasRenderingContext2D,x:number,y:number,c:string){rect(ctx,x,y,1,1,c);}
+function seedFor(id:FighterId){return id==="vex"?17:id==="ruma"?31:53;}
+function noise(ctx:CanvasRenderingContext2D,id:FighterId,x:number,y:number,w:number,h:number,base:string,seed:number,density=.12){
+  let n=seed>>>0;
+  for(let yy=0;yy<h;yy+=2)for(let xx=0;xx<w;xx+=2){n=(n*1664525+1013904223)>>>0;if(((n&255)/255)<density)pixel(ctx,x+xx,y+yy,shade(base,.62+((n>>>8)%30)/100));}
+}
+
+/* Detailed stepped silhouettes. The geometry is deliberately authored as a sprite,
+   not a generic stick figure: shoulders, waist, hands, boots, face planes and material
+   highlights are all separate pixel clusters. */
+function poseFor(f:Fighter,frame:number,pose:Pose){
+  const q=(frame%32)/32,step=q<.5?1:-1,breathe=Math.sin(q*Math.PI*2)*.7;
+  if(pose==="guard")return {bob:-1,lean:f.id==="korr"?-1:-2,frontArm:-10,backArm:5,frontLeg:-5,backLeg:7,stance:7};
+  if(pose==="burst")return {bob:-3,lean:f.id==="vex"?5:f.id==="ruma"?2:-1,frontArm:-18,backArm:8,frontLeg:-8,backLeg:11,stance:10};
+  if(pose==="hit")return {bob:2,lean:-6,frontArm:9,backArm:-7,frontLeg:8,backLeg:-7,stance:5};
+  if(pose==="victory")return {bob:-3,lean:-1,frontArm:-18,backArm:-14,frontLeg:-2,backLeg:3,stance:5};
+  if(pose==="move")return {bob:breathe-2,lean:step*3,frontArm:step*-7,backArm:step*7,frontLeg:step*9,backLeg:step*-8,stance:8};
+  return {bob:breathe,lean:0,frontArm:step*-2,backArm:step*2,frontLeg:step*2,backLeg:step*-2,stance:4};
+}
+
+/* Authored combat sprite: each pose changes the silhouette, limb angles and weight distribution. */
+function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:number,frame:number,flip=false,ghost=false,scale=1,pose:Pose="idle"){
+  const p=poseFor(f,frame,pose),d=flip?-1:1;
+  ctx.save();ctx.translate(cx,ground+p.bob);ctx.scale(d*scale,scale);
+  if(ghost)ctx.globalAlpha=.17;
+
+  const skin=f.skin,hi=f.skinHi,shadow=f.skinShadow,cloth=f.gear,clothHi=f.gearHi,a=f.accent;
+  const lean=p.lean,shoulder=f.build===2?23:f.build===1?21:19;
+
+  ellipse(ctx,0,0,28,3,"rgba(0,0,0,.72)");
+
+  // Back leg.
+  limb(ctx,6+lean,-46,10+p.backLeg,-9,11,shade(cloth,.66));
+  limb(ctx,10+p.backLeg,-10,18+p.backLeg,-2,7,"#090c0e");
+  rect(ctx,14+p.backLeg,-4,11,3,shade(clothHi,.55));
+
+  // Front leg and knee plane.
+  limb(ctx,-5+lean,-46,-8+p.frontLeg,-27,12,cloth);
+  limb(ctx,-8+p.frontLeg,-27,-13+p.frontLeg,-8,10,cloth);
+  ellipse(ctx,-8+p.frontLeg,-27,6,7,shade(clothHi,.70),.15);
+  limb(ctx,-13+p.frontLeg,-8,-19+p.frontLeg,-2,7,"#090c0e");
+  rect(ctx,-22+p.frontLeg,-4,11,3,shade(clothHi,.55));
+
+  // Pelvis / waist.
+  poly(ctx,[-14+lean,-57,-9+lean,-47,0+lean,-44,10+lean,-47,14+lean,-57,8+lean,-62,-7+lean,-62],cloth);
+  rect(ctx,-11+lean,-51,22,3,clothHi);rect(ctx,-7+lean,-47,14,2,shade(cloth,.55));
+
+  // Torso with asymmetric shoulders.
+  poly(ctx,[-shoulder+lean,-84,-12+lean,-86,-7+lean,-61,0+lean,-54,9+lean,-61,shoulder+lean,-83,12+lean,-91,-10+lean,-91],cloth);
+  poly(ctx,[-shoulder+lean+2,-81,-8+lean,-84,0+lean,-76,8+lean,-84,shoulder+lean-2,-80,11+lean,-65,0+lean,-59,-11+lean,-65],clothHi);
+  poly(ctx,[-8+lean,-63,0+lean,-58,8+lean,-63,6+lean,-50,-6+lean,-50],shade(cloth,.54));
+
+  if(f.id==="vex"){
+    rect(ctx,-19+lean,-82,7,27,a);rect(ctx,12+lean,-82,7,27,a);
+    rect(ctx,-6+lean,-79,12,22,"#080e12");rect(ctx,-16+lean,-61,5,10,shade(a,.72));rect(ctx,11+lean,-61,5,10,shade(a,.72));
+    rect(ctx,-12+lean,-49,8,3,a);rect(ctx,5+lean,-49,8,3,a);
+  }else if(f.id==="ruma"){
+    rect(ctx,-18+lean,-82,36,8,a);rect(ctx,-14+lean,-69,28,7,clothHi);rect(ctx,-11+lean,-58,22,4,shade(a,.72));rect(ctx,-8+lean,-52,16,3,cloth);
+  }else{
+    rect(ctx,-22+lean,-84,44,11,a);rect(ctx,-16+lean,-70,32,8,clothHi);rect(ctx,-12+lean,-59,24,7,"#12181c");
+    rect(ctx,-20+lean,-49,10,3,a);rect(ctx,10+lean,-49,10,3,a);
+  }
+
+  // Rear arm.
+  const rearX=shoulder+lean,rearElbow=shoulder+7+p.backArm;
+  limb(ctx,rearX,-78,rearElbow,-61,10,cloth);limb(ctx,rearElbow,-61,rearElbow+2,-43,8,cloth);ellipse(ctx,rearElbow+2,-39,5,7,skin,.1);
+
+  // Front arm changes dramatically between idle, guard and burst.
+  const fx=-shoulder+lean,felbow=-shoulder-7+p.frontArm,fhandY=pose==="burst"?-73:pose==="guard"?-55:-40;
+  limb(ctx,fx,-78,felbow,-62,11,cloth);
+  limb(ctx,felbow,-62,pose==="burst"?-shoulder-19:felbow-2,fhandY,8,cloth);
+  ellipse(ctx,(pose==="burst"?-shoulder-19:felbow-2),fhandY+4,5,7,skin,.15);
+
+  // Neck and three-plane head.
+  rect(ctx,-7+lean,-97,14,13,shadow);
+  poly(ctx,[-12+lean,-116,-6+lean,-120,6+lean,-119,13+lean,-112,14+lean,-98,9+lean,-83,0+lean,-77,-9+lean,-83,-14+lean,-98,-14+lean,-111],skin);
+  poly(ctx,[-11+lean,-113,-5+lean,-117,4+lean,-116,10+lean,-110,8+lean,-101,-1+lean,-104,-9+lean,-101],hi);
+  poly(ctx,[-14+lean,-100,-8+lean,-94,-3+lean,-87,0+lean,-79,-9+lean,-83,-14+lean,-98],shadow);
+
+  if(f.id==="vex"){
+    poly(ctx,[-14+lean,-108,-10+lean,-118,0+lean,-120,12+lean,-114,15+lean,-106,7+lean,-105,1+lean,-110,-5+lean,-106,-10+lean,-110],"#0c1318");
+    rect(ctx,9+lean,-106,5,2,a);rect(ctx,-14+lean,-106,5,2,a);
+  }else if(f.id==="ruma"){
+    poly(ctx,[-16+lean,-108,-10+lean,-117,0+lean,-120,10+lean,-116,16+lean,-108,12+lean,-101,-12+lean,-101],"#65402e");
+    rect(ctx,-16+lean,-106,32,6,a);
+  }else{
+    rect(ctx,-15+lean,-116,30,10,"#0c1318");rect(ctx,-19+lean,-110,6,14,a);rect(ctx,13+lean,-110,6,14,a);
+  }
+
+  rect(ctx,-9+lean,-101,7,3,shadow);rect(ctx,2+lean,-101,7,3,shadow);
+  rect(ctx,-7+lean,-99,3,2,"#f0eee7");rect(ctx,4+lean,-99,3,2,"#f0eee7");
+  rect(ctx,-2+lean,-96,4,7,shadow);rect(ctx,-6+lean,-87,12,2,hi);rect(ctx,-5+lean,-84,10,2,shadow);
+  if(f.id==="korr")rect(ctx,-10+lean,-93,20,4,clothHi);
+  if(f.id==="ruma")rect(ctx,-11+lean,-86,22,2,shade(a,.86));
+
+  // Pixel material clusters.
+  for(let i=0;i<8;i++){const yy=-74+(i%4)*7,xx=-11+((i*7)%19);rect(ctx,xx+lean,yy,2,2,i%3===0?hi:shade(clothHi,.72));}
+  rect(ctx,-shoulder+4+lean,-70,2,12,shade(a,.62));
+
+  if(pose==="guard"){rect(ctx,-22+lean,-57,9,3,a);rect(ctx,13+lean,-55,9,3,a);}
+  if(pose==="burst"){rect(ctx,-31,-77,5,2,f.burstColor);rect(ctx,-37,-73,3,2,f.burstColor);rect(ctx,-43,-69,2,2,f.burstColor);}
+  if(pose==="hit"){rect(ctx,15+lean,-93,4,2,"#f0eee7");rect(ctx,19+lean,-90,3,2,"#7e898d");}
+  ctx.restore();
+}
+
+type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
+type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
+type WeaponId="pocket"|"service"|"revolver"|"smg"|"shotgun"|"carbine";
+type GameMode="select"|"family"|"mission"|"shop"|"result";
 type MissionState="briefing"|"play"|"complete";
 type Family={id:FamilyId;name:string;accent:string;desc:string;bonus:string;};
 type Weapon={id:WeaponId;name:string;damage:number;rate:number;range:number;mag:number;cost:number;rank:number;skill:number;spread:number;};
@@ -152,6 +306,13 @@ const families:Record<FamilyId,Family>={
   moretti:{id:"moretti",name:"MORETTI",accent:"#c58b48",desc:"Disciplined street veterans.",bonus:"+health / +revolver skill"},
   rossi:{id:"rossi",name:"ROSSI",accent:"#d86c35",desc:"Heavy hitters with strong defenses.",bonus:"+armor / +shotgun skill"},
   bellini:{id:"bellini",name:"BELLINI",accent:"#9f83d6",desc:"Technical specialists and marksmen.",bonus:"+accuracy / +rifle skill"}
+};
+
+const familyStories:Record<FamilyId,{title:string;lines:string[]}> = {
+  valenti:{title:"THE VALENTI FAMILY",lines:["Money is their weapon.","The Valenti built their influence through financial schemes,","front companies and control of legitimate businesses.","Antonio is entering the family at street level."]},
+  moretti:{title:"THE MORETTI FAMILY",lines:["The Moretti rule through the streets.","Protection rackets, intimidation and organized street crime","made their name across the city.","Massimo has been chosen to prove himself."]},
+  rossi:{title:"THE ROSSI FAMILY",lines:["The Rossi control a dangerous narcotics network.","Their power comes from distribution, territory and loyalty.","Salvatore begins at the bottom of that organization."]},
+  bellini:{title:"THE BELLINI FAMILY",lines:["The Bellini specialize in smuggling.","They move valuable contraband through hidden routes and contacts.","Giuseppe is their newest recruit."]}
 };
 
 const weapons:Record<WeaponId,Weapon>={
@@ -311,7 +472,7 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     const map:Record<FamilyId,FighterId>={valenti:"vex",moretti:"ruma",rossi:"korr",bellini:"vex"};
     player.family=id;player.fighter=map[id];player.rank=1;player.xp=0;player.money=150;player.hp=100;player.armor=0;player.weapon="pocket";player.skill=0;player.floor=0;player.x=80;player.y=platformY[0];player.vy=0;
   }
-  function startMission(){missionState="briefing";mode="mission";player.floor=0;player.x=70;player.y=platformY[0];player.hp=Math.min(100,player.hp+20);mobs=spawnMobs(0);bullets=[];missionTimer=0;floorClear=false;notice="MISSION "+mission+" · "+floorNames[0];noticeTimer=2;}
+  function showFamilyIntro(){mode="family";noticeTimer=0;}\n  function startMission(){missionState="briefing";mode="mission";player.floor=0;player.x=70;player.y=platformY[0];player.hp=Math.min(100,player.hp+20);mobs=spawnMobs(0);bullets=[];missionTimer=0;floorClear=false;notice="MISSION "+mission+" · "+floorNames[0];noticeTimer=2;}
   function beginPlay(){missionState="play";missionTimer=0;}
   function completeMission(){
     missionState="complete";mode="result";
@@ -399,7 +560,9 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     const dt=Math.min(.04,(t-last)/1000);last=t;update(dt);
     ctx.clearRect(0,0,W2,H2);
     if(mode==="select"){
-      ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);text(ctx,"FOUR FAMILIES",320,26,16,"#f0eee7","center");text(ctx,"CHOOSE YOUR NEW MEMBER",320,49,7,"#7e898d","center");
+      ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);
+      text(ctx,"FOUR FAMILIES",320,26,16,"#f0eee7","center");
+      text(ctx,"CHOOSE YOUR NEW MEMBER",320,49,7,"#7e898d","center");
       const ids:FamilyId[]=["valenti","moretti","rossi","bellini"];
       ids.forEach((id,i)=>{
         const x=80+i*160,a=id===familySelected,m=mafiaMembers[id];
@@ -410,8 +573,26 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
         drawMafiaMember(ctx,m,x,225,frame+i*4,.72);
         text(ctx,families[id].bonus,x,250,5,families[id].accent,"center");
       });
-      text(ctx,"◀ ▶ SELECT    ENTER START",320,300,7,"#d5d8d7","center");text(ctx,"CLASSIC SUITS · FEDORAS · FOUR FAMILY MEMBERS · 3 FLOORS",320,320,5,"#58646a","center");
-    }else if(mode==="shop"){
+      text(ctx,"◀ ▶ SELECT    ENTER START",320,300,7,"#d5d8d7","center");
+      text(ctx,"CLASSIC SUITS · FEDORAS · FOUR FAMILY MEMBERS · 3 FLOORS",320,320,5,"#58646a","center");
+    }else if(mode==="family"){
+      const fam=families[familySelected],story=familyStories[familySelected],m=mafiaMembers[familySelected];
+      ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);
+      rect(ctx,0,0,W2,3,fam.accent);
+      text(ctx,"FAMILY FILE",320,22,7,"#7e898d","center");
+      text(ctx,story.title,320,45,14,"#f0eee7","center");
+      drawMafiaMember(ctx,m,105,260,frame,.95);
+      text(ctx,m.name,105,286,8,fam.accent,"center");
+      text(ctx,"NEW MEMBER",105,299,5,"#7e898d","center");
+      rect(ctx,180,78,390,184,"#0c1114");
+      rect(ctx,180,78,390,3,fam.accent);
+      text(ctx,"THE FAMILY",200,96,6,fam.accent);
+      story.lines.forEach((line,i)=>text(ctx,line,200,118+i*22,6,"#d5d8d7"));
+      text(ctx,"SPECIALTY",200,205,5,"#7e898d");
+      text(ctx,fam.desc,200,219,7,"#f0eee7");
+      text(ctx,"ENTER  BEGIN CAREER",320,318,7,"#d5d8d7","center");
+      text(ctx,"ESC  RETURN TO FAMILY SELECT",320,332,5,"#58646a","center");
+    }}else if(mode==="shop"){
       ctx.fillStyle="#07090b";ctx.fillRect(0,0,W2,H2);text(ctx,"ARMORY & OUTFITTER",320,22,14,"#f0eee7","center");text(ctx,moneyText(player.money),320,43,8,"#d5d8d7","center");
       const ids:WeaponId[]=["pocket","service","revolver","smg","shotgun","carbine"];ids.forEach((id,i)=>{const w=weapons[id],x=58+(i%3)*210,y=72+Math.floor(i/3)*82,ok=player.rank>=w.rank&&player.skill>=w.skill;rect(ctx,x-88,y,176,66,ok?"#10171b":"#090d10");text(ctx,w.name,x-78,y+8,7,ok?"#f0eee7":"#626c70");text(ctx,"DMG "+w.damage+"  MAG "+w.mag,x-78,y+23,5,"#8d989c");text(ctx,w.cost?moneyText(w.cost):"STARTER",x+78,y+23,5,w.cost?"#d5d8d7":"#687277","right");text(ctx,"R"+w.rank+"  SK"+w.skill,x-78,y+40,5,families[player.family].accent);if(player.weapon===id)text(ctx,"EQUIPPED",x+78,y+40,5,"#d5d8d7","right");});
       armors.forEach((a,i)=>{const x=100+i*220;const y=245;rect(ctx,x-90,y,180,55,"#10171b");text(ctx,a.name,x-78,y+8,7,"#f0eee7");text(ctx,"HP +"+a.hp,x-78,y+24,5,"#8d989c");text(ctx,moneyText(a.cost),x+78,y+24,5,"#d5d8d7","right");});
@@ -435,13 +616,13 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     if(e.key==="ArrowUp"||e.key.toLowerCase()==="w")input2.up=down;
     if(e.key===" "||e.key.toLowerCase()==="f")input2.fire=down;
     if(down&&e.key==="Enter"){
-      if(mode==="select")startMission();
+      if(mode==="select")showFamilyIntro();\n      else if(mode==="family")startMission();
       else if(mode==="mission"&&missionState==="briefing")beginPlay();
       else if(mode==="result"){mission++;startMission();}
       else if(mode==="shop")mode="mission";
     }
     if(down&&e.key.toLowerCase()==="s"){if(mode==="mission"||mode==="result")openShop();}
-    if(down&&e.key==="Escape"){if(mode==="shop")mode="mission";else mode="select";}
+    if(down&&e.key==="Escape"){if(mode==="shop")mode="mission";else if(mode==="family")mode="select";else mode="select";}
     if(down&&mode==="select"&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){const ids:FamilyId[]=["valenti","moretti","rossi","bellini"];let i=ids.indexOf(familySelected);i=(i+(e.key==="ArrowRight"?1:-1)+4)%4;configureFamily(ids[i]);}
     if(down&&mode==="shop"){const keys=["1","2","3","4","5","6"];const idx=keys.indexOf(e.key);if(idx>=0)buyWeapon((["pocket","service","revolver","smg","shotgun","carbine"] as WeaponId[])[idx]);if(["7","8","9"].includes(e.key))buyArmor(armors[Number(e.key)-7]);}
   }
