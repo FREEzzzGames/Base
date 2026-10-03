@@ -8,6 +8,35 @@ const PAL:Record<string,string>={"1":"#080808","2":"#d89470","3":"#f5f5f5","4":"
 const HERO_WALK=[...HERO]; HERO_WALK[14]="....11..11..11...."; HERO_WALK[15]="...11...11...11...";
 const HERO_STEP=[...HERO]; HERO_STEP[14]=".....11..11......"; HERO_STEP[15]="....111..111....."; HERO_STEP[16]="...111....111....";
 const ENEMY_WALK=[...ENEMY]; ENEMY_WALK[14]="...111....111...."; ENEMY_WALK[15]="..1111....1111...";
+const BOSS=[
+".......111111.......",
+".....1122222211.....",
+"...11222222222211...",
+"..1222222333222221..",
+".122222333333322221.",
+"12222333333333322221",
+"12222333333333322221",
+"12222233333333322221",
+".122222222222222221.",
+"..1111222222221111..",
+"...11144444444111...",
+"..1114444444444111..",
+".111444444444444111.",
+"..11144444444444111..",
+"...11144444444111....",
+"....111444444111.....",
+"...11..11..11..11...",
+"..111..11..11..111..",
+"..11...11..11...11..",
+"...111........111....",
+"....1111....1111.....",
+"......11111111......."
+];
+const BOSS_HIT=[...BOSS];
+BOSS_HIT[10]="...111999999111...";
+BOSS_HIT[11]="..111999999999111..";
+BOSS_HIT[12]=".111999999999999111.";
+
 
 
 type Enemy={x:number;y:number;hp:number;max:number;elite:boolean;hit:number;cool:number};
@@ -140,9 +169,29 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
     x.fillStyle="#fff";x.fillRect(bx+3,top+6,2,3);
     x.fillStyle="#101015";
   }
-  // Ground depth layers
+  // Ground depth layers: tiled street, puddles, vents and foreground props.
   x.fillStyle="#161616";x.fillRect(0,79,W,29);
+  for(let row=0;row<4;row++){
+    for(let col=0;col<24;col++){
+      const tx=col*8+((row%2)*4),ty=80+row*7;
+      x.fillStyle=((row+col)%5===0)?"#202020":"#181818";
+      x.fillRect(tx,ty,6,4);
+      if((row*col+col)%11===0){x.fillStyle="#303030";x.fillRect(tx+1,ty+1,2,1)}
+    }
+  }
   x.fillStyle="#242424";for(let i=0;i<10;i++){const bx=(i*24-(elapsed*12)%24);x.fillRect(bx,81,14,1)}
+  // Puddles with broken pixel reflections.
+  for(let i=0;i<7;i++){
+    const wx=(i*31-(elapsed*(2+i%3))%31),wy=86+(i%3)*5;
+    x.fillStyle=i%2?"rgba(255,255,255,.10)":"rgba(255,32,32,.16)";
+    x.fillRect(wx,wy,9+(i%3)*3,1);x.fillRect(wx+3,wy+1,4,1);
+  }
+  // Street vents and cables.
+  x.fillStyle="#050505";
+  for(let i=0;i<5;i++){const vx=15+i*41; x.fillRect(vx,91,9,3);x.fillStyle="#444";x.fillRect(vx+2,92,5,1);x.fillStyle="#050505"}
+  x.strokeStyle="#343434";x.lineWidth=1;
+  x.beginPath();x.moveTo(0,76);x.lineTo(58,84);x.lineTo(102,78);x.stroke();
+  x.beginPath();x.moveTo(192,75);x.lineTo(142,84);x.lineTo(102,78);x.stroke();
   x.fillStyle="#090909";x.fillRect(0,92,W,16);
   x.strokeStyle="rgba(255,255,255,.18)";x.lineWidth=.7;
   for(let i=0;i<9;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*24,108);x.stroke()}
@@ -155,10 +204,35 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
     x.fillRect(rx,ry,1,2+i%3);
   }
   x.fillStyle="rgba(255,255,255,.035)";x.fillRect(0,42,W,25);
+  // Foreground silhouettes and readable landmarks.
+  x.fillStyle="#070707";
+  x.fillRect(8,64,3,28);x.fillRect(181,61,4,31);
+  x.fillRect(6,64,8,3);x.fillRect(177,61,12,3);
+  x.fillStyle="#ff2020";
+  x.fillRect(9,67,1,4);x.fillRect(182,64,2,5);
+  // Pixel lamps with restrained bloom.
+  for(const lx of [28,166]){
+    x.fillStyle="#242424";x.fillRect(lx,61,1,19);x.fillRect(lx-2,61,5,2);
+    const lg=x.createRadialGradient(lx,63,0,lx,63,10);
+    lg.addColorStop(0,"rgba(255,32,32,.20)");lg.addColorStop(1,"rgba(255,32,32,0)");
+    x.fillStyle=lg;x.fillRect(lx-10,53,20,20);x.fillStyle="#ff2020";x.fillRect(lx,62,1,2);
+  }
 }
 function draw(now:number){
-   const c=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"),x=c?.getContext("2d");if(!c||!x||s.screen!=="play")return;
-   const dt=Math.min(.033,(now-last)/1000);last=now;elapsed+=dt;update(dt);flash=Math.max(0,flash-dt*2.8);shake=Math.max(0,shake-dt*2);
+   const c=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"),x=c?.getContext("2d");if(!c||!x)return;
+   const dt=Math.min(.033,(now-last)/1000);last=now;elapsed+=dt;
+   if(s.screen!=="play"){
+     x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);x.fillStyle="#050505";x.fillRect(0,0,W,H);
+     drawBackground(x,elapsed);
+     const showcaseY=67+Math.sin(elapsed*2)*1.5;
+     const sh=x.createRadialGradient(96,showcaseY+8,1,96,showcaseY+8,15);
+     sh.addColorStop(0,"rgba(0,0,0,.75)");sh.addColorStop(1,"rgba(0,0,0,0)");
+     x.fillStyle=sh;x.fillRect(80,showcaseY,32,18);
+     x.save();x.translate(86,showcaseY-20);sprite(x,HERO,0,0,1);x.restore();
+     x.fillStyle="rgba(255,255,255,.06)";x.fillRect(0,34,W,1);
+     x.setTransform(1,0,0,1,0,0);return;
+   }
+   update(dt);flash=Math.max(0,flash-dt*2.8);shake=Math.max(0,shake-dt*2);
    x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);x.fillStyle="#050505";x.fillRect(0,0,W,H);
    drawBackground(x,elapsed);
    // Perspective light pools under combatants.
@@ -173,18 +247,32 @@ function draw(now:number){
    if(shake)x.translate((Math.random()-.5)*shake*3,(Math.random()-.5)*shake*3);
    for(const o of orbs){const bob=Math.sin(elapsed*8+o.x)*1.5;x.fillStyle=o.kind==="xp"?"#fff":"#ff2020";x.fillRect(o.x-2,o.y-2+bob,4,4);x.fillRect(o.x-1,o.y-3+bob,2,6)}
    for(const e of enemies){
-     x.save();if(e.hit)x.globalAlpha=.48;
+     x.save();
+     const shadow=x.createRadialGradient(e.x,e.y+5,1,e.x,e.y+5,9);
+     shadow.addColorStop(0,"rgba(0,0,0,.65)");shadow.addColorStop(1,"rgba(0,0,0,0)");
+     x.fillStyle=shadow;x.fillRect(e.x-10,e.y-1,20,12);
+     if(e.hit)x.globalAlpha=.48;
      const moving=Math.abs(e.x-px)+Math.abs(e.y-py)>10,frame=Math.floor(elapsed*7)%2;
      const em=moving&&frame?ENEMY_WALK:ENEMY;
      x.translate(Math.floor(e.x-10),Math.floor(e.y-20));sprite(x,em,0,0,1);x.restore();
      x.fillStyle="#000";x.fillRect(e.x-8,e.y-23,16,2);x.fillStyle="#ff2020";x.fillRect(e.x-8,e.y-23,16*(e.hp/e.max),2);
    }
    if(boss){
-     const pulse=8+Math.sin(elapsed*7)*1.5;
-     x.fillStyle="rgba(255,32,32,.18)";x.beginPath();x.arc(boss.x,boss.y,pulse+4,0,6.28);x.fill();
-     x.fillStyle="#ff2020";x.beginPath();x.arc(boss.x,boss.y,pulse,0,6.28);x.fill();
-     x.fillStyle="#fff";x.fillRect(boss.x-5,boss.y-2,10,2);
+     x.save();
+     const pulse=1+Math.sin(elapsed*6)*.06;
+     const bossShadow=x.createRadialGradient(boss.x,boss.y+9,1,boss.x,boss.y+9,15);
+     bossShadow.addColorStop(0,"rgba(0,0,0,.75)");bossShadow.addColorStop(1,"rgba(0,0,0,0)");
+     x.fillStyle=bossShadow;x.fillRect(boss.x-16,boss.y-3,32,22);
+     x.translate(Math.floor(boss.x-14),Math.floor(boss.y-23));
+     x.globalAlpha=boss.hit>0?.72:1;
+     sprite(x,boss.hit>0?BOSS_HIT:BOSS,0,0,pulse);
+     x.restore();
+     x.strokeStyle="rgba(255,32,32,.7)";x.lineWidth=1;
+     x.beginPath();x.arc(boss.x,boss.y-8,17+Math.sin(elapsed*5)*2,0,6.28);x.stroke();
    }
+   const heroShadow=x.createRadialGradient(px,py+5,1,px,py+5,11);
+   heroShadow.addColorStop(0,"rgba(0,0,0,.72)");heroShadow.addColorStop(1,"rgba(0,0,0,0)");
+   x.fillStyle=heroShadow;x.fillRect(px-12,py,24,12);
    x.save();
    const moving=Math.abs((keys.has("a")||keys.has("d")||keys.has("arrowleft")||keys.has("arrowright")?1:0))+Math.abs((keys.has("w")||keys.has("s")||keys.has("arrowup")||keys.has("arrowdown")?1:0))>0||joy.active;
    const frame=moving?Math.floor(elapsed*9)%3:0;
