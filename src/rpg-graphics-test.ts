@@ -2,8 +2,8 @@ type RpgScreen="menu"|"character"|"level"|"play";
 type RpgState={screen:RpgScreen;level:number;xp:number;hp:number;mana:number;stamina:number;chapter:number;};
 
 const KEY="freezzz:rpg-graphics-test:v2",W=192,H=108;
-const HERO=[".....111111.....","...1122222211...","..122222222221..",".12222222222221.","1222222333222221","1222223333332221",".12222333322221.","..111222222111..","...1144444411...","..114444444411..",".11444444444441.","..114444444441..","...1114444111...","....11....11....","...11......11...","..111......111.."];
-const ENEMY=["....111111....","..1122222211..",".122222222221.","122222233322221","122223333332221",".1222333333221.","..111222222111.","...115555511...","..115555555511..",".11555555555551.","..111555555111..","...11.....11...","..111.....111.."];
+const HERO=["......111111......","....1122222211....","...122222222221...","..12222222222221..",".1222222333222221.","12222223333322221","122222333333332221",".1222233333332221.","..111222222222111..","...114444444411...","..11444444444411..",".114444444444441.","..11444444444441..","...111444444111...","....11..11..11....","...11...11...11...","..111...11...111..","..11....11....11..","...11........11...","....111....111...."];
+const ENEMY=[".....111111.....","...1122222211...","..122222222221..",".122222233322221.","12222223333322221","122222333333332221",".1222233333332221.","..111222222222111..","...115555555511...","..11555555555511..",".115555555555551.","..1115555555111..","...1115555111....","....11....11.....","...111....111....","..1111....1111...","..11........11...","..11........11...","...111....111....","....111..111....."];
 const PAL:Record<string,string>={"1":"#080808","2":"#d89470","3":"#f5f5f5","4":"#ff2020","5":"#9b9b9b","6":"#6e6e6e","7":"#c8c8c8","8":"#3a3a3a","9":"#ff5a5a","a":"#222","b":"#bdbdbd"};
 const HERO_WALK=[...HERO]; HERO_WALK[14]="....11..11..11...."; HERO_WALK[15]="...11...11...11...";
 const HERO_STEP=[...HERO]; HERO_STEP[14]=".....11..11......"; HERO_STEP[15]="....111..111....."; HERO_STEP[16]="...111....111....";
@@ -31,7 +31,7 @@ function esc(v:string){return v.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">
 export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0;
  const keys=new Set<string>(),sparks:Spark[]=[],orbs:Orb[]=[];let enemies:Enemy[]=[];let boss:Enemy|null=null;
- let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false,attackFx=0,skillFx=0,damageFlash=0;
+ let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false,attackFx=0,skillFx=0,skillHit=false,damageFlash=0;
  const joy={x:0,y:0,active:false};let joyPointer=-1;
 
  function resetPlay(){
@@ -77,7 +77,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    const end=()=>{joy.active=false;joy.x=0;joy.y=0;joyPointer=-1;const k=joyEl?.querySelector("i") as HTMLElement|null;if(k)k.style.transform="translate(0,0)"};
    joyEl?.addEventListener("pointerup",end);joyEl?.addEventListener("pointercancel",end);
    host.querySelector("[data-rpg-attack]")?.addEventListener("pointerdown",()=>{if(attack<=0)attack=.22});
-   host.querySelector("[data-rpg-skill]")?.addEventListener("pointerdown",()=>{if(s.mana>=25&&skill<=0){skill=.5;skillFx=.5;s.mana=clamp(s.mana-25,0,100)}});
+   host.querySelector("[data-rpg-skill]")?.addEventListener("pointerdown",()=>{if(s.mana>=25&&skill<=0){skill=.5;skillFx=.5;skillHit=false;s.mana=clamp(s.mana-25,0,100)}});
    host.querySelector("[data-rpg-dash]")?.addEventListener("pointerdown",()=>{if(s.stamina>=20&&dash<=0){dash=.24;s.stamina=clamp(s.stamina-20,0,100)}});
    host.querySelector("[data-rpg-exit]")?.addEventListener("click",buildLevel);
    const keydown=(e:KeyboardEvent)=>{keys.add(e.key.toLowerCase());if(e.key===" "&&attack<=0)attack=.22;if(e.key.toLowerCase()==="q"&&s.mana>=25&&skill<=0){skill=.5;skillFx=.5;s.mana=clamp(s.mana-25,0,100)}if(e.key.toLowerCase()==="shift"&&s.stamina>=20&&dash<=0){dash=.24;s.stamina=clamp(s.stamina-20,0,100)}};
@@ -107,7 +107,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    s.stamina=clamp(s.stamina+18*dt,0,100);s.mana=clamp(s.mana+5*dt,0,100);
    if(dash){dash-=dt;burst(px,py,4)}
    attackFx=Math.max(0,attackFx-dt);damageFlash=Math.max(0,damageFlash-dt);if(attack>0){attack-=dt;if(attack<=.16&&attackFx<=0){attackFx=.22;doHit(26,15)}}
-   if(skill>0){if(skill<=.45&&skillFx>.45){doHit(60,28);skillFx=.45}skill-=dt;skillFx=Math.max(0,skillFx-dt);burst(px,py,7)}
+   if(skill>0){if(!skillHit&&skill<=.45){doHit(60,28);skillHit=true}skill-=dt;skillFx=Math.max(0,skillFx-dt);burst(px,py,7)}
    for(const e of enemies){if(e.hp<=0)continue;e.hit=Math.max(0,e.hit-dt);e.cool-=dt;const d=dist(px,py,e.x,e.y);if(d>10){e.x+=(px-e.x)/Math.max(1,d)*(8+(s.chapter*2))*dt;e.y+=(py-e.y)/Math.max(1,d)*(8+(s.chapter*2))*dt}else if(e.cool<=0){s.hp-=5;e.cool=1.1;flash=.08;damageFlash=.18}}
    enemies=enemies.filter(e=>e.hp>0);
    const need=6+s.chapter*2;
