@@ -6,7 +6,7 @@ import "./multi-window-portal";
 import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
-import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
+import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramAuthResult, type TelegramVerifiedIdentity } from "./platform-bridge";
 import { renderLivePopups, type LivePopupState, type LiveSource } from "./live-runtime";
 import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
 
@@ -65,7 +65,10 @@ let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language")
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
-const telegramAuth=await verifyTelegramSession();
+const telegramAuth=await Promise.race<TelegramAuthResult>([
+  verifyTelegramSession(),
+  new Promise<TelegramAuthResult>(resolve=>window.setTimeout(()=>resolve({ok:false,error:"AUTH_TIMEOUT"}),2500))
+]);
 const verifiedTelegramIdentity:TelegramVerifiedIdentity|undefined=telegramAuth.ok&&telegramAuth.user?telegramAuth.user:undefined;
 if(!localStorage.getItem("freezzz:language")){
   const code=verifiedTelegramIdentity?.languageCode?.toUpperCase()||"";
