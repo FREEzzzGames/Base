@@ -108,8 +108,8 @@ export function segmentRectHit(x0:number,y0:number,x1:number,y1:number,o:HsObsta
   if(!clip(-dx,x0-o.x)||!clip(dx,o.x+o.w-x0)||!clip(-dy,y0-o.y)||!clip(dy,o.y+o.h-y0))return null;
   return t0;
 }
-export function lineOfSight(ax:number,ay:number,bx:number,by:HsObstacle[]){
-  return !by.some(o=>segmentRectHit(ax,ay,bx,by,o)!==null);
+export function lineOfSight(ax:number,ay:number,bx:number,by:number,obstacles:HsObstacle[]){
+  return !obstacles.some(o=>segmentRectHit(ax,ay,bx,by,o)!==null);
 }
 export function traceShot(s:HsShot,dt:number,obstacles:HsObstacle[]){
   const nx=s.x+s.vx*dt,ny=s.y+s.vy*dt;
