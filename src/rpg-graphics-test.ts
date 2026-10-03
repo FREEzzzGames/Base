@@ -1,11 +1,11 @@
-type RpgScreen="menu"|"character";
-type RpgState={screen:RpgScreen;level:number;xp:number;hp:number;mana:number;stamina:number;gold:number;time:number;weather:number;flash:number;shake:number};
+type RpgScreen="menu"|"character"|"level";
+type RpgState={screen:RpgScreen;level:number;xp:number;hp:number;mana:number;stamina:number;gold:number;time:number;weather:number;flash:number;shake:number;chapter:number;};
 
 const KEY="freezzz:rpg-graphics-test:v1",W=192,H=108;
 const HERO=["....1111....","...122221...","..12222221..","..12333321..","..12333321..","...111111...","..11444411..",".1144444411.",".1144444411.","...114411...","...11..11...","..11....11.."];
 const KNIGHT=["....1111....","...155551...","..15555551..","..15666651..","..15666651..","...111111...","..11777711..",".1177777711.",".1177777711.","...117711...","...11..11...","..11....11.."];
 const PAL:Record<string,string>={"1":"#10131b","2":"#e8b18a","3":"#d7dce7","4":"#3d6cff","5":"#d7dce7","6":"#ffcc72","7":"#722d48"};
-function defaults():RpgState{return{screen:"menu",level:18,xp:72,hp:91,mana:68,stamina:84,gold:1240,time:.22,weather:.18,flash:0,shake:0}}
+function defaults():RpgState{return{screen:"menu",level:18,xp:72,hp:91,mana:68,stamina:84,gold:1240,time:.22,weather:.18,flash:0,shake:0,chapter:1}}
 function load():RpgState{try{const p=JSON.parse(localStorage.getItem(KEY)||"");return p&&typeof p==="object"?{...defaults(),...p}:defaults()}catch{return defaults()}}
 function save(s:RpgState){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}}
 function sprite(c:CanvasRenderingContext2D,m:string[],x:number,y:number,z:number){for(let r=0;r<m.length;r++)for(let q=0;q<m[r].length;q++){const k=m[r][q];if(k!=="."){c.fillStyle=PAL[k]||"#fff";c.fillRect(x+q*z,y+r*z,z,z)}}}
@@ -20,11 +20,23 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
       '<section class="rpgx" data-rpg-screen="menu"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="',W,'" height="',H,'"></canvas>',
       '<div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / LV ',s.level,'</span><span class="rpgx-badge rpgx-clock">00:00</span></div>',
       '<div class="rpgx-menu"><div class="rpgx-logo"><small>FREEzzz GRAPHICS LAB</small><strong>NEON<br>CHRONICLES</strong><i>TELEGRAM MINI APP · GRAPHICS TEST</i></div>',
-      '<button class="rpgx-btn primary" data-rpg-start>ENTER THE WORLD</button><button class="rpgx-btn" data-rpg-character>CHARACTER</button>',
+      '<button class="rpgx-btn primary" data-rpg-level>ENTER CHAPTER</button><button class="rpgx-btn" data-rpg-character>CHARACTER</button>',
       '<div class="rpgx-menu-meta"><span>PARALLAX</span><span>DYNAMIC LIGHT</span><span>PIXEL VFX</span></div></div></div></section>'
     ].join("");
-    host.querySelector("[data-rpg-start]")?.addEventListener("click",()=>{s.flash=1;s.shake=.7;for(let i=0;i<12;i++){const a=Math.random()*6.28,v=10+Math.random()*20;sparks.push({x:103,y:69,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1})}save(s)});
+    host.querySelector("[data-rpg-level]")?.addEventListener("click",()=>{s.flash=1;s.shake=.7;for(let i=0;i<12;i++){const a=Math.random()*6.28,v=10+Math.random()*20;sparks.push({x:103,y:69,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1})}save(s)});
     host.querySelector("[data-rpg-character]")?.addEventListener("click",buildCharacter);
+  }
+  function buildLevel(){
+    const levels=[
+      ["01 · GHOST DISTRICT","NEON RAIN","THE WARDEN","ARIA enters a flooded megacity sector where a corporation has begun erasing citizens from reality.","Recover the stolen identity shard and escape the surveillance grid."],
+      ["02 · BLACK CIRCUIT","UNDERCITY","NULL JACKAL","The shard reveals a hidden AI rebellion beneath the city.","Break the quantum firewall and decide whether the AI becomes an ally."],
+      ["03 · NEON ASCENSION","SKYLINE CORE","ARCHON ZERO","The corporation launches a city-wide reset. Aria reaches the orbital core.","Defeat Archon Zero and broadcast the truth to every citizen."]
+    ];
+    const l=levels[Math.max(0,Math.min(2,s.chapter-1))];
+    host.innerHTML='<section class="rpgx-character rpgx-level-screen"><header class="rpgx-char-head"><button class="rpgx-icon" data-rpg-back>←</button><div><small>CHAPTER '+l[0]+'</small><strong>'+l[1]+' / '+l[2]+'</strong></div><span>LV '+s.level+'</span></header><div class="rpgx-level-art"><div class="rpgx-comic-tag">ISSUE #0'+s.chapter+'</div><h2>'+l[1]+'</h2><p>'+l[3]+'</p><div class="rpgx-objective"><small>MISSION OBJECTIVE</small><b>'+l[4]+'</b></div><div class="rpgx-comic-panels"><div><b>01</b><span>SCAN</span></div><div><b>02</b><span>INFILTRATE</span></div><div><b>03</b><span>CONFRONT</span></div></div><button class="rpgx-action" data-rpg-next>BEGIN CHAPTER</button><button class="rpgx-action" data-rpg-comic>COMIC PREVIEW</button></div></section>';
+    host.querySelector("[data-rpg-back]")?.addEventListener("click",buildMenu);
+    host.querySelector("[data-rpg-next]")?.addEventListener("click",()=>{s.xp=Math.min(100,s.xp+12);s.chapter=s.chapter>=3?1:s.chapter+1;s.level+=1;save(s);buildLevel()});
+    host.querySelector("[data-rpg-comic]")?.addEventListener("click",()=>{s.flash=1;s.shake=.5});
   }
   function buildCharacter(){
     s.screen="character";
