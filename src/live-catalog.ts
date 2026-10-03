@@ -73,7 +73,7 @@ export function bindLiveCatalog():void{
     const form=root.querySelector<HTMLFormElement>("#live-add-form");if(form)form.hidden=!form.hidden;
   });
   root.querySelector<HTMLFormElement>("#live-add-form")?.addEventListener("submit",e=>{
-    e.preventDefault();const data=new FormData(e.currentTarget);
+    e.preventDefault();const form=e.currentTarget as HTMLFormElement;const data=new FormData(form);
     if(addLiveStreamer({name:String(data.get("name")||""),youtube:String(data.get("youtube")||""),twitch:String(data.get("twitch")||""),replay:String(data.get("replay")||"")}))window.dispatchEvent(new CustomEvent("freezzz:live-catalog-changed"));
   });
 }
