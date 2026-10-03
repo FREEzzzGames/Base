@@ -131,7 +131,7 @@ function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
 }
 
 function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;const key=name+"::"+source;if(livePopups.some(p=>p.name===name&&p.source===source))return;if(livePopups.length>=4)livePopups=livePopups.slice(1);livePopups=[...livePopups,{key,name,source}];beginLiveActivity(name);portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});render();}
-function closeLivePopup(key?:string):void{const popup=key?livePopups.find(p=>p.key===key):livePopups.at(-1);if(!popup)return;livePopups=livePopups.filter(p=>p.key!==popup.key);if(!livePopups.some(p=>p.name===popup.name))endLiveActivity(popup.name);portalEvents.emit("live:popup",{open:Boolean(livePopups.length),source:popup.source==="replay"?"youtube":popup.source});render();}
+function closeLivePopup(key?:string):void{const popup=key?livePopups.find(p=>p.key===key):livePopups[livePopups.length-1];if(!popup)return;livePopups=livePopups.filter(p=>p.key!==popup.key);if(!livePopups.some(p=>p.name===popup.name))endLiveActivity(popup.name);portalEvents.emit("live:popup",{open:Boolean(livePopups.length),source:popup.source==="replay"?"youtube":popup.source});render();}
 function flushActivityTracking(){
   const now=Date.now();
   const elapsed=Math.max(0,(now-activityLastFlushAt)/1000);
@@ -143,7 +143,7 @@ function flushActivityTracking(){
 function beginGameActivity(){if(gameActivityStartedAt!==null)return;gameActivityStartedAt=Date.now();recordGameLaunch(portalProfile);}
 function endGameActivity(){if(gameActivityStartedAt===null)return;flushActivityTracking();gameActivityStartedAt=null;}
 function beginLiveActivity(name:string){if(liveActivityNames.has(name))return;if(liveActivityStartedAt===null)liveActivityStartedAt=Date.now();liveActivityNames.add(name);recordLiveVisit(portalProfile,name);}
-function endLiveActivity(name?:string){if(name)liveActivityNames.delete(name);else liveActivityNames.clear();if(!liveActivityNames.size&&liveActivityStartedAt!==null){flushActivityTracking();liveActivityStartedAt=null;}}
+function endLiveActivity(name?:string){if(liveActivityStartedAt===null)return;if(name)liveActivityNames.delete(name);else liveActivityNames.clear();if(!liveActivityNames.size){flushActivityTracking();liveActivityStartedAt=null;}}
 function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
 function endRadioActivity(){if(radioActivityStartedAt===null)return;flushActivityTracking();radioActivityStartedAt=null;radioActivityName="";}
 function profileInitial(){return (portalProfile.identity.firstName||portalProfile.identity.username||"F").slice(0,1).toUpperCase();}
