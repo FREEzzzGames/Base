@@ -5499,3 +5499,10 @@ a{
 .portal-workspace.portal-hud-hidden > .portal-hud-toggle{
   transform:translateX(-50%)!important;
 }
+/* NICKNAME — one identity across HERO and PROFILE */
+.home-portal > .home-hero h1.home-hero-profile-trigger,
+.profile-card .profile-identity h2{
+  color:#ff2020!important;
+  font-family:var(--portal-font-body)!important;
+}
+
