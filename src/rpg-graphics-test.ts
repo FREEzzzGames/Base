@@ -95,12 +95,12 @@ function clamp(n:number,a=0,b=1){return Math.max(a,Math.min(b,n));}
 
 export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
   let s=load();
-  host.innerHTML=\`
+  host.innerHTML=`
     <section class="rpgx" data-rpg-screen="menu">
       <div class="rpgx-stage">
-        <canvas class="rpgx-canvas" width="\${W}" height="\${H}" aria-label="RPG graphics test"></canvas>
+        <canvas class="rpgx-canvas" width="${W}" height="${H}" aria-label="RPG graphics test"></canvas>
         <div class="rpgx-hud">
-          <span class="rpgx-badge">PIXEL RPG / \${s.level}</span>
+          <span class="rpgx-badge">PIXEL RPG / ${s.level}</span>
           <span class="rpgx-badge rpgx-clock">00:00</span>
         </div>
         <div class="rpgx-menu">
@@ -110,7 +110,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
           <div class="rpgx-menu-meta"><span>ULTRA PIXEL</span><span>60 FPS TARGET</span><span>AUTO SAVE</span></div>
         </div>
       </div>
-    </section>\`;
+    </section>`;
   const root=host.querySelector<HTMLElement>(".rpgx")!;
   const canvas=root.querySelector<HTMLCanvasElement>("canvas")!;
   const ctx=canvas.getContext("2d",{alpha:false})!;
@@ -137,11 +137,11 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
     if(s.shake)ctx.translate((Math.random()-.5)*s.shake*3,(Math.random()-.5)*s.shake*3);
     // deep parallax sky
     const grad=ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,\`hsl(228 46% \${9+night*9}%)\`);
-    grad.addColorStop(.58,\`hsl(248 34% \${7+night*6}%)\`);
+    grad.addColorStop(0,`hsl(228 46% ${9+night*9}%)`);
+    grad.addColorStop(.58,`hsl(248 34% ${7+night*6}%)`);
     grad.addColorStop(1,"#030406");ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
     // stars
-    for(let i=0;i<42;i++){const x=(i*71+elapsed*(2+i%3))%W,y=(i*31)%55;ctx.fillStyle=\`rgba(255,255,255,\${.25+(i%4)*.12})\`;ctx.fillRect(x,y,1,i%7===0?2:1);}
+    for(let i=0;i<42;i++){const x=(i*71+elapsed*(2+i%3))%W,y=(i*31)%55;ctx.fillStyle=`rgba(255,255,255,${.25+(i%4)*.12})`;ctx.fillRect(x,y,1,i%7===0?2:1);}
     // moon
     glow(ctx,154,20,24,"rgba(120,160,255,ALPHA)",.16);ctx.fillStyle="#dbe7ff";ctx.beginPath();ctx.arc(154,20,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0a0d19";ctx.beginPath();ctx.arc(157,18,7,0,Math.PI*2);ctx.fill();
     // mountains
@@ -167,17 +167,17 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
     // rain
     if(s.weather>.08){rain.forEach(p=>{p.y=(p.y+p.v*dt)%H;ctx.strokeStyle="rgba(130,180,255,.16)";ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-1,p.y+4);ctx.stroke()})}
     // sparks
-    sparks.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=18*dt;p.life-=dt*1.8;ctx.fillStyle=\`rgba(255,190,92,\${Math.max(0,p.life)})\`;ctx.fillRect(p.x,p.y,1,1)});
+    sparks.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=18*dt;p.life-=dt*1.8;ctx.fillStyle=`rgba(255,190,92,${Math.max(0,p.life)})`;ctx.fillRect(p.x,p.y,1,1)});
     while(sparks.length&&sparks[0].life<=0)sparks.shift();
     ctx.restore();
-    if(s.flash){ctx.fillStyle=\`rgba(255,40,80,\${s.flash*.18})\`;ctx.fillRect(0,0,W,H);}
-    root.querySelector<HTMLElement>(".rpgx-clock")!.textContent=\`LV \${s.level} · \${String(Math.floor(elapsed)).padStart(2,"0")}s\`;
+    if(s.flash){ctx.fillStyle=`rgba(255,40,80,${s.flash*.18})`;ctx.fillRect(0,0,W,H);}
+    root.querySelector<HTMLElement>(".rpgx-clock")!.textContent=`LV ${s.level} · ${String(Math.floor(elapsed)).padStart(2,"0")}s`;
   }
   function character(){
     root.dataset.rpgScreen="character";
-    root.innerHTML=\`
+    root.innerHTML=`
       <div class="rpgx-character">
-        <header class="rpgx-char-head"><button class="rpgx-icon" data-rpg-back>←</button><div><small>CHARACTER</small><strong>ARIA / VOIDWALKER</strong></div><span>LV \${s.level}</span></header>
+        <header class="rpgx-char-head"><button class="rpgx-icon" data-rpg-back>←</button><div><small>CHARACTER</small><strong>ARIA / VOIDWALKER</strong></div><span>LV ${s.level}</span></header>
         <div class="rpgx-char-grid">
           <section class="rpgx-portrait">
             <canvas class="rpgx-char-canvas" width="96" height="128"></canvas>
@@ -185,9 +185,9 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
             <div class="rpgx-equip e2">CORE<br><b>VOID HEART</b></div>
           </section>
           <section class="rpgx-stats">
-            <div class="rpgx-xp"><span>XP</span><b>\${s.xp}%</b><i><em style="width:\${s.xp}%"></em></i></div>
-            \${[["HP",s.hp,"#ff4668"],["MANA",s.mana,"#8b7dff"],["STAMINA",s.stamina,"#35e0c0"]].map(a=>\`<div class="rpgx-meter"><label>\${a[0]}<b>\${a[1]}</b></label><i><em style="width:\${a[1]}%;background:\${a[2]}"></em></i></div>\`).join("")}
-            <div class="rpgx-stat-grid">\${[["STR","24"],["AGI","31"],["INT","28"],["VIT","19"],["LUCK","17"],["CRIT","12%"]].map(a=>\`<div><small>\${a[0]}</small><b>\${a[1]}</b></div>\`).join("")}</div>
+            <div class="rpgx-xp"><span>XP</span><b>${s.xp}%</b><i><em style="width:${s.xp}%"></em></i></div>
+            ${[["HP",s.hp,"#ff4668"],["MANA",s.mana,"#8b7dff"],["STAMINA",s.stamina,"#35e0c0"]].map(a=>`<div class="rpgx-meter"><label>${a[0]}<b>${a[1]}</b></label><i><em style="width:${a[1]}%;background:${a[2]}"></em></i></div>`).join("")}
+            <div class="rpgx-stat-grid">${[["STR","24"],["AGI","31"],["INT","28"],["VIT","19"],["LUCK","17"],["CRIT","12%"]].map(a=>`<div><small>${a[0]}</small><b>${a[1]}</b></div>`).join("")}</div>
           </section>
         </div>
         <div class="rpgx-tabs"><button class="active">EQUIPMENT</button><button>ABILITIES</button><button>INVENTORY</button></div>
@@ -198,7 +198,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
           <div class="rpgx-item">✧<span>NEON SIGIL</span><small>MYTHIC · +6 CRIT</small></div>
         </div>
         <button class="rpgx-action" data-rpg-pulse>TRIGGER COMBAT VFX</button>
-      </div>\`;
+      </div>`;
     const c=root.querySelector<HTMLCanvasElement>(".rpgx-char-canvas")!,x=c.getContext("2d")!;x.imageSmoothingEnabled=false;x.fillStyle="#080b13";x.fillRect(0,0,96,128);
     for(let i=0;i<18;i++){x.fillStyle=i%2?"#131a2a":"#0d1220";x.fillRect(i*6,0,2,128);}
     glow(x,48,54,42,"rgba(53,224,192,ALPHA)",.12);pixelSprite(x,spriteKnight,35,30,4);
@@ -207,17 +207,17 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
   }
   function menu(){
     root.dataset.rpgScreen="menu";
-    root.innerHTML=\`
+    root.innerHTML=`
       <div class="rpgx-stage">
-        <canvas class="rpgx-canvas" width="\${W}" height="\${H}"></canvas>
-        <div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / \${s.level}</span><span class="rpgx-badge rpgx-clock">LV \${s.level}</span></div>
+        <canvas class="rpgx-canvas" width="${W}" height="${H}"></canvas>
+        <div class="rpgx-hud"><span class="rpgx-badge">PIXEL RPG / ${s.level}</span><span class="rpgx-badge rpgx-clock">LV ${s.level}</span></div>
         <div class="rpgx-menu">
           <div class="rpgx-logo"><small>FREEzzz GRAPHICS LAB</small><strong>NEON<br>CHRONICLES</strong><i>TELEGRAM MINI APP TEST</i></div>
           <button class="rpgx-btn primary" data-rpg-start>ENTER THE WORLD</button>
           <button class="rpgx-btn" data-rpg-character>CHARACTER</button>
           <div class="rpgx-menu-meta"><span>PARALLAX</span><span>VFX</span><span>PIXEL ART</span></div>
         </div>
-      </div>\`;
+      </div>`;
     bindMenu();
   }
   function bindMenu(){
