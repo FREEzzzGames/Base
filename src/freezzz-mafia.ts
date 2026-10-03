@@ -506,18 +506,27 @@ function drawSelect(){
    const x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
    rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
    rect(x,y,cardW,4,a?h.color:"#263137");
+
+   // Фиксированные непересекающиеся зоны карточки:
+   // 1 — семья, 2 — имя, 3 — аватар, 4 — описание, 5 — способность.
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
-   const artScale=Math.max(.9,Math.min(1.45,cardW/235));
-   const spin=performance.now()/1000*.72+i*0.8;
+
+   const avatarZoneY=y+cardH*.47;
+   const artScale=Math.max(.82,Math.min(1.28,cardW/255));
+   const spin=performance.now()/1000*.72+i*.8;
    const spinX=Math.max(.14,Math.abs(Math.cos(spin)));
    c.save();
-   c.translate(x+cardW/2,y+cardH*.69);
+   c.beginPath();
+   c.rect(x+8,y+56,cardW-16,cardH*.48);
+   c.clip();
+   c.translate(x+cardW/2,avatarZoneY);
    c.scale(spinX,1);
    drawMafiaMember({face:h.face,tie:h.color},0,0,frame+i*4,artScale);
    c.restore();
-   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.012,9,14),h.color,"center");
-   tx(h.ability,x+cardW/2,y+cardH*.90,menuTextSize(.011,8,12),"#7e898d","center");
+
+   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.011,8,13),h.color,"center");
+   tx(h.ability,x+cardW/2,y+cardH*.92,menuTextSize(.010,8,12),"#aab1b4","center");
  });
 }
 function drawLevels(){
