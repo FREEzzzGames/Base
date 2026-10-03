@@ -475,9 +475,11 @@ function bindHudTouchGesture(){
     const dx=e.clientX-startX,dy=e.clientY-startY;
     if(Math.abs(dx)>Math.abs(dy)+8)return;
     if(!hudHidden&&startY>=window.innerHeight-72&&dy>44){
-      triggered=true;hudHidden=true;document.querySelector<HTMLElement>(".portal-workspace")?.classList.add("portal-hud-hidden");
+      triggered=true;
+      setHudHidden(true);
     }else if(hudHidden&&startY>=window.innerHeight-28&&dy<-44){
-      triggered=true;hudHidden=false;document.querySelector<HTMLElement>(".portal-workspace")?.classList.remove("portal-hud-hidden");
+      triggered=true;
+      setHudHidden(false);
     }
   },{passive:true});
   const end=()=>{tracking=false;};
@@ -490,22 +492,16 @@ function updateHomeClock(){
   if(!clock)return;
   clock.textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
-function toggleHud(){
-  hudHidden=!hudHidden;
+function setHudHidden(hidden:boolean){
+  hudHidden=hidden;
   if(hudHidden&&view!=="home"){
     portalEvents.emit("navigation:changed",{view:"home"});
     return;
   }
   document.querySelector<HTMLElement>(".portal-workspace")?.classList.toggle("portal-hud-hidden",hudHidden);
-  const button=document.querySelector<HTMLButtonElement>("[data-hud-toggle]");
-  if(button){
-    button.setAttribute("aria-pressed",String(hudHidden));
-    const label=hudHidden?"Показать нижний бар":"Скрыть нижний бар";
-    button.setAttribute("aria-label",label);
-    button.title=label;
-    const arrow=button.querySelector<HTMLElement>(".portal-hud-toggle-icon");
-    if(arrow)arrow.outerHTML=icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon");
-  }
+}
+function toggleHud(){
+  setHudHidden(!hudHidden);
 }
 function bind(){
   if(view==="radio"){
