@@ -108,6 +108,9 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  }
  function buildPlay(){
    host.innerHTML='<section class="rpgx rpgx-play rpgx-quality-'+quality.name+'"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-play-hud"><div><b id="rpg-chapter">CHAPTER 01</b><span id="rpg-objective">DRONES 0/8</span></div><div class="rpgx-bars"><i><em id="rpg-hp"></em></i><i><em id="rpg-mana"></em></i></div></div><div class="rpgx-bossbar" id="rpg-bossbar" hidden><b id="rpg-boss-name"></b><i><em id="rpg-boss-hp"></em></i></div><div class="rpgx-touch"><div class="rpgx-joystick" data-rpg-joy><i></i></div><div class="rpgx-actions"><button data-rpg-attack>ATK</button><button data-rpg-skill>SKILL</button><button data-rpg-dash>DASH</button></div></div><div class="rpgx-play-top"><button data-rpg-exit>EXIT</button></div></div></section>';
+   activeCanvas=host.querySelector<HTMLCanvasElement>(".rpgx-canvas");
+   activeContext=activeCanvas?.getContext("2d",{alpha:false})||null;
+   if(activeContext)activeContext.imageSmoothingEnabled=false;
    bindPlay();
  }
  function bindPlay(){
