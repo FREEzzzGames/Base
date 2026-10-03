@@ -309,7 +309,7 @@ function completeMission(){
  save.rank=rank();
  const h=selected;
  if(h){const next=missionIndexForHero(h);setResumeMission(next,0);}
- dialogueIndex=0;dialogueOpen=true;storeSave();
+ dialogueIndex=0;dialogueOpen=true;storeSave();render();
 }
 function nextMission(){
  const h=selected!;missionIndex=missionIndexForHero(h);
@@ -464,9 +464,9 @@ function bindButtons(){
  root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;render();});
  root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{
    const a=el.dataset.action;
-   if(a==="play"&&selected)beginSelected();
+   if(a==="play"&&selected){beginSelected();render();}
    if(a==="exit")exitToPortal();
-   if(a==="advance")advanceDialogue();
+   if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="shop";render();}
  });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
