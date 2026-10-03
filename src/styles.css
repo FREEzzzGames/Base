@@ -5066,3 +5066,30 @@ main{
   z-index:1200!important;
 }
 
+/* TOOLBAR — force DOM order; neutralize every legacy nth-child placement rule. */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(1),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(2),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(3),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(4),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(5),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(6),
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > :nth-child(7){
+  grid-column:auto!important;
+  grid-row:1!important;
+  order:initial!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
+  position:relative!important;
+  z-index:1200!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu{
+  position:absolute!important;
+  top:auto!important;
+  bottom:calc(100% + 6px)!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:1300!important;
+  margin:0!important;
+}
+
