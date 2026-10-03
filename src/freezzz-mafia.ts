@@ -1,4 +1,4 @@
-/* FREEzzz MAFIA — campaign game module
+/* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
  * without rewriting the renderer.
  */
@@ -18,17 +18,17 @@ interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number
 
 const W=640,H=448;
 const heroes:Record<HeroId,Hero>={
- antonio:{id:"antonio",name:"ANTONIO",family:"valenti",color:"#54d6d8",face:"#9a6554",ability:"TACTIC",abilityDesc:"Reveals enemies and objective points briefly.",bio:"Calm, observant and always looking for the pattern."},
- massimo:{id:"massimo",name:"MASSIMO",family:"moretti",color:"#c58b48",face:"#b97859",ability:"RUSH",abilityDesc:"A short burst of speed with extra jump control.",bio:"Direct, bold and never interested in wasting time."},
- salvatore:{id:"salvatore",name:"SALVATORE",family:"rossi",color:"#d86c35",face:"#784d42",ability:"FOCUS",abilityDesc:"Temporarily tightens shot spread and slows aim.",bio:"Quiet, suspicious and very hard to surprise."},
- giuseppe:{id:"giuseppe",name:"GIUSEPPE",family:"bellini",color:"#9f83d6",face:"#a86d56",ability:"ROUTE",abilityDesc:"Reveals the safest route through the current floor.",bio:"Patient, technical and always thinking about the route."}
+ antonio:{id:"antonio",name:"ANTONIO",family:"valenti",color:"#54d6d8",face:"#9a6554",ability:"ТАКТИКА",abilityDesc:"Ненадолго показывает противников и цели.",bio:"Спокойный, наблюдательный и всегда ищет закономерность."},
+ massimo:{id:"massimo",name:"MASSIMO",family:"moretti",color:"#c58b48",face:"#b97859",ability:"РЫВОК",abilityDesc:"Короткое ускорение с дополнительным контролем прыжка.",bio:"Прямой, смелый и не любит терять время."},
+ salvatore:{id:"salvatore",name:"SALVATORE",family:"rossi",color:"#d86c35",face:"#784d42",ability:"ФОКУС",abilityDesc:"Ненадолго уменьшает разброс и замедляет прицеливание.",bio:"Тихий, осторожный и его трудно застать врасплох."},
+ giuseppe:{id:"giuseppe",name:"GIUSEPPE",family:"bellini",color:"#9f83d6",face:"#a86d56",ability:"МАРШРУТ",abilityDesc:"Показывает безопасный путь через текущий этаж.",bio:"Спокойный, технически мыслящий и всегда думает о маршруте."}
 };
 
 const familyText:Record<FamilyId,{desc:string;intro:string}> = {
- valenti:{desc:"Financial crime and influence.",intro:"Valenti survives by reading numbers, people and pressure points."},
- moretti:{desc:"Street crime and protection.",intro:"Moretti controls its territory through presence, speed and loyalty."},
- rossi:{desc:"Distribution network.",intro:"Rossi knows that every missing piece leaves a trail."},
- bellini:{desc:"Smuggling and logistics.",intro:"Bellini understands routes, doors and the spaces between them."}
+ valenti:{desc:"Финансы и влияние.",intro:"Валенти выживает, читая цифры, людей и точки давления."},
+ moretti:{desc:"Улица и контроль территории.",intro:"Моретти держит территорию за счёт силы, скорости и верности."},
+ rossi:{desc:"Сеть поставок.",intro:"Росси знает: каждая пропажа оставляет след."},
+ bellini:{desc:"Перевозки и логистика.",intro:"Беллини знает маршруты, двери и всё, что находится между ними."}
 };
 
 const D=(speaker:string,text:string):Dialogue=>({speaker,text});
@@ -38,40 +38,40 @@ const personal:Mission[]=[
  M("valenti_01",1,"antonio","FIRST ACCOUNT","Первый счёт","A missing folder is the first sign that someone arrived before Antonio.","find",["OFFICE","UPPER OFFICE","ESCAPE"],["guard","brawler"],250,100,[D("ANTONIO","Первое правило — сначала смотреть, потом действовать."),D("CONTACT","Папка должна быть в офисе."),D("ANTONIO","Должна? Это уже звучит интересно."),D("ANTONIO","Кто-то был здесь до меня.")],"Find the hidden note."),
  M("valenti_02",2,"antonio","OTHER PEOPLE'S NUMBERS","Чужие счета","Three documents reveal the same unexplained signature.","recover",["FRONT OFFICE","RECORD ROOM","ROOFTOP"],["shooter","guard","rusher"],320,130,[D("ANTONIO","Цифры редко ошибаются."),D("ACCOUNTANT","Я проверял дважды."),D("ANTONIO","Тогда кто-то проверил их за тебя."),D("ANTONIO","Три места. Один и тот же почерк.")],"Recover 3 documents."),
  M("valenti_03",3,"antonio","THE NEW MAN","Новый человек","Antonio escorts a senior family contact through a building that suddenly becomes unsafe.","escort",["LOBBY","STAIRS","SAFE ROOM"],["brawler","shooter","flanker"],380,160,[D("SENIOR","Сегодня ты просто идёшь рядом."),D("ANTONIO","А завтра?"),D("SENIOR","Завтра зависит от того, что ты увидишь сегодня."),D("ANTONIO","Теперь я понимаю, зачем меня взяли.")]),
- M("valenti_04",4,"antonio","PRESSURE POINT","Точка давления","Competitors push into a family location. Antonio has to reclaim the route.","clear",["STREET","WORKSHOP","UPPER FLOOR"],["rusher","shooter","heavy"],450,190,[D("CONTACT","Они хотят, чтобы мы ушли."),D("ANTONIO","Тогда они выбрали неправильную дверь."),D("ANTONIO","Это была не атака. Это была проверка.")]),
- M("valenti_05",5,"antonio","THE DEBT","Долг","An old contact asks for help and leaves Antonio with one unanswered question.","defend",["SHOP","BACK ROOM","ROOFTOP"],["guard","brawler","suppressor"],500,220,[D("OLD CONTACT","Я помню, кто однажды помог мне."),D("ANTONIO","Тогда сегодня пришло время вспомнить."),D("ANTONIO","Он ничего не должен нам."),D("ANTONIO","Но теперь я должен ему один ответ.")]),
+ M("valenti_04",4,"antonio","PRESSURE POINT","Точка давления","Competitors push into a family location. Antonio has to reclaim the route.","clear",["STREET","WORKМАГАЗИН","UPPER FLOOR"],["rusher","shooter","heavy"],450,190,[D("CONTACT","Они хотят, чтобы мы ушли."),D("ANTONIO","Тогда они выбрали неправильную дверь."),D("ANTONIO","Это была не атака. Это была проверка.")]),
+ M("valenti_05",5,"antonio","THE DEBT","Долг","An old contact asks for help and leaves Antonio with one unanswered question.","defend",["МАГАЗИН","НАЗАД ROOM","ROOFTOP"],["guard","brawler","suppressor"],500,220,[D("OLD CONTACT","Я помню, кто однажды помог мне."),D("ANTONIO","Тогда сегодня пришло время вспомнить."),D("ANTONIO","Он ничего не должен нам."),D("ANTONIO","Но теперь я должен ему один ответ.")]),
  M("valenti_06",6,"antonio","SOMEONE ELSE'S GAME","Чужая игра","Several unrelated problems carry the same hidden mark.","find",["WAREHOUSE","RECORDS","CONTROL ROOM"],["shooter","flanker","sniper"],560,250,[D("ANTONIO","Слишком много совпадений."),D("CONTACT","Ты думаешь, это связано?"),D("ANTONIO","Совпадений стало слишком много."),D("ANTONIO","Кто-то двигает фигуры.")]),
  M("valenti_07",7,"antonio","CLOSED DOOR","Закрытая дверь","A key location is locked. The real challenge is finding another route.","reach",["LOCKED FLOOR","SERVICE LEVEL","ROOF ACCESS"],["guard","heavy","rusher"],620,280,[D("GUARD","Дверь закрыта."),D("ANTONIO","Я заметил."),D("GUARD","И что теперь?"),D("ANTONIO","Теперь найдём другую дверь.")]),
  M("valenti_08",8,"antonio","THE TRACE","След","Antonio follows the evidence without waiting for permission.","recover",["ALLEY","ARCHIVE","HIDDEN ROOM"],["flanker","shooter","sniper"],700,310,[D("ANTONIO","Теперь я играю по своим правилам."),D("ANTONIO","Вот он."),D("ANTONIO","Имя знакомое.")],"Recover every trace."),
  M("valenti_09",9,"antonio","THE RED FILE","Красная папка","A red file connects money, routes and all four families.","find",["OFFICE","SECURE ARCHIVE","ROOFTOP"],["guard","suppressor","heavy"],800,350,[D("ANTONIO","Красная папка. Значит, кто-то хотел, чтобы её заметили."),D("CONTACT","Что внутри?"),D("ANTONIO","Имена. Маршруты. Деньги."),D("ANTONIO","И четыре семьи.")]),
  M("valenti_10",10,"antonio","WRONG ENEMY","Не тот враг","Antonio learns that the other families have been pushed by the same hidden hand.","clear",["VALENTI OFFICE","CROSSING","MEETING FLOOR"],["shooter","rusher","flanker","heavy"],950,450,[D("ANTONIO","Мы всё это время смотрели не туда."),D("CONTACT","На кого?"),D("ANTONIO","На друг друга."),D("ANTONIO","Пора поговорить с остальными.")]),
  M("moretti_01",1,"massimo","MY BLOCK","Мой район","Massimo receives his first territory assignment.","clear",["STREET","BLOCK","ROOFTOP"],["brawler","rusher"],250,100,[D("MASSIMO","Это мой район."),D("CONTACT","Пока что."),D("MASSIMO","Мне нравится это слово — пока.")]),
- M("moretti_02",2,"massimo","NEW RULES","Новые правила","Massimo proves he can handle a job without being led.","reach",["BACK STREET","GARAGE","UPPER FLOOR"],["rusher","shooter","guard"],320,130,[D("MASSIMO","Я не пришёл спрашивать разрешения."),D("CONTACT","А зачем пришёл?"),D("MASSIMO","Закончить разговор.")]),
+ M("moretti_02",2,"massimo","NEW RULES","Новые правила","Massimo proves he can handle a job without being led.","reach",["НАЗАД STREET","GARAGE","UPPER FLOOR"],["rusher","shooter","guard"],320,130,[D("MASSIMO","Я не пришёл спрашивать разрешения."),D("CONTACT","А зачем пришёл?"),D("MASSIMO","Закончить разговор.")]),
  M("moretti_03",3,"massimo","UNINVITED GUESTS","Незваные гости","An unknown group appears inside Moretti territory.","clear",["ENTRANCE","STORAGE","ROOFTOP"],["brawler","shooter","flanker"],380,160,[D("MASSIMO","Я вас не приглашал."),D("UNKNOWN","Нам приглашение не нужно."),D("MASSIMO","Плохой ответ.")]),
- M("moretti_04",4,"massimo","PRESSURE","Давление","Several locations come under pressure at once.","survive",["BLOCK","WORKSHOP","STREET"],["rusher","shooter","suppressor"],450,190,[D("CONTACT","Их слишком много."),D("MASSIMO","Тогда будем двигаться быстрее."),D("MASSIMO","Они хотели заставить нас нервничать. Не получилось.")]),
- M("moretti_05",5,"massimo","OLD FRIEND","Старый друг","An old acquaintance is suddenly on the other side.","clear",["BAR","BACK ROOM","ALLEY"],["guard","brawler","heavy"],500,220,[D("MASSIMO","Я тебя помню."),D("OLD FRIEND","А я надеялся, что забудешь."),D("MASSIMO","Не сегодня.")]),
+ M("moretti_04",4,"massimo","PRESSURE","Давление","Several locations come under pressure at once.","survive",["BLOCK","WORKМАГАЗИН","STREET"],["rusher","shooter","suppressor"],450,190,[D("CONTACT","Их слишком много."),D("MASSIMO","Тогда будем двигаться быстрее."),D("MASSIMO","Они хотели заставить нас нервничать. Не получилось.")]),
+ M("moretti_05",5,"massimo","OLD FRIEND","Старый друг","An old acquaintance is suddenly on the other side.","clear",["BAR","НАЗАД ROOM","ALLEY"],["guard","brawler","heavy"],500,220,[D("MASSIMO","Я тебя помню."),D("OLD FRIEND","А я надеялся, что забудешь."),D("MASSIMO","Не сегодня.")]),
  M("moretti_06",6,"massimo","TERRITORY","Территория","A section of the district has been taken. Massimo wants it back.","clear",["DISTRICT","SERVICE FLOOR","ROOFTOP"],["heavy","rusher","shooter"],560,250,[D("MASSIMO","Они забрали наш район."),D("CONTACT","Что будем делать?"),D("MASSIMO","Возвращать.")]),
  M("moretti_07",7,"massimo","AFTER MIDNIGHT","После полуночи","The opposition moves with unusual coordination.","survive",["NIGHT STREET","WAREHOUSE","UPPER LEVEL"],["flanker","suppressor","sniper"],620,280,[D("MASSIMO","Они не разбегаются."),D("CONTACT","Что?"),D("MASSIMO","Каждый знает, куда идти.")]),
  M("moretti_08",8,"massimo","STRANGERS","Чужие люди","Evidence points beyond Moretti territory.","reach",["STREET","CROSSING","ARCHIVE"],["shooter","flanker","guard"],700,310,[D("MASSIMO","Это уже не наша история."),D("CONTACT","Тогда чья?"),D("MASSIMO","Похоже, общая.")]),
- M("moretti_09",9,"massimo","THE LEAK","Предатель","Someone is leaking information. Massimo must identify the source.","find",["OFFICE","BACK ROOMS","RECORD FLOOR"],["guard","flanker","sniper"],800,350,[D("MASSIMO","Кто-то говорит слишком много."),D("CONTACT","Думаешь, это свой?"),D("MASSIMO","Надеюсь, что нет.")]),
+ M("moretti_09",9,"massimo","THE LEAK","Предатель","Someone is leaking information. Massimo must identify the source.","find",["OFFICE","НАЗАД ROOMS","RECORD FLOOR"],["guard","flanker","sniper"],800,350,[D("MASSIMO","Кто-то говорит слишком много."),D("CONTACT","Думаешь, это свой?"),D("MASSIMO","Надеюсь, что нет.")]),
  M("moretti_10",10,"massimo","FOUR NAMES","Четыре имени","A list contains four family names.","find",["MORETTI HQ","RECORD ROOM","ROOFTOP"],["heavy","suppressor","shooter"],950,450,[D("MASSIMO","Valenti."),D("MASSIMO","Rossi."),D("MASSIMO","Bellini."),D("MASSIMO","Moretti."),D("CONTACT","Что это значит?"),D("MASSIMO","Что нас всех ведут в одну сторону.")]),
  M("rossi_01",1,"salvatore","NEW WORK","Новая работа","A first assignment goes wrong when the expected cargo is missing.","find",["STREET","DEPOT","ROOF"],["guard","brawler"],250,100,[D("SALVATORE","Мне сказали забрать груз."),D("CONTACT","И?"),D("SALVATORE","Я хочу знать, почему его уже нет.")]),
  M("rossi_02",2,"salvatore","MISSING CARGO","Пропавший груз","The cargo did not vanish. Someone moved it.","recover",["DEPOT","WAREHOUSE","LOADING FLOOR"],["shooter","rusher","guard"],320,130,[D("SALVATORE","Он не исчез."),D("CONTACT","Откуда такая уверенность?"),D("SALVATORE","Кто-то его взял.")]),
  M("rossi_03",3,"salvatore","THE OTHER TRACE","Чужой след","The trail does not belong to Rossi.","find",["ALLEY","ARCHIVE","ROOF"],["flanker","shooter","sniper"],380,160,[D("SALVATORE","Этот след не наш."),D("CONTACT","Тогда чей?"),D("SALVATORE","Вот это мы и выясним.")]),
  M("rossi_04",4,"salvatore","THE WAREHOUSE","Склад","A warehouse is suspiciously quiet.","clear",["LOADING BAY","WAREHOUSE","UPPER CATWALK"],["guard","heavy","suppressor"],450,190,[D("SALVATORE","Слишком тихо."),D("CONTACT","Это плохо?"),D("SALVATORE","Очень.")]),
- M("rossi_05",5,"salvatore","SILENCE","Молчание","Nobody wants to answer simple questions.","find",["BACK ROOM","OFFICE","ROOF"],["guard","flanker","rusher"],500,220,[D("SALVATORE","Все что-то знают."),D("CONTACT","Но молчат."),D("SALVATORE","Значит, есть причина.")]),
+ M("rossi_05",5,"salvatore","SILENCE","Молчание","Nobody wants to answer simple questions.","find",["НАЗАД ROOM","OFFICE","ROOF"],["guard","flanker","rusher"],500,220,[D("SALVATORE","Все что-то знают."),D("CONTACT","Но молчат."),D("SALVATORE","Значит, есть причина.")]),
  M("rossi_06",6,"salvatore","TOO CONVENIENT","Слишком удобно","The opposition always seems one step ahead.","survive",["DEPOT","SERVICE FLOOR","ROOFTOP"],["sniper","shooter","suppressor"],560,250,[D("SALVATORE","Они знают наши движения."),D("CONTACT","У нас шпион?"),D("SALVATORE","Или кто-то знает больше, чем должен.")]),
  M("rossi_07",7,"salvatore","INSIDE THE NETWORK","Внутри сети","Separate incidents form one system.","recover",["ARCHIVE","CONTROL ROOM","UPPER FLOOR"],["flanker","guard","heavy"],620,280,[D("SALVATORE","Это уже не отдельные случаи."),D("CONTACT","Что тогда?"),D("SALVATORE","Система.")]),
  M("rossi_08",8,"salvatore","EMPTY CONTAINER","Пустой контейнер","An empty container holds one deliberate clue.","find",["PORT","CONTAINER YARD","CONTROL ROOM"],["shooter","rusher","sniper"],700,310,[D("SALVATORE","Они оставили это специально."),D("CONTACT","Зачем?"),D("SALVATORE","Чтобы мы нашли.")]),
  M("rossi_09",9,"salvatore","MAN WITHOUT A FAMILY","Человек без семьи","A stranger claims to work for none of the four families.","escort",["MEETING ROOM","SERVICE HALL","ROOF"],["guard","flanker","suppressor"],800,350,[D("STRANGER","Вы ищете не того человека."),D("SALVATORE","Тогда назови правильного."),D("STRANGER","Сначала вы должны понять, что он вообще существует.")]),
  M("rossi_10",10,"salvatore","COMMON ENEMY","Общий враг","Salvatore connects the last pieces.","clear",["ROSSI HQ","ARCHIVE","ROOFTOP"],["heavy","sniper","suppressor","flanker"],950,450,[D("SALVATORE","У нас общий враг."),D("CONTACT","Ты уверен?"),D("SALVATORE","Теперь — да.")]),
- M("bellini_01",1,"giuseppe","FIRST ROUTE","Первый маршрут","Giuseppe's first route is simple until everything changes.","reach",["DEPOT","SERVICE LEVEL","EXIT"],["brawler","guard"],250,100,[D("GIUSEPPE","Маршрут простой."),D("CONTACT","Что может пойти не так?"),D("GIUSEPPE","Обычно после этой фразы всё идёт не так.")]),
+ M("bellini_01",1,"giuseppe","FIRST МАРШРУТ","Первый маршрут","Giuseppe's first route is simple until everything changes.","reach",["DEPOT","SERVICE LEVEL","ВЫХОД"],["brawler","guard"],250,100,[D("GIUSEPPE","Маршрут простой."),D("CONTACT","Что может пойти не так?"),D("GIUSEPPE","Обычно после этой фразы всё идёт не так.")]),
  M("bellini_02",2,"giuseppe","THE PORT","Порт","Giuseppe finds the direct route blocked.","reach",["DOCK","WAREHOUSE","CRANE FLOOR"],["shooter","guard","rusher"],320,130,[D("GIUSEPPE","Слишком много охраны."),D("CONTACT","Есть другой путь?"),D("GIUSEPPE","Всегда есть другой путь.")]),
  M("bellini_03",3,"giuseppe","NIGHT RUN","Ночной рейс","A night route forces Giuseppe to rely on memory and timing.","reach",["NIGHT DOCK","SERVICE TUNNEL","ROOFTOP"],["flanker","shooter","sniper"],380,160,[D("GIUSEPPE","Ночью всё выглядит одинаково."),D("CONTACT","Ты потерялся?"),D("GIUSEPPE","Нет. Я ищу короткую дорогу.")]),
  M("bellini_04",4,"giuseppe","WAREHOUSE 7","Склад №7","A strange marking appears where it should not be.","find",["WAREHOUSE","CATWALK","OFFICE"],["guard","heavy","rusher"],450,190,[D("GIUSEPPE","Номер семь."),D("CONTACT","И что?"),D("GIUSEPPE","Он не должен здесь находиться.")]),
  M("bellini_05",5,"giuseppe","WRONG ADDRESS","Неправильный адрес","The address is correct. The destination is wrong.","find",["STREET","DEPOT","UPPER FLOOR"],["shooter","flanker","guard"],500,220,[D("GIUSEPPE","Адрес правильный."),D("CONTACT","Но место неправильное."),D("GIUSEPPE","Именно.")]),
  M("bellini_06",6,"giuseppe","SOMEONE ELSE'S CARGO","Чужой груз","A package clearly belongs to another family.","recover",["PORT","STORAGE","ROOF"],["rusher","heavy","shooter"],560,250,[D("GIUSEPPE","Это не наше."),D("CONTACT","Оставим?"),D("GIUSEPPE","Теперь уже поздно.")]),
- M("bellini_07",7,"giuseppe","OLD ROUTE","Старый маршрут","An old route map should have been forgotten.","find",["ARCHIVE","SERVICE FLOOR","ROOF"],["guard","sniper","flanker"],620,280,[D("GIUSEPPE","Эта карта старая."),D("CONTACT","Насколько?"),D("GIUSEPPE","Достаточно, чтобы никто не должен был её использовать.")]),
+ M("bellini_07",7,"giuseppe","OLD МАРШРУТ","Старый маршрут","An old route map should have been forgotten.","find",["ARCHIVE","SERVICE FLOOR","ROOF"],["guard","sniper","flanker"],620,280,[D("GIUSEPPE","Эта карта старая."),D("CONTACT","Насколько?"),D("GIUSEPPE","Достаточно, чтобы никто не должен был её использовать.")]),
  M("bellini_08",8,"giuseppe","INVISIBLE MIDDLEMAN","Невидимый посредник","Every route seems to pass through one unseen intermediary.","find",["DEPOT","CONTROL ROOM","ARCHIVE"],["suppressor","shooter","flanker"],700,310,[D("GIUSEPPE","Мы никогда его не видели."),D("CONTACT","Но он знает нас."),D("GIUSEPPE","Да.")]),
  M("bellini_09",9,"giuseppe","LAST CONTAINER","Последний контейнер","The final container contains the clue everyone has been missing.","find",["PORT","CONTAINER YARD","CONTROL FLOOR"],["heavy","guard","sniper"],800,350,[D("GIUSEPPE","Если этот контейнер пуст — всё заканчивается."),D("GIUSEPPE","Он не пуст.")]),
  M("bellini_10",10,"giuseppe","THE MEETING","Встреча","Giuseppe reaches the meeting point and finally sees the other three families.","reach",["PORT","MEETING FLOOR","ROOFTOP"],["shooter","flanker","heavy"],950,450,[D("GIUSEPPE","Значит, это вы."),D("ANTONIO","Похоже, мы искали одно и то же."),D("MASSIMO","Мне не нравится эта компания."),D("SALVATORE","Мне тоже."),D("GIUSEPPE","Тогда мы хотя бы в чём-то согласны.")])
@@ -116,7 +116,7 @@ const testFloorLayouts:Record<FamilyId,TestFloorLayout[][]>={
   bellini:[
     [{platforms:[[0,396,640,16],[25,346,130,10],[190,326,150,10],[385,344,120,10],[520,316,100,10],[80,250,170,10],[315,236,145,10],[475,178,140,10],[245,110,190,10]],spawn:[48,360],exit:[560,110],accents:"DOCK"},
      {platforms:[[0,396,640,16],[0,350,110,10],[145,340,120,10],[300,350,150,10],[485,330,150,10],[70,270,130,10],[250,250,170,10],[455,220,140,10],[170,132,180,10],[405,100,180,10]],spawn:[40,360],exit:[560,100],accents:"WAREHOUSE"},
-     {platforms:[[0,396,640,16],[55,348,150,10],[245,318,125,10],[420,346,175,10],[110,250,150,10],[310,220,170,10],[505,250,95,10],[175,126,160,10],[405,90,190,10]],spawn:[60,360],exit:[565,90],accents:"EXIT ROUTE"}],
+     {platforms:[[0,396,640,16],[55,348,150,10],[245,318,125,10],[420,346,175,10],[110,250,150,10],[310,220,170,10],[505,250,95,10],[175,126,160,10],[405,90,190,10]],spawn:[60,360],exit:[565,90],accents:"ВЫХОД МАРШРУТ"}],
   ]
 };
 
@@ -136,6 +136,7 @@ const completedKey="freezzz:mafia-save:v2";
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function rank(){return Math.min(rankNames.length-1,Math.floor(save.xp/650));}
+function objectiveRu(o:Objective){const map:Record<Objective,string>={find:"НАЙТИ",recover:"ЗАБРАТЬ",escort:"СОПРОВОЖДАТЬ",clear:"ЗАЧИСТИТЬ",reach:"ДОБРАТЬСЯ",defend:"ЗАЩИТИТЬ",survive:"ВЫЖИТЬ"};return map[o]||o.toUpperCase();}
 function currentMission():Mission{return allMissions[missionIndex]||shared[2];}
 function hero(){return heroes[selected||"antonio"];}
 function family(){return familyText[hero().family];}
@@ -192,9 +193,9 @@ function drawBackdrop(){
 
 function drawHud(m:Mission){
  rect(8,8,624,34,"rgba(5,7,8,.92)");
- tx("FREEzzz MAFIA",18,15,9,hero().color);tx(hero().name,142,15,9,"#f0eee7");tx(rankNames[rank()],220,15,8,"#aab1b4");
- tx("$"+save.money,322,15,8,"#d9b86c");tx("HP "+Math.max(0,Math.round(player.hp)),410,15,8,"#d5d8d7");tx("ARM "+player.armor,490,15,8,"#9f83d6");tx("AMMO "+player.ammo,548,15,8,hero().color);
- tx("FLOOR "+(floor+1)+"/3, "+m.objective.toUpperCase(),18,57,8,"#aab1b4");
+ tx("FREEzzz МАФИЯ",18,15,9,hero().color);tx(hero().name,142,15,9,"#f0eee7");tx(rankNames[rank()],220,15,8,"#aab1b4");
+ tx("$"+save.money,322,15,8,"#d9b86c");tx("ЗДОРОВЬЕ "+Math.max(0,Math.round(player.hp)),410,15,8,"#d5d8d7");tx("БРОНЯ "+player.armor,490,15,8,"#9f83d6");tx("ПАТРОНЫ "+player.ammo,548,15,8,hero().color);
+ tx("ЭТАЖ "+(floor+1)+"/3, "+objectiveRu(m.objective),18,57,8,"#aab1b4");
 }
 
 function getTestLayout():TestFloorLayout{
@@ -208,9 +209,9 @@ function drawWorld(m:Mission){
  layout.platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
  tx(layout.accents,612,57,6,"#59656b","right");
  const [targetX,targetY]=layout.exit;
- if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-45,targetX,targetY,"#9f83d6",2);tx("ROUTE",targetX,targetY-18,7,"#9f83d6","center");}
+ if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-45,targetX,targetY,"#9f83d6",2);tx("МАРШРУТ",targetX,targetY-18,7,"#9f83d6","center");}
  if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-7,e.y-35,14,2,"#54d6d8"));}
- rect(targetX-8,targetY-8,16,16,hero().color);tx("EXIT",targetX,targetY+18,7,hero().color,"center");
+ rect(targetX-8,targetY-8,16,16,hero().color);tx("ВЫХОД",targetX,targetY+18,7,hero().color,"center");
  enemies.forEach(drawEnemy);drawPlayer();
  bullets.forEach(b=>rect(b.x,b.y,5,2,b.from==="player"?hero().color:"#d86c35"));
  if(flash>0){rect(0,0,W,H,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
@@ -352,7 +353,7 @@ function renderCanvas(){
 }
 function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
 function drawSelect(){
- tx("FOUR FAMILIES",W/2,26,16,"#f0eee7","center");tx("CHOOSE YOUR NEW MEMBER",W/2,49,7,"#7e898d","center");
+ tx("ЧЕТЫРЕ СЕМЬИ",W/2,26,16,"#f0eee7","center");tx("ВЫБЕРИТЕ ПЕРСОНАЖА",W/2,49,7,"#7e898d","center");
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
  ids.forEach((id,i)=>{const h=heroes[id],x=80+i*160,a=id===selected;
    rect(x-68,82,136,190,a?"#151d21":"#0b1013");rect(x-68,82,136,3,a?h.color:"#263137");
@@ -361,25 +362,25 @@ function drawSelect(){
    tx(familyText[h.family].desc,x,259,5,h.color,"center");
    tx(h.ability,x,267,4,"#7e898d","center");
  });
- tx("TAP A FAMILY MEMBER TO SELECT",W/2,306,7,"#d5d8d7","center");
- tx("CLASSIC SUITS · FEDORAS · FOUR FAMILY MEMBERS · 3 FLOORS",W/2,323,5,"#58646a","center");
+ tx("НАЖМИТЕ НА ПЕРСОНАЖА",W/2,306,7,"#d5d8d7","center");
+ tx("КЛАССИЧЕСКИЕ КОСТЮМЫ · 4 СЕМЬИ · 3 ЭТАЖА",W/2,323,5,"#58646a","center");
 }
 function drawFamily(){
  const h=hero();panel(44,54,552,340);
  tx(h.family.toUpperCase(),320,78,18,h.color,"center");tx(h.name,320,103,12,"#f0eee7","center");tx(familyText[h.family].desc,320,126,8,"#aab1b4","center");
- tx("FAMILY STORY",320,157,9,h.color,"center");
- const lines=[familyText[h.family].intro,h.bio,"Ability: "+h.ability,"• "+h.abilityDesc];
+ tx("ИСТОРИЯ СЕМЬИ",320,157,9,h.color,"center");
+ const lines=[familyText[h.family].intro,h.bio,"Способность: "+h.ability,"• "+h.abilityDesc];
  lines.forEach((s,i)=>tx(s,320,190+i*28,9,i===0?"#f0eee7":"#aab1b4","center"));
- tx("TAP TO CONTINUE",320,370,8,h.color,"center");
+ tx("ПРОПУСТИТЬ",320,370,8,h.color,"center");
 }
 function drawBriefing(){
  const m=currentMission();panel(35,48,570,350);
  tx("MISSION "+String(m.number).padStart(2,"0"),55,68,9,hero().color);
- tx(m.title,55,91,19,"#f0eee7");tx(m.ru,55,116,10,"#aab1b4");
- tx(m.desc,55,145,8,"#d5d8d7");tx("OBJECTIVE · "+m.objective.toUpperCase(),55,174,9,hero().color);
- m.floors.forEach((f,i)=>{tx("FLOOR "+(i+1),55,210+i*42,7,"#59656b");tx(f,125,208+i*42,9,"#f0eee7");});
- tx("REWARD  $"+m.reward+"   XP "+m.xp,55,345,8,"#d9b86c");
- tx("TAP TO START",55,372,8,hero().color);
+ tx(m.ru,55,91,19,"#f0eee7");
+ tx("ЦЕЛЬ · "+m.objective.toUpperCase(),55,174,9,hero().color);
+ m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),55,210+i*42,7,"#59656b");tx(f,125,208+i*42,9,"#f0eee7");});
+ tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,55,345,8,"#d9b86c");
+ tx("НАЖМИТЕ, ЧТОБЫ НАЧАТЬ",55,372,8,hero().color);
  if(dialogueOpen)drawDialogue();
 }
 function drawDialogue(){
@@ -389,17 +390,17 @@ function drawDialogue(){
  tx("TAP",590,391,7,"#59656b","right");
 }
 function drawShop(){
- panel(35,45,570,355);tx("ARMORY",55,67,16,hero().color);tx("CASH $"+save.money,575,69,9,"#d9b86c","right");
- weapons.forEach((w,i)=>{const y=105+i*40;const owned=save.weapon>=i;tx(String(i+1),55,y,8,"#59656b");tx(w.name,78,y,9,"#f0eee7");tx("$"+w.cost,275,y,8,"#d9b86c");tx(owned?"OWNED":"BUY",380,y,8,owned?hero().color:"#aab1b4");});
- tx("ESC / BACK   ·   number 1-6 selects weapon",55,374,7,"#59656b");
+ panel(35,45,570,355);tx("АРСЕНАЛ",55,67,16,hero().color);tx("ДЕНЬГИ $"+save.money,575,69,9,"#d9b86c","right");
+ weapons.forEach((w,i)=>{const y=105+i*40;const owned=save.weapon>=i;tx(String(i+1),55,y,8,"#59656b");tx(w.name,78,y,9,"#f0eee7");tx("$"+w.cost,275,y,8,"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",380,y,8,owned?hero().color:"#aab1b4");});
+ tx("НАЗАД · ВЫБОР 1–6",55,374,7,"#59656b");
 }
 function drawResult(){
- const m=currentMission();panel(50,55,540,330);tx("MISSION COMPLETE",320,82,17,hero().color,"center");tx(m.title,320,110,10,"#f0eee7","center");
+ const m=currentMission();panel(50,55,540,330);tx("МИССИЯ ЗАВЕРШЕНА",320,82,17,hero().color,"center");tx(m.title,320,110,10,"#f0eee7","center");
  tx("+$"+m.reward,320,160,15,"#d9b86c","center");tx("+"+m.xp+" XP",320,188,11,"#aab1b4","center");
- tx("RANK · "+rankNames[rank()],320,226,10,hero().color,"center");tx("TOTAL CASH · $"+save.money,320,250,9,"#f0eee7","center");
- if(m.number===10)tx("THE FOUR FAMILIES ARE NOW CONNECTED.",320,290,7,"#aab1b4","center");
- if(m.number===13)tx("CHAPTER I COMPLETE",320,290,11,hero().color,"center");
- tx(m.number===1?"TEST LEVEL COMPLETE · TAP TO RETURN":"TAP · CONTINUE",320,350,8,"#f0eee7","center");
+ tx("РАНГ · "+rankNames[rank()],320,226,10,hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,320,250,9,"#f0eee7","center");
+ if(m.number===10)tx("THE ЧЕТЫРЕ СЕМЬИ ARE NOW CONNECTED.",320,290,7,"#aab1b4","center");
+ if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",320,290,11,hero().color,"center");
+ tx(m.number===1?"ТЕСТОВЫЙ УРОВЕНЬ ЗАВЕРШЁН · НАЖМИТЕ ДЛЯ ВОЗВРАТА":"НАЖМИТЕ · ПРОДОЛЖИТЬ",320,350,8,"#f0eee7","center");
 }
 
 function buyOrSelectWeapon(n:number){
@@ -436,9 +437,9 @@ function render(){
  if(mode==="select"){
    ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button aria-label="Select '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">FIRE</button><button data-touch="ability">★</button><button data-action="shop">SHOP</button></div>';
+   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">ДЕЙСТВИЕ</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div>';
  }else{
-   ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(dialogueOpen?"CONTINUE":mode==="shop"?"BACK":"START / CONTINUE")+'</button></div>';
+   ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(mode==="family"?"ПРОПУСТИТЬ":dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
  bindButtons();renderCanvas();
 }
