@@ -547,7 +547,7 @@ function homeCard(v:Exclude<View,"home">){
   const background=backgrounds[v];
   const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
   const title=titles[v];
-  return `<button class="card home-card portal-block home-${v}" data-view="${v}" data-portal-card="${v}" data-portal-block="${v}" ${homeLayoutBlockAttrs(v as HomeBlockId)}>
+  return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" ${homeLayoutBlockAttrs(v as HomeBlockId)}>
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
     <span class="home-card-title">${title}</span>
     ${homeLayoutHandles()}
@@ -676,7 +676,7 @@ function bind(){
     const host=document.querySelector("#radio-audio-host");
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
+  document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
       if(homeLayoutSuppressClick){
         e.preventDefault();
