@@ -22,6 +22,13 @@ export class Mihi3DView{
   private disposed=false;
   private loadPromise:Promise<void>|null=null;
   private offs:(()=>void)[]=[];
+  private movementIndex=0;
+  private targetDepth=0;
+  private currentDepth=0;
+  private targetX=0;
+  private targetY=0;
+  private targetScale=1;
+  private targetRotation=0;
 
   constructor(private readonly events:PortalEventBus){
     this.root=document.createElement("div");
@@ -173,6 +180,7 @@ export class Mihi3DView{
     model.position.y-=size.y*0.08;
     const targetHeight=Math.max(size.y,0.001);
     model.scale.setScalar(0.78/targetHeight);
+    model.userData.mihiBaseScale=model.scale.x;
     model.rotation.y=0.08;
     this.scene!.add(model);
     this.model=model;
@@ -241,6 +249,7 @@ export class Mihi3DView{
 
     group.position.y=-0.05;
     group.scale.setScalar(0.58);
+    group.userData.mihiBaseScale=group.scale.x;
     const platformMaterial=new THREE.MeshStandardMaterial({color:0x101827,roughness:0.35,metalness:0.55,transparent:true,opacity:0.92});
     const platform=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.62,0.045,48),platformMaterial);
     platform.position.y=0.01;
@@ -264,9 +273,35 @@ export class Mihi3DView{
 
   private selectForState(state:MihiVisualState){
     if(!this.loaded)return;
+    this.applyDepthMovement(state.layer);
     if(state.layer>=8){this.play("Interact");return;}
     if(state.layer>=5){this.play("Wave");return;}
     this.play("Idle_Neutral");
+  }
+
+  private applyDepthMovement(layer:MihiLayer){
+    const depth=Math.max(0,Math.min(9,layer-1));
+    const variant=this.movementIndex%3;
+    const move=this.movementIndex+1;
+    this.movementIndex=(this.movementIndex+1)%30;
+
+    const depthTable=[-1.80,-1.40,-1.00,-0.65,-0.30,0.05,0.40,0.80,1.25,1.80] as const;
+    const xTable=[-0.055,0,0.055] as const;
+    const yTable=[0.025,0,-0.025] as const;
+    const rotationTable=[-0.055,0,0.055] as const;
+
+    this.targetDepth=depthTable[depth];
+    this.targetX=xTable[variant]*(depth%2===0?1:-1);
+    this.targetY=yTable[variant];
+    this.targetRotation=rotationTable[variant]*(depth%2===0?1:-1);
+
+    const cameraZ=this.camera?.position.z??5.6;
+    const distance=Math.max(2.4,cameraZ-this.targetDepth);
+    const referenceDistance=Math.max(2.4,cameraZ);
+    this.targetScale=Math.max(0.72,Math.min(1.55,referenceDistance/distance));
+
+    const status=this.root.querySelector<HTMLElement>("[data-mihi-3d-status]");
+    if(status)status.textContent="DEPTH "+(depth+1)+"/10 · MOVE "+move+"/30";
   }
 
   private play(name:string){
@@ -290,6 +325,20 @@ export class Mihi3DView{
     if(this.disposed)return;
     this.frame=requestAnimationFrame(this.animate);
     this.mixer?.update(1/60);
+    if(this.model){
+      const ease=0.075;
+      this.currentDepth+=(this.targetDepth-this.currentDepth)*ease;
+      this.model.position.z+=(this.currentDepth-this.model.position.z)*ease;
+      this.model.position.x+=(this.targetX-this.model.position.x)*ease;
+      this.model.position.y+=(this.targetY-this.model.position.y)*ease;
+      this.model.rotation.y+=(this.targetRotation-this.model.rotation.y)*ease;
+      const baseScale=this.model.userData.mihiBaseScale as number|undefined;
+      if(baseScale!==undefined){
+        const desired=baseScale*this.targetScale;
+        const scale=this.model.scale.x+(desired-this.model.scale.x)*ease;
+        this.model.scale.setScalar(scale);
+      }
+    }
     if(this.renderer&&this.scene&&this.camera)this.renderer.render(this.scene,this.camera);
   };
 
