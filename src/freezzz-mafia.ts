@@ -538,6 +538,87 @@ function drawTopDownBackground(){
  // Архитектура — главный слой карты.
  for(let i=0;i<m.buildings.length;i++)drawSovietBuilding(m.buildings[i],i);
 
+ // Дворовые композиции: советские площадки, стихийные тропинки и заросшие края.
+ function drawYardPath(x:number,y:number,w:number,h:number){
+   rect(x,y,w,h,"#b8a98a");
+   rect(x+2,y+2,w-4,h-4,"#8c8977");
+   for(let i=8;i<w-6;i+=15) rect(x+i,y+3+(i%7),8,2,"#c3b99f");
+ }
+ function drawBush(x:number,y:number,s:number){
+   ellipse(x,y+10*s,15*s,10*s,"#315d38");
+   ellipse(x-9*s,y,12*s,11*s,"#3b7040");
+   ellipse(x+9*s,y+1*s,13*s,12*s,"#35673b");
+   ellipse(x,y-7*s,12*s,10*s,"#477c45");
+ }
+ function drawPlayground(cx:number,cy:number,variant:number){
+   // Песочная зона.
+   rect(cx-68,cy+22,136,54,"#625a4d");
+   rect(cx-63,cy+26,126,46,variant%2?"#c5aa72":"#c9b27b");
+   rect(cx-58,cy+30,116,38,"#d1bb85");
+   // Старая советская горка.
+   rect(cx-53,cy-44,4,67,"#3e6265");
+   rect(cx-35,cy-44,4,67,"#7a4940");
+   rect(cx-53,cy-47,23,4,"#a56b3e");
+   rect(cx-49,cy-39,18,3,"#5e7d81");
+   for(let yy=cy-28;yy<cy-3;yy+=8)rect(cx-51,yy,19,3,"#4e5f61");
+   poly([cx-31,cy-7,cx-4,cy-7,cx+19,cy+32,cx-8,cy+32],"#668a92");
+   line(cx-27,cy-3,cx-2,cy-3,"#c2b6a0",2);
+   // Качели.
+   rect(cx+34,cy-39,4,63,"#466a6c");rect(cx+80,cy-39,4,63,"#466a6c");
+   rect(cx+31,cy-42,56,5,"#a15d42");
+   line(cx+45,cy-37,cx+45,cy+10,"#6c7775",2);line(cx+70,cy-37,cx+70,cy+10,"#6c7775",2);
+   rect(cx+39,cy+10,12,5,"#7a493c");rect(cx+64,cy+10,12,5,"#7a493c");
+   // Турник.
+   rect(cx-88,cy-38,4,47,"#526d70");rect(cx-62,cy-38,4,47,"#526d70");
+   rect(cx-90,cy-42,31,4,"#9b6641");
+   for(let xx=cx-84;xx<cx-63;xx+=7)line(xx,cy-38,xx,cy-22,"#597276",2);
+   // Карусель.
+   ellipse(cx+8,cy+56,29,9,"#454d4d");
+   ellipse(cx+8,cy+53,25,7,"#9a7848");
+   rect(cx+6,cy+33,4,23,"#4f696c");
+   line(cx-15,cy+49,cx+30,cy+49,"#546d70",2);
+   line(cx-7,cy+40,cx+23,cy+57,"#546d70",2);
+   line(cx+22,cy+40,cx-8,cy+57,"#546d70",2);
+   // Лавка.
+   rect(cx-88,cy+88,48,5,"#744a31");rect(cx-82,cy+94,5,12,"#4b3b30");rect(cx-47,cy+94,5,12,"#4b3b30");
+   // Трещины и вытоптанные места.
+   line(cx-62,cy+78,cx-37,cy+84,"#55534b",2);
+   line(cx+45,cy+78,cx+70,cy+83,"#55534b",2);
+ }
+ // Два разных двора: не зеркальные, чтобы квартал не выглядел процедурным.
+ drawYardPath(108,850,96,8);drawYardPath(188,850,8,56);drawYardPath(196,900,70,8);
+ drawPlayground(210,880,0);
+ drawYardPath(820,852,102,8);drawYardPath(915,852,8,44);drawYardPath(922,895,72,8);
+ drawPlayground(930,878,1);
+
+ // Заросшие края дворов — кусты и высокая трава.
+ const shrubs=[
+   [82,860,1.0],[102,905,.8],[118,930,1.15],[286,855,.9],[300,900,1.1],[285,940,.8],
+   [780,860,.9],[805,900,1.15],[810,930,.8],[1008,855,1.0],[1018,900,.9],[1005,935,1.2],
+   [555,865,.8],[575,900,1.0],[690,865,.9],[705,905,.8]
+ ] as [number,number,number][];
+ for(const [x,y,s] of shrubs)drawBush(x,y,s);
+
+ // Старые фонари во дворах.
+ const yardLamps=[[92,878],[325,875],[785,882],[1045,880],[565,900],[700,900]];
+ for(const [x,y] of yardLamps){
+   rect(x-2,y-25,4,27,"#343b3c");
+   rect(x-7,y-30,14,5,"#252b2d");
+   rect(x-4,y-34,8,4,"#d3bd70");
+ }
+
+ // Маленькие хозяйственные зоны: контейнеры и металлические ограждения.
+ const bins2=[[278,870],[315,920],[1008,870],[1045,920]];
+ for(const [x,y] of bins2){
+   rect(x,y,13,15,"#384447");rect(x+2,y-3,9,3,"#596365");
+ }
+ const railings=[[90,945,75],[1010,944,72]];
+ for(const [x,y,w] of railings){
+   line(x,y,x+w,y,"#657174",2);
+   for(let xx=x;xx<=x+w;xx+=14)line(xx,y,xx,y-12,"#657174",2);
+ }
+
+
  // Парковочные места.
  const parking=[
   [220,250,5],[385,250,4],[815,250,4],[1110,250,5],
