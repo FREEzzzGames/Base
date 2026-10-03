@@ -640,7 +640,7 @@ function render(){
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="levels"){
-   const cards=allMissions.map((m,i)=>{
+   const cards=allMissions.map((m)=>{
      const accent=m.hero==="shared"?"#f0eee7":heroes[m.hero].color;
      const owner=m.hero==="shared"?"ОБЩАЯ МИССИЯ":heroes[m.hero].family.toUpperCase()+" · "+heroes[m.hero].name;
      const done=save.completed.includes(m.id);
@@ -649,37 +649,7 @@ function render(){
        '<div class="mafia-level-head"><strong>'+String(m.number).padStart(2,"0")+'</strong><div><b>'+escapeHtml(m.ru)+'</b><small>'+escapeHtml(owner)+'</small></div><i>'+(done?"✓":"")+'</i></div>'+
        '<div class="mafia-level-meta"><span>ЦЕЛЬ</span><b>'+escapeHtml(objectiveRu(m.objective))+'</b></div>'+
        '<div class="mafia-level-floors">'+floors+'</div>'+
-       '<div class="mafia-level-footer"><span>НАГРАДА 
-   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div><div class="mafia-aim-sensor" aria-label="Сенсорное наведение"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div>';
- }else{
-   ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
- }
- bindButtons();renderCanvas();
-}
-function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play")update(dt);renderCanvas();raf=requestAnimationFrame(loop);}
-function setup(){
- loadSave();selected=save.hero;
- render();raf=requestAnimationFrame(loop);
- cleanup=()=>{cancelAnimationFrame(raf);};
-}
-export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{saveResumeState();cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
- const map:Record<string,string>={OFFICE:"ОФИС","UPPER OFFICE":"ВЕРХНИЙ ОФИС",ESCAPE:"ОТХОД","FRONT OFFICE":"ПЕРЕДНИЙ ОФИС","RECORD ROOM":"АРХИВ",ROOFTOP:"КРЫША",STREET:"УЛИЦА",BLOCK:"КВАРТАЛ","BACK STREET":"ЗАДНЯЯ УЛИЦА",GARAGE:"ГАРАЖ",ENTRANCE:"ВХОД",STORAGE:"СКЛАД",BAR:"БАР","BACK ROOM":"ЗАДНЯЯ КОМНАТА",ALLEY:"ПЕРЕУЛОК",WAREHOUSE:"СКЛАД",DEPOT:"ДЕПО","LOADING BAY":"ПОГРУЗОЧНАЯ ЗОНА","UPPER CATWALK":"ВЕРХНЯЯ ПЛОЩАДКА","CONTROL ROOM":"ЦЕНТР УПРАВЛЕНИЯ","SERVICE FLOOR":"СЛУЖЕБНЫЙ ЭТАЖ","UPPER FLOOR":"ВЕРХНИЙ ЭТАЖ","LOCKED FLOOR":"ЗАКРЫТЫЙ ЭТАЖ","ROOF ACCESS":"ВЫХОД НА КРЫШУ","MEETING FLOOR":"ЭТАЖ ВСТРЕЧИ","ROSSI HQ":"ШТАБ РОССИ","MORETTI HQ":"ШТАБ МОРЕТТИ","VALENTI OFFICE":"ОФИС ВАЛЕНТИ","PORT":"ПОРТ","CONTAINER YARD":"КОНТЕЙНЕРНЫЙ ДВОР","CONTROL FLOOR":"ЭТАЖ УПРАВЛЕНИЯ","SERVICE HALL":"СЛУЖЕБНЫЙ КОРИДОР","MEETING ROOM":"КОМНАТА ВСТРЕЧИ","SERVICE TUNNEL":"СЛУЖЕБНЫЙ ТОННЕЛЬ","NIGHT DOCK":"НОЧНОЙ ПРИЧАЛ","CRANE FLOOR":"ЭТАЖ КРАНА","NIGHT STREET":"НОЧНАЯ УЛИЦА","DISTRICT":"РАЙОН","CROSSING":"ПЕРЕКРЁСТОК","ARCHIVE":"АРХИВ","HIDDEN ROOM":"СКРЫТАЯ КОМНАТА","SECURE ARCHIVE":"ЗАКРЫТЫЙ АРХИВ","FINAL FLOOR":"ФИНАЛЬНЫЙ ЭТАЖ","ENTRY":"ВХОД","CROSSROADS":"ПЕРЕКРЁСТОК","SPLIT LEVEL":"РАЗДЕЛЁННЫЙ ЭТАЖ","OUTER BLOCK":"ВНЕШНИЙ КВАРТАЛ"};
- return map[s]||s;
-}
-function speakerRu(s:string){
- const map:Record<string,string>={CONTACT:"СВЯЗНОЙ",ACCOUNTANT:"БУХГАЛТЕР",SENIOR:"СТАРШИЙ",GUARD:"ОХРАННИК","OLD CONTACT":"СТАРЫЙ КОНТАКТ",UNKNOWN:"НЕИЗВЕСТНЫЙ","OLD FRIEND":"СТАРЫЙ ЗНАКОМЫЙ",STRANGER:"НЕЗНАКОМЕЦ"};
- return map[s]||s;
-}
-function enemyRu(s:string){
- const map:Record<string,string>={guard:"ОХРАНА",brawler:"БОРЕЦ",rusher:"ШТУРМОВИК",shooter:"СТРЕЛОК",flanker:"ОБХОДЧИК",heavy:"ТЯЖЁЛЫЙ",suppressor:"ПОДАВИТЕЛЬ",sniper:"СНАЙПЕР"};
- return map[s]||s;
-}
-function weaponRu(s:string){
- const map:Record<string,string>={"POCKET 9":"КАРМАННЫЙ","SERVICE":"СЛУЖЕБНЫЙ","REVOLVER":"РЕВОЛЬВЕР","SMG":"АВТОМАТ","SHOTGUN":"ДРОБОВИК","CARBINE":"КАРАБИН"};
- return map[s]||s;
-}
-
-+m.reward+'</span><span>'+m.xp+' XP</span><span>3 ЭТАЖА</span></div>'+
+       '<div class="mafia-level-footer"><span>НАГРАДА $'+m.reward+'</span><span>'+m.xp+' XP</span><span>3 ЭТАЖА</span></div>'+
        '</button>';
    }).join("");
    ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
