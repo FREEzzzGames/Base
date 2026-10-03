@@ -326,12 +326,13 @@ function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
  return [x,y];
 }
 function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
-  rect(x,y,w,h,"#17292d");
-  const frame=variant%3===0?"#d2d1c8":variant%3===1?"#a9b0ae":"#6e7778";
-  rect(x+2,y+2,w-4,h-4,frame);
-  rect(x+4,y+4,w-8,h-8,variant%4===0?"#6f9697":variant%4===1?"#496d72":"#52666a");
-  line(x+w*.5,y+3,x+w*.5,y+h-3,"#263d40",1);
-  if(h>16)line(x+3,y+h*.5,x+w-3,y+h*.5,"#263d40",1);
+  rect(x-2,y-2,w+4,h+4,"#202b2d");
+  rect(x,y,w,h,variant%3===0?"#c8c6bc":variant%3===1?"#aeb4b0":"#747c7d");
+  rect(x+3,y+3,w-6,h-6,variant%4===0?"#719193":variant%4===1?"#4c6e72":"#56686b");
+  rect(x+5,y+5,Math.max(2,w-10),Math.max(2,h*.22),"rgba(231,236,227,.24)");
+  line(x+w*.5,y+2,x+w*.5,y+h-2,"#304548",1);
+  if(h>16)line(x+2,y+h*.58,x+w-2,y+h*.58,"#304548",1);
+  if(variant%5===0)rect(x+4,y+h-5,Math.max(3,w-8),2,"rgba(35,42,42,.32)");
 }
 
 function drawSovietBuilding(b:{x:number;y:number;w:number;h:number;roof:string;wall:string;kind:string},index:number){
@@ -473,9 +474,15 @@ function drawTopDownBackground(){
 
  // Магистрали и внутриквартальные улицы.
  for(const rd of m.roads){
-  rect(rd.x,rd.y,rd.w,rd.h,"#c7c8c4");
-  rect(rd.x+5,rd.y+5,rd.w-10,rd.h-10,"#777c7b");
-  rect(rd.x+10,rd.y+10,rd.w-20,rd.h-20,"#454b4c");
+  rect(rd.x-3,rd.y-3,rd.w+6,rd.h+6,"#b2b4b0");
+  rect(rd.x,rd.y,rd.w,rd.h,"#727776");
+  rect(rd.x+7,rd.y+7,rd.w-14,rd.h-14,"#414748");
+  for(let p=0;p<Math.max(3,Math.floor(rd.w/150));p++){
+    const px=rd.x+18+(p*137)%Math.max(20,rd.w-50);
+    const py=rd.y+18+(p*43)%Math.max(20,rd.h-45);
+    rect(px,py,26+(p%3)*10,3,"rgba(110,106,98,.28)");
+    line(px+3,py+3,px+18,py+7,"rgba(28,31,31,.28)",1);
+  }
   if(rd.w>rd.h){
     rect(rd.x+12,rd.y+rd.h*.5-2,rd.w-24,4,"#9c925b");
     for(let xx=rd.x+24;xx<rd.x+rd.w-24;xx+=70)rect(xx,rd.y+rd.h*.5-2,34,4,"#d6ca7b");
