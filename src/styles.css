@@ -1988,7 +1988,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   text-align:left;
   overflow:hidden;
 }
-.home-card:active{transform:none!important}
 .home-card-head{
   min-height:34px;
   display:flex;
