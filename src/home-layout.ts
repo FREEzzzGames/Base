@@ -155,8 +155,3 @@ export function resizeHomeBoundary(node:HomeLayoutNode,id:HomeBlockId,edge:Resiz
   walk(cloned);
   return cloned;
 }
-
-export function firstBlock(node:HomeLayoutNode):HomeBlockId{
-  if(node.type==="leaf")return node.id;
-  return firstBlock(node.first);
-}
