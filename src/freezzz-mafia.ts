@@ -1,4 +1,4 @@
-import { portalVideoUrl } from "./video-assets";
+import { portalVideoUrl } from "./video-assets";\nimport { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
 import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
@@ -703,7 +703,7 @@ function drawTopDownBackground(){
 
  tx("ГВАРДЕЙСКИЙ КВАРТАЛ",750,24,18,"#f0eee7","center");
  tx("ЖИЛОЙ МАССИВ · ШКОЛА · ДВОРЫ · ТРАНСПОРТ",750,46,10,"#c4c9c7","center");
-}
+  drawDistrictMicroDetails(ctx!,m.buildings,m.roads);\n}
 function drawWorld(m:Mission){
  if(!ctx)return;
  const map=topDownMap(),scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820)));
@@ -828,13 +828,15 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
 function drawPlayer(){
  const x=player.x,y=player.y,sc=Math.max(.68,Math.min(.84,viewWidth/1050));
  drawMafiaMember(heroVisual(),x,y,frame,sc);
-
- // Оружие рисуется отдельным слоем и всегда привязано к кисти.
  const handX=x+player.facing*29*sc;
  const handY=y-44*sc;
  const angle=aimAngle;
- drawWeaponSprite(save.weapon,handX,handY,angle,sc);
-
+ const kick=Math.min(3.2,player.combat.recoil*.22);
+ const wx=handX-Math.cos(angle)*kick,wy=handY-Math.sin(angle)*kick;
+ drawWeaponSprite(save.weapon,wx,wy,angle,sc);
+ const w=HS_WEAPONS[save.weapon],len=[32,38,42,49,55,61][save.weapon]||36;
+ const muzzleX=wx+Math.cos(angle)*len,muzzleY=wy+Math.sin(angle)*len;
+ drawWeaponEffects(ctx!,muzzleX,muzzleY,angle,sc,save.weapon,player.combat.fireTimer>w.fireInterval-4,hero().color);
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
 function spawnFloor(){
