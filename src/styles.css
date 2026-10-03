@@ -5746,3 +5746,28 @@ html.visual-comfort-enabled video{
 .rpgx-comic-panels div{min-height:80px;padding:8px;border:2px solid #fff;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between}
 .rpgx-comic-panels b{font-size:22px;color:#ff2020}.rpgx-comic-panels span{font-size:7px;font-weight:900}
 @media(max-width:520px){.rpgx-level-art{min-height:470px}.rpgx-level-art p{font-size:9px}.rpgx-comic-panels div{min-height:62px}.rpgx-comic-panels b{font-size:17px}}
+
+
+/* PLAYABLE RPG — touch controls + combat HUD */
+.rpgx-play{min-height:620px}
+.rpgx-play .rpgx-stage{min-height:620px;touch-action:none}
+.rpgx-play-hud{position:absolute;z-index:8;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.rpgx-play-hud>div:first-child{display:grid;gap:3px;background:#000;border:2px solid #fff;padding:5px 7px}
+.rpgx-play-hud b{font-size:8px;color:#fff}.rpgx-play-hud span{font-size:7px;color:#ff2020}
+.rpgx-bars{display:grid;gap:4px;width:72px;align-content:start}
+.rpgx-bars i,.rpgx-bossbar i{height:6px;background:#151515;border:1px solid #fff;display:block;overflow:hidden}
+.rpgx-bars em,.rpgx-bossbar em{height:100%;width:100%;display:block;background:#ff2020}
+.rpgx-bars i:nth-child(2) em{background:#fff}
+.rpgx-bossbar{position:absolute;z-index:8;top:55px;left:20%;right:20%;background:#000;border:2px solid #fff;padding:4px 6px}
+.rpgx-bossbar b{display:block;font-size:7px;color:#fff;margin-bottom:3px;text-align:center}
+.rpgx-bossbar em{background:#ff2020}
+.rpgx-play-top{position:absolute;z-index:9;right:8px;top:45px}
+.rpgx-play-top button{height:28px;padding:0 7px;background:#000;color:#fff;border:2px solid #fff;font:700 7px "Space Mono",monospace}
+.rpgx-touch{position:absolute;z-index:10;left:0;right:0;bottom:10px;height:112px;display:flex;justify-content:space-between;align-items:end;padding:0 10px;pointer-events:none}
+.rpgx-joystick{width:78px;height:78px;border:2px solid #fff;background:rgba(0,0,0,.62);border-radius:50%;pointer-events:auto;touch-action:none;display:grid;place-items:center}
+.rpgx-joystick i{display:block;width:32px;height:32px;border:2px solid #ff2020;background:#000;border-radius:50%;transition:transform 30ms linear}
+.rpgx-actions{display:grid;grid-template-columns:repeat(3,52px);gap:6px;align-items:end;pointer-events:auto}
+.rpgx-actions button{height:52px;border:2px solid #fff;background:#000;color:#fff;font:900 7px "Space Mono",monospace;box-shadow:3px 3px 0 #ff2020;touch-action:manipulation}
+.rpgx-actions button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #ff2020}
+@media(max-width:520px){.rpgx-play,.rpgx-play .rpgx-stage{min-height:560px}.rpgx-touch{bottom:8px}.rpgx-joystick{width:72px;height:72px}.rpgx-actions{grid-template-columns:repeat(3,48px)}.rpgx-actions button{width:48px;height:48px}}
+@media(min-width:700px){.rpgx-play .rpgx-stage{max-width:680px;margin:auto}.rpgx-touch{padding:0 18px}}
