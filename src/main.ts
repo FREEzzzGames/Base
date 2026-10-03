@@ -493,7 +493,9 @@ function bind(){
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
-      portalEvents.emit("navigation:changed",{view:next});
+      // Tapping the already-open module closes it back to HOME.
+      const target=next===view&&next!=="home"?"home":next;
+      portalEvents.emit("navigation:changed",{view:target});
     };
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
