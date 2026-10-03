@@ -1,3 +1,11 @@
+/* FREEzzz GAME — unified Nothing Font */
+.portal-game-fullscreen,
+.portal-game-fullscreen *{
+  font-family:"Nothing Font",monospace!important;
+}
+.portal-game-fullscreen .freezzz-mafia-frame{
+  font-family:"Nothing Font",monospace!important;
+}
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 
 
@@ -3064,7 +3072,7 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   text-shadow:0 2px 4px rgba(0,0,0,.76),0 0 12px rgba(255,255,255,.10)!important;
 }
 
-/* FONT SCOPE — Nothing/Inter everywhere except GAME. */
+/* FONT SCOPE — Nothing Font is the single portal/game typography authority. */
 .game-portal,
 .game-portal *{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -5273,8 +5281,8 @@ button,
    Typography: Space Mono for UI; Nothing Font only for large display.
    ================================================================ */
 :root{
-  --portal-font-body:"Space Mono",monospace;
-  --portal-font-accent:"Nothing Font","Space Mono",monospace;
+  --portal-font-body:"Nothing Font",monospace;
+  --portal-font-accent:"Nothing Font",monospace;
   --portal-black:#000000;
   --portal-white:#ffffff;
   --portal-red:#ff2020;
