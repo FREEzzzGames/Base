@@ -120,7 +120,6 @@ const testFloorLayouts:Record<FamilyId,TestFloorLayout[][]>={
   ]
 };
 
-const rankNames=[
 const rankNames=["RECRUIT","RUNNER","SOLDIER","OPERATOR","CAPO","UNDERBOSS"];
 const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",damage:3,rate:14,mag:14,cost:450},{name:"REVOLVER",damage:5,rate:28,mag:6,cost:700},{name:"SMG",damage:2,rate:7,mag:24,cost:1100},{name:"SHOTGUN",damage:8,rate:34,mag:5,cost:1400},{name:"CARBINE",damage:6,rate:16,mag:10,cost:1800}];
 
@@ -200,7 +199,7 @@ function drawHud(m:Mission){
 
 function getTestLayout():TestFloorLayout{
  const familyId=hero().family;
- return testFloorLayouts[familyId][Math.min(floor,2)];
+ return testFloorLayouts[familyId][0][Math.min(floor,2)];
 }
 
 function drawWorld(m:Mission){
