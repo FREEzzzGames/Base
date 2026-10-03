@@ -5722,3 +5722,27 @@ html.visual-comfort-enabled video{
 @media(prefers-reduced-motion:reduce){
   .rpgx-btn,.rpgx-action{transition:none}
 }
+
+/* CYBERPUNK COMIC RPG — isolated art direction */
+.rpgx,.rpgx-character{font-family:"Space Mono",monospace}
+.rpgx-stage{background:#050505!important}
+.rpgx-logo strong,.rpgx-level-art h2{font-family:"Space Mono",monospace;font-weight:900;letter-spacing:-.06em;text-transform:uppercase;text-shadow:4px 4px 0 #ff2020,-2px -2px 0 #fff}
+.rpgx-stage:before,.rpgx-level-art:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 4px),radial-gradient(circle at 50% 30%,transparent 20%,rgba(0,0,0,.62) 100%);mix-blend-mode:screen}
+.rpgx-menu,.rpgx-hud,.rpgx-character{filter:contrast(1.12)}
+.rpgx-btn,.rpgx-action,.rpgx-icon{border-width:2px!important;border-radius:0!important;box-shadow:3px 3px 0 #fff!important}
+.rpgx-btn.primary{background:#ff2020!important;color:#fff!important;border-color:#fff!important;box-shadow:4px 4px 0 #fff!important}
+.rpgx-comic-tag{display:inline-block;background:#ff2020;color:#fff;padding:4px 7px;font-weight:900;transform:skew(-8deg);border:2px solid #fff}
+.rpgx-level-screen{padding:10px;background:#050505!important}
+.rpgx-level-art{position:relative;min-height:500px;padding:14px;overflow:hidden;border:2px solid #fff;background:
+ linear-gradient(145deg,rgba(255,32,32,.16),transparent 32%),
+ repeating-linear-gradient(135deg,#080808 0 10px,#111 10px 11px)!important;
+ box-shadow:inset 0 0 0 4px #050505,8px 8px 0 #ff2020;
+}
+.rpgx-level-art h2{font-size:clamp(30px,10vw,62px);line-height:.82;margin:28px 0 12px;max-width:90%}
+.rpgx-level-art p{max-width:680px;font-size:11px;line-height:1.7;text-transform:uppercase}
+.rpgx-objective{margin:18px 0;padding:12px;border:2px solid #fff;background:#000;max-width:620px}
+.rpgx-objective small{display:block;color:#ff2020;font-weight:900;letter-spacing:.16em}.rpgx-objective b{display:block;margin-top:6px;font-size:10px;line-height:1.6}
+.rpgx-comic-panels{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:18px 0}
+.rpgx-comic-panels div{min-height:80px;padding:8px;border:2px solid #fff;background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between}
+.rpgx-comic-panels b{font-size:22px;color:#ff2020}.rpgx-comic-panels span{font-size:7px;font-weight:900}
+@media(max-width:520px){.rpgx-level-art{min-height:470px}.rpgx-level-art p{font-size:9px}.rpgx-comic-panels div{min-height:62px}.rpgx-comic-panels b{font-size:17px}}
