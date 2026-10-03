@@ -226,7 +226,7 @@ function drawWorld(m:Mission){
  // Камера следует за игроком по X, поэтому широкая логическая сцена естественно
  // обрезается по бокам, а не сжимается по вертикали.
  const scale=viewHeight/H;
- const cameraX=clamp(player.x*scale-viewWidth*.5,0,Math.max(0,W*scale-viewWidth));
+ const cameraX=clamp(player.x-viewWidth/(2*scale),0,Math.max(0,W-viewWidth/scale));
  ctx.save();ctx.beginPath();ctx.rect(0,0,viewWidth,viewHeight);ctx.clip();
  ctx.translate(-cameraX,0);ctx.scale(scale,scale);
  drawBackdrop();
