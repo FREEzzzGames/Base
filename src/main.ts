@@ -256,16 +256,26 @@ function bindHomeLayoutEditor(){
       }
 
       if(homeLayoutFocusedBlock!==id){
-        if(isSecond){
-          e.preventDefault();
-          e.stopPropagation();
-          homeLayoutTap=null;
-          homeLayoutFocusedBlock=id;
-          render();
+        if(!isSecond){
+          homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
+          return;
         }
+        e.preventDefault();
+        e.stopPropagation();
+        homeLayoutTap=null;
+        homeLayoutFocusedBlock=id;
+        render();
         return;
       }
 
+      if(isSecond){
+        e.preventDefault();
+        e.stopPropagation();
+        homeLayoutTap=null;
+        finishHomeLayoutEdit();
+        return;
+      }
+      homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
       e.preventDefault();
       e.stopPropagation();
       const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
