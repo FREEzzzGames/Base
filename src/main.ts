@@ -337,7 +337,7 @@ function render(){
 
   app.innerHTML=`
     <div class="app-shell">
-      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}">
+      <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${hudHidden?" portal-hud-hidden":""}${view==="game"?" portal-game-fullscreen":""}">
         ${renderPortalToolbar()}
         <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}">${icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon")}</button>
       </div>
