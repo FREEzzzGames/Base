@@ -521,11 +521,11 @@ function drawSelect(){
    tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
    tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
 
-   // Персонаж начинается заметно ниже имени: зоны не пересекаются даже на узком экране.
-   const avatarTop=y+cardH*.30;
-   const avatarBottom=y+cardH*.68;
+   // Полная фигура живёт в собственной зоне: голова не режется клипом, ноги не уходят в описание.
+   const avatarTop=y+cardH*.25;
+   const avatarBottom=y+cardH*.76;
    const avatarZoneH=avatarBottom-avatarTop;
-   const artScale=Math.max(.92,Math.min(1.16,cardW/255));
+   const artScale=Math.max(.90,Math.min(1.08,cardW/270));
    const spin=performance.now()/1000*.42+i*.8;
    const spinX=.72+.28*Math.abs(Math.cos(spin));
    c.save();
