@@ -152,7 +152,9 @@ const families:Record<FamilyId,Family>={
   moretti:{id:"moretti",name:"MORETTI",accent:"#c58b48",desc:"Street crime and protection.",bonus:"+health / +revolver skill"},
   rossi:{id:"rossi",name:"ROSSI",accent:"#d86c35",desc:"Narcotics network and distribution.",bonus:"+armor / +shotgun skill"},
   bellini:{id:"bellini",name:"BELLINI",accent:"#9f83d6",desc:"Smuggling and illicit logistics.",bonus:"+accuracy / +rifle skill"}
-}; FREEzzz MAFIA — vertical 2D platformer foundation.
+};
+
+/* FREEzzz MAFIA — vertical 2D platformer foundation.
  * Three original visual characters from the locked Arena graphics.
  * Four fictional families. Three-floor missions. Enemy archetypes, career,
  * weapons, armor, money, shop and mission progression.
@@ -472,7 +474,8 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     const map:Record<FamilyId,FighterId>={valenti:"vex",moretti:"ruma",rossi:"korr",bellini:"vex"};
     player.family=id;player.fighter=map[id];player.rank=1;player.xp=0;player.money=150;player.hp=100;player.armor=0;player.weapon="pocket";player.skill=0;player.floor=0;player.x=80;player.y=platformY[0];player.vy=0;
   }
-  function showFamilyIntro(){mode="family";noticeTimer=0;}\n  function startMission(){missionState="briefing";mode="mission";player.floor=0;player.x=70;player.y=platformY[0];player.hp=Math.min(100,player.hp+20);mobs=spawnMobs(0);bullets=[];missionTimer=0;floorClear=false;notice="MISSION "+mission+" · "+floorNames[0];noticeTimer=2;}
+  function showFamilyIntro(){mode="family";noticeTimer=0;}
+  function startMission(){missionState="briefing";mode="mission";player.floor=0;player.x=70;player.y=platformY[0];player.hp=Math.min(100,player.hp+20);mobs=spawnMobs(0);bullets=[];missionTimer=0;floorClear=false;notice="MISSION "+mission+" · "+floorNames[0];noticeTimer=2;}
   function beginPlay(){missionState="play";missionTimer=0;}
   function completeMission(){
     missionState="complete";mode="result";
@@ -616,7 +619,8 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     if(e.key==="ArrowUp"||e.key.toLowerCase()==="w")input2.up=down;
     if(e.key===" "||e.key.toLowerCase()==="f")input2.fire=down;
     if(down&&e.key==="Enter"){
-      if(mode==="select")showFamilyIntro();\n      else if(mode==="family")startMission();
+      if(mode==="select")showFamilyIntro();
+      else if(mode==="family")startMission();
       else if(mode==="mission"&&missionState==="briefing")beginPlay();
       else if(mode==="result"){mission++;startMission();}
       else if(mode==="shop")mode="mission";
