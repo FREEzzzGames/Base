@@ -25,6 +25,7 @@ export class MihiModule{
     root.dataset.mihiRoot="1";
     root.innerHTML=`
       <div class="mihi-3d-anchor" data-mihi-3d-anchor aria-label="Михи"></div>
+      <div class="mihi-speech" data-mihi-speech hidden role="status" aria-live="polite"></div>
       <button class="mihi-orb" data-mihi-toggle type="button" aria-label="Михи">M</button>
       <div class="mihi-panel" data-mihi-panel hidden>
         <header class="mihi-head"><strong>MIHI</strong><button type="button" data-mihi-close aria-label="Закрыть">×</button></header>
@@ -46,13 +47,20 @@ export class MihiModule{
       const text=this.engine.nextReply();
       const message=root.querySelector<HTMLElement>("[data-mihi-message]");
       if(message)message.textContent=text;
+      this.showSpeech(text);
       this.events.emit("mihi:state",{...this.engine.getState(),visible:true});
     });
     this.offs=[
       this.events.on("mihi:state",state=>this.renderState(state)),
+      this.events.on("navigation:changed",()=>this.speakFromContext()),
+      this.events.on("profile:toggled",()=>this.speakFromContext()),
+      this.events.on("live:popup",()=>this.speakFromContext()),
+      this.events.on("radio:playback",()=>this.speakFromContext()),
       this.events.on("mihi:easter-egg",egg=>{
+        const text=egg.title+" — "+(this.findEggText(egg.id)??"");
         const message=root.querySelector<HTMLElement>("[data-mihi-message]");
-        if(message)message.textContent=egg.title+" — "+(this.findEggText(egg.id)??"");
+        if(message)message.textContent=text;
+        this.showSpeech(text);
         this.open();
       })
     ];
@@ -71,8 +79,33 @@ export class MihiModule{
     this.root.style.bottom=Math.max(3,window.innerHeight-rect.bottom+3)+"px";
   }
 
+  private speechTimer:number|undefined;
+  private speechLockUntil=0;
+
   private findEggText(id:string){
     return MIHI_EASTER_EGGS.find(egg=>egg.id===id)?.text??"Что-то изменилось.";
+  }
+
+  private speakFromContext(){
+    const now=Date.now();
+    if(now<this.speechLockUntil)return;
+    this.speechLockUntil=now+1200;
+    this.showSpeech(this.engine.nextReply());
+  }
+
+  private showSpeech(text:string){
+    const bubble=this.root?.querySelector<HTMLElement>("[data-mihi-speech]");
+    if(!bubble)return;
+    bubble.textContent=text;
+    bubble.hidden=false;
+    bubble.classList.remove("mihi-speech-show");
+    void bubble.offsetWidth;
+    bubble.classList.add("mihi-speech-show");
+    if(this.speechTimer!==undefined)window.clearTimeout(this.speechTimer);
+    this.speechTimer=window.setTimeout(()=>{
+      bubble.classList.remove("mihi-speech-show");
+      bubble.hidden=true;
+    },5200);
   }
 
   private renderState(state:{visible:boolean;layer:number}){
@@ -100,6 +133,8 @@ export class MihiModule{
   dispose(){
     this.offs.forEach(off=>off());
     this.offs=[];
+    if(this.speechTimer!==undefined)window.clearTimeout(this.speechTimer);
+    this.speechTimer=undefined;
     this.geometryObserver?.disconnect();
     this.geometryObserver=undefined;
     window.removeEventListener("resize",this.syncGeometry);
