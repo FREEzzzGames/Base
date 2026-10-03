@@ -94,6 +94,36 @@ let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
+
+/* Keep one HTMLVideoElement per portal background across render() calls. */
+const persistentBackgroundVideos=new Map<string,HTMLVideoElement>();
+
+function persistentBackgroundVideo(key:string,src:string,className:string):string{
+  return '<div class="'+className+'" data-persistent-video="'+key+'" data-persistent-video-src="'+escapeHtml(src)+'" aria-hidden="true"></div>';
+}
+
+function mountPersistentBackgroundVideos(){
+  document.querySelectorAll<HTMLElement>("[data-persistent-video]").forEach(slot=>{
+    const key=slot.dataset.persistentVideo||"";
+    const src=slot.dataset.persistentVideoSrc||"";
+    if(!key||!src)return;
+    let video=persistentBackgroundVideos.get(key);
+    if(!video){
+      video=document.createElement("video");
+      video.autoplay=true;
+      video.muted=true;
+      video.loop=true;
+      video.playsInline=true;
+      video.preload="auto";
+      video.setAttribute("aria-hidden","true");
+      video.src=src;
+      persistentBackgroundVideos.set(key,video);
+    }
+    video.className=slot.className;
+    slot.replaceWith(video);
+    if(video.paused)void video.play().catch(()=>{});
+  });
+}
 function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
   radioPlaybackStatus=status;
   portalEvents.emit("radio:playback",{status});
@@ -167,7 +197,7 @@ function renderPortalToolbar(){
     ["library","library","LIBRARY"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
-    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
+    ${persistentBackgroundVideo("hud",portalVideoUrl("hud"),"portal-toolbar-background-video")}
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
@@ -191,9 +221,7 @@ function render(){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home">
         <section class="hero portal-block home-hero" data-portal-block="hero">
-          <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-            <source src="${portalVideoUrl("hero")}" type="video/mp4">
-          </video>
+          ${persistentBackgroundVideo("hero",portalVideoUrl("hero"),"home-hero-video")}
           <div class="home-hero-content">
           <div class="home-hero-top">
             <div class="home-hero-brand">
@@ -336,6 +364,7 @@ function render(){
     </div>`;
 
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
+  mountPersistentBackgroundVideos();
   bind();
   bindHudTouchGesture();
   updateHomeClock();
@@ -364,7 +393,7 @@ function homeCard(v:Exclude<View,"home">){
   const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
-    ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
+    ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
     <span class="home-card-title">${title}</span>
   </div>`;
 }
