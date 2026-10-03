@@ -158,7 +158,7 @@ function savePortalSessionSnapshot(){
 }
 
 function renderPortalToolbar(){
-  const items:Array<[View,string,string]>=[
+  const items:Array<[View,string,string]>= [
     ["game","game","GAME"],
     ["live","video","LIVE"],
     ["chat","chat","CHAT"],
@@ -166,19 +166,25 @@ function renderPortalToolbar(){
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"]
   ];
-  return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
-    <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
-    <div class="portal-toolbar-main">
-      <div class="portal-toolbar-nav" role="tablist">
-        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
-        <div class="portal-toolbar-language-wrap">
-          <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
-          <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
+  const left=items.slice(0,3);
+  const right=items.slice(3);
+  const button=([target,iconName,label]:[View,string,string])=>`<button class="portal-bar-button ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-bar-icon")}</button>`;
+  return `<nav class="portal-bar" aria-label="FREEzzz navigation">
+    <video class="portal-bar-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
+    <div class="portal-bar-surface">
+      <div class="portal-bar-nav" role="tablist">
+        ${left.map(button).join("")}
+        <div class="portal-bar-language">
+          <button class="portal-bar-button portal-bar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">
+            ${icon("languages","portal-bar-icon")}
+          </button>
+          <div class="portal-bar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
             <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
             <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
             <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
           </div>
         </div>
+        ${right.map(button).join("")}
       </div>
     </div>
   </nav>`;
