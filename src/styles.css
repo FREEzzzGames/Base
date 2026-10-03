@@ -5536,3 +5536,12 @@ h1,h2,h3,h4,h5,h6,
   font-family:var(--portal-font-accent)!important;
 }
 
+/* NICKNAME AUTHORITY — HERO + PROFILE */
+.home-hero-profile-trigger,
+.home-hero-profile-trigger:visited,
+.profile-card .profile-identity h2,
+.profile-card .profile-identity h2:visited{
+  color:#ff2020!important;
+  -webkit-text-fill-color:#ff2020!important;
+  text-shadow:none!important;
+}
