@@ -38,132 +38,123 @@ function noise(ctx:CanvasRenderingContext2D,id:FighterId,x:number,y:number,w:num
    highlights are all separate pixel clusters. */
 function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:number,frame:number,flip=false,ghost=false,scale=1){
   const d=flip?-1:1;
-  const idle=(frame%18<9?0:1);
-  const swing=(frame%16<8?-1:1);
-  const breathing=(frame%20<10?0:1);
+  const idle=frame%20<10?0:1;
+  const step=frame%16<8?-1:1;
+  const breathe=frame%24<12?0:1;
   ctx.save();
   ctx.translate(Math.round(cx),Math.round(ground));
   ctx.scale(d*scale,scale);
   if(ghost)ctx.globalAlpha=.16;
 
-  // Ground contact / sprite shadow.
-  rect(ctx,-31,-2,62,3,"#030405");
-  rect(ctx,-23,-1,46,2,"#11171a");
+  // Soft pixel-contact shadow.
+  rect(ctx,-27,-2,54,3,"#020304");
+  rect(ctx,-20,-4,40,2,"#0d1215");
 
-  // Legs: separate silhouettes, knees, boots and material planes.
-  const legA=idle,legB=1-idle;
+  // Legs: separated human proportions with knees, calves and footwear.
+  const legShift=idle?1:-1;
   if(f.build===0){
-    poly(ctx,[-15,-35,-4,-34,-5,-10,-13,-4,-18,-3,-17,-8,-11,-13,-12,-30],"#080b0e");
-    poly(ctx,[3,-34,14,-34,16,-11,21,-5,18,-2,3,-4,5,-13],"#080b0e");
-    poly(ctx,[-13,-35,-3,-34,-4,-11,-12,-6,-17,-4,-15,-10,-10,-14,-11,-30],f.gear);
-    poly(ctx,[4,-34,13,-34,15,-11,19,-5,16,-3,4,-5,6,-13],shade(f.gear,.72));
-    rect(ctx,-14,-19,7,10,f.gearHi);rect(ctx,7,-20,7,11,shade(f.gearHi,.72));
+    poly(ctx,[-13,-45,-2,-45,-3,-25,-6,-13,-11,-5,-18,-4,-15,-12,-10,-24],f.gear);
+    poly(ctx,[2,-45,13,-45,15,-24,18,-12,20,-5,14,-3,8,-7,7,-15,5,-27],shade(f.gear,.82));
+    rect(ctx,-13,-32,8,7,f.gearHi);rect(ctx,6,-31,8,7,shade(f.gearHi,.7));
   }else if(f.build===1){
-    poly(ctx,[-17,-35,-4,-35,-2,-8,-13,-3,-22,-2,-18,-8],"#080a0b");
-    poly(ctx,[2,-35,15,-35,18,-8,23,-3,19,-1,3,-3,5,-10],"#080a0b");
-    poly(ctx,[-15,-35,-4,-35,-3,-9,-14,-4,-21,-3,-17,-9],f.gear);
-    poly(ctx,[3,-35,14,-35,17,-9,21,-4,18,-2,4,-4,6,-10],shade(f.gear,.74));
-    rect(ctx,-14,-21,8,12,shade(f.gearHi,.82));rect(ctx,7,-21,8,13,shade(f.gearHi,.68));
+    poly(ctx,[-14,-46,-2,-46,-1,-26,-5,-14,-10,-5,-19,-3,-15,-11,-10,-25],f.gear);
+    poly(ctx,[2,-46,14,-46,16,-25,19,-12,21,-4,14,-2,8,-8,7,-16,5,-27],shade(f.gear,.82));
+    rect(ctx,-14,-31,9,8,shade(f.gearHi,.88));rect(ctx,6,-30,9,8,shade(f.gearHi,.68));
   }else{
-    poly(ctx,[-17,-36,-3,-36,-2,-7,-15,-3,-22,-2,-21,-9],"#07090a");
-    poly(ctx,[2,-36,16,-36,18,-8,23,-2,19,0,2,-2,4,-10],"#07090a");
-    poly(ctx,[-16,-36,-3,-36,-2,-8,-15,-3,-21,-3,-20,-10],f.gear);
-    poly(ctx,[3,-36,15,-36,17,-9,21,-3,18,-1,3,-3,5,-10],shade(f.gear,.72));
-    rect(ctx,-15,-22,6,15,f.gearHi);rect(ctx,9,-22,6,15,shade(f.gearHi,.72));
-    rect(ctx,-13,-17,3,7,"#20282d");rect(ctx,10,-17,3,7,"#20282d");
+    poly(ctx,[-15,-47,-3,-47,-2,-25,-6,-13,-10,-4,-20,-3,-17,-11,-11,-25],f.gear);
+    poly(ctx,[3,-47,15,-47,17,-25,20,-11,22,-3,15,-1,8,-8,7,-16,5,-27],shade(f.gear,.76));
+    rect(ctx,-15,-33,9,9,f.gearHi);rect(ctx,7,-32,9,9,shade(f.gearHi,.68));
+    rect(ctx,-13,-29,3,10,"#20282d");rect(ctx,10,-28,3,10,"#20282d");
   }
-  // Boot soles.
-  rect(ctx,-20,-4,14,3,"#050607");rect(ctx,7,-4,15,3,"#050607");
-  rect(ctx,-18,-6,9,2,shade(f.gearHi,.7));rect(ctx,9,-6,10,2,shade(f.gearHi,.62));
+  // Boots/shoes with distinct toes.
+  poly(ctx,[-18,-7,-9,-8,-5,-4,-7,-1,-21,-1,-22,-4], "#050607");
+  poly(ctx,[7,-6,16,-8,22,-4,20,-1,6,-1,4,-3], "#050607");
+  rect(ctx,-17,-8,8,2,shade(f.gearHi,.7));rect(ctx,9,-8,9,2,shade(f.gearHi,.62));
 
-  // Torso silhouette, chest planes, belt and lower garment.
-  const shoulder=f.build===2?22:19;
-  const waist=f.build===2?15:12;
-  rect(ctx,-shoulder,-71,shoulder*2,10,"#07090b");
-  poly(ctx,[-shoulder+2,-66,shoulder-2,-66,waist+6,-29,waist,-21,-waist,-21,-waist-6,-29],f.gear);
-  poly(ctx,[-shoulder+4,-63,0,-58,shoulder-4,-63,shoulder-5,-34,8,-29,-8,-29,-shoulder+5,-34],f.gearHi);
-  // Central torso shadow gives a sculpted, photographed-material read.
-  poly(ctx,[-3,-61,3,-61,7,-31,3,-27,-3,-27,-7,-31],shade(f.gear,.62));
-  rect(ctx,-waist-1,-35,waist*2+2,7,shade(f.gear,.82));
-  rect(ctx,-waist+2,-29,(waist-2)*2,5,f.gear);
-  rect(ctx,-8,-56,16,2,shade(f.gearHi,.9));
-  rect(ctx,-5,-47,10,1,"#050607");
-  rect(ctx,-10,-39,20,1,shade("#ffffff",.12));
+  // Hips / waist.
+  rect(ctx,-13,-53,26,9,"#07090b");
+  poly(ctx,[-13,-52,13,-52,10,-43,7,-39,-7,-39,-10,-43],f.gear);
+  rect(ctx,-10,-45,20,4,shade(f.gearHi,.72));
+  rect(ctx,-11,-40,22,3,"#10161a");
 
-  // Shoulders / arms with hard joints and exposed hands.
-  const armC=shade(f.skin,.92);
-  poly(ctx,[-shoulder+1,-62,-shoulder-8,-58,-shoulder-8,-34,-shoulder-3,-30,-shoulder+4,-35,-shoulder+3,-56],f.gear);
-  poly(ctx,[shoulder-1,-62,shoulder+8,-58,shoulder+8,-34,shoulder+3,-30,shoulder-4,-35,shoulder-3,-56],shade(f.gear,.72));
-  rect(ctx,-shoulder-7,-48+swing,6,14,armC);rect(ctx,shoulder+2,-48-swing,6,14,shade(f.skin,.76));
-  rect(ctx,-shoulder-8,-35+swing,8,7,f.skin);rect(ctx,shoulder+2,-35-swing,8,7,f.skin);
-  rect(ctx,-shoulder-7,-35+swing,4,2,f.skinHi);rect(ctx,shoulder+3,-35-swing,4,2,f.skinHi);
-  rect(ctx,-shoulder-5,-51+swing,3,8,shade(f.gearHi,.75));rect(ctx,shoulder+2,-51-swing,3,8,shade(f.gearHi,.65));
+  // Torso is tapered rather than rectangular: chest, ribs, abdomen.
+  const shoulder=f.build===2?23:f.build===1?21:19;
+  const waist=f.build===2?13:f.build===1?12:10;
+  poly(ctx,[-shoulder,-78,shoulder,-78,shoulder-4,-61,waist+6,-42,waist,-37,-waist,-37,-waist-6,-42,-shoulder+4,-61],f.gear);
+  poly(ctx,[-shoulder+4,-73,0,-69,shoulder-4,-73,shoulder-7,-59,5,-48,-5,-48,-shoulder+7,-59],f.gearHi);
+  poly(ctx,[-4,-67,4,-67,7,-48,2,-44,-2,-44,-7,-48],shade(f.gear,.58));
+  // Costume construction lines.
+  rect(ctx,-9,-61,18,2,shade(f.gearHi,.82));
+  rect(ctx,-8,-51,16,2,shade(f.gear,.55));
+  rect(ctx,-waist-1,-43,waist*2+2,4,shade(f.gearHi,.72));
 
-  // Neck, ears, head and jaw.
-  rect(ctx,-8,-80,16,10,f.skinShadow);
-  const headW=f.head===2?12:11;
-  poly(ctx,[-headW,-96,headW,-96,headW+3,-88,headW,-77,headW-5,-71,-headW+5,-71,-headW,-77,-headW-3,-88],f.skin);
-  rect(ctx,-headW+2,-92,headW*2-4,13,f.skinHi);
-  rect(ctx,-headW+1,-79,headW*2-2,5,f.skin);
-  rect(ctx,-headW-3,-89,3,8,f.skinShadow);rect(ctx,headW,-89,3,8,shade(f.skinShadow,.85));
-  // Cheek / jaw planes.
-  rect(ctx,-headW+2,-78,5,3,shade(f.skinHi,.82));rect(ctx,headW-7,-78,5,3,shade(f.skinShadow,.85));
-  rect(ctx,-5,-73,10,2,f.skinShadow);
+  // Arms: upper arm, forearm and relaxed hands.
+  const skinArm=shade(f.skin,.92);
+  poly(ctx,[-shoulder+1,-73,-shoulder-8,-67,-shoulder-8,-48,-shoulder-4,-38,-shoulder+3,-40,-shoulder+5,-51,-shoulder+4,-68],f.gear);
+  poly(ctx,[shoulder-1,-73,shoulder+8,-67,shoulder+8,-48,shoulder+4,-38,shoulder-3,-40,shoulder-5,-51,shoulder-4,-68],shade(f.gear,.76));
+  rect(ctx,-shoulder-7,-52+step,6,14,skinArm);rect(ctx,shoulder+1,-52-step,6,14,shade(f.skin,.78));
+  rect(ctx,-shoulder-8,-40+step,8,7,f.skin);rect(ctx,shoulder+1,-40-step,8,7,f.skin);
+  rect(ctx,-shoulder-7,-40+step,4,2,f.skinHi);rect(ctx,shoulder+2,-40-step,4,2,f.skinHi);
 
-  // Hair / headgear and silhouette-defining accessories.
+  // Neck and head: smaller neck, cheekbones and jaw to avoid the robotic cube look.
+  rect(ctx,-6,-86,12,10,f.skinShadow);
+  const hw=f.head===2?12:11;
+  poly(ctx,[-hw,-105,-6,-108,6,-108,hw,-104,hw+2,-94,hw,-84,7,-77,0,-74,-7,-77,-hw,-84,-hw-2,-94],f.skin);
+  poly(ctx,[-hw+2,-101,-5,-104,5,-104,hw-2,-100,hw-1,-91,6,-82,-5,-82,-hw+1,-91],f.skinHi);
+  // Ears and jaw planes.
+  rect(ctx,-hw-3,-96,3,8,f.skinShadow);rect(ctx,hw,-96,3,8,shade(f.skinShadow,.86));
+  rect(ctx,-7,-82,14,4,f.skinShadow);
+  rect(ctx,-hw+1,-86,5,3,shade(f.skinHi,.78));rect(ctx,hw-6,-86,5,3,shade(f.skinShadow,.84));
+
+  // Hair / headgear silhouette.
   if(f.id==="vex"){
-    rect(ctx,-13,-100,26,5,"#0c1013");rect(ctx,-10,-103,20,3,"#050607");
-    rect(ctx,-12,-96,5,2,f.accent);rect(ctx,7,-96,5,2,f.accent);
+    poly(ctx,[-13,-104,-8,-111,5,-111,13,-105,10,-100,-1,-103,-8,-100], "#11171a");
+    rect(ctx,8,-104,5,3,f.accent);rect(ctx,-12,-103,5,3,shade(f.accent,.7));
   }else if(f.id==="ruma"){
-    rect(ctx,-14,-100,28,5,f.accent);rect(ctx,-11,-104,22,4,shade(f.accent,.72));
-    rect(ctx,-13,-95,4,9,f.skinShadow);rect(ctx,9,-95,4,9,f.skinShadow);
-    rect(ctx,-6,-101,12,2,shade(f.accent,.9));
+    poly(ctx,[-15,-104,-9,-111,8,-111,15,-104,12,-99,-10,-99], "#6a432d");
+    rect(ctx,-13,-101,26,4,f.accent);
+    rect(ctx,-10,-96,3,10,f.skinShadow);rect(ctx,7,-96,3,10,f.skinShadow);
   }else{
-    rect(ctx,-15,-100,30,7,"#151a1e");rect(ctx,-12,-104,24,4,"#080a0c");
-    rect(ctx,-17,-94,4,10,f.accent);rect(ctx,13,-94,4,10,f.accent);
-    rect(ctx,-20,-90,3,6,shade(f.accent,.72));rect(ctx,17,-90,3,6,shade(f.accent,.72));
+    rect(ctx,-14,-109,28,7,"#171c20");rect(ctx,-11,-113,22,4,"#080a0c");
+    rect(ctx,-17,-103,4,10,f.accent);rect(ctx,13,-103,4,10,f.accent);
   }
 
-  // Facial pixel clusters.
-  rect(ctx,-8,-87,5,2,"#171414");rect(ctx,3,-87,5,2,"#171414");
-  rect(ctx,-7,-86,2,1,"#f0eee7");rect(ctx,4,-86,2,1,"#f0eee7");
-  rect(ctx,-2,-84,4,5,f.skinShadow);
-  rect(ctx,-5,-78,10,1,f.skinShadow);
-  rect(ctx,-8,-75,5,2,f.skinHi);rect(ctx,3,-75,5,2,f.skinHi);
-  if(f.id==="korr"){rect(ctx,-10,-81,20,3,f.gearHi);rect(ctx,-8,-77,16,3,f.skinShadow);}
-  if(f.id==="ruma"){rect(ctx,-12,-74,24,2,f.accent);}
+  // Face: brows, eyes, nose, mouth and cheek pixels.
+  rect(ctx,-8,-98,6,2,"#201817");rect(ctx,2,-98,6,2,"#201817");
+  rect(ctx,-7,-96,3,2,"#ece8df");rect(ctx,4,-96,3,2,"#ece8df");
+  rect(ctx,-2,-94,4,6,f.skinShadow);
+  rect(ctx,-6,-88,4,2,f.skinHi);rect(ctx,2,-88,4,2,shade(f.skinShadow,.86));
+  rect(ctx,-5,-83,10,2,f.skinShadow);
+  rect(ctx,-4,-81,8,1,shade(f.skinHi,.7));
+  if(f.id==="korr"){rect(ctx,-10,-90,20,3,f.gearHi);rect(ctx,-7,-86,14,2,f.skinShadow);}
+  if(f.id==="ruma"){rect(ctx,-11,-84,22,2,shade(f.accent,.9));}
 
-  // Fighter-specific construction.
+  // Individual costume identity.
   if(f.id==="vex"){
-    rect(ctx,-16,-62,6,25,f.accent);rect(ctx,10,-62,6,25,shade(f.accent,.66));
-    rect(ctx,-8,-54,16,3,"#050607");rect(ctx,-6,-42,12,2,f.gearHi);
-    rect(ctx,-15,-26,9,3,f.accent);rect(ctx,6,-26,9,3,shade(f.accent,.7));
-    rect(ctx,-10,-59,2,15,shade(f.accent,.78));rect(ctx,8,-59,2,15,shade(f.accent,.55));
+    rect(ctx,-17,-72,7,26,f.accent);rect(ctx,10,-72,7,26,shade(f.accent,.64));
+    rect(ctx,-8,-65,16,3,"#06080a");rect(ctx,-7,-52,14,2,f.gearHi);
+    rect(ctx,-15,-38,8,3,f.accent);rect(ctx,7,-38,8,3,shade(f.accent,.7));
+    rect(ctx,-10,-69,2,14,shade(f.accent,.82));rect(ctx,8,-69,2,14,shade(f.accent,.55));
   }else if(f.id==="ruma"){
-    rect(ctx,-17,-60,34,6,shade(f.accent,.72));rect(ctx,-12,-52,24,5,f.gearHi);
-    rect(ctx,-9,-44,18,3,f.accent);rect(ctx,-14,-35,6,6,shade(f.accent,.62));rect(ctx,8,-35,6,6,shade(f.accent,.62));
-    rect(ctx,-6,-59,3,17,shade(f.accent,.9));rect(ctx,4,-59,3,17,shade(f.accent,.55));
+    rect(ctx,-18,-72,36,7,shade(f.accent,.72));rect(ctx,-13,-63,26,5,f.gearHi);
+    rect(ctx,-10,-53,20,3,f.accent);rect(ctx,-15,-41,7,6,shade(f.accent,.62));rect(ctx,8,-41,7,6,shade(f.accent,.62));
+    rect(ctx,-6,-70,3,16,shade(f.accent,.9));rect(ctx,4,-70,3,16,shade(f.accent,.55));
   }else{
-    rect(ctx,-20,-64,40,8,f.accent);rect(ctx,-18,-55,36,5,shade(f.accent,.72));
-    rect(ctx,-12,-46,24,4,f.gearHi);rect(ctx,-15,-38,8,6,"#15191c");rect(ctx,7,-38,8,6,"#15191c");
-    rect(ctx,-19,-25,8,3,f.accent);rect(ctx,11,-25,8,3,shade(f.accent,.68));
-    rect(ctx,-7,-61,3,13,shade(f.accent,.86));rect(ctx,4,-61,3,13,shade(f.accent,.55));
+    rect(ctx,-21,-75,42,9,f.accent);rect(ctx,-19,-64,38,5,shade(f.accent,.72));
+    rect(ctx,-13,-53,26,4,f.gearHi);rect(ctx,-16,-44,9,6,"#15191c");rect(ctx,7,-44,9,6,"#15191c");
+    rect(ctx,-20,-38,9,3,f.accent);rect(ctx,11,-38,9,3,shade(f.accent,.68));
+    rect(ctx,-7,-72,3,13,shade(f.accent,.86));rect(ctx,4,-72,3,13,shade(f.accent,.55));
   }
 
-  // Material grain, specular chips and controlled pixel noise.
-  noise(ctx,f.id,-20,-102,40,79,f.gear,seedFor(f.id)+frame*13,.14);
-  noise(ctx,f.id,-12,-94,24,25,f.skin,seedFor(f.id)+7,.07);
-  for(let i=0;i<7;i++){
-    const yy=-65+i*6;
-    rect(ctx,-10+(i%3)*5,yy,4,1,shade("#ffffff",.08+i*.018));
-  }
-
-  // Idle highlight moves across the costume without adding new content.
-  if(idle){rect(ctx,-shoulder+5,-60,2,17,shade(f.accent,.55));}
-  if(breathing){rect(ctx,-4,-27,8,1,shade(f.gearHi,.55));}
-
+  // Controlled material grain: subtle, not enough to destroy anatomy.
+  noise(ctx,f.id,-22,-112,44,78,f.gear,seedFor(f.id)+frame*13,.10);
+  noise(ctx,f.id,-12,-101,24,27,f.skin,seedFor(f.id)+7,.045);
+  for(let i=0;i<8;i++)rect(ctx,-10+(i%3)*5,-70+i*5,3,1,shade("#ffffff",.06+i*.014));
+  if(idle)rect(ctx,-shoulder+5,-69,2,17,shade(f.accent,.5));
+  if(breathe)rect(ctx,-4,-39,8,1,shade(f.gearHi,.52));
   ctx.restore();
 }
+
 function drawArena(ctx:CanvasRenderingContext2D,t:number){
   const g=ctx.createLinearGradient(0,0,0,224);
   g.addColorStop(0,"#030507");g.addColorStop(.30,"#0c1317");g.addColorStop(.58,"#202a2f");g.addColorStop(1,"#070a0c");
@@ -233,29 +224,43 @@ function hud(ctx:CanvasRenderingContext2D,a:Fighter,b:Fighter,hpA:number,hpB:num
   text(ctx,String(scoreA)+" : "+String(scoreB),160,28,5,"#7e898d","center");
 }
 
+function drawEmblem(ctx:CanvasRenderingContext2D,id:FighterId,cx:number,cy:number,active:boolean){
+  const f=fighters[id];
+  ctx.save();
+  ctx.globalAlpha=active?.95:.65;
+  ctx.strokeStyle=f.accent;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  if(id==="vex"){ctx.moveTo(cx,cy-15);ctx.lineTo(cx+12,cy-5);ctx.lineTo(cx+8,cy+13);ctx.lineTo(cx-8,cy+13);ctx.lineTo(cx-12,cy-5);ctx.closePath();}
+  else if(id==="ruma"){ctx.moveTo(cx,cy-16);ctx.lineTo(cx+14,cy);ctx.lineTo(cx,cy+16);ctx.lineTo(cx-14,cy);ctx.closePath();}
+  else{ctx.moveTo(cx-15,cy-8);ctx.lineTo(cx,cy-17);ctx.lineTo(cx+15,cy-8);ctx.lineTo(cx+11,cy+11);ctx.lineTo(cx,cy+17);ctx.lineTo(cx-11,cy+11);ctx.closePath();}
+  ctx.stroke();
+  rect(ctx,cx-2,cy-2,4,4,f.accent);
+  ctx.restore();
+}
 function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
-  ctx.fillStyle="#050708";ctx.fillRect(0,0,W,H);
-  // Console-like selection header.
-  rect(ctx,0,0,W,2,"#657177");
-  text(ctx,"SELECT FIGHTER",160,9,14,"#f0eee7","center");
-  text(ctx,"FREEzzz ARENA",160,27,6,"#7e898d","center");
-  text(ctx,"CHOOSE YOUR FIGHTER",160,36,5,"#59656b","center");
+  ctx.fillStyle="#050607";ctx.fillRect(0,0,W,H);
+  rect(ctx,0,0,W,2,"#7b8588");
+  text(ctx,"SELECT FIGHTER",160,8,13,"#f0eee7","center");
+  text(ctx,"FREEzzz ARENA",160,25,6,"#8b969a","center");
+  text(ctx,"THREE ORIGINAL FIGHTERS",160,34,5,"#566168","center");
 
   const ids:FighterId[]=["vex","ruma","korr"];
   ids.forEach((id,i)=>{
     const f=fighters[id],x=54+i*106,active=id===selected;
-    rect(ctx,x-47,48,94,128,active?"#182126":"#0b1013");
-    rect(ctx,x-47,48,94,3,active?f.accent:"#2e383d");
-    rect(ctx,x-42,54,84,1,"#364248");
-    rect(ctx,x-39,58,78,87,"#0a0f12");
-    drawSprite(ctx,f,x,145,frameForSelection(id),false,false,1.05);
-    text(ctx,f.name,x,151,11,active?"#f0eee7":"#aab1b4","center");
-    text(ctx,f.tag,x,165,5,f.accent,"center");
-    text(ctx,"SPD "+f.speed+"  PWR "+f.power,x,175,5,"#8a969b","center");
-    text(ctx,"GRD "+f.guard,x,184,5,"#59656b","center");
+    // Poster-like card with a dark portrait field and faction mark.
+    rect(ctx,x-49,46,98,137,active?"#151d21":"#0b1013");
+    rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
+    rect(ctx,x-44,51,88,87,"#070b0d");
+    drawEmblem(ctx,id,x,72,active);
+    drawSprite(ctx,f,x,145,frameForSelection(id),false,false,1.12);
+    rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
+    text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
+    text(ctx,f.tag,x,161,5,f.accent,"center");
+    text(ctx,"SPD "+f.speed+"  PWR "+f.power+"  GRD "+f.guard,x,171,4,"#7e898d","center");
   });
-  text(ctx,"◀  ▶   SELECT",82,205,6,"#d5d8d7","center");
-  text(ctx,"ENTER   START",238,205,6,"#d5d8d7","center");
+  text(ctx,"◀  ▶   SELECT",80,204,6,"#d5d8d7","center");
+  text(ctx,"ENTER   START",240,204,6,"#d5d8d7","center");
 }
 
 function frameForSelection(id:FighterId){
