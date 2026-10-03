@@ -523,17 +523,14 @@ function drawEnemy(e:Enemy){
 }
 function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:number){
  if(!ctx)return;
- const w=weapons[kind]||weapons[0];
  // Чисто визуальный слой: стилизованный пиксельный силуэт без изменения игровой логики.
  const lengths=[20,23,27,30,28,32];
  const bodies=[7,7,6,7,9,7];
  const length=lengths[kind]||22;
  const body=bodies[kind]||7;
- const flip=player.facing<0?-1:1;
  ctx.save();
  ctx.translate(handX,handY);
  ctx.rotate(angle);
- ctx.scale(flip,1);
  // Тень/контур
  rect(-5,-body/2-2,length+9,body+4,"#101417");
  // Основной корпус
