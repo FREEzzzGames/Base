@@ -1,0 +1,36 @@
+/* FREEzzz MAFIA — RTS-grade visual treatment */
+.portal-game-fullscreen .freezzz-mafia-frame{
+  background:radial-gradient(ellipse at 50% 42%,rgba(86,100,96,.10),transparent 54%),linear-gradient(180deg,#101517 0%,#07090b 100%)!important;
+  isolation:isolate!important;
+}
+.portal-game-fullscreen .freezzz-mafia-canvas{
+  image-rendering:auto!important;
+  filter:saturate(1.12) contrast(1.10) brightness(.98)!important;
+  transform:translateZ(0);
+}
+.portal-game-fullscreen .freezzz-mafia-frame::before{
+  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.16) 72%,rgba(0,0,0,.46) 100%),linear-gradient(180deg,rgba(255,255,255,.025),transparent 22%,transparent 78%,rgba(0,0,0,.12));
+  mix-blend-mode:multiply;
+}
+.portal-game-fullscreen .freezzz-mafia-frame::after{
+  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.18;
+  background-image:radial-gradient(circle at 18% 28%,rgba(255,255,255,.14) 0 1px,transparent 1.5px),radial-gradient(circle at 72% 64%,rgba(0,0,0,.20) 0 1px,transparent 1.5px),radial-gradient(circle at 42% 82%,rgba(255,255,255,.08) 0 1px,transparent 1.5px);
+  background-size:37px 41px,53px 47px,71px 67px;
+  mix-blend-mode:soft-light;
+}
+.portal-game-fullscreen .freezzz-mafia-ui{z-index:4!important}
+.portal-game-fullscreen .mafia-level-bg,.portal-game-fullscreen .mafia-menu-live-bg{
+  filter:saturate(.95) contrast(1.08) brightness(.52)!important;mix-blend-mode:normal!important;
+}
+.portal-game-fullscreen .mafia-menu-live-bg{opacity:.36!important}
+.portal-game-fullscreen .mafia-menu-actions button,.portal-game-fullscreen .mafia-game-menu button,.portal-game-fullscreen .mafia-combat-buttons button,.portal-game-fullscreen .mafia-level-card{
+  box-shadow:inset 0 1px rgba(255,255,255,.055),inset 0 -2px rgba(0,0,0,.28)!important;text-shadow:0 1px 2px #000!important;
+}
+.portal-game-fullscreen .mafia-menu-actions button:first-child,.portal-game-fullscreen .mafia-combat-buttons button:first-child{
+  box-shadow:inset 0 1px rgba(255,255,255,.08),0 0 14px rgba(84,214,216,.12)!important;
+}
+.portal-game-fullscreen .mafia-touch-move,.portal-game-fullscreen .mafia-aim-sensor{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.45),0 5px 20px rgba(0,0,0,.24)!important;
+}
