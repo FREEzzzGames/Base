@@ -15,7 +15,7 @@ import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
-import { mountFreezzzMafia } from "./freezzz-arena";
+import { mountFreezzzMafia } from "./freezzz-mafia";
 
 initTelegramBridge();
 initVisualComfort();
