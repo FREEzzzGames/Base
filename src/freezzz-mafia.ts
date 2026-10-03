@@ -212,7 +212,10 @@ function update(dt:number){
  enemies=enemies.filter(e=>e.hp>0);
  if(enemies.length===0){objectiveProgress=1;}
  floorTimer+=dt;
- if((currentMission().objective==="survive"&&floorTimer>900)||objectiveProgress>=1||player.x>600){
+ const m=currentMission();
+ const reachedExit=player.x>600&&player.y<145;
+ const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
+ if(objectiveDone){
    if(floor<2){floor++;spawnFloor();}else completeMission();
  }
 }
@@ -225,8 +228,14 @@ function completeMission(){
 function nextMission(){
  const h=selected!;
  const donePersonal=personal.filter(m=>m.hero===h&&save.completed.includes(m.id)).length;
- if(donePersonal<10){missionIndex=personal.findIndex(m=>m.hero===h&&!save.completed.includes(m.id));}
- else missionIndex=allMissions.findIndex(m=>m.id==="joint_11");
+ if(donePersonal<10){
+   missionIndex=personal.findIndex(m=>m.hero===h&&!save.completed.includes(m.id));
+ }else{
+   const jointOrder=["joint_11","joint_12","joint_13"];
+   const nextJoint=jointOrder.find(id=>!save.completed.includes(id));
+   missionIndex=nextJoint?allMissions.findIndex(m=>m.id===nextJoint):-1;
+   if(missionIndex<0){mode="select";dialogueOpen=false;storeSave();return;}
+ }
  if(missionIndex<0)missionIndex=0;
  mode="briefing";dialogueIndex=0;dialogueOpen=true;
 }
@@ -238,6 +247,7 @@ function beginSelected(){
 }
 function advanceDialogue(){
  const m=currentMission();
+ if(mode==="shop"){mode="play";dialogueOpen=false;return;}
  if(mode==="family"){mode="briefing";dialogueIndex=0;dialogueOpen=true;return;}
  if(mode==="result"){dialogueOpen=false;nextMission();return;}
  if(!dialogueOpen){dialogueOpen=true;dialogueIndex=0;return;}
