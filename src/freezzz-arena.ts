@@ -38,179 +38,170 @@ function noise(ctx:CanvasRenderingContext2D,id:FighterId,x:number,y:number,w:num
    highlights are all separate pixel clusters. */
 function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:number,frame:number,flip=false,ghost=false,scale=1){
   const d=flip?-1:1;
-  const idle=frame%24<12?0:1;
-  const step=frame%18<9?-1:1;
+  const idle=frame%28<14;
+  const step=frame%20<10?-1:1;
   ctx.save();
   ctx.translate(cx,ground);
   ctx.scale(d*scale,scale);
   if(ghost)ctx.globalAlpha=.16;
 
-  // Smooth contact shadow.
+  // Human-scale silhouette: longer legs, narrower waist, articulated shoulders.
+  const skin=ctx.createLinearGradient(-12,-116,14,-68);
+  skin.addColorStop(0,f.skinHi);skin.addColorStop(.32,f.skin);skin.addColorStop(.76,shade(f.skin,.84));skin.addColorStop(1,f.skinShadow);
+  const cloth=ctx.createLinearGradient(-22,-84,22,-24);
+  cloth.addColorStop(0,f.gearHi);cloth.addColorStop(.45,f.gear);cloth.addColorStop(1,shade(f.gear,.55));
+  const accent=ctx.createLinearGradient(-18,-82,18,-30);
+  accent.addColorStop(0,shade(f.accent,.95));accent.addColorStop(.5,f.accent);accent.addColorStop(1,shade(f.accent,.58));
+
+  // Ground shadow.
   ctx.save();
-  ctx.globalAlpha*=.55;
-  const shadow=ctx.createRadialGradient(0,-2,2,0,-2,30);
-  shadow.addColorStop(0,"rgba(0,0,0,.85)");
-  shadow.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=shadow;
-  ctx.beginPath();ctx.ellipse(0,-1,30,4,0,0,Math.PI*2);ctx.fill();
-  ctx.restore();
+  ctx.globalAlpha*=.5;
+  const sh=ctx.createRadialGradient(0,-1,2,0,-1,29);
+  sh.addColorStop(0,"rgba(0,0,0,.9)");sh.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=sh;ctx.beginPath();ctx.ellipse(0,0,30,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
 
-  const skin=ctx.createLinearGradient(-12,-108,14,-72);
-  skin.addColorStop(0,f.skinHi);skin.addColorStop(.42,f.skin);skin.addColorStop(1,f.skinShadow);
-  const gear=ctx.createLinearGradient(-22,-78,22,-34);
-  gear.addColorStop(0,f.gearHi);gear.addColorStop(.48,f.gear);gear.addColorStop(1,shade(f.gear,.58));
-  const accent=ctx.createLinearGradient(-16,-76,16,-35);
-  accent.addColorStop(0,shade(f.accent,.95));accent.addColorStop(.55,f.accent);accent.addColorStop(1,shade(f.accent,.58));
-
-  // Legs: long, rounded silhouettes with distinct stance.
-  ctx.fillStyle=gear;
+  // Legs and trousers.
+  ctx.fillStyle=cloth;
   ctx.beginPath();
-  ctx.moveTo(-13,-47);ctx.quadraticCurveTo(-15,-34,-12,-19);ctx.lineTo(-18,-5);
-  ctx.quadraticCurveTo(-19,-1,-14,0);ctx.lineTo(-3,0);
-  ctx.quadraticCurveTo(-1,-2,-3,-7);ctx.lineTo(-1,-24);
-  ctx.quadraticCurveTo(0,-35,-2,-47);ctx.closePath();ctx.fill();
+  ctx.moveTo(-12,-49);ctx.quadraticCurveTo(-15,-39,-13,-27);ctx.lineTo(-15,-9);
+  ctx.quadraticCurveTo(-17,-4,-14,0);ctx.lineTo(-3,0);
+  ctx.quadraticCurveTo(0,-3,-3,-8);ctx.lineTo(-1,-27);
+  ctx.quadraticCurveTo(1,-39,-2,-49);ctx.closePath();ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(3,-47);ctx.quadraticCurveTo(5,-34,5,-22);ctx.lineTo(9,-7);
-  ctx.quadraticCurveTo(8,-2,12,0);ctx.lineTo(23,0);
-  ctx.quadraticCurveTo(25,-3,20,-7);ctx.lineTo(16,-23);
-  ctx.quadraticCurveTo(16,-37,13,-47);ctx.closePath();ctx.fill();
+  ctx.moveTo(2,-49);ctx.quadraticCurveTo(5,-38,4,-27);ctx.lineTo(7,-8);
+  ctx.quadraticCurveTo(5,-3,9,0);ctx.lineTo(21,0);
+  ctx.quadraticCurveTo(24,-3,19,-8);ctx.lineTo(15,-27);
+  ctx.quadraticCurveTo(16,-39,12,-49);ctx.closePath();ctx.fill();
 
-  // Knee and lower-leg material highlights.
-  ctx.fillStyle=shade(f.gearHi,.78);
-  ctx.beginPath();ctx.ellipse(-8,-27,6,10,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(10,-26,6,10,0,0,Math.PI*2);ctx.fill();
+  // Knees and fabric folds.
+  ctx.fillStyle=shade(f.gearHi,.72);
+  ctx.beginPath();ctx.ellipse(-8,-27,5.5,8,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(9,-27,5.5,8,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=shade(f.gear,.52);
+  ctx.fillRect(-12,-19,3,13);ctx.fillRect(10,-20,3,13);
 
   // Boots.
   ctx.fillStyle="#07090b";
-  ctx.beginPath();ctx.roundRect(-19,-8,16,9,3);ctx.fill();
+  ctx.beginPath();ctx.roundRect(-18,-8,16,9,3);ctx.fill();
   ctx.beginPath();ctx.roundRect(7,-8,17,9,3);ctx.fill();
-  ctx.fillStyle=shade(f.gearHi,.62);ctx.fillRect(-16,-7,9,2);ctx.fillRect(10,-7,10,2);
+  ctx.fillStyle=shade(f.gearHi,.62);ctx.fillRect(-15,-7,9,2);ctx.fillRect(10,-7,10,2);
 
-  // Hips and torso: curved human chest/waist silhouette.
-  ctx.fillStyle=gear;
+  // Pelvis/waist.
+  ctx.fillStyle=cloth;
+  ctx.beginPath();ctx.moveTo(-13,-55);ctx.quadraticCurveTo(-10,-50,0,-49);ctx.quadraticCurveTo(10,-50,13,-55);
+  ctx.lineTo(10,-42);ctx.quadraticCurveTo(0,-37,-10,-42);ctx.closePath();ctx.fill();
+  ctx.fillStyle=shade(f.gearHi,.7);ctx.fillRect(-11,-46,22,4);
+
+  // Rib cage and chest, deliberately narrower through the waist.
+  const shoulder=f.build===2?23:f.build===1?21:19;
+  ctx.fillStyle=cloth;
   ctx.beginPath();
-  ctx.moveTo(-12,-55);
-  ctx.quadraticCurveTo(-17,-51,-18,-42);
-  ctx.quadraticCurveTo(-14,-36,-8,-35);
-  ctx.quadraticCurveTo(0,-32,8,-35);
-  ctx.quadraticCurveTo(14,-36,18,-42);
-  ctx.quadraticCurveTo(17,-51,12,-55);
+  ctx.moveTo(-shoulder,-82);
+  ctx.quadraticCurveTo(-shoulder-2,-75,-shoulder+1,-67);
+  ctx.quadraticCurveTo(-17,-57,-10,-48);
+  ctx.quadraticCurveTo(0,-43,10,-48);
+  ctx.quadraticCurveTo(17,-57,shoulder-1,-67);
+  ctx.quadraticCurveTo(shoulder+2,-75,shoulder,-82);
+  ctx.quadraticCurveTo(0,-87,-shoulder,-82);
   ctx.closePath();ctx.fill();
 
-  const shoulder=f.build===2?22:f.build===1?20:18;
-  ctx.beginPath();
-  ctx.moveTo(-shoulder,-77);
-  ctx.quadraticCurveTo(-shoulder-3,-72,-shoulder+1,-62);
-  ctx.quadraticCurveTo(-17,-50,-10,-43);
-  ctx.quadraticCurveTo(0,-39,10,-43);
-  ctx.quadraticCurveTo(17,-50,shoulder-1,-62);
-  ctx.quadraticCurveTo(shoulder+3,-72,shoulder,-77);
-  ctx.closePath();ctx.fill();
+  // Pectoral/abdomen planes.
+  ctx.fillStyle=shade(f.gearHi,.8);
+  ctx.beginPath();ctx.moveTo(-shoulder+3,-76);ctx.quadraticCurveTo(-8,-81,0,-76);ctx.quadraticCurveTo(8,-81,shoulder-3,-76);
+  ctx.lineTo(9,-61);ctx.quadraticCurveTo(0,-56,-9,-61);ctx.closePath();ctx.fill();
+  ctx.fillStyle=shade(f.gear,.55);
+  ctx.beginPath();ctx.roundRect(-6,-61,12,13,3);ctx.fill();
 
-  // Chest planes.
-  ctx.fillStyle=shade(f.gearHi,.82);
-  ctx.beginPath();
-  ctx.moveTo(-shoulder+3,-72);ctx.quadraticCurveTo(-8,-76,0,-70);
-  ctx.quadraticCurveTo(8,-76,shoulder-3,-72);
-  ctx.lineTo(10,-58);ctx.quadraticCurveTo(0,-53,-10,-58);ctx.closePath();ctx.fill();
-
-  // Fighter-specific clothing.
+  // Distinct clothing construction.
   if(f.id==="vex"){
     ctx.fillStyle=accent;
-    ctx.beginPath();ctx.roundRect(-17,-70,7,25,2);ctx.fill();
-    ctx.beginPath();ctx.roundRect(10,-70,7,25,2);ctx.fill();
-    ctx.fillStyle="#080c0f";ctx.beginPath();ctx.roundRect(-7,-67,14,19,3);ctx.fill();
-    ctx.fillStyle=f.gearHi;ctx.fillRect(-10,-45,20,3);
-    ctx.fillStyle=f.accent;ctx.fillRect(-14,-39,7,2);ctx.fillRect(7,-39,7,2);
+    ctx.beginPath();ctx.roundRect(-18,-77,8,28,3);ctx.fill();
+    ctx.beginPath();ctx.roundRect(10,-77,8,28,3);ctx.fill();
+    ctx.fillStyle="#070b0e";ctx.beginPath();ctx.roundRect(-7,-75,14,25,4);ctx.fill();
+    ctx.fillStyle=f.gearHi;ctx.fillRect(-11,-47,22,3);
+    ctx.fillStyle=f.accent;ctx.fillRect(-15,-41,8,3);ctx.fillRect(7,-41,8,3);
   }else if(f.id==="ruma"){
-    ctx.fillStyle=accent;
-    ctx.beginPath();ctx.roundRect(-17,-69,34,7,3);ctx.fill();
-    ctx.fillStyle=f.gearHi;ctx.beginPath();ctx.roundRect(-12,-60,24,7,2);ctx.fill();
-    ctx.fillStyle=shade(f.accent,.75);ctx.fillRect(-12,-45,24,5);
-    ctx.fillStyle=f.gear;ctx.fillRect(-9,-39,18,3);
+    ctx.fillStyle=accent;ctx.beginPath();ctx.roundRect(-18,-75,36,9,4);ctx.fill();
+    ctx.fillStyle=f.gearHi;ctx.beginPath();ctx.roundRect(-13,-63,26,8,3);ctx.fill();
+    ctx.fillStyle=shade(f.accent,.72);ctx.fillRect(-13,-49,26,5);
+    ctx.fillStyle=f.gear;ctx.fillRect(-9,-42,18,4);
   }else{
-    ctx.fillStyle=accent;
-    ctx.beginPath();ctx.roundRect(-21,-72,42,10,3);ctx.fill();
-    ctx.fillStyle=shade(f.gearHi,.82);ctx.beginPath();ctx.roundRect(-15,-60,30,7,2);ctx.fill();
-    ctx.fillStyle="#141a1e";ctx.beginPath();ctx.roundRect(-11,-51,22,6,2);ctx.fill();
-    ctx.fillStyle=f.accent;ctx.fillRect(-19,-40,9,3);ctx.fillRect(10,-40,9,3);
+    ctx.fillStyle=accent;ctx.beginPath();ctx.roundRect(-22,-78,44,11,4);ctx.fill();
+    ctx.fillStyle=shade(f.gearHi,.8);ctx.beginPath();ctx.roundRect(-16,-64,32,8,3);ctx.fill();
+    ctx.fillStyle="#12181c";ctx.beginPath();ctx.roundRect(-12,-53,24,7,3);ctx.fill();
+    ctx.fillStyle=f.accent;ctx.fillRect(-20,-42,10,3);ctx.fillRect(10,-42,10,3);
   }
 
-  // Arms and hands, with rounded joints.
-  ctx.fillStyle=gear;
-  ctx.beginPath();ctx.moveTo(-shoulder+2,-73);ctx.quadraticCurveTo(-shoulder-9,-67,-shoulder-7,-51);ctx.lineTo(-shoulder-5,-39);ctx.quadraticCurveTo(-shoulder,-35,-shoulder+4,-39);ctx.lineTo(-shoulder+5,-58);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(shoulder-2,-73);ctx.quadraticCurveTo(shoulder+9,-67,shoulder+7,-51);ctx.lineTo(shoulder+5,-39);ctx.quadraticCurveTo(shoulder,-35,shoulder-4,-39);ctx.lineTo(shoulder-5,-58);ctx.closePath();ctx.fill();
+  // Arms: shoulder -> bicep -> forearm -> hand.
+  ctx.fillStyle=cloth;
+  ctx.beginPath();ctx.moveTo(-shoulder+2,-78);ctx.quadraticCurveTo(-shoulder-9,-73,-shoulder-8,-59);
+  ctx.lineTo(-shoulder-6,-43);ctx.quadraticCurveTo(-shoulder-3,-38,-shoulder+2,-41);
+  ctx.lineTo(-shoulder+5,-59);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(shoulder-2,-78);ctx.quadraticCurveTo(shoulder+9,-73,shoulder+8,-59);
+  ctx.lineTo(shoulder+6,-43);ctx.quadraticCurveTo(shoulder+3,-38,shoulder-2,-41);
+  ctx.lineTo(shoulder-5,-59);ctx.closePath();ctx.fill();
   ctx.fillStyle=skin;
-  ctx.beginPath();ctx.roundRect(-shoulder-7,-40,9,10,3);ctx.fill();
-  ctx.beginPath();ctx.roundRect(shoulder-2,-40,9,10,3);ctx.fill();
-  ctx.fillStyle=f.skinHi;ctx.fillRect(-shoulder-6,-39,4,2);ctx.fillRect(shoulder-1,-39,4,2);
+  ctx.beginPath();ctx.roundRect(-shoulder-7,-43,9,12,3);ctx.fill();
+  ctx.beginPath();ctx.roundRect(shoulder-2,-43,9,12,3);ctx.fill();
 
   // Neck.
-  ctx.fillStyle=f.skinShadow;ctx.beginPath();ctx.roundRect(-7,-88,14,13,4);ctx.fill();
+  ctx.fillStyle=f.skinShadow;ctx.beginPath();ctx.roundRect(-7,-94,14,14,4);ctx.fill();
 
-  // Head: smooth oval + jaw, no stair-stepped pixel contour.
+  // Head with cheek/jaw structure.
   ctx.fillStyle=skin;
   ctx.beginPath();
-  ctx.moveTo(-10,-106);
-  ctx.quadraticCurveTo(-14,-101,-13,-91);
-  ctx.quadraticCurveTo(-12,-82,-6,-77);
-  ctx.quadraticCurveTo(0,-73,6,-77);
-  ctx.quadraticCurveTo(12,-82,13,-91);
-  ctx.quadraticCurveTo(14,-101,10,-106);
-  ctx.quadraticCurveTo(0,-111,-10,-106);
-  ctx.closePath();ctx.fill();
+  ctx.moveTo(-10,-113);ctx.quadraticCurveTo(-15,-107,-14,-97);
+  ctx.quadraticCurveTo(-14,-86,-8,-79);ctx.quadraticCurveTo(0,-73,8,-79);
+  ctx.quadraticCurveTo(14,-86,14,-97);ctx.quadraticCurveTo(15,-107,10,-113);
+  ctx.quadraticCurveTo(0,-117,-10,-113);ctx.closePath();ctx.fill();
 
-  // Ears.
-  ctx.fillStyle=f.skinShadow;
-  ctx.beginPath();ctx.ellipse(-13,-94,3,6,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(13,-94,3,6,0,0,Math.PI*2);ctx.fill();
+  // Cheek and jaw planes.
+  ctx.fillStyle=shade(f.skinShadow,.88);
+  ctx.beginPath();ctx.ellipse(-8,-88,4,6,-.2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(8,-88,4,6,.2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=shade(f.skinHi,.75);ctx.fillRect(-7,-81,14,2);
 
-  // Hair/headgear identity.
+  // Hair / headgear.
   if(f.id==="vex"){
-    ctx.fillStyle="#101519";
-    ctx.beginPath();ctx.moveTo(-12,-103);ctx.quadraticCurveTo(-5,-112,5,-109);ctx.quadraticCurveTo(12,-108,13,-102);ctx.lineTo(7,-101);ctx.lineTo(3,-104);ctx.lineTo(-2,-101);ctx.lineTo(-8,-103);ctx.closePath();ctx.fill();
-    ctx.fillStyle=f.accent;ctx.fillRect(8,-102,5,2);ctx.fillRect(-13,-101,5,2);
+    ctx.fillStyle="#0e1418";
+    ctx.beginPath();ctx.moveTo(-14,-107);ctx.quadraticCurveTo(-8,-117,1,-116);
+    ctx.quadraticCurveTo(11,-116,14,-108);ctx.lineTo(8,-105);ctx.lineTo(3,-108);ctx.lineTo(-2,-105);ctx.lineTo(-8,-108);ctx.closePath();ctx.fill();
+    ctx.fillStyle=f.accent;ctx.fillRect(9,-105,5,2);ctx.fillRect(-14,-105,5,2);
   }else if(f.id==="ruma"){
-    ctx.fillStyle="#69422e";
-    ctx.beginPath();ctx.moveTo(-15,-103);ctx.quadraticCurveTo(0,-111,15,-103);ctx.lineTo(12,-98);ctx.lineTo(-12,-98);ctx.closePath();ctx.fill();
-    ctx.fillStyle=f.accent;ctx.beginPath();ctx.roundRect(-15,-101,30,5,2);ctx.fill();
+    ctx.fillStyle="#68412d";
+    ctx.beginPath();ctx.moveTo(-16,-107);ctx.quadraticCurveTo(0,-117,16,-107);ctx.lineTo(13,-100);ctx.lineTo(-13,-100);ctx.closePath();ctx.fill();
+    ctx.fillStyle=f.accent;ctx.beginPath();ctx.roundRect(-16,-104,32,6,2);ctx.fill();
   }else{
-    ctx.fillStyle="#10161a";ctx.beginPath();ctx.roundRect(-14,-108,28,8,3);ctx.fill();
-    ctx.fillStyle=f.accent;ctx.beginPath();ctx.roundRect(-17,-103,5,11,2);ctx.fill();
-    ctx.beginPath();ctx.roundRect(12,-103,5,11,2);ctx.fill();
+    ctx.fillStyle="#0e1418";ctx.beginPath();ctx.roundRect(-15,-114,30,9,3);ctx.fill();
+    ctx.fillStyle=f.accent;ctx.beginPath();ctx.roundRect(-18,-108,6,13,2);ctx.fill();
+    ctx.beginPath();ctx.roundRect(12,-108,6,13,2);ctx.fill();
   }
 
-  // Face planes and features.
-  ctx.fillStyle=shade(f.skinShadow,.9);
-  ctx.beginPath();ctx.ellipse(-5,-91,3.8,2.2,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(5,-91,3.8,2.2,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#1a1717";ctx.fillRect(-7,-95,5,2);ctx.fillRect(2,-95,5,2);
-  ctx.fillStyle="#f1eee6";ctx.fillRect(-6,-93,2,2);ctx.fillRect(3,-93,2,2);
-  ctx.fillStyle=f.skinShadow;ctx.beginPath();ctx.roundRect(-2,-91,4,7,2);ctx.fill();
-  ctx.fillStyle=shade(f.skinHi,.72);ctx.beginPath();ctx.roundRect(-5,-83,10,2,1);ctx.fill();
-  ctx.fillStyle=f.skinShadow;ctx.fillRect(-4,-80,8,2);
+  // Eyes, brows, nose and mouth.
+  ctx.fillStyle="#1b1717";ctx.fillRect(-8,-101,6,2);ctx.fillRect(2,-101,6,2);
+  ctx.fillStyle="#f2eee6";ctx.fillRect(-7,-99,3,2);ctx.fillRect(4,-99,3,2);
+  ctx.fillStyle=f.skinShadow;ctx.beginPath();ctx.roundRect(-2,-97,4,7,2);ctx.fill();
+  ctx.fillStyle=shade(f.skinHi,.7);ctx.fillRect(-6,-87,12,2);
+  ctx.fillStyle=f.skinShadow;ctx.fillRect(-5,-84,10,2);
 
-  if(f.id==="korr"){
-    ctx.fillStyle=f.gearHi;ctx.beginPath();ctx.roundRect(-10,-88,20,3,1);ctx.fill();
-  }else if(f.id==="ruma"){
-    ctx.fillStyle=shade(f.accent,.86);ctx.fillRect(-10,-82,20,2);
-  }
+  if(f.id==="korr"){ctx.fillStyle=f.gearHi;ctx.beginPath();ctx.roundRect(-10,-93,20,4,1);ctx.fill();}
+  if(f.id==="ruma"){ctx.fillStyle=shade(f.accent,.86);ctx.fillRect(-11,-86,22,2);}
 
-  // Subtle material highlights rather than square pixel noise.
-  ctx.globalAlpha*=.22;
+  // Material texture is continuous and subtle.
+  ctx.globalAlpha*=.16;
   ctx.fillStyle="#ffffff";
-  ctx.beginPath();ctx.ellipse(-shoulder*.35,-61,2,11,-.12,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(shoulder*.35,-61,1.5,8,.12,0,Math.PI*2);ctx.fill();
+  for(let i=0;i<7;i++){
+    ctx.beginPath();ctx.ellipse(-12+i*4,-73+(i%3)*9,1.2,4,.2,0,Math.PI*2);ctx.fill();
+  }
   ctx.globalAlpha=ghost?.16:1;
 
-  // Idle motion.
   if(idle){
     ctx.fillStyle=shade(f.accent,.62);
-    ctx.fillRect(-shoulder+4,-67,2,13);
+    ctx.fillRect(-shoulder+4,-70,2,14);
   }
   if(step){
-    ctx.fillStyle=shade(f.gearHi,.52);
-    ctx.fillRect(-4,-36,8,1);
+    ctx.fillStyle=shade(f.gearHi,.48);
+    ctx.fillRect(-4,-38,8,1);
   }
   ctx.restore();
 }
@@ -316,7 +307,7 @@ function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
     rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
     rect(ctx,x-44,51,88,87,"#070b0d");
     drawEmblem(ctx,id,x,72,active);
-    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.16);
+    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.2);
     rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
     text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
     text(ctx,f.tag,x,161,5,f.accent,"center");
@@ -398,7 +389,7 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
     update(Math.min(.05,(t-last)/1000));last=t;
     if(phase==="select")drawSelect(ctx,selected);
     else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB);
-    else{drawArena(ctx,t);ctx.save();ctx.scale(2,2);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,184,frame+2,true,false,1.08);drawSprite(ctx,fighters[selected],xA,184,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1.08);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");ctx.restore();}
+    else{drawArena(ctx,t);ctx.save();ctx.scale(2,2);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,184,frame+2,true,false,1.18);drawSprite(ctx,fighters[selected],xA,184,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1.18);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");ctx.restore();}
     raf=requestAnimationFrame(render);
   }
   raf=requestAnimationFrame(render);
