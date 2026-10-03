@@ -223,7 +223,7 @@ function enemyVisual(type:EnemyType):MafiaVisual{
 }
 function drawEnemy(e:Enemy){
  const v=enemyVisual(e.type);drawMafiaMember(v,e.x,e.y,frame,.56);
- tx(e.type.toUpperCase(),e.x,e.y-86,5,v.tie,"center");
+ tx(enemyRu(e.type),e.x,e.y-86,5,v.tie,"center");
  rect(e.x-12,e.y-80,24,2,"#20282c");rect(e.x-12,e.y-80,24*clamp(e.hp/e.maxHp,0,1),2,v.tie);
 }
 function drawPlayer(){
@@ -375,10 +375,10 @@ function drawFamily(){
 }
 function drawBriefing(){
  const m=currentMission();panel(35,48,570,350);
- tx("MISSION "+String(m.number).padStart(2,"0"),55,68,9,hero().color);
+ tx("МИССИЯ "+String(m.number).padStart(2,"0"),55,68,9,hero().color);
  tx(m.ru,55,91,19,"#f0eee7");
  tx("ЦЕЛЬ · "+m.objective.toUpperCase(),55,174,9,hero().color);
- m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),55,210+i*42,7,"#59656b");tx(f,125,208+i*42,9,"#f0eee7");});
+ m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),55,210+i*42,7,"#59656b");tx(floorRu(f),125,208+i*42,9,"#f0eee7");});
  tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,55,345,8,"#d9b86c");
  tx("НАЖМИТЕ, ЧТОБЫ НАЧАТЬ",55,372,8,hero().color);
  if(dialogueOpen)drawDialogue();
@@ -386,19 +386,19 @@ function drawBriefing(){
 function drawDialogue(){
  const m=currentMission(),d=m.dialogue[Math.min(dialogueIndex,m.dialogue.length-1)];if(!d)return;
  rect(20,292,600,125,"rgba(5,7,8,.97)");rect(20,292,600,3,hero().color);
- tx(d.speaker,36,308,9,hero().color);tx(d.text,36,335,10,"#f0eee7");
- tx("TAP",590,391,7,"#59656b","right");
+ tx(speakerRu(d.speaker),36,308,9,hero().color);tx(d.text,36,335,10,"#f0eee7");
+ tx("НАЖМИТЕ",590,391,7,"#59656b","right");
 }
 function drawShop(){
  panel(35,45,570,355);tx("АРСЕНАЛ",55,67,16,hero().color);tx("ДЕНЬГИ $"+save.money,575,69,9,"#d9b86c","right");
- weapons.forEach((w,i)=>{const y=105+i*40;const owned=save.weapon>=i;tx(String(i+1),55,y,8,"#59656b");tx(w.name,78,y,9,"#f0eee7");tx("$"+w.cost,275,y,8,"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",380,y,8,owned?hero().color:"#aab1b4");});
+ weapons.forEach((w,i)=>{const y=105+i*40;const owned=save.weapon>=i;tx(String(i+1),55,y,8,"#59656b");tx(weaponRu(w.name),78,y,9,"#f0eee7");tx("$"+w.cost,275,y,8,"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",380,y,8,owned?hero().color:"#aab1b4");});
  tx("НАЗАД · ВЫБОР 1–6",55,374,7,"#59656b");
 }
 function drawResult(){
- const m=currentMission();panel(50,55,540,330);tx("МИССИЯ ЗАВЕРШЕНА",320,82,17,hero().color,"center");tx(m.title,320,110,10,"#f0eee7","center");
+ const m=currentMission();panel(50,55,540,330);tx("МИССИЯ ЗАВЕРШЕНА",320,82,17,hero().color,"center");tx(m.ru,320,110,10,"#f0eee7","center");
  tx("+$"+m.reward,320,160,15,"#d9b86c","center");tx("+"+m.xp+" XP",320,188,11,"#aab1b4","center");
  tx("РАНГ · "+rankNames[rank()],320,226,10,hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,320,250,9,"#f0eee7","center");
- if(m.number===10)tx("THE ЧЕТЫРЕ СЕМЬИ ARE NOW CONNECTED.",320,290,7,"#aab1b4","center");
+ if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",320,290,7,"#aab1b4","center");
  if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",320,290,11,hero().color,"center");
  tx(m.number===1?"ТЕСТОВЫЙ УРОВЕНЬ ЗАВЕРШЁН · НАЖМИТЕ ДЛЯ ВОЗВРАТА":"НАЖМИТЕ · ПРОДОЛЖИТЬ",320,350,8,"#f0eee7","center");
 }
@@ -435,7 +435,7 @@ function render(){
  canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button aria-label="Select '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div>';
  }else if(mode==="play"){
    ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">ДЕЙСТВИЕ</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div>';
  }else{
@@ -449,4 +449,20 @@ function setup(){
  render();raf=requestAnimationFrame(loop);
  cleanup=()=>{cancelAnimationFrame(raf);};
 }
-export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{cleanup();root=null;canvas=null;ctx=null;};}
+export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
+ const map:Record<string,string>={OFFICE:"ОФИС","UPPER OFFICE":"ВЕРХНИЙ ОФИС",ESCAPE:"ОТХОД","FRONT OFFICE":"ПЕРЕДНИЙ ОФИС","RECORD ROOM":"АРХИВ",ROOFTOP:"КРЫША",STREET:"УЛИЦА",BLOCK:"КВАРТАЛ","BACK STREET":"ЗАДНЯЯ УЛИЦА",GARAGE:"ГАРАЖ",ENTRANCE:"ВХОД",STORAGE:"СКЛАД",BAR:"БАР","BACK ROOM":"ЗАДНЯЯ КОМНАТА",ALLEY:"ПЕРЕУЛОК",WAREHOUSE:"СКЛАД",DEPOT:"ДЕПО","LOADING BAY":"ПОГРУЗОЧНАЯ ЗОНА","UPPER CATWALK":"ВЕРХНЯЯ ПЛОЩАДКА","CONTROL ROOM":"ЦЕНТР УПРАВЛЕНИЯ","SERVICE FLOOR":"СЛУЖЕБНЫЙ ЭТАЖ","UPPER FLOOR":"ВЕРХНИЙ ЭТАЖ","LOCKED FLOOR":"ЗАКРЫТЫЙ ЭТАЖ","ROOF ACCESS":"ВЫХОД НА КРЫШУ","MEETING FLOOR":"ЭТАЖ ВСТРЕЧИ","ROSSI HQ":"ШТАБ РОССИ","MORETTI HQ":"ШТАБ МОРЕТТИ","VALENTI OFFICE":"ОФИС ВАЛЕНТИ","PORT":"ПОРТ","CONTAINER YARD":"КОНТЕЙНЕРНЫЙ ДВОР","CONTROL FLOOR":"ЭТАЖ УПРАВЛЕНИЯ","SERVICE HALL":"СЛУЖЕБНЫЙ КОРИДОР","MEETING ROOM":"КОМНАТА ВСТРЕЧИ","SERVICE TUNNEL":"СЛУЖЕБНЫЙ ТОННЕЛЬ","NIGHT DOCK":"НОЧНОЙ ПРИЧАЛ","CRANE FLOOR":"ЭТАЖ КРАНА","NIGHT STREET":"НОЧНАЯ УЛИЦА","DISTRICT":"РАЙОН","CROSSING":"ПЕРЕКРЁСТОК","ARCHIVE":"АРХИВ","HIDDEN ROOM":"СКРЫТАЯ КОМНАТА","SECURE ARCHIVE":"ЗАКРЫТЫЙ АРХИВ","FINAL FLOOR":"ФИНАЛЬНЫЙ ЭТАЖ","ENTRY":"ВХОД","CROSSROADS":"ПЕРЕКРЁСТОК","SPLIT LEVEL":"РАЗДЕЛЁННЫЙ ЭТАЖ","OUTER BLOCK":"ВНЕШНИЙ КВАРТАЛ"};
+ return map[s]||s;
+}
+function speakerRu(s:string){
+ const map:Record<string,string>={CONTACT:"СВЯЗНОЙ",ACCOUNTANT:"БУХГАЛТЕР",SENIOR:"СТАРШИЙ",GUARD:"ОХРАННИК","OLD CONTACT":"СТАРЫЙ КОНТАКТ",UNKNOWN:"НЕИЗВЕСТНЫЙ","OLD FRIEND":"СТАРЫЙ ЗНАКОМЫЙ",STRANGER:"НЕЗНАКОМЕЦ"};
+ return map[s]||s;
+}
+function enemyRu(s:string){
+ const map:Record<string,string>={guard:"ОХРАНА",brawler:"БОРЕЦ",rusher:"ШТУРМОВИК",shooter:"СТРЕЛОК",flanker:"ОБХОДЧИК",heavy:"ТЯЖЁЛЫЙ",suppressor:"ПОДАВИТЕЛЬ",sniper:"СНАЙПЕР"};
+ return map[s]||s;
+}
+function weaponRu(s:string){
+ const map:Record<string,string>={"POCKET 9":"КАРМАННЫЙ","SERVICE":"СЛУЖЕБНЫЙ","REVOLVER":"РЕВОЛЬВЕР","SMG":"АВТОМАТ","SHOTGUN":"ДРОБОВИК","CARBINE":"КАРАБИН"};
+ return map[s]||s;
+}
+
