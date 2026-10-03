@@ -89,8 +89,6 @@ let homeLayoutPointer:{id:HomeBlockId;startX:number;startY:number;edge?:ResizeEd
 let homeLayoutModeAtRender:HomeLayoutMode=window.innerWidth<=699?"mobile":"desktop";
 try{homeLayoutCustomized=localStorage.getItem("freezzz:home-layout-customized")==="1";}catch{}
 let homeLayoutTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
-let homeLayoutTapTimer:number|null=null;
-let homeLayoutSuppressClick=false;
 let homeLayoutFocusedBlock:HomeBlockId|null=null;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
@@ -243,86 +241,72 @@ function bindHomeLayoutEditor(){
       if(!id)return;
       const now=Date.now();
       const previous=homeLayoutTap;
-      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=1200&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48);
-      if(homeLayoutEditMode){
-        if(homeLayoutFocusedBlock!==id){
-          if(isSecond){
-            e.preventDefault();
-            e.stopPropagation();
-            if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-            homeLayoutTapTimer=null;
-            homeLayoutTap=null;
-            homeLayoutFocusedBlock=id;
-            render();
-          }
+      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=650&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48);
+
+      if(!homeLayoutEditMode){
+        if(!isSecond){
+          homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
           return;
         }
-        const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
         e.preventDefault();
         e.stopPropagation();
-        homeLayoutPointer={
-          id,
-          startX:e.clientX,
-          startY:e.clientY,
-          edge,
-          active:true
-        };
-        el.setPointerCapture?.(e.pointerId);
-        el.classList.toggle("home-layout-resizing",Boolean(edge));
-        el.classList.toggle("home-layout-dragging",!edge);
-        return;
-      }
-      if(isSecond){
-        e.preventDefault();
-        e.stopPropagation();
-        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-        homeLayoutTapTimer=null;
         homeLayoutTap=null;
-        homeLayoutSuppressClick=true;
         toggleHomeLayoutEdit(id);
         return;
       }
-      homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
-      homeLayoutSuppressClick=true;
-      if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-      homeLayoutTapTimer=window.setTimeout(()=>{
-        homeLayoutTap=null;
-        homeLayoutTapTimer=null;
-        homeLayoutSuppressClick=false;
-        if(view!=="home")return;
-        if(moduleManager.has(id as View))portalEvents.emit("navigation:changed",{view:id as View});
-      },1200);
+
+      if(homeLayoutFocusedBlock!==id){
+        if(isSecond){
+          e.preventDefault();
+          e.stopPropagation();
+          homeLayoutTap=null;
+          homeLayoutFocusedBlock=id;
+          render();
+        }
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
+      homeLayoutPointer={id,startX:e.clientX,startY:e.clientY,edge,active:true};
+      el.setPointerCapture?.(e.pointerId);
+      el.classList.toggle("home-layout-resizing",Boolean(edge));
+      el.classList.toggle("home-layout-dragging",!edge);
     });
+
     el.addEventListener("pointermove",e=>{
       if(!homeLayoutEditMode||!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
+      const mode=currentHomeLayoutMode();
       const edge=homeLayoutPointer.edge;
+
       if(edge){
         const host=home.getBoundingClientRect();
         const delta=(edge==="left"||edge==="right")
           ?(e.clientX-homeLayoutPointer.startX)/Math.max(1,host.width)
           :(e.clientY-homeLayoutPointer.startY)/Math.max(1,host.height);
-        const mode=currentHomeLayoutMode();
         const signed=(edge==="left"||edge==="top")?-delta:delta;
-        homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed)};
+        const next=resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed);
+        homeLayout={...homeLayout,[mode]:next};
         markHomeLayoutCustomized();
         homeLayoutPointer.startX=e.clientX;
         homeLayoutPointer.startY=e.clientY;
         applyHomeLayoutGeometry();
         return;
       }
+
       const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
-      if(target&&target!==el){
-        el.dataset.homeLayoutOver=target.dataset.homeLayoutBlock||"";
-      }else{
-        delete el.dataset.homeLayoutOver;
-      }
+      if(target&&target!==el)el.dataset.homeLayoutOver=target.dataset.homeLayoutBlock||"";
+      else delete el.dataset.homeLayoutOver;
     });
+
     const finishPointer=(e:PointerEvent)=>{
       if(!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
       const edge=homeLayoutPointer.edge;
       homeLayoutPointer.active=false;
       el.classList.remove("home-layout-resizing","home-layout-dragging");
       delete el.dataset.homeLayoutOver;
+
       if(!edge){
         const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
         const targetId=target?.dataset.homeLayoutBlock as HomeBlockId|undefined;
@@ -335,6 +319,7 @@ function bindHomeLayoutEditor(){
       saveHomeLayout(homeLayout);
       render();
     };
+
     el.addEventListener("pointerup",finishPointer);
     el.addEventListener("pointercancel",finishPointer);
   });
