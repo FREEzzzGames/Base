@@ -173,6 +173,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
       - name: Verify release is still current
         id: release-gate
         shell: bash
@@ -190,3 +194,5 @@ jobs:
       - id: deployment
         if: steps.release-gate.outputs.deploy == 'true'
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages
