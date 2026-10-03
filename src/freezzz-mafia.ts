@@ -325,8 +325,8 @@ function fire(){
  const w=weapons[save.weapon];
  if(player.ammo<=0){player.ammo=w.mag;player.cool=12;return;}
  player.ammo--;player.cool=w.rate;
- const speed=7;
- bullets.push({x:player.x+Math.cos(aimAngle)*22,y:player.y-44+Math.sin(aimAngle)*22,vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
+ const speed=7*portraitScale();
+ bullets.push({x:player.x+Math.cos(aimAngle)*22*portraitScale(),y:player.y-44*portraitScale()+Math.sin(aimAngle)*22*portraitScale(),vx:Math.cos(aimAngle)*speed,vy:Math.sin(aimAngle)*speed,from:"player",life:100});
 }
 function useAbility(){
  if(mode!=="play"||player.ability>0)return;
@@ -543,9 +543,17 @@ function drawBriefing(){
 }
 function drawDialogue(){
  const m=currentMission(),d=m.dialogue[Math.min(dialogueIndex,m.dialogue.length-1)];if(!d)return;
- rect(viewWidth*.04,viewHeight*.65,viewWidth*.92,viewHeight*.25,"rgba(5,7,8,.97)");rect(viewWidth*.04,viewHeight*.65,viewWidth*.92,4,hero().color);
- tx(speakerRu(d.speaker),viewWidth*.07,viewHeight*.68,menuTextSize(.022,16,24),hero().color);
- drawWrapped(d.text,viewWidth*.07,viewHeight*.73,Math.max(24,Math.floor(viewWidth/16)),menuTextSize(.023,18,27),menuTextSize(.024,17,26),"#f0eee7");
+ const bubbleW=viewWidth*.86,bubbleH=Math.min(viewHeight*.25,260),bx=(viewWidth-bubbleW)/2,by=viewHeight*.68;
+ const speaker=speakerRu(d.speaker),accent=hero().color;
+ rect(bx,by,bubbleW,bubbleH,"#f0eee7");
+ rect(bx+4,by+4,bubbleW-8,bubbleH-8,"#101518");
+ // Хвост комикса.
+ const tailX=d.speaker===hero().name?bx+bubbleW*.72:bx+bubbleW*.24;
+ poly([[tailX-18,by+bubbleH],[tailX,by+bubbleH+Math.min(34,viewHeight*.025)],[tailX+12,by+bubbleH]],"#101518");
+ rect(bx,by,bubbleW,5,accent);
+ tx(speaker,bx+22,by+30,menuTextSize(.024,17,27),accent,"left");
+ drawWrapped(d.text,bx+22,by+72,Math.max(25,Math.floor(viewWidth/17)),menuTextSize(.026,19,30),menuTextSize(.028,20,32),"#f0eee7","left");
+ tx("ТАП",bx+bubbleW-22,by+bubbleH-18,menuTextSize(.016,11,17),"#8e999d","right");
 }
 function drawShop(){
  rect(0,0,viewWidth,viewHeight,"#07090b");tx("АРСЕНАЛ",viewWidth*.07,viewHeight*.08,menuTextSize(.04,26,38),hero().color);tx("ДЕНЬГИ $"+save.money,viewWidth*.93,viewHeight*.08,menuTextSize(.022,15,24),"#d9b86c","right");
