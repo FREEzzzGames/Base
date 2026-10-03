@@ -341,12 +341,11 @@ function bindHomeLayoutEditor(){
 }
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
-    ["home","home","HOME"],
-    ["live","video","LIVE"],
-    ["chat","chat","CHAT"],
-    ["game","game","GAME"],
+    ["radio","radio","RADIO"],
     ["library","library","LIBRARY"],
-    ["radio","radio","RADIO"]
+    ["game","game","GAME"],
+    ["chat","chat","CHAT"],
+    ["live","video","LIVE"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <video class="portal-toolbar-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${portalVideoUrl("hud")}" type="video/mp4"></video>
@@ -365,7 +364,6 @@ function renderPortalToolbar(){
     </div>
   </nav>`;
 }
-
 function render(){
   savePortalSessionSnapshot();
   let body="";
