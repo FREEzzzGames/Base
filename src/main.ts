@@ -6,7 +6,8 @@ import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
-import { renderLivePopup } from "./live-runtime";
+import { renderLivePopups, type LivePopupState, type LiveSource } from "./live-runtime";
+import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
 import { renderGame, loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace, type GameLanguage } from "./game-system";
 import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
@@ -75,11 +76,9 @@ let activityLastFlushAt=Date.now();
 let gameActivityStartedAt:number|null=view==="game"?Date.now():null;
 let liveActivityStartedAt:number|null=null;
 let radioActivityStartedAt:number|null=null;
-let liveActivityName="";
+const liveActivityNames=new Set<string>();
 let radioActivityName="";
-let liveSelected="";
-let livePopupOpen=false;
-let livePopupSource:"twitch"|"youtube"="twitch";
+let livePopups:LivePopupState[]=[];
 const PORTAL_NICKNAME="d3tr01t";
 let hudHidden=false;
 let hudGestureBound=false;
@@ -131,32 +130,20 @@ function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
   portalEvents.emit("radio:playback",{status});
 }
 
-function openLivePopup(name:string,source:"twitch"|"youtube"="twitch"):void{
-  liveSelected=name;
-  livePopupSource=source;
-  livePopupOpen=true;
-  beginLiveActivity(name);
-  portalEvents.emit("live:popup",{open:true,source});
-  render();
-}
-function closeLivePopup():void{
-  endLiveActivity();
-  livePopupOpen=false;
-  portalEvents.emit("live:popup",{open:false,source:livePopupSource});
-  render();
-}
+function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;const key=name+"::"+source;if(livePopups.some(p=>p.name===name&&p.source===source))return;if(livePopups.length>=4)livePopups=livePopups.slice(1);livePopups=[...livePopups,{key,name,source}];beginLiveActivity(name);portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});render();}
+function closeLivePopup(key?:string):void{const popup=key?livePopups.find(p=>p.key===key):livePopups.at(-1);if(!popup)return;livePopups=livePopups.filter(p=>p.key!==popup.key);if(!livePopups.some(p=>p.name===popup.name))endLiveActivity(popup.name);portalEvents.emit("live:popup",{open:Boolean(livePopups.length),source:popup.source==="replay"?"youtube":popup.source});render();}
 function flushActivityTracking(){
   const now=Date.now();
   const elapsed=Math.max(0,(now-activityLastFlushAt)/1000);
   activityLastFlushAt=now;
   if(view==="game"&&gameActivityStartedAt!==null)addGameTime(portalProfile,elapsed);
-  if(liveActivityStartedAt!==null&&liveActivityName){addLiveWatchTime(portalProfile,liveActivityName,elapsed);liveActivityStartedAt=now;}
+  if(liveActivityStartedAt!==null&&liveActivityNames.size){liveActivityNames.forEach(name=>addLiveWatchTime(portalProfile,name,elapsed));liveActivityStartedAt=now;}
   if(radioActivityStartedAt!==null&&radioActivityName){addRadioListenTime(portalProfile,radioActivityName,elapsed);radioActivityStartedAt=now;}
 }
 function beginGameActivity(){if(gameActivityStartedAt!==null)return;gameActivityStartedAt=Date.now();recordGameLaunch(portalProfile);}
 function endGameActivity(){if(gameActivityStartedAt===null)return;flushActivityTracking();gameActivityStartedAt=null;}
-function beginLiveActivity(name:string){if(liveActivityStartedAt!==null&&liveActivityName===name)return;if(liveActivityStartedAt!==null)flushActivityTracking();liveActivityName=name;liveActivityStartedAt=Date.now();recordLiveVisit(portalProfile,name);}
-function endLiveActivity(){if(liveActivityStartedAt===null)return;flushActivityTracking();liveActivityStartedAt=null;liveActivityName="";}
+function beginLiveActivity(name:string){if(liveActivityNames.has(name))return;if(liveActivityStartedAt===null)liveActivityStartedAt=Date.now();liveActivityNames.add(name);recordLiveVisit(portalProfile,name);}
+function endLiveActivity(name?:string){if(name)liveActivityNames.delete(name);else liveActivityNames.clear();if(!liveActivityNames.size&&liveActivityStartedAt!==null){flushActivityTracking();liveActivityStartedAt=null;}}
 function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
 function endRadioActivity(){if(radioActivityStartedAt===null)return;flushActivityTracking();radioActivityStartedAt=null;radioActivityName="";}
 function profileInitial(){return (portalProfile.identity.firstName||portalProfile.identity.username||"F").slice(0,1).toUpperCase();}
@@ -248,16 +235,8 @@ function render(){
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>LIVE</h2><p>${T("liveSub")}</p></div>
         </div>
-        <div class="list portal-block" data-portal-block="streams">
-          ${streams.map(function(s){
-            return `<article class="stream">
-              <div class="avatar">${streamAvatarMarkup(s)}</div>
-              <div><b>${escapeHtml(s.name)}</b><small><span class="live-status-dot"></span>${T("platforms")}</small></div>
-              <div class="stream-actions">
-                <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="twitch" type="button">Twitch</button>
-                <button class="tg-button secondary" data-live-open="${escapeHtml(s.name)}" data-live-source="youtube" type="button">YouTube</button>
-              </div>
-            </article>`;
+        ${renderLiveCatalog(lang)}
+          </article>`;
           }).join("")}
         </div>
       </div>`;
@@ -359,7 +338,7 @@ function render(){
         ${renderPortalToolbar()}
         <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}">${icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon")}</button>
       </div>
-      ${renderLivePopup({open:livePopupOpen,selected:liveSelected,source:livePopupSource,streams,escapeHtml,lang})}
+      ${renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
 
     </div>`;
@@ -453,7 +432,7 @@ portalEvents.on("navigation:changed",payload=>{
   flushActivityTracking();
   if(previousView==="game"&&payload.view!=="game")endGameActivity();
   if(previousView!=="game"&&payload.view==="game")beginGameActivity();
-  if(previousView==="live"&&payload.view!=="live"){endLiveActivity();livePopupOpen=false;liveSelected="";}
+  if(previousView==="live"&&payload.view!=="live"){endLiveActivity();livePopups=[];}
   view=payload.view;
   portalState.view=payload.view;
   render();
@@ -463,7 +442,7 @@ window.addEventListener("online",()=>{portalState.online=true;});
 window.addEventListener("offline",()=>{portalState.online=false;});
 window.setInterval(()=>flushActivityTracking(),15000);
 window.setInterval(updateHomeClock,1000);
-window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityName="";radioActivityStartedAt=null;radioActivityName="";});
+window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityNames.clear();radioActivityStartedAt=null;radioActivityName="";});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushActivityTracking();else activityLastFlushAt=Date.now();});
 function bindHudTouchGesture(){
   if(hudGestureBound)return;
@@ -582,19 +561,23 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-live-open]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveOpen||"",x.dataset.liveSource==="youtube"?"youtube":"twitch");};
   });
-  document.querySelectorAll<HTMLElement>("[data-live-popup-source]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();livePopupSource=x.dataset.livePopupSource==="youtube"?"youtube":"twitch";render();};
+  if(view==="live"){
+    bindLiveCatalog();
+    document.querySelectorAll<HTMLElement>("[data-live-remove]").forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();removeLiveStreamer(x.dataset.liveRemove||"");render();});
+    document.querySelectorAll<HTMLElement>("[data-live-replay]").forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openLivePopup(x.dataset.liveReplay||"","replay");});
+  }
+  document.querySelectorAll<HTMLElement>("[data-live-popup-source]").forEach(x=>x.onclick=e=>{
+    e.preventDefault();e.stopPropagation();
+    const key=x.dataset.livePopupSource||"";
+    const source=(x.dataset.liveSource==="replay"?"replay":x.dataset.liveSource==="youtube"?"youtube":"twitch") as LiveSource;
+    livePopups=livePopups.map(p=>p.key===key?{...p,source}:p);render();
   });
-  document.querySelectorAll<HTMLElement>("[data-live-popup-close]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();closeLivePopup();};
-  });
-  document.querySelector("[data-live-popup-overlay]")?.addEventListener("click",function(e){
-    if(e.target===e.currentTarget)closeLivePopup();
-  });
-  document.querySelector("[data-live-external]")?.addEventListener("click",function(){
-    const stream=streams.find(s=>s.name===liveSelected);
-    const url=stream?(livePopupSource==="youtube"?stream.youtube:stream.twitch):"";if(!url)return;
-    openExternalUrl(url);
+  document.querySelectorAll<HTMLElement>("[data-live-popup-close]").forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();closeLivePopup(x.dataset.livePopupClose||"");});
+  document.querySelectorAll<HTMLElement>("[data-live-external]").forEach(x=>x.onclick=()=>{
+    const popup=livePopups.find(p=>p.key===x.dataset.liveExternal);
+    const stream=popup?getLiveStreams().find(s=>s.name===popup.name):undefined;
+    const url=stream?(popup?.source==="twitch"?stream.twitch:popup?.source==="replay"?stream.lastRecordingUrl:stream.youtube):"";
+    if(url)openExternalUrl(url);
   });
   document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
