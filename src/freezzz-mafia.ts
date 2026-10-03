@@ -259,26 +259,67 @@ function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
 }
 function drawTopDownBackground(){
  const m=topDownMap(),tile=24;
- rect(0,0,m.w,m.h,"#43a64d");
+ rect(0,0,m.w,m.h,"#4aa84e");
+ // Grass tile texture: small, deliberately pixel-sized marks.
  for(let y=0;y<m.h;y+=tile)for(let x=0;x<m.w;x+=tile){
-  if(((x/tile)+(y/tile)+floor)%5===0)rect(x+4,y+6,3,3,"#2e8740");
-  if(((x/tile)*3+(y/tile))%7===0)rect(x+15,y+13,2,2,"#69bf58");
+  const q=((x/tile)*7+(y/tile)*11+floor)%13;
+  if(q<3){rect(x+4,y+5,3,3,"#2f8740");rect(x+16,y+14,2,2,"#6bc15a");}
  }
- rect(m.river.x,m.river.y,m.river.w,m.river.h,"#1689d7");
- for(let y=12;y<m.h;y+=32)line(m.river.x+12,y,m.river.x+m.river.w-12,y+6,"#62c9ef",2);
- rect(m.river.x-8,0,8,m.h,"#d7d0a4");rect(m.river.x+m.river.w,0,8,m.h,"#d7d0a4");
- for(const rd of m.roads)rect(rd.x,rd.y,rd.w,rd.h,"#d7d8df");
- for(let y=340;y<470;y+=24)for(let x=0;x<m.w;x+=24)rect(x+2,y+2,18,18,"#e9e9ef");
- for(let x=565;x<730;x+=24)for(let y=0;y<m.h;y+=24)rect(x+2,y+2,18,18,"#e9e9ef");
- rect(m.bridge.x,m.bridge.y,m.bridge.w,m.bridge.h,"#a95d2e");
- for(let x=m.bridge.x+8;x<m.bridge.x+m.bridge.w;x+=34){rect(x,m.bridge.y+8,18,m.bridge.h-16,"#d97732");rect(x,m.bridge.y+4,18,7,"#f09a43");}
+ // River with bright pixel ripples and stepped banks.
+ rect(m.river.x,m.river.y,m.river.w,m.river.h,"#168ee0");
+ for(let y=10;y<m.h;y+=30){
+  line(m.river.x+12,y,m.river.x+39,y+5,"#65c9ef",2);
+  line(m.river.x+62,y+10,m.river.x+96,y+15,"#43b5e9",2);
+ }
+ rect(m.river.x-10,0,10,m.h,"#d9d2aa");
+ rect(m.river.x+m.river.w,0,10,m.h,"#d9d2aa");
+ // Crossroads / cobblestone plaza.
+ for(const rd of m.roads){
+  rect(rd.x,rd.y,rd.w,rd.h,"#e2e2e8");
+  for(let yy=rd.y+4;yy<rd.y+rd.h;yy+=28)
+   for(let xx=rd.x+4;xx<rd.x+rd.w;xx+=28)
+    rect(xx,yy,20,20,((xx+yy)/28)%2?"#ededf1":"#d7d9e0");
+ }
+ // Bridge with wooden planks.
+ rect(m.bridge.x,m.bridge.y,m.bridge.w,m.bridge.h,"#8b4b27");
+ for(let xx=m.bridge.x;xx<m.bridge.x+m.bridge.w;xx+=30){
+  rect(xx+3,m.bridge.y+5,22,m.bridge.h-10,"#c96b2f");
+  line(xx+5,m.bridge.y+8,xx+5,m.bridge.y+m.bridge.h-8,"#743b22",2);
+ }
+ // Buildings: dark walls + layered teal roofs + clear doors/windows.
  for(const b of m.buildings){
-  rect(b.x+8,b.y+10,b.w,b.h,"#687076");rect(b.x,b.y,b.w,b.h,b.wall);rect(b.x+8,b.y+8,b.w-16,58,b.roof);
-  for(let rx=b.x+18;rx<b.x+b.w-12;rx+=30)line(rx,b.y+10,rx+22,b.y+56,"#2a6970",4);
-  rect(b.x+b.w*.38,b.y+b.h-45,b.w*.24,45,"#f0eee7");rect(b.x+b.w*.44,b.y+b.h-38,b.w*.12,38,"#5c4024");
+  rect(b.x+10,b.y+12,b.w,b.h,"#4f5b5f");
+  rect(b.x,b.y,b.w,b.h,"#252c30");
+  rect(b.x+7,b.y+7,b.w-14,62,b.roof);
+  for(let rx=b.x+12;rx<b.x+b.w-8;rx+=28){
+   line(rx,b.y+12,rx+22,b.y+57,"#28717a",4);
+   line(rx+7,b.y+13,rx+28,b.y+55,"#0d3d47",2);
+  }
+  // facade columns
+  rect(b.x+8,b.y+69,8,b.h-78,"#555d60");
+  rect(b.x+b.w-16,b.y+69,8,b.h-78,"#555d60");
+  // door
+  rect(b.x+b.w*.36,b.y+b.h-49,b.w*.28,49,"#f0eee7");
+  rect(b.x+b.w*.43,b.y+b.h-42,b.w*.14,42,"#674525");
+  rect(b.x+b.w*.48,b.y+b.h-22,3,3,"#d5a55d");
+  // small windows
+  for(let wx=b.x+25;wx<b.x+b.w-45;wx+=48){
+   rect(wx,b.y+92,25,25,"#0d3945");
+   rect(wx+3,b.y+95,19,19,"#1d6672");
+   line(wx+12,b.y+95,wx+12,b.y+114,"#112d34",2);
+   line(wx+3,b.y+104,wx+22,b.y+104,"#112d34",2);
+  }
  }
+ // Trees with pixel clusters and trunks.
  const trees=[[45,45],[360,55],[1190,45],[40,520],[420,540],[1180,520],[380,820],[1210,830]];
- for(const [x,y] of trees){ellipse(x,y,20,17,"#176f39");rect(x-4,y+10,8,18,"#6b4428");ellipse(x-10,y-8,12,10,"#23964b");ellipse(x+9,y-6,13,11,"#23964b");}
+ for(const [x,y] of trees){
+  rect(x-5,y+13,10,25,"#6a4328");
+  rect(x-2,y+9,5,7,"#8b5a32");
+  ellipse(x,y,24,18,"#16743b");
+  ellipse(x-15,y-8,16,14,"#22934a");
+  ellipse(x+14,y-8,17,14,"#1b843f");
+  rect(x-8,y-21,16,5,"#38aa55");
+ }
 }
 function drawWorld(m:Mission){
  if(!ctx)return;
@@ -301,7 +342,7 @@ function enemyVisual(type:EnemyType):MafiaVisual{
  return {face:"#9a6554",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
- const v=enemyVisual(e.type),sc=portraitScale()*.72;
+ const v=enemyVisual(e.type),sc=Math.max(.32,Math.min(.42,viewWidth/1700));
  drawMafiaMember(v,e.x,e.y,frame,sc);
  if(!e.falling){
    const bw=30*sc;
@@ -310,7 +351,7 @@ function drawEnemy(e:Enemy){
  }
 }
 function drawPlayer(){
- const x=player.x,y=player.y,sc=portraitScale()*.96;
+ const x=player.x,y=player.y,sc=Math.max(.38,Math.min(.50,viewWidth/1450));
  drawMafiaMember(heroVisual(),x,y,frame,sc);
 
  // Игровой предмет всегда начинается именно от кисти персонажа.
