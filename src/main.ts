@@ -236,9 +236,6 @@ function render(){
           <div><h2>LIVE</h2><p>${T("liveSub")}</p></div>
         </div>
         ${renderLiveCatalog(lang)}
-          </article>`;
-          }).join("")}
-        </div>
       </div>`;
   }
   if(view==="chat"){
