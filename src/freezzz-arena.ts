@@ -129,6 +129,35 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
   if(f.id==="korr"){rect(ctx,-9,-88,18,3,f.gearHi);rect(ctx,-6,-84,12,2,f.skinShadow);}
   if(f.id==="ruma"){rect(ctx,-10,-83,20,2,shade(f.accent,.9));}
 
+  // Character-specific anatomy and costume landmarks.
+  if(f.id==="vex"){
+    // Short cropped hair, exposed ears, narrow jaw and cyan utility vest.
+    rect(ctx,-9,-105,18,3,"#111519");
+    rect(ctx,-12,-102,4,3,"#0b0e10");rect(ctx,8,-102,4,3,"#0b0e10");
+    rect(ctx,-12,-94,3,6,f.skinShadow);rect(ctx,9,-94,3,6,f.skinShadow);
+    rect(ctx,-10,-72,20,2,"#0b1013");
+    poly(ctx,[-18,-75,-9,-78,0,-73,9,-78,18,-75,15,-67,-15,-67],f.gearHi);
+    rect(ctx,-15,-67,5,18,f.accent);rect(ctx,10,-67,5,18,shade(f.accent,.64));
+    rect(ctx,-8,-64,16,3,"#06080a");
+  }else if(f.id==="ruma"){
+    // Wrapped head covering, cheek shadow and layered desert cloth.
+    rect(ctx,-12,-105,24,4,"#70472f");
+    rect(ctx,-15,-101,30,5,f.accent);
+    rect(ctx,-11,-96,3,9,f.skinShadow);rect(ctx,8,-96,3,9,f.skinShadow);
+    poly(ctx,[-20,-76,-10,-80,0,-74,10,-80,20,-76,16,-66,-16,-66],shade(f.gear,.9));
+    rect(ctx,-17,-66,34,5,shade(f.accent,.62));
+    rect(ctx,-10,-59,20,3,f.gearHi);
+    rect(ctx,-7,-54,14,2,shade(f.accent,.72));
+  }else{
+    // Broad industrial head frame and layered chest plates.
+    rect(ctx,-13,-106,26,5,"#11161a");
+    rect(ctx,-16,-101,5,9,f.accent);rect(ctx,11,-101,5,9,shade(f.accent,.68));
+    rect(ctx,-19,-77,38,9,f.gearHi);
+    rect(ctx,-16,-68,32,5,f.accent);
+    rect(ctx,-11,-60,22,5,shade(f.gearHi,.8));
+    rect(ctx,-7,-52,14,3,"#161c20");
+  }
+
   // Individual costume identity.
   if(f.id==="vex"){
     rect(ctx,-17,-72,7,26,f.accent);rect(ctx,10,-72,7,26,shade(f.accent,.64));
@@ -253,7 +282,7 @@ function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
     rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
     rect(ctx,x-44,51,88,87,"#070b0d");
     drawEmblem(ctx,id,x,72,active);
-    drawSprite(ctx,f,x,145,frameForSelection(id),false,false,1.12);
+    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.12);
     rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
     text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
     text(ctx,f.tag,x,161,5,f.accent,"center");
@@ -332,7 +361,7 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
     update(Math.min(.05,(t-last)/1000));last=t;
     if(phase==="select")drawSelect(ctx,selected);
     else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB);
-    else{drawArena(ctx,t);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,183,frame+2,true,false,1);drawSprite(ctx,fighters[selected],xA,183,frame,false,false,1);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");}
+    else{drawArena(ctx,t);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,183,frame+2,true,false,1);drawSprite(ctx,fighters[selected],xA,183,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");}
     raf=requestAnimationFrame(render);
   }
   raf=requestAnimationFrame(render);
