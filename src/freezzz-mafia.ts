@@ -171,7 +171,9 @@ function limb(x1:number,y1:number,x2:number,y2:number,w:number,c:string){
 interface MafiaVisual{face:string;tie:string;suit?:string;}
 function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scale=1){
  if(!ctx)return;
- ctx.save();ctx.translate(cx,ground);ctx.scale(scale,scale);
+ ctx.save();
+ ctx.translate(Math.round(cx),Math.round(ground));
+ ctx.scale(scale,scale);
  ctx.translate(0,Math.sin(frame*.08)*.35);
  ellipse(0,0,24,3,"rgba(0,0,0,.72)");
  limb(6,-43,10,-9,11,"#181b1e");limb(-6,-43,-10,-9,11,"#181b1e");
@@ -480,7 +482,12 @@ function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:fal
 function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="levels";dialogueOpen=false;render();}
 
 function renderCanvas(){
- if(!ctx)return;resizeCanvas();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,viewWidth,viewHeight);
+ if(!ctx)return;
+ resizeCanvas();
+ const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,viewWidth,viewHeight);
+ ctx.imageSmoothingEnabled=false;
  const m=currentMission();
  if(mode==="play"){
    // Игровой мир уже полностью рассчитывается в реальных portrait-координатах
@@ -678,7 +685,14 @@ function resizeCanvas(){
  if(!root||!canvas||!ctx)return;
  const w=Math.max(320,root.clientWidth||window.innerWidth);
  const h=Math.max(480,root.clientHeight||window.innerHeight);
- if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+ const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+ const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+ if(canvas.width!==pw||canvas.height!==ph){
+   canvas.width=pw;canvas.height=ph;
+   canvas.style.width=w+"px";canvas.style.height=h+"px";
+ }
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=false;
  viewWidth=w;viewHeight=h;
 }
 function render(){
