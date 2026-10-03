@@ -5,7 +5,7 @@
 type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
 type HeroId="antonio"|"massimo"|"salvatore"|"giuseppe";
 type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
-type Mode="select"|"family"|"briefing"|"play"|"shop"|"result";
+type Mode="select"|"levels"|"family"|"briefing"|"play"|"shop"|"result";
 type Objective="reach"|"find"|"clear"|"escort"|"defend"|"recover"|"escape"|"survive";
 
 interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:string; ability:string; abilityDesc:string; bio:string; }
@@ -379,7 +379,18 @@ function advanceDialogue(){
  if(dialogueIndex>=m.dialogue.length){dialogueOpen=false;if(mode==="briefing"){mode="play";floor=0;spawnFloor();}else if(mode==="play"){}}
 }
 function missionForHero():Mission{const m=currentMission();return m;}
-function startMissionById(id:string){const i=allMissions.findIndex(m=>m.id===id);if(i>=0){missionIndex=i;mode="briefing";dialogueIndex=0;dialogueOpen=true;}}
+function startMissionById(id:string){
+ const i=allMissions.findIndex(m=>m.id===id);if(i<0)return;
+ missionIndex=i;const m=allMissions[i];
+ if(m.hero!=="shared")selected=m.hero;
+ save.hero=selected;
+ save.storySeen=save.storySeen||{};
+ if(selected)save.storySeen[selected]=true;
+ floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
+ spawnFloor();saveResumeState();storeSave();render();
+}
+function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
+function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="levels";dialogueOpen=false;render();}
 
 function renderCanvas(){
  if(!ctx)return;resizeCanvas();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,viewWidth,viewHeight);
@@ -389,6 +400,7 @@ function renderCanvas(){
    ctx.save();ctx.translate(ox,oy);ctx.scale(scale,scale);drawWorld(m);ctx.restore();return;
  }
  if(mode==="select"){drawSelect();return;}
+ if(mode==="levels"){drawLevels();return;}
  if(mode==="family"){drawFamily();return;}
  if(mode==="briefing"){drawBriefing();return;}
  if(mode==="shop"){drawShop();return;}
@@ -427,6 +439,23 @@ function drawSelect(){
    tx(familyText[h.family].desc,x+cardW/2,y+cardH*.86,menuTextSize(.012,9,14),h.color,"center");
    tx(h.ability,x+cardW/2,y+cardH*.91,menuTextSize(.011,8,12),"#7e898d","center");
  });
+}
+function drawLevels(){
+ rect(0,0,viewWidth,viewHeight,"#07090b");
+ tx("ВЫБОР УРОВНЯ",viewWidth/2,viewHeight*.055,menuTextSize(.045,28,40),"#f0eee7","center");
+ tx("ЧИТ-КОД · ВСЕ УРОВНИ ОТКРЫТЫ",viewWidth/2,viewHeight*.105,menuTextSize(.018,13,20),"#aab1b4","center");
+ const cols=viewWidth<700?1:2,pad=viewWidth*.05,gap=8,top=viewHeight*.14;
+ const rows=Math.ceil(allMissions.length/cols),rowH=Math.max(52,Math.min(70,(viewHeight*.78)/rows));
+ allMissions.forEach((m,i)=>{
+   const col=i%cols,row=Math.floor(i/cols),w=(viewWidth-pad*2-gap*(cols-1))/cols,x=pad+col*(w+gap),y=top+row*rowH;
+   rect(x,y,w,rowH-6,m.id===allMissions[missionIndex]?.id?"#182226":"#0b1013");
+   rect(x,y,4,rowH-6,m.hero==="shared"?"#f0eee7":heroes[m.hero].color);
+   tx(String(m.number).padStart(2,"0"),x+12,y+19,menuTextSize(.021,15,21),m.hero==="shared"?"#f0eee7":heroes[m.hero].color);
+   tx(m.ru,x+48,y+19,menuTextSize(.017,12,18),"#f0eee7");
+   tx(m.hero==="shared"?"ОБЩАЯ МИССИЯ":heroes[m.hero].name+" · 3 ЭТАЖА",x+48,y+38,menuTextSize(.011,8,12),"#7e898d");
+   if(save.completed.includes(m.id))tx("✓",x+w-13,y+19,16,"#54d6d8","center");
+ });
+ tx("ТАП ПО УРОВНЮ — НЕМЕДЛЕННЫЙ СТАРТ",viewWidth/2,viewHeight*.95,menuTextSize(.016,11,17),"#59656b","center");
 }
 function drawFamily(){
  const h=hero();
@@ -504,6 +533,10 @@ function bindButtons(){
    const a=el.dataset.action;
    if(a==="play"&&selected){beginSelected();render();}
    if(a==="exit")exitToPortal();
+   if(a==="menu"){returnToMainMenu();}
+   if(a==="levels"){mode="levels";dialogueOpen=false;render();}
+   if(a==="cheat"){activateCheatAll();}
+   if(a==="level"){startMissionById(el.dataset.level||"");}
    if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="shop";render();}
  });
@@ -531,13 +564,13 @@ function render(){
  resizeCanvas();
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button></div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="levels">УРОВНИ</button><button data-action="cheat">ЧИТ: ВСЁ</button><button data-action="exit">ВЫХОД</button></div>';
  }else if(mode==="family"){
-   ui.innerHTML='<div class="mafia-action"><button data-action="advance">ПРОПУСТИТЬ</button></div>';
+   ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button></div><div class="mafia-aim-sensor" aria-label="Сенсорное наведение"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div>';
+   ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="ability">★</button><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div><div class="mafia-aim-sensor" aria-label="Сенсорное наведение"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div>';
  }else{
-   ui.innerHTML='<div class="mafia-action"><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
+   ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
  bindButtons();renderCanvas();
 }
