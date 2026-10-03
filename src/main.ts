@@ -88,8 +88,9 @@ let homeLayoutCustomized=false;
 let homeLayoutPointer:{id:HomeBlockId;startX:number;startY:number;edge?:ResizeEdge;active:boolean}={id:"hero",startX:0,startY:0,active:false};
 let homeLayoutModeAtRender:HomeLayoutMode=window.innerWidth<=699?"mobile":"desktop";
 try{homeLayoutCustomized=localStorage.getItem("freezzz:home-layout-customized")==="1";}catch{}
-let homeLayoutLastTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
+let homeLayoutTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
 let homeLayoutTapTimer:number|null=null;
+let homeLayoutSuppressClick=false;
 let homeLayoutFocusedBlock:HomeBlockId|null=null;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
@@ -237,16 +238,44 @@ function bindHomeLayoutEditor(){
   document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(el=>{
     el.addEventListener("contextmenu",e=>e.preventDefault());
     el.addEventListener("pointerdown",e=>{
-      if(!homeLayoutEditMode)return;
       if(e.pointerType==="mouse"&&e.button!==0)return;
-      const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
       const id=el.dataset.homeLayoutBlock as HomeBlockId;
       if(!id)return;
-      e.preventDefault();
-      e.stopPropagation();
-      homeLayoutPointer={id,startX:e.clientX,startY:e.clientY,edge,active:true};
-      el.setPointerCapture?.(e.pointerId);
-      el.classList.add(edge?"home-layout-resizing":"home-layout-dragging");
+      const now=Date.now();
+      const previous=homeLayoutTap;
+      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=500&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=32);
+      if(homeLayoutEditMode){
+        if(!homeLayoutFocusedBlock||homeLayoutFocusedBlock===id){
+          const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
+          if(!edge)return;
+          e.preventDefault();
+          e.stopPropagation();
+          homeLayoutPointer={id,startX:e.clientX,startY:e.clientY,edge,active:true};
+          el.setPointerCapture?.(e.pointerId);
+          el.classList.add("home-layout-resizing");
+        }
+        return;
+      }
+      if(isSecond){
+        e.preventDefault();
+        e.stopPropagation();
+        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+        homeLayoutTapTimer=null;
+        homeLayoutTap=null;
+        homeLayoutSuppressClick=true;
+        toggleHomeLayoutEdit(id);
+        return;
+      }
+      homeLayoutTap={id,time:now,x:e.clientX,y:e.clientY};
+      homeLayoutSuppressClick=true;
+      if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+      homeLayoutTapTimer=window.setTimeout(()=>{
+        homeLayoutTap=null;
+        homeLayoutTapTimer=null;
+        homeLayoutSuppressClick=false;
+        if(view!=="home")return;
+        if(moduleManager.has(id as View))portalEvents.emit("navigation:changed",{view:id as View});
+      },500);
     });
     el.addEventListener("pointermove",e=>{
       if(!homeLayoutEditMode||!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
@@ -264,28 +293,16 @@ function bindHomeLayoutEditor(){
       homeLayoutPointer.startY=e.clientY;
       applyHomeLayoutGeometry();
     });
-    el.addEventListener("pointerup",e=>{
+    const finishResize=(e:PointerEvent)=>{
       if(!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
-      if(!homeLayoutPointer.edge){
-        const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
-        const targetId=target?.dataset.homeLayoutBlock as HomeBlockId|undefined;
-        if(targetId&&targetId!==homeLayoutPointer.id){
-          const mode=currentHomeLayoutMode();
-          homeLayout={...homeLayout,[mode]:swapHomeBlocks(homeLayout[mode],homeLayoutPointer.id,targetId)};
-          markHomeLayoutCustomized();
-        }
-      }
       homeLayoutPointer.active=false;
-      el.classList.remove("home-layout-dragging","home-layout-resizing");
+      el.classList.remove("home-layout-resizing");
       saveHomeLayout(homeLayout);
       render();
-    });
-    el.addEventListener("pointercancel",()=>{
-      homeLayoutPointer.active=false;
-      el.classList.remove("home-layout-dragging","home-layout-resizing");
-    });
+    };
+    el.addEventListener("pointerup",finishResize);
+    el.addEventListener("pointercancel",finishResize);
   });
-  applyHomeLayoutGeometry();
 }
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
@@ -626,50 +643,19 @@ function bind(){
   }
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
     x.onclick=function(e){
-      if(homeLayoutEditMode&&x.closest(".home-portal")){e.preventDefault();e.stopPropagation();return;}
-      const block=x.closest<HTMLElement>("[data-home-layout-block]");
-      if(block&&!homeLayoutEditMode){
-        const id=block.dataset.homeLayoutBlock as HomeBlockId;
-        const now=Date.now();
-        const previous=homeLayoutLastTap;
-        const isSecond=previous&&previous.id===id&&now-previous.time<360;
-        if(isSecond){
-          e.preventDefault();
-          e.stopPropagation();
-          if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-          homeLayoutTapTimer=null;
-          homeLayoutLastTap=null;
-          toggleHomeLayoutEdit(id);
-          return;
-        }
+      if(homeLayoutSuppressClick){
         e.preventDefault();
         e.stopPropagation();
-        homeLayoutLastTap={id,time:now,x:0,y:0};
-        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-        homeLayoutTapTimer=window.setTimeout(()=>{
-          homeLayoutLastTap=null;
-          homeLayoutTapTimer=null;
-          const next=x.dataset.view as View;
-          if(next&&moduleManager.has(next))portalEvents.emit("navigation:changed",{view:next});
-        },420);
+        homeLayoutSuppressClick=false;
         return;
       }
+      if(homeLayoutEditMode&&x.closest(".home-portal")){e.preventDefault();e.stopPropagation();return;}
       e.preventDefault();
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
       portalEvents.emit("navigation:changed",{view:next});
     };
-  });
-  document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(function(x){
-    x.addEventListener("dblclick",e=>{
-      e.preventDefault();
-      e.stopPropagation();
-      const id=x.dataset.homeLayoutBlock as HomeBlockId;
-      if(!id)return;
-      if(homeLayoutEditMode&&homeLayoutFocusedBlock===id)finishHomeLayoutEdit();
-      else toggleHomeLayoutEdit(id);
-    });
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
