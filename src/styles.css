@@ -4782,6 +4782,7 @@ main{
   font-size:clamp(48px,14.4cqh,64px)!important;
   line-height:1!important;
   letter-spacing:.01em!important;
+  text-shadow:0 3px 8px rgba(0,0,0,.72)!important;
 }
 
 /* Developer nickname — above the large clock; profile interaction is preserved. */
