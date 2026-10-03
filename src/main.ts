@@ -256,7 +256,7 @@ function render(){
     body=`
       <div class="content portal-layout game-portal" data-portal-layout="game">
         <div class="section-head portal-block game-section-head" data-portal-block="header">
-          <div><h2>GAME</h2><p>${T("gameSub")}</p></div>
+          <div><h2>GAME</h2><p>FREEzzz ARENA · 16-BIT FIGHTING</p></div>
         </div>
         <div class="portal-block game-story-block" data-portal-block="game" aria-label="FREEzzz Arena"></div>
       </div>`;
