@@ -3952,3 +3952,37 @@ main{
   background:rgba(80,0,0,.20)!important;
 }
 
+/* TOOLBAR / WORKSPACE — eliminate legacy sidebar geometry */
+.portal-home-workspace,
+.portal-route-workspace{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  column-gap:0!important;
+  row-gap:0!important;
+}
+.portal-home-workspace > main,
+.portal-route-workspace > main{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding-left:1px!important;
+  padding-right:1px!important;
+  box-sizing:border-box!important;
+}
+.portal-workspace > main{
+  grid-column:1!important;
+  grid-row:1!important;
+  padding-left:1px!important;
+  padding-right:1px!important;
+  padding-bottom:1px!important;
+  margin:0!important;
+}
+.portal-workspace > .portal-toolbar{
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  margin:0!important;
+}
+
