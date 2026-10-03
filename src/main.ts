@@ -84,8 +84,10 @@ let hudHidden=false;
 let hudGestureBound=false;
 let homeLayout:HomeLayoutState=loadHomeLayout();
 let homeLayoutEditMode=false;
+let homeLayoutCustomized=false;
 let homeLayoutPointer:{id:HomeBlockId;startX:number;startY:number;edge?:ResizeEdge;active:boolean}={id:"hero",startX:0,startY:0,active:false};
 let homeLayoutModeAtRender:HomeLayoutMode=window.innerWidth<=699?"mobile":"desktop";
+try{homeLayoutCustomized=localStorage.getItem("freezzz:home-layout-customized")==="1";}catch{}
 let homeLayoutLastTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
 let homeLayoutTapTimer:number|null=null;
 let homeLayoutFocusedBlock:HomeBlockId|null=null;
@@ -169,8 +171,11 @@ function currentHomeLayoutMode():HomeLayoutMode{
   return window.innerWidth<=699?"mobile":"desktop";
 }
 function homeLayoutIsDefault():boolean{
-  const defaults=defaultHomeLayout();
-  return JSON.stringify(homeLayout)===JSON.stringify(defaults);
+  return !homeLayoutCustomized;
+}
+function markHomeLayoutCustomized():void{
+  homeLayoutCustomized=true;
+  try{localStorage.setItem("freezzz:home-layout-customized","1");}catch{}
 }
 function homeLayoutHandles():string{
   return `<span class="home-layout-resize-handle home-layout-resize-left" data-layout-resize="left" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-right" data-layout-resize="right" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-top" data-layout-resize="top" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-bottom" data-layout-resize="bottom" aria-hidden="true"></span>`;
@@ -204,12 +209,15 @@ function beginHomeLayoutEdit(focus:HomeBlockId|null=null){
 }
 function resetHomeLayout(){
   homeLayout=defaultHomeLayout();
+  homeLayoutCustomized=false;
+  try{localStorage.removeItem("freezzz:home-layout-customized");}catch{}
   saveHomeLayout(homeLayout);
   homeLayoutEditMode=false;
   homeLayoutFocusedBlock=null;
   render();
 }
 function finishHomeLayoutEdit(){
+  markHomeLayoutCustomized();
   saveHomeLayout(homeLayout);
   homeLayoutEditMode=false;
   homeLayoutFocusedBlock=null;
@@ -252,6 +260,7 @@ function bindHomeLayoutEditor(){
       const mode=currentHomeLayoutMode();
       const signed=(edge==="left"||edge==="top")?-delta:delta;
       homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed)};
+      markHomeLayoutCustomized();
       homeLayoutPointer.startX=e.clientX;
       homeLayoutPointer.startY=e.clientY;
       applyHomeLayoutGeometry();
@@ -264,6 +273,7 @@ function bindHomeLayoutEditor(){
         if(targetId&&targetId!==homeLayoutPointer.id){
           const mode=currentHomeLayoutMode();
           homeLayout={...homeLayout,[mode]:swapHomeBlocks(homeLayout[mode],homeLayoutPointer.id,targetId)};
+          markHomeLayoutCustomized();
         }
       }
       homeLayoutPointer.active=false;
