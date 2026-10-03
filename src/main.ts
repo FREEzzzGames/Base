@@ -225,7 +225,7 @@ function render(){
           <div class="home-hero-content">
           <div class="home-hero-top">
             <div class="home-hero-brand">
-              <span class="home-hero-kicker">FREEzzzyPORTAL</span>
+              <span class="home-hero-kicker">ECHO</span>
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
