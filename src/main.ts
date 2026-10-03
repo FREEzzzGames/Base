@@ -156,7 +156,8 @@ function beginLiveActivity(name:string){if(liveActivityStartedAt!==null&&liveAct
 function endLiveActivity(){if(liveActivityStartedAt===null)return;flushActivityTracking();liveActivityStartedAt=null;liveActivityName="";}
 function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
 function endRadioActivity(){if(radioActivityStartedAt===null)return;flushActivityTracking();radioActivityStartedAt=null;radioActivityName="";}
-function profileDisplayName(){const u=portalProfile.identity;return [u.firstName,u.lastName].filter(Boolean).join(" ")||u.username||"FREEzzz user";}
+const PORTAL_NICKNAME="d3tr01t";
+function profileDisplayName(){return PORTAL_NICKNAME;}
 function profileInitial(){return (portalProfile.identity.firstName||portalProfile.identity.username||"F").slice(0,1).toUpperCase();}
 function renderProfileCard(){
   const s=portalProfile.stats;
