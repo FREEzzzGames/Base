@@ -24,11 +24,10 @@ function clampRatio(value:number):number{
 }
 
 function defaultDesktop():HomeLayoutNode{
-  const top=split("row",.5,leaf("live"),leaf("chat"));
-  const middle=split("row",.5,leaf("game"),leaf("radio"));
-  const cards=split("column",.68,top,middle);
-  const lower=split("column",.82,cards,leaf("library"));
-  return split("column",.28,leaf("hero"),lower);
+  const liveChat=split("row",.5,leaf("live"),leaf("chat"));
+  const gameRadio=split("row",.5,leaf("game"),leaf("radio"));
+  const lower=split("column",30/88,liveChat,split("column",21/58,gameRadio,leaf("library")));
+  return split("column",.12,leaf("hero"),lower);
 }
 
 function defaultMobile():HomeLayoutNode{
