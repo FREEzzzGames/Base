@@ -651,7 +651,7 @@ function bind(){
           homeLayoutTapTimer=null;
           const next=x.dataset.view as View;
           if(next&&moduleManager.has(next))portalEvents.emit("navigation:changed",{view:next});
-        },280);
+        },420);
         return;
       }
       e.preventDefault();
@@ -670,26 +670,6 @@ function bind(){
       if(homeLayoutEditMode&&homeLayoutFocusedBlock===id)finishHomeLayoutEdit();
       else toggleHomeLayoutEdit(id);
     });
-    x.addEventListener("pointerup",e=>{
-      if(homeLayoutEditMode)return;
-      const id=x.dataset.homeLayoutBlock as HomeBlockId;
-      if(!id)return;
-      const now=Date.now();
-      const previous=homeLayoutLastTap;
-      const closeEnough=previous&&previous.id===id&&now-previous.time<360&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<28;
-      if(closeEnough){
-        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-        homeLayoutTapTimer=null;
-        homeLayoutLastTap=null;
-        e.preventDefault();
-        e.stopPropagation();
-        toggleHomeLayoutEdit(id);
-        return;
-      }
-      homeLayoutLastTap={id,time:now,x:e.clientX,y:e.clientY};
-      if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
-      homeLayoutTapTimer=window.setTimeout(()=>{homeLayoutLastTap=null;homeLayoutTapTimer=null;},360);
-    },{passive:false});
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
