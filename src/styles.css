@@ -4785,6 +4785,11 @@ main{
   text-shadow:0 3px 8px rgba(0,0,0,.72)!important;
 }
 
+/* Home block titles — same soft shadow as ECHO. */
+.home-card-title{
+  text-shadow:0 3px 8px rgba(0,0,0,.72)!important;
+}
+
 /* Developer nickname — above the large clock; profile interaction is preserved. */
 .home-hero h1.home-hero-profile-trigger{
   left:auto!important;
