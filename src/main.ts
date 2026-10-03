@@ -8,7 +8,7 @@ import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramVerifiedIdentity } from "./platform-bridge";
 import { renderLivePopups, type LivePopupState, type LiveSource } from "./live-runtime";
 import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
-import { loadGameState, chooseRace, applyGameChoice, restartGame, type GameTab, type GameRace } from "./game-system";
+
 import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
@@ -85,8 +85,6 @@ let hudHidden=false;
 let rpgGraphicsCleanup:(()=>void)|null=null;
 let hudGestureBound=false;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
-let gameState=loadGameState();
-let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
@@ -171,7 +169,6 @@ function savePortalSessionSnapshot(){
   try{
     sessionStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({
       view,
-      gameTab,
       profileOpen
     } satisfies PortalSessionSnapshot));
   }catch{}
@@ -608,26 +605,6 @@ function bind(){
   });
   document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
-  if(view==="game"){
-    document.querySelectorAll<HTMLElement>("[data-game-tab]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameTab=(x.dataset.gameTab as GameTab)||"story";savePortalSessionSnapshot();render();};
-    });
-    document.querySelectorAll<HTMLElement>("[data-game-race]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=chooseRace(gameState,(x.dataset.gameRace as GameRace)||"human");gameTab="story";render();};
-    });
-    document.querySelectorAll<HTMLElement>("[data-game-restart]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=restartGame();gameTab="story";render();};
-    });
-    document.querySelectorAll<HTMLElement>("[data-game-quest-claim]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,"claim:"+ (x.dataset.gameQuestClaim||""));render();};
-    });
-    document.querySelectorAll<HTMLElement>("[data-game-buy]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,"buy:"+ (x.dataset.gameBuy||""));render();};
-    });
-    document.querySelectorAll<HTMLElement>("[data-game-choice]").forEach(x=>{
-      x.onclick=e=>{e.preventDefault();e.stopPropagation();gameState=applyGameChoice(gameState,x.dataset.gameChoice||"");render();};
-    });
-  }
 }
 
 function chatEmoji(m:{author:string;message:string}):string{
