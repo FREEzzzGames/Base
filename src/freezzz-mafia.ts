@@ -109,6 +109,41 @@ function tx(s:string,x:number,y:number,size=10,color="#f0eee7",align:CanvasTextA
 function rect(x:number,y:number,w:number,h:number,c:string){if(ctx){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}}
 function line(x1:number,y1:number,x2:number,y2:number,c:string,w=2){if(ctx){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}}
 
+
+function ellipse(x:number,y:number,rx:number,ry:number,c:string,rot=0){
+ if(!ctx)return;ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.fill();
+}
+function poly(points:number[],c:string){
+ if(!ctx)return;ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(points[0],points[1]);
+ for(let i=2;i<points.length;i+=2)ctx.lineTo(points[i],points[i+1]);ctx.closePath();ctx.fill();
+}
+function limb(x1:number,y1:number,x2:number,y2:number,w:number,c:string){
+ if(!ctx)return;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap="square";ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+}
+interface MafiaVisual{face:string;tie:string;}
+function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scale=1){
+ if(!ctx)return;
+ ctx.save();ctx.translate(cx,ground);ctx.scale(scale,scale);
+ ctx.translate(0,Math.sin(frame*.08)*.35);
+ ellipse(0,0,24,3,"rgba(0,0,0,.72)");
+ limb(6,-43,10,-9,11,"#181b1e");limb(-6,-43,-10,-9,11,"#181b1e");
+ rect(5,-10,12,3,"#080a0c");rect(-17,-10,12,3,"#080a0c");
+ poly([-19,-83,-12,-89,-5,-56,0,-50,5,-56,12,-89,19,-83,12,-51,0,-45,-12,-51],"#1b1e22");
+ poly([-9,-82,0,-68,9,-82,6,-51,0,-46,-6,-51],"#f0eee7");
+ poly([-7,-78,0,-68,7,-78,4,-52,-4,-52],"#d5d8d7");
+ rect(-2,-68,4,19,m.tie);rect(-9,-56,18,3,"#0e1114");
+ limb(-19,-76,-28,-48,8,"#1b1e22");limb(19,-76,28,-48,8,"#1b1e22");
+ ellipse(-29,-44,5,6,m.face);ellipse(29,-44,5,6,m.face);
+ rect(-7,-98,14,14,m.face);ellipse(0,-105,12,13,m.face);
+ rect(-16,-117,32,5,"#111417");rect(-11,-124,22,8,"#171b1f");rect(-18,-119,36,3,"#080a0c");
+ rect(-9,-107,18,3,"#c98563");rect(-8,-100,4,2,"#171b1f");rect(4,-100,4,2,"#171b1f");
+ rect(-3,-96,6,2,"#6b4038");rect(-6,-92,12,2,"#d5a08b");
+ poly([-10,-82,-2,-68,-7,-62,-14,-80],"#30353a");poly([10,-82,2,-68,7,-62,14,-80],"#30353a");
+ rect(10,-72,5,4,m.tie);rect(-14,-77,2,12,"#596166");rect(12,-77,2,12,"#596166");rect(-2,-50,4,2,m.tie);
+ ctx.restore();
+}
+function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
+
 function drawBackdrop(){
  rect(0,0,W,H,"#080b0d");
  for(let i=0;i<18;i++){const x=(i*73+floor*19)%W,y=45+(i*31)%250;rect(x,y,1,1,"#657077");}
@@ -130,36 +165,29 @@ function drawWorld(m:Mission){
  drawBackdrop();drawHud(m);
  const platforms=[[0,396,640,16],[40,330,180,10],[270,290,160,10],[470,340,130,10],[120,220,170,10],[350,180,190,10],[30,120,180,10],[260,95,170,10],[470,125,140,10]];
  platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
- // route/objective marker
  const targetX=560,targetY=95;
  if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-45,targetX,targetY,"#9f83d6",2);tx("ROUTE",targetX,targetY-18,7,"#9f83d6","center");}
- if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>{rect(e.x-7,e.y-35,14,2,"#54d6d8");});}
+ if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-7,e.y-35,14,2,"#54d6d8"));}
  rect(targetX-8,targetY-8,16,16,hero().color);tx("EXIT",targetX,targetY+18,7,hero().color,"center");
- enemies.forEach(drawEnemy);
- drawPlayer();
+ enemies.forEach(drawEnemy);drawPlayer();
  bullets.forEach(b=>rect(b.x,b.y,5,2,b.from==="player"?hero().color:"#d86c35"));
  if(flash>0){rect(0,0,W,H,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
-
+function enemyVisual(type:EnemyType):MafiaVisual{
+ const faces:Record<EnemyType,string>={brawler:"#9c5f4e",shooter:"#6d8790",heavy:"#8a6b43",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
+ const ties:Record<EnemyType,string>={brawler:"#b94f46",shooter:"#6d8790",heavy:"#c58b48",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
+ return {face:faces[type],tie:ties[type]};
+}
 function drawEnemy(e:Enemy){
- const colors:Record<EnemyType,string>={brawler:"#9c5f4e",shooter:"#6d8790",heavy:"#8a6b43",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
- rect(e.x-9,e.y-32,18,27,colors[e.type]);rect(e.x-7,e.y-43,14,11,"#9c6b55");rect(e.x-10,e.y-45,20,4,"#15191b");rect(e.x-7,e.y-35,4,2,"#f0eee7");rect(e.x+3,e.y-35,4,2,"#f0eee7");
- tx(e.type.toUpperCase(),e.x,e.y-57,5,colors[e.type],"center");
- rect(e.x-12,e.y-51,24,2,"#20282c");rect(e.x-12,e.y-51,24*(e.hp/e.maxHp),2,colors[e.type]);
+ const v=enemyVisual(e.type);drawMafiaMember(v,e.x,e.y,frame,.56);
+ tx(e.type.toUpperCase(),e.x,e.y-86,5,v.tie,"center");
+ rect(e.x-12,e.y-80,24,2,"#20282c");rect(e.x-12,e.y-80,24*clamp(e.hp/e.maxHp,0,1),2,v.tie);
 }
-
 function drawPlayer(){
- const h=hero(),x=player.x,y=player.y;
- rect(x-12,y-55,24,36,"#111518");rect(x-18,y-51,36,5,h.color);
- rect(x-8,y-75,16,20,h.face);rect(x-11,y-78,22,5,"#0a0d0e");rect(x-15,y-73,30,4,"#0a0d0e");
- rect(x-5,y-69,3,2,"#f0eee7");rect(x+3,y-69,3,2,"#f0eee7");
- rect(x-2,y-62,4,7,"#744b3e");rect(x-8,y-53,16,4,"#f0eee7");rect(x-2,y-49,4,8,h.color);
- line(x-5,y-19,x-10,y-3,"#0a0d0e",7);line(x+5,y-19,x+10,y-3,"#0a0d0e",7);
- line(x-10,y-2,x-20,y-2,"#07090a",5);line(x+10,y-2,x+20,y-2,"#07090a",5);
- const gunX=x+player.facing*18;line(x+player.facing*8,y-45,gunX,y-43,"#9ba3a5",5);
- if(player.ability>0)tx(h.ability,x,y-91,7,h.color,"center");
+ const x=player.x,y=player.y;drawMafiaMember(heroVisual(),x,y,frame,.82);
+ const gunX=x+player.facing*26;line(x+player.facing*12,y-52,gunX,y-52,"#9ba3a5",5);
+ if(player.ability>0)tx(hero().ability,x,y-104,7,hero().color,"center");
 }
-
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];enemies=[];
  const m=currentMission(),base=3+floor;
@@ -269,10 +297,17 @@ function renderCanvas(){
 }
 function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
 function drawSelect(){
- tx("FREEzzz MAFIA",W/2,28,20,"#f0eee7","center");tx("CHAPTER I · FOUR FAMILIES",W/2,56,9,"#7d898d","center");
+ tx("FOUR FAMILIES",W/2,26,16,"#f0eee7","center");tx("CHOOSE YOUR NEW MEMBER",W/2,49,7,"#7e898d","center");
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
- ids.forEach((id,i)=>{const h=heroes[id],x=30+i*152;panel(x,88,138,275);rect(x+49,112,40,60,h.face);rect(x+40,104,58,8,"#080b0d");rect(x+34,112,70,5,h.color);rect(x+42,171,54,100,"#111518");rect(x+34,176,70,8,h.color);rect(x+44,203,50,8,"#f0eee7");tx(h.name,x+69,287,12,h.color,"center");tx(familyText[h.family].desc,x+69,307,7,"#aab1b4","center");tx(h.ability,x+69,330,8,"#f0eee7","center");});
- tx("TAP / CLICK A FAMILY MEMBER",W/2,392,8,"#aab1b4","center");tx("ENTER also selects the highlighted member",W/2,408,7,"#59656b","center");
+ ids.forEach((id,i)=>{const h=heroes[id],x=80+i*160,a=id===selected;
+   rect(x-68,82,136,190,a?"#151d21":"#0b1013");rect(x-68,82,136,3,a?h.color:"#263137");
+   tx(h.family.toUpperCase(),x,94,8,a?"#f0eee7":"#aeb5b7","center");tx(h.name,x,111,6,h.color,"center");
+   drawMafiaMember({face:h.face,tie:h.color},x,238,frame+i*4,.58);
+   tx(familyText[h.family].desc,x,259,5,h.color,"center");
+   tx(h.ability,x,267,4,"#7e898d","center");
+ });
+ tx("TAP A FAMILY MEMBER TO SELECT",W/2,306,7,"#d5d8d7","center");
+ tx("CLASSIC SUITS · FEDORAS · FOUR FAMILY MEMBERS · 3 FLOORS",W/2,323,5,"#58646a","center");
 }
 function drawFamily(){
  const h=hero();panel(44,54,552,340);
@@ -344,7 +379,7 @@ function render(){
  canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button data-hero="'+id+'">'+heroes[id].name+'<small>'+heroes[id].family.toUpperCase()+'</small></button>').join("")+'</div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button aria-label="Select '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div>';
  }else if(mode==="play"){
    ui.innerHTML='<div class="mafia-controls"><button data-touch="left">◀</button><button data-touch="right">▶</button><button data-touch="jump">▲</button><button data-touch="fire">FIRE</button><button data-touch="ability">★</button><button data-action="shop">SHOP</button></div>';
  }else{
@@ -355,9 +390,7 @@ function render(){
 function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play")update(dt);renderCanvas();raf=requestAnimationFrame(loop);}
 function setup(){
  loadSave();selected=save.hero;
- const onKey=(e:KeyboardEvent)=>handleKey(e),onUp=(e:KeyboardEvent)=>keyup(e);
- window.addEventListener("keydown",onKey);window.addEventListener("keyup",onUp);
  render();raf=requestAnimationFrame(loop);
- cleanup=()=>{cancelAnimationFrame(raf);window.removeEventListener("keydown",onKey);window.removeEventListener("keyup",onUp);};
+ cleanup=()=>{cancelAnimationFrame(raf);};
 }
 export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{cleanup();root=null;canvas=null;ctx=null;};}
