@@ -5771,3 +5771,46 @@ html.visual-comfort-enabled video{
 .rpgx-actions button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #ff2020}
 @media(max-width:520px){.rpgx-play,.rpgx-play .rpgx-stage{min-height:560px}.rpgx-touch{bottom:8px}.rpgx-joystick{width:72px;height:72px}.rpgx-actions{grid-template-columns:repeat(3,48px)}.rpgx-actions button{width:48px;height:48px}}
 @media(min-width:700px){.rpgx-play .rpgx-stage{max-width:680px;margin:auto}.rpgx-touch{padding:0 18px}}
+
+
+/* ================================================================
+   RPG PERFORMANCE PROFILES — WEB / TV
+   Keep the same visual design while reducing expensive paint work
+   on large-screen TV browsers and lower-power web devices.
+   ================================================================ */
+.rpgx{
+  contain:layout paint style;
+  isolation:isolate;
+}
+.rpgx-canvas{
+  contain:strict;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
+.rpgx-quality-tv .rpgx-stage:after,
+.rpgx-quality-low .rpgx-stage:after{
+  background:linear-gradient(180deg,rgba(0,0,0,.10),transparent 38%,rgba(0,0,0,.34));
+  mix-blend-mode:multiply;
+}
+.rpgx-quality-tv .rpgx-badge,
+.rpgx-quality-tv .rpgx-menu,
+.rpgx-quality-tv .rpgx-play-hud,
+.rpgx-quality-tv .rpgx-touch{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.rpgx-quality-tv .rpgx-stage{
+  max-width:1280px;
+  margin-inline:auto;
+}
+@media (min-width:1600px) and (pointer:coarse){
+  .rpgx-play .rpgx-touch{bottom:24px;padding-inline:28px}
+  .rpgx-joystick{width:96px;height:96px}
+  .rpgx-actions{grid-template-columns:repeat(3,72px);gap:10px}
+  .rpgx-actions button{width:72px;height:72px;font-size:9px}
+  .rpgx-play-top{right:18px;top:18px}
+  .rpgx-play-top button{height:36px;padding-inline:12px;font-size:9px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rpgx-canvas{transform:none}
+}
