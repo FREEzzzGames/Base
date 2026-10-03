@@ -44,7 +44,7 @@ type View = PortalView;
 type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-type PortalSessionSnapshot={view:View;gameTab:GameTab;profileOpen:boolean;};
+type PortalSessionSnapshot={view:View;profileOpen:boolean;};
 const PORTAL_SESSION_KEY="freezzz:session-state:v1";
 function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
   try{
