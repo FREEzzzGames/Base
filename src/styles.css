@@ -4934,3 +4934,26 @@ main{
   background:rgba(255,20,20,.24)!important;
 }
 
+
+/* UNIVERSAL PORTAL PRESS — applies to current and future interactive controls. */
+button,
+[role="button"],
+[data-view],
+[data-url]{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+[data-portal-pressed="true"]{
+  transform:translate3d(3px,3px,3px) scale(.995)!important;
+  transition:transform 75ms cubic-bezier(.2,.75,.35,1)!important;
+}
+[data-portal-pressed="true"]::after{
+  transform:translate3d(1px,1px,1px)!important;
+  transition:transform 75ms cubic-bezier(.2,.75,.35,1)!important;
+}
+@media (prefers-reduced-motion:reduce){
+  [data-portal-pressed="true"],
+  [data-portal-pressed="true"]::after{
+    transition-duration:0ms!important;
+  }
+}
