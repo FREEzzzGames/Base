@@ -156,7 +156,6 @@ function beginLiveActivity(name:string){if(liveActivityStartedAt!==null&&liveAct
 function endLiveActivity(){if(liveActivityStartedAt===null)return;flushActivityTracking();liveActivityStartedAt=null;liveActivityName="";}
 function beginRadioActivity(name:string){if(radioActivityStartedAt!==null&&radioActivityName===name)return;if(radioActivityStartedAt!==null)flushActivityTracking();radioActivityName=name;radioActivityStartedAt=Date.now();recordRadioVisit(portalProfile,name);}
 function endRadioActivity(){if(radioActivityStartedAt===null)return;flushActivityTracking();radioActivityStartedAt=null;radioActivityName="";}
-function profileDisplayName(){return PORTAL_NICKNAME;}
 function profileInitial(){return (portalProfile.identity.firstName||portalProfile.identity.username||"F").slice(0,1).toUpperCase();}
 function renderProfileCard(){
   const s=portalProfile.stats;
