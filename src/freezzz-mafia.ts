@@ -270,7 +270,7 @@ function topDownMap(){
   {x:724,y:676,w:776,h:72},
   {x:724,y:830,w:776,h:72},
   {x:72,y:505,w:526,h:62},
-  {x:1115,y:505,w:385,h:62}
+  {x:1275,y:505,w:225,h:62}
  ];
  const buildings=[
   // Северная линия.
@@ -284,7 +284,7 @@ function topDownMap(){
   {x:30,y:292,w:250,h:82,roof:"#596467",wall:"#41494b",kind:"school"},
   {x:304,y:286,w:226,h:88,roof:"#505b5e",wall:"#393f41",kind:"low"},
   {x:48,y:580,w:270,h:158,roof:"#4b585c",wall:"#30383b",kind:"panel"},
-  {x:344,y:580,w:194,h:178,roof:"#525d61",wall:"#403b39",kind:"brick"},
+  {x:344,y:580,w:194,h:170,roof:"#525d61",wall:"#403b39",kind:"brick"},
   {x:34,y:760,w:238,h:80,roof:"#555f62",wall:"#3b4244",kind:"low"},
   {x:300,y:752,w:238,h:86,roof:"#505b5e",wall:"#383f42",kind:"low"},
 
