@@ -22,7 +22,6 @@ interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
 let speechCooldown=0;
-let districtMapImage: HTMLImageElement|null=null;
 const heroLines:Record<HeroId,string[]>={
  antonio:["Спокойно.","Я вижу путь.","Держимся вместе.","Нам сюда.","Всё под контролем."],
  massimo:["Вперёд!","Не отстаём!","Я здесь!","Давай!","Чисто!"],
@@ -674,7 +673,7 @@ function enemyVisual(type:EnemyType):MafiaVisual{
  return {face:"#9a6554",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
- const v=enemyVisual(e.type),sc=Math.max(.32,Math.min(.42,viewWidth/1700));
+ const v=enemyVisual(e.type),sc=Math.max(.52,Math.min(.68,viewWidth/1200));
  drawMafiaMember(v,e.x,e.y,frame,sc);
  if(!e.falling){
    const bw=30*sc;
@@ -710,7 +709,7 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
  ctx.restore();
 }
 function drawPlayer(){
- const x=player.x,y=player.y,sc=Math.max(.38,Math.min(.50,viewWidth/1450));
+ const x=player.x,y=player.y,sc=Math.max(.68,Math.min(.84,viewWidth/1050));
  drawMafiaMember(heroVisual(),x,y,frame,sc);
 
  // Оружие рисуется отдельным слоем и всегда привязано к кисти.
