@@ -454,8 +454,9 @@ function renderCanvas(){
  if(!ctx)return;resizeCanvas();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,viewWidth,viewHeight);
  const m=currentMission();
  if(mode==="play"){
-   const scale=Math.min(viewWidth/W,viewHeight/H),ox=(viewWidth-W*scale)/2,oy=(viewHeight-H*scale)/2;
-   ctx.save();ctx.translate(ox,oy);ctx.scale(scale,scale);drawWorld(m);ctx.restore();return;
+   // Игровой мир уже полностью рассчитывается в реальных portrait-координатах
+   // текущего viewport. Старый масштаб 640x448 здесь больше не применяется.
+   drawWorld(m);return;
  }
  if(mode==="select"){drawSelect();return;}
  if(mode==="levels"){drawLevels();return;}
