@@ -86,7 +86,9 @@ let homeLayout:HomeLayoutState=loadHomeLayout();
 let homeLayoutEditMode=false;
 let homeLayoutPointer:{id:HomeBlockId;startX:number;startY:number;edge?:ResizeEdge;active:boolean}={id:"hero",startX:0,startY:0,active:false};
 let homeLayoutModeAtRender:HomeLayoutMode=window.innerWidth<=699?"mobile":"desktop";
-let homeLayoutLongPressTimer:number|null=null;
+let homeLayoutLastTap:{id:HomeBlockId;time:number;x:number;y:number}|null=null;
+let homeLayoutTapTimer:number|null=null;
+let homeLayoutFocusedBlock:HomeBlockId|null=null;
 let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",message:T("welcome")}];
 let gameState=loadGameState();
 let gameTab:GameTab=(portalSession.gameTab==="character"||portalSession.gameTab==="skills"||portalSession.gameTab==="achievements"||portalSession.gameTab==="journal"||portalSession.gameTab==="quests"||portalSession.gameTab==="shop"?portalSession.gameTab:"story") as GameTab;
@@ -193,21 +195,31 @@ function applyHomeLayoutGeometry(){
     el.style.height=`calc(${rect.height}% - ${gap*2}px)`;
   }
 }
-function beginHomeLayoutEdit(){
+function beginHomeLayoutEdit(focus:HomeBlockId|null=null){
   if(view!=="home")return;
   homeLayoutEditMode=true;
+  homeLayoutFocusedBlock=focus;
   render();
 }
 function resetHomeLayout(){
   homeLayout=defaultHomeLayout();
   saveHomeLayout(homeLayout);
   homeLayoutEditMode=false;
+  homeLayoutFocusedBlock=null;
   render();
 }
 function finishHomeLayoutEdit(){
   saveHomeLayout(homeLayout);
   homeLayoutEditMode=false;
+  homeLayoutFocusedBlock=null;
   render();
+}
+function toggleHomeLayoutEdit(id:HomeBlockId){
+  if(homeLayoutEditMode&&homeLayoutFocusedBlock===id){
+    finishHomeLayoutEdit();
+    return;
+  }
+  beginHomeLayoutEdit(id);
 }
 function bindHomeLayoutEditor(){
   if(view!=="home")return;
@@ -215,10 +227,7 @@ function bindHomeLayoutEditor(){
   if(!home)return;
   home.dataset.homeLayoutEdit=homeLayoutEditMode?"1":"0";
   document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(el=>{
-    el.addEventListener("contextmenu",e=>{
-      e.preventDefault();
-      if(!homeLayoutEditMode)beginHomeLayoutEdit();
-    });
+    el.addEventListener("contextmenu",e=>e.preventDefault());
     el.addEventListener("pointerdown",e=>{
       if(!homeLayoutEditMode)return;
       if(e.pointerType==="mouse"&&e.button!==0)return;
@@ -240,7 +249,8 @@ function bindHomeLayoutEditor(){
         ?(e.clientX-homeLayoutPointer.startX)/Math.max(1,host.width)
         :(e.clientY-homeLayoutPointer.startY)/Math.max(1,host.height);
       const mode=currentHomeLayoutMode();
-      homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,delta)};
+      const signed=(edge==="left"||edge==="top")?-delta:delta;
+      homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed)};
       homeLayoutPointer.startX=e.clientX;
       homeLayoutPointer.startY=e.clientY;
       applyHomeLayoutGeometry();
@@ -610,6 +620,33 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(function(x){
     x.onclick=function(e){
       if(homeLayoutEditMode&&x.closest(".home-portal")){e.preventDefault();e.stopPropagation();return;}
+      const block=x.closest<HTMLElement>("[data-home-layout-block]");
+      if(block&&!homeLayoutEditMode){
+        const id=block.dataset.homeLayoutBlock as HomeBlockId;
+        const now=Date.now();
+        const previous=homeLayoutLastTap;
+        const isSecond=previous&&previous.id===id&&now-previous.time<360;
+        if(isSecond){
+          e.preventDefault();
+          e.stopPropagation();
+          if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+          homeLayoutTapTimer=null;
+          homeLayoutLastTap=null;
+          toggleHomeLayoutEdit(id);
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        homeLayoutLastTap={id,time:now,x:0,y:0};
+        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+        homeLayoutTapTimer=window.setTimeout(()=>{
+          homeLayoutLastTap=null;
+          homeLayoutTapTimer=null;
+          const next=x.dataset.view as View;
+          if(next&&moduleManager.has(next))portalEvents.emit("navigation:changed",{view:next});
+        },280);
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       const next=x.dataset.view as View;
@@ -618,15 +655,32 @@ function bind(){
     };
   });
   document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(function(x){
-    x.addEventListener("pointerdown",e=>{
+    x.addEventListener("dblclick",e=>{
       if(homeLayoutEditMode)return;
-      if(e.pointerType==="mouse"&&e.button!==0)return;
-      if(homeLayoutLongPressTimer!==null)window.clearTimeout(homeLayoutLongPressTimer);
-      homeLayoutLongPressTimer=window.setTimeout(()=>{beginHomeLayoutEdit();},550);
-    },{passive:true});
-    const cancel=()=>{if(homeLayoutLongPressTimer!==null){window.clearTimeout(homeLayoutLongPressTimer);homeLayoutLongPressTimer=null;}};
-    x.addEventListener("pointerup",cancel,{passive:true});
-    x.addEventListener("pointercancel",cancel,{passive:true});
+      e.preventDefault();
+      e.stopPropagation();
+      toggleHomeLayoutEdit(x.dataset.homeLayoutBlock as HomeBlockId);
+    });
+    x.addEventListener("pointerup",e=>{
+      if(homeLayoutEditMode)return;
+      const id=x.dataset.homeLayoutBlock as HomeBlockId;
+      if(!id)return;
+      const now=Date.now();
+      const previous=homeLayoutLastTap;
+      const closeEnough=previous&&previous.id===id&&now-previous.time<360&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<28;
+      if(closeEnough){
+        if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+        homeLayoutTapTimer=null;
+        homeLayoutLastTap=null;
+        e.preventDefault();
+        e.stopPropagation();
+        toggleHomeLayoutEdit(id);
+        return;
+      }
+      homeLayoutLastTap={id,time:now,x:e.clientX,y:e.clientY};
+      if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+      homeLayoutTapTimer=window.setTimeout(()=>{homeLayoutLastTap=null;homeLayoutTapTimer=null;},360);
+    },{passive:false});
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
