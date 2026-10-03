@@ -215,10 +215,10 @@ function drawBackground(ctx:CanvasRenderingContext2D,t:number,floor:number){
 
 type MafiaMember={name:string;face:string;tie:string;family:FamilyId;fighter:FighterId;};
 const mafiaMembers:Record<FamilyId,MafiaMember>={
-  valenti:{name:"VITO",face:"#8f5d4d",tie:"#54d6d8",family:"valenti",fighter:"vex"},
-  moretti:{name:"MARCO",face:"#b87558",tie:"#c58b48",family:"moretti",fighter:"ruma"},
-  rossi:{name:"LUCA",face:"#754b40",tie:"#d86c35",family:"rossi",fighter:"korr"},
-  bellini:{name:"ENZO",face:"#a86b55",tie:"#9f83d6",family:"bellini",fighter:"vex"}
+  valenti:{name:"ANTONIO",face:"#8f5d4d",tie:"#54d6d8",family:"valenti",fighter:"vex"},
+  moretti:{name:"MASSIMO",face:"#b87558",tie:"#c58b48",family:"moretti",fighter:"ruma"},
+  rossi:{name:"SALVATORE",face:"#754b40",tie:"#d86c35",family:"rossi",fighter:"korr"},
+  bellini:{name:"GIUSEPPE",face:"#a86b55",tie:"#9f83d6",family:"bellini",fighter:"vex"}
 };
 
 function drawMafiaMember(ctx:CanvasRenderingContext2D,m:MafiaMember,cx:number,ground:number,frame:number,scale=1){
