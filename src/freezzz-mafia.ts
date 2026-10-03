@@ -627,7 +627,7 @@ function drawTopDownBackground(){
  drawYardPath(100,756,120,8);drawYardPath(212,756,8,38);drawYardPath(220,790,76,8);
  drawPlayground(185,790,0);
  drawYardPath(820,758,112,8);drawYardPath(925,758,8,34);drawYardPath(932,790,86,8);
- drawPlayground(910,790,1);
+ drawPlayground(910,795,1);
 
  // Заросшие края дворов — кусты и высокая трава.
  const shrubs=[
