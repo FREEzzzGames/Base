@@ -220,28 +220,70 @@ function drawHudOverlay(m:Mission){
  tx("БРОНЯ "+player.armor,viewWidth*.80,15,fs*.72,"#9f83d6");tx("АВТО",viewWidth*.94,15,fs*.72,hero().color,"right");
  tx("ЭТАЖ "+(floor+1)+"/3 · "+objectiveRu(m.objective),18,62,fs*.82,"#aab1b4");
 }
+function portraitScale(){return Math.max(.85,Math.min(2.15,Math.min(viewWidth/360,viewHeight/780)));}
+function portraitPlatforms(){
+ const w=viewWidth,h=viewHeight;
+ const margin=w*.045;
+ const base=h*.88;
+ const phase=(floor*37)%80;
+ return [
+   [0,base,w,h-base],
+   [w*.08,h*.73,w*.43,18],
+   [w*.50,h*.62,w*.38,18],
+   [w*.16,h*.51,w*.42,18],
+   [w*.54,h*.39,w*.38,18],
+   [w*.08,h*.28,w*.32,18],
+   [w*.48,h*.19,w*.43,18],
+ ].map((p,i)=>[clamp(p[0]+((phase+i*11)%18-9),margin,w-margin-p[2]),p[1],p[2],p[3]]);
+}
+function portraitExit(){
+ const p=portraitPlatforms()[6];
+ return [p[0]+p[2]*.72,p[1]-portraitScale()*10];
+}
+function drawPortraitBackground(){
+ const w=viewWidth,h=viewHeight;
+ rect(0,0,w,h,"#080b0d");
+ // Вертикальная архитектура: высокий коридор/дворец, чтобы экран телефона
+ // работал как полноценная игровая сцена, без пустых полос.
+ for(let i=0;i<11;i++){
+   const x=i*w/10;
+   rect(x,h*.08,(i%2?2:1),h*.72,"#10171a");
+ }
+ for(let i=0;i<7;i++){
+   const y=h*(.14+i*.105);
+   line(0,y,w,y,"#182125",1);
+ }
+ rect(0,h*.9,w,h*.1,"#12191c");
+ for(let i=0;i<12;i++){
+   const x=i*w/12;
+   rect(x,h*.90,w/12-3,h*.035,"#202b30");
+ }
+ // Арочные проёмы.
+ for(let i=0;i<4;i++){
+   const x=w*(.08+i*.27);
+   rect(x,h*.22,w*.11,h*.22,"#0d1316");
+   ellipse(x+w*.055,h*.22,w*.055,h*.08,"#0d1316");
+ }
+}
 function drawWorld(m:Mission){
  if(!ctx)return;
- // Масштаб по высоте: игровая сцена занимает всю высоту Telegram Mini App.
- // Камера следует за игроком по X, поэтому широкая логическая сцена естественно
- // обрезается по бокам, а не сжимается по вертикали.
- const scale=viewHeight/H;
- const cameraX=clamp(player.x-viewWidth/(2*scale),0,Math.max(0,W-viewWidth/scale));
- ctx.save();ctx.beginPath();ctx.rect(0,0,viewWidth,viewHeight);ctx.clip();
- ctx.translate(-cameraX,0);ctx.scale(scale,scale);
- drawBackdrop();
- const layout=getTestLayout();
- layout.platforms.forEach(p=>{rect(p[0],p[1],p[2],p[3],"#303b40");rect(p[0],p[1],p[2],2,hero().color);});
- tx(layout.accents,612,57,6,"#59656b","right");
- const [targetX,targetY]=layout.exit;
- if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-45,targetX,targetY,"#9f83d6",2);tx("МАРШРУТ",targetX,targetY-18,7,"#9f83d6","center");}
- if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-7,e.y-35,14,2,"#54d6d8"));}
- rect(targetX-8,targetY-8,16,16,hero().color);tx("ВЫХОД",targetX,targetY+18,7,hero().color,"center");
+ drawPortraitBackground();
+ const ps=portraitPlatforms();
+ ps.forEach((p,i)=>{
+   rect(p[0],p[1],p[2],p[3],i===0?"#263136":"#303b40");
+   rect(p[0],p[1],p[2],3,i===0?hero().color:"#8b6a43");
+   if(i>0)line(p[0]+6,p[1]+7,p[0]+p[2]-6,p[1]+7,"#151b1e",1);
+ });
+ const [targetX,targetY]=portraitExit();
+ rect(targetX-10,targetY-18,20,18,"#151d21");
+ rect(targetX-6,targetY-14,12,14,hero().color);
+ tx("ВЫХОД",targetX,targetY-25,Math.max(10,portraitScale()*5),"#f0eee7","center");
+ if(hero().id==="giuseppe"&&player.ability>0){line(player.x,player.y-portraitScale()*42,targetX,targetY,"#9f83d6",3);tx("МАРШРУТ",targetX,targetY-38,Math.max(10,portraitScale()*6),"#9f83d6","center");}
+ if(hero().id==="antonio"&&player.ability>0){enemies.forEach(e=>rect(e.x-9,e.y-portraitScale()*38,18,3,"#54d6d8"));}
  enemies.forEach(drawEnemy);drawPlayer();
- bullets.forEach(b=>rect(b.x,b.y,5,2,b.from==="player"?hero().color:"#d86c35"));
- if(flash>0){rect(0,0,W,H,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
- ctx.restore();
+ bullets.forEach(b=>{rect(b.x-2,b.y-2,Math.max(5,portraitScale()*5),Math.max(3,portraitScale()*3),b.from==="player"?hero().color:"#d86c35");});
  drawHudOverlay(m);
+ if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
  const suits:Record<EnemyType,string>={brawler:"#30242a",shooter:"#26323a",heavy:"#40352a",rusher:"#3a2024",guard:"#28342e",sniper:"#302a40",suppressor:"#403323",flanker:"#26313d"};
@@ -249,31 +291,35 @@ function enemyVisual(type:EnemyType):MafiaVisual{
  return {face:"#9a6554",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
- const v=enemyVisual(e.type);
- drawMafiaMember(v,e.x,e.y,frame,.56);
- if(!e.falling){rect(e.x-12,e.y-80,24,2,"#20282c");rect(e.x-12,e.y-80,24*clamp(e.hp/e.maxHp,0,1),2,v.tie);}
+ const v=enemyVisual(e.type),sc=portraitScale()*.72;
+ drawMafiaMember(v,e.x,e.y,frame,sc);
+ if(!e.falling){
+   const bw=30*sc;
+   rect(e.x-bw/2,e.y-82*sc,bw,3*sc,"#20282c");
+   rect(e.x-bw/2,e.y-82*sc,bw*clamp(e.hp/e.maxHp,0,1),3*sc,v.tie);
+ }
 }
 function drawPlayer(){
- const x=player.x,y=player.y;drawMafiaMember(heroVisual(),x,y,frame,.82);
- const gunX=x+Math.cos(aimAngle)*28,gunY=y-44+Math.sin(aimAngle)*28;
- line(x+Math.cos(aimAngle)*12,y-44+Math.sin(aimAngle)*12,gunX,gunY,"#9ba3a5",5);
- if(player.ability>0)tx(hero().ability,x,y-104,7,hero().color,"center");
+ const x=player.x,y=player.y,sc=portraitScale()*.96;
+ drawMafiaMember(heroVisual(),x,y,frame,sc);
+ const gunX=x+Math.cos(aimAngle)*30*sc,gunY=y-44*sc+Math.sin(aimAngle)*30*sc;
+ line(x+Math.cos(aimAngle)*13*sc,y-44*sc+Math.sin(aimAngle)*13*sc,gunX,gunY,"#9ba3a5",Math.max(3,4*sc));
+ if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];enemies=[];
- const m=currentMission(),base=2+floor;
+ const m=currentMission(),base=2+floor,ps=portraitPlatforms(),scale=portraitScale();
  const types=m.enemies;
- const layout=getTestLayout();
  for(let i=0;i<base+2;i++){
-   const type=types[i%types.length];const hp=18+(i%3)*12+(save.rank*3);
-   const x=92+(i*97+floor*41)%500;
-   const y=layout.platforms[(i+1)%layout.platforms.length][1];
+   const type=types[i%types.length],hp=18+(i%3)*12+(save.rank*3);
+   const p=ps[1+(i%Math.max(1,ps.length-1))];
+   const x=p[0]+p[2]*(.18+.62*((i*37)%10)/10);
+   const y=p[1];
    enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1});
  }
- const [spawnX,spawnY]=layout.spawn;
- player={x:spawnX,y:spawnY,vx:0,vy:0,hp:Math.min(player.maxHp,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,grounded:false,cool:0,ability:0,facing:1};
+ const p=ps[0];
+ player={x:viewWidth*.14,y:p[1],vx:0,vy:0,hp:Math.min(100+save.armor*5,100+save.armor*5),maxHp:100+save.armor*5,armor:save.armor*5,ammo:weapons[save.weapon].mag,cool:0,ability:0,facing:1,grounded:true};
 }
-
 function fire(){
  if(mode!=="play"||player.cool>0)return;
  const w=weapons[save.weapon];
@@ -294,44 +340,56 @@ function hurt(amount:number){
 
 function update(dt:number){
  frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);
- const left=touch.left,right=touch.right;
- if(left){player.vx=-2.6;player.facing=-1;}else if(right){player.vx=2.6;player.facing=1;}else player.vx*=.75;
- if(touch.jump&&player.grounded){player.vy=-9;player.grounded=false;}
- // Стрельба полностью автоматическая: направление задаёт сенсорное кольцо.
+ const scale=portraitScale();
+ const speed=2.6*scale;
+ if(touch.left){player.vx=-speed;player.facing=-1;}
+ else if(touch.right){player.vx=speed;player.facing=1;}
+ else player.vx*=.78;
+ if(touch.jump&&player.grounded){player.vy=-9.2*scale;player.grounded=false;}
  if(mode==="play")fire();
  if(touch.ability)useAbility();
- if(player.ability>0&&hero().id==="massimo")player.vx*=1.04;
- player.vy+=.42;player.x=clamp(player.x+player.vx,18,622);player.y+=player.vy;
+ player.vy+=.42*scale;
+ player.x=clamp(player.x+player.vx,18,viewWidth-18);
+ player.y+=player.vy;
  player.grounded=false;
- const plats=getTestLayout().platforms;
- for(const p of plats)if(player.vy>=0&&player.y>=p[1]&&player.y<=p[1]+12&&player.x>=p[0]&&player.x<=p[0]+p[2]){player.y=p[1];player.vy=0;player.grounded=true;}
- for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life-=dt;if(b.from==="enemy"&&Math.abs(b.x-player.x)<15&&Math.abs(b.y-(player.y-40))<25){b.life=0;hurt(7);}}
- bullets=bullets.filter(b=>b.life>0&&b.x>-10&&b.x<W+10);
+ const plats=portraitPlatforms();
+ for(const p of plats){
+   if(player.vy>=0&&player.y>=p[1]-4&&player.y<=p[1]+Math.max(16,12*scale)&&player.x>=p[0]-4&&player.x<=p[0]+p[2]+4){
+     player.y=p[1];player.vy=0;player.grounded=true;
+   }
+ }
+ for(const b of bullets){
+   b.x+=b.vx;b.y+=b.vy;b.life-=dt;
+   if(b.from==="enemy"&&Math.abs(b.x-player.x)<18*scale&&Math.abs(b.y-(player.y-42*scale))<30*scale){b.life=0;hurt(7);}
+ }
+ bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<viewWidth+30&&b.y>-30&&b.y<viewHeight+30);
  for(const e of enemies){
-   if(e.falling){e.vy+=.5*dt;e.y+=e.vy*dt;continue;}
+   if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
    e.cool-=dt;e.shootCool-=dt;
    const dx=player.x-e.x;
-   if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker")e.x+=Math.sign(dx)*(e.type==="rusher"?.9:.45);
-   else if(Math.abs(dx)<180)e.x+=Math.sign(dx)*.18;
-   if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){e.shootCool=e.type==="suppressor"?28:65;bullets.push({x:e.x,y:e.y-40,vx:Math.sign(dx||1)*3.2,vy:0,from:"enemy",life:110});}
-   if(Math.abs(e.x-player.x)<24&&Math.abs(e.y-player.y)<40&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
+   if(e.type==="rusher"||e.type==="brawler"||e.type==="flanker")e.x+=Math.sign(dx)*(e.type==="rusher"?.9:.45)*scale;
+   else if(Math.abs(dx)<180*scale)e.x+=Math.sign(dx)*.18*scale;
+   if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0){
+     e.shootCool=e.type==="suppressor"?28:65;
+     bullets.push({x:e.x,y:e.y-40*scale,vx:Math.sign(dx||1)*3.2*scale,vy:0,from:"enemy",life:110});
+   }
+   if(Math.abs(e.x-player.x)<24*scale&&Math.abs(e.y-player.y)<40*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
  }
- for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<16&&Math.abs(b.y-(e.y-35))<30){
+ for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<18*scale&&Math.abs(b.y-(e.y-35*scale))<32*scale){
    e.hp-=weapons[save.weapon].damage;b.life=0;
-   if(e.hp<=0){e.falling=true;e.vy=-4.5;save.money+=25;save.xp+=18;}
+   if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
  }
- enemies=enemies.filter(e=>!e.falling||e.y<520);
- if(enemies.length===0){objectiveProgress=1;}
+ enemies=enemies.filter(e=>!e.falling||e.y<viewHeight+80);
+ if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
- const m=currentMission();
- const [exitX,exitY]=getTestLayout().exit;
- const reachedExit=Math.abs(player.x-exitX)<28&&Math.abs(player.y-exitY)<28;
+ const m=currentMission(),[exitX,exitY]=portraitExit();
+ const reachedExit=Math.abs(player.x-exitX)<32*scale&&Math.abs(player.y-exitY)<38*scale;
  const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);
  if(objectiveDone){
-   if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}else completeMission();
+   if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}
+   else completeMission();
  }
 }
-
 function completeMission(){
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
  if(!save.completed.includes(m.id))save.completed.push(m.id);
