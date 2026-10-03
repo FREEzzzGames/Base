@@ -521,16 +521,45 @@ function drawEnemy(e:Enemy){
    rect(e.x-bw/2,e.y-82*sc,bw*clamp(e.hp/e.maxHp,0,1),3*sc,v.tie);
  }
 }
+function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:number){
+ if(!ctx)return;
+ const w=weapons[kind]||weapons[0];
+ // Чисто визуальный слой: стилизованный пиксельный силуэт без изменения игровой логики.
+ const lengths=[20,23,27,30,28,32];
+ const bodies=[7,7,6,7,9,7];
+ const length=lengths[kind]||22;
+ const body=bodies[kind]||7;
+ const flip=player.facing<0?-1:1;
+ ctx.save();
+ ctx.translate(handX,handY);
+ ctx.rotate(angle);
+ ctx.scale(flip,1);
+ // Тень/контур
+ rect(-5,-body/2-2,length+9,body+4,"#101417");
+ // Основной корпус
+ const metal=kind===2?"#6e7477":kind===4?"#7d6750":"#596368";
+ rect(0,-body/2,length,body,metal);
+ // Верхняя линия и передняя часть
+ rect(4,-body/2-2,Math.max(8,length-9),2,"#aeb5b6");
+ rect(length-4,-body/2-1,5,body+2,"#20272a");
+ // Рукоять
+ const gripX=Math.max(4,Math.min(length-5,kind===4?9:11));
+ poly([gripX,-body/2+1,gripX+7,-body/2+1,gripX+5,body+5,gripX-2,body+3],"#24292b");
+ // Небольшая цветовая маркировка выбранного предмета
+ rect(5,0,Math.min(8,length-8),2,hero().color);
+ // Дульная часть
+ rect(length-1,-1,4,2,"#161b1e");
+ ctx.restore();
+}
 function drawPlayer(){
  const x=player.x,y=player.y,sc=Math.max(.38,Math.min(.50,viewWidth/1450));
  drawMafiaMember(heroVisual(),x,y,frame,sc);
 
- // Игровой предмет всегда начинается именно от кисти персонажа.
+ // Оружие рисуется отдельным слоем и всегда привязано к кисти.
  const handX=x+player.facing*29*sc;
  const handY=y-44*sc;
- const muzzleX=handX+Math.cos(aimAngle)*28*sc;
- const muzzleY=handY+Math.sin(aimAngle)*28*sc;
- line(handX,handY,muzzleX,muzzleY,"#9ba3a5",Math.max(3,4*sc));
+ const angle=aimAngle;
+ drawWeaponSprite(save.weapon,handX,handY,angle,sc);
 
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
