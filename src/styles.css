@@ -5123,3 +5123,24 @@ button,
 .portal-workspace > main{
   padding-bottom:calc(85px + env(safe-area-inset-bottom,0px))!important;
 }
+
+/* HOME BLOCK FRAMES — 2px total: 1px inside + 1px outside.
+   Grid gaps are increased to 3px so the outside 1px frame never consumes
+   the approved 1px visual separation between neighboring blocks. */
+.home-portal{
+  gap:3px!important;
+  overflow:visible!important;
+}
+.home-portal > .home-hero,
+.home-portal > .home-card,
+.home-portal > .home-library{
+  box-sizing:border-box!important;
+  border:1px solid #fff!important;
+  outline:1px solid #fff!important;
+  outline-offset:0!important;
+}
+@media(max-width:699px){
+  .home-portal{
+    gap:3px!important;
+  }
+}
