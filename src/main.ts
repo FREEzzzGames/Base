@@ -302,9 +302,9 @@ function render(){
 
   if(view==="home"){
     body=`
-      <div class="content portal-layout home-portal" data-portal-layout="home" data-home-layout-active="\${homeLayoutEditMode||!homeLayoutIsDefault()?"1":"0"}">
-        \${homeLayoutEditMode?`<div class="home-layout-editor" data-home-layout-editor><span>LAYOUT</span><button type="button" data-layout-reset aria-label="Reset layout">↺</button><button type="button" data-layout-close aria-label="Finish layout">✓</button></div>`: ""}
-        <section class="hero portal-block home-hero" data-portal-block="hero" \${homeLayoutBlockAttrs("hero")}>
+      <div class="content portal-layout home-portal" data-portal-layout="home" data-home-layout-active="${homeLayoutEditMode||!homeLayoutIsDefault()?"1":"0"}">
+        ${homeLayoutEditMode?`<div class="home-layout-editor" data-home-layout-editor><span>LAYOUT</span><button type="button" data-layout-reset aria-label="Reset layout">↺</button><button type="button" data-layout-close aria-label="Finish layout">✓</button></div>`: ""}
+        <section class="hero portal-block home-hero" data-portal-block="hero" ${homeLayoutBlockAttrs("hero")}>
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
             <source src="${portalVideoUrl("hero")}" type="video/mp4">
           </video>
