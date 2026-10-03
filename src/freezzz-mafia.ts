@@ -1285,10 +1285,7 @@ function updateCombatButtonLabels(){
 function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
 function setup(){
  loadSave();selected=save.hero;
- districtMapImage=new Image();
- districtMapImage.decoding="async";
- districtMapImage.src="/assets/mafia-district.svg";
- render();raf=requestAnimationFrame(loop);
+  render();raf=requestAnimationFrame(loop);
  cleanup=()=>{cancelAnimationFrame(raf);};
 }
 export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{saveResumeState();cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
