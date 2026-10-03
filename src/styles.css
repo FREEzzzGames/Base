@@ -5408,3 +5408,57 @@ main,
   border-color:var(--portal-white)!important;
   outline-color:var(--portal-white)!important;
 }
+/* ================================================================
+   PALETTE HARD LOCK — final authority
+   Black / white / single red accent only.
+   ================================================================ */
+html,body,#app,#app main,.app,.app-shell,.portal-workspace,
+.portal-home-workspace,.portal-route-workspace,
+.home-portal,.home-portal > .home-hero,.home-portal > .home-card,
+.home-portal > .home-library,.portal-workspace > .portal-toolbar,
+.game-portal,.game-rpg,.game-scene,.game-finale .game-scene,
+.game-intro,.game-dialog,.game-panel,.race-card,.game-choices button,
+.game-quest,.game-shop-item,.game-achievement,.game-ability{
+  background:#000000!important;
+  color:#ffffff!important;
+}
+#app *{
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+}
+a{
+  color:#ff2020!important;
+}
+.portal-toolbar-icon,
+.portal-toolbar-item,
+.portal-hud-toggle-icon{
+  color:#ff2020!important;
+}
+.portal-toolbar-item.active,
+.tg-button,
+.tg-button.secondary,
+.radio-genres button.active,
+.touch-controls button,
+.game-tabs button.active,
+.game-restart,
+.game-quest>button,
+.game-shop-item>button{
+  background:#ff2020!important;
+  color:#ffffff!important;
+  border-color:#ff2020!important;
+}
+.portal-toolbar-item.active .portal-toolbar-icon{
+  color:#ffffff!important;
+}
+.portal-toolbar-language-menu,
+.portal-toolbar-language-menu button{
+  background:#000000!important;
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+}
+.portal-toolbar-language-menu button.active{
+  background:#ff2020!important;
+  color:#ffffff!important;
+  border-color:#ff2020!important;
+}
+
