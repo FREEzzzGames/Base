@@ -17,6 +17,35 @@ interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";lif
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number}
 interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
+interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
+let speech:SpeechState|null=null;
+let speechCooldown=0;
+const heroLines:Record<HeroId,string[]>={
+ antonio:["Спокойно.","Я вижу путь.","Держимся вместе.","Нам сюда.","Всё под контролем."],
+ massimo:["Вперёд!","Не отстаём!","Я здесь!","Давай!","Чисто!"],
+ salvatore:["Тише.","Проверь угол.","Я рядом.","Что-то не так.","Осторожно."],
+ giuseppe:["Маршрут чист.","Следуем плану.","Я проверил.","Через мост.","Понял."]
+};
+const enemyLines=["Эй!","Стой!","Там!","Сюда!","Не уйдёшь!"];
+function say(text:string,kind:"player"|"enemy",x:number,y:number){
+ speech={text,timer:125,x,y,kind};
+ if(speechCooldown<=0 && typeof window!=="undefined" && "speechSynthesis" in window){
+  try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="ru-RU";u.rate=1.08;u.pitch=kind==="player"?.92:1.04;u.volume=.7;window.speechSynthesis.speak(u);}catch{}
+  speechCooldown=70;
+ }
+}
+function drawSpeech(){
+ if(!speech||speech.timer<=0)return;
+ const fs=Math.max(11,Math.min(15,viewWidth*.027));
+ ctx!.save();ctx!.font="700 "+fs+"px \"Nothing Font\",monospace";ctx!.textAlign="center";ctx!.textBaseline="middle";
+ const width=Math.min(viewWidth*.58,Math.max(80,ctx!.measureText(speech.text).width+22));
+ const bx=clamp(speech.x-width/2,6,viewWidth-width-6),by=clamp(speech.y-fs*3,8,viewHeight-fs*3-8);
+ ctx!.fillStyle="rgba(5,10,12,.88)";ctx!.strokeStyle=speech.kind==="player"?hero().color:"#d86c35";ctx!.lineWidth=2;
+ ctx!.beginPath();ctx!.roundRect(bx,by,width,fs*1.9,5);ctx!.fill();ctx!.stroke();
+ ctx!.fillStyle="#f0eee7";ctx!.fillText(speech.text,bx+width/2,by+fs*.95);ctx!.restore();
+ speech.timer--;
+}
+
 const W=640,H=448;
 const heroes:Record<HeroId,Hero>={
  antonio:{id:"antonio",name:"ANTONIO",family:"valenti",color:"#54d6d8",face:"#9a6554",ability:"ТАКТИЧЕСКИЙ СБОЙ",abilityDesc:"Кратко останавливает противников и их активность.",bio:"Спокойный, наблюдательный и всегда ищет закономерность."},
@@ -333,7 +362,7 @@ function drawWorld(m:Mission){
  tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
  enemies.forEach(drawEnemy);drawPlayer();
  bullets.forEach(b=>{rect(b.x-3,b.y-3,Math.max(6,portraitScale()*4),Math.max(4,portraitScale()*3),b.from==="player"?hero().color:"#d86c35");});
- ctx.restore();drawHudOverlay(m);
+ ctx.restore();drawHudOverlay(m);drawSpeech();
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
@@ -412,7 +441,9 @@ function hurt(amount:number){
 }
 
 function update(dt:number){
- frame++;player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
+ frame++;speechCooldown=Math.max(0,speechCooldown-dt);if(speech)speech.timer-=dt;
+ if(mode==="play"&&frame%420===0){const lines=heroLines[selected||"antonio"];say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);}
+ player.cool=Math.max(0,player.cool-dt);player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
  const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
  if(Math.abs(moveX)>.12||Math.abs(moveY)>.12){
   const len=Math.hypot(moveX,moveY)||1,moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
@@ -435,7 +466,7 @@ function update(dt:number){
    e.shootCool=e.type==="suppressor"?28:65;
    bullets.push({x:e.x,y:e.y,vx:dx/dist*3.2*scale,vy:dy/dist*3.2*scale,from:"enemy",life:110});
   }
-  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);}
+  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?12:7);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
  }
  for(const b of bullets)if(b.from==="player")for(const e of enemies)if(!e.falling&&Math.abs(b.x-e.x)<22*scale&&Math.abs(b.y-e.y)<24*scale){
   e.hp-=weapons[save.weapon].damage;b.life=0;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
