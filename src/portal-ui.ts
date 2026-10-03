@@ -23,6 +23,7 @@ const ICONS:Record<string,SvgIconDef>={
   calendar:{paths:["M5 4h14a2 2 0 0 1 2 2v13H3V6a2 2 0 0 1 2-2Z","M8 2v4","M16 2v4","M3 9h18"]},
   refresh:{paths:["M20 11a8 8 0 0 0-14-5L4 8","M4 4v4h4","M4 13a8 8 0 0 0 14 5l2-2","M20 20v-4h-4"]},
   error:{paths:["M12 3 22 21H2L12 3Z","M12 9v5","M12 18h.01"]},
+  robot:{paths:["M6 8h12v11H6z","M9 12h.01","M15 12h.01","M9 16h6","M12 5v3","M9 5h6"],rects:["x=\"9\" y=\"2\" width=\"6\" height=\"3\" rx=\"1.5\""]},
   success:{paths:["M20 6 9 17l-5-5"]},
   waiting:{paths:["M6 3h12","M6 21h12","M7 3c0 4 5 4.5 5 9s-5 5-5 9","M17 3c0 4-5 4.5-5 9s5 5 5 9"]},
   mute:{paths:["M4 10h4l5-4v12l-5-4H4z","M17 9l4 6","M21 9l-4 6"]},
