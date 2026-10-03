@@ -4009,9 +4009,27 @@ main{
 }
 
 
-/* TOOLBAR — restore visible navigation icons without changing layout */
-.portal-workspace > .portal-toolbar .portal-toolbar-icon{
+/* TOOLBAR — force navigation controls and SVG strokes above the video */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  position:relative!important;
+  z-index:4!important;
   display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-button{
+  position:relative!important;
+  z-index:5!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-icon{
+  display:inline-grid!important;
   place-items:center!important;
   width:48px!important;
   height:48px!important;
@@ -4024,6 +4042,7 @@ main{
   opacity:1!important;
   color:#fff!important;
   pointer-events:none!important;
+  overflow:visible!important;
 }
 .portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration{
   display:block!important;
@@ -4035,7 +4054,18 @@ main{
   max-height:48px!important;
   visibility:visible!important;
   opacity:1!important;
-  color:currentColor!important;
-  stroke:currentColor!important;
+  color:#fff!important;
+  stroke:#fff!important;
   fill:none!important;
+  overflow:visible!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration path,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration circle,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration rect,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration line,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration polygon{
+  stroke:#fff!important;
+  fill:none!important;
+  visibility:visible!important;
+  opacity:1!important;
 }
