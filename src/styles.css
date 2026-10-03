@@ -4925,3 +4925,23 @@ main{
   height:44px!important;
   min-height:44px!important;
 }
+
+
+/* HOME LAYOUT EDIT — all six blocks stay visible; only the focused block is editable. */
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > .home-hero,
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > .home-card,
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > .home-library{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > [data-home-layout-block]{
+  pointer-events:auto!important;
+}
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > [data-home-layout-block][data-home-layout-focused="0"]{
+  z-index:10!important;
+  outline:none!important;
+}
+.home-portal[data-home-layout-active="1"][data-home-layout-edit="1"] > [data-home-layout-block][data-home-layout-focused="1"]{
+  z-index:2050!important;
+}
