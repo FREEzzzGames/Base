@@ -120,6 +120,7 @@ function mountPersistentBackgroundVideos(){
       video.preload="auto";
       video.setAttribute("aria-hidden","true");
       video.src=src;
+      video.dataset.persistentVideo=key;
       persistentBackgroundVideos.set(key,video);
     }
     video.className=slot.className;
