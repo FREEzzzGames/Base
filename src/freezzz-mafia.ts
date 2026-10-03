@@ -136,7 +136,7 @@ const completedKey="freezzz:mafia-save:v2";
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function rank(){return Math.min(rankNames.length-1,Math.floor(save.xp/650));}
-function objectiveRu(o:Objective){const map:Record<Objective,string>={find:"НАЙТИ",recover:"ЗАБРАТЬ",escort:"СОПРОВОЖДАТЬ",clear:"ЗАЧИСТИТЬ",reach:"ДОБРАТЬСЯ",defend:"ЗАЩИТИТЬ",survive:"ВЫЖИТЬ"};return map[o]||o.toUpperCase();}
+function objectiveRu(o:Objective){const map:Record<Objective,string>={find:"НАЙТИ",recover:"ЗАБРАТЬ",escort:"СОПРОВОЖДАТЬ",clear:"ЗАЧИСТИТЬ",reach:"ДОБРАТЬСЯ",defend:"ЗАЩИТИТЬ",survive:"ВЫЖИТЬ",escape:"ОТХОД"};return map[o]||o.toUpperCase();}
 function currentMission():Mission{return allMissions[missionIndex]||shared[2];}
 function hero(){return heroes[selected||"antonio"];}
 function family(){return familyText[hero().family];}
