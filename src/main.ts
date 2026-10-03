@@ -176,7 +176,8 @@ function homeLayoutHandles():string{
   return `<span class="home-layout-resize-handle home-layout-resize-left" data-layout-resize="left" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-right" data-layout-resize="right" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-top" data-layout-resize="top" aria-hidden="true"></span><span class="home-layout-resize-handle home-layout-resize-bottom" data-layout-resize="bottom" aria-hidden="true"></span>`;
 }
 function homeLayoutBlockAttrs(id:HomeBlockId):string{
-  return `data-home-layout-block="${id}"`;
+  const focused=homeLayoutEditMode&&homeLayoutFocusedBlock===id?"1":"0";
+  return `data-home-layout-block="${id}" data-home-layout-focused="${focused}"`;
 }
 function applyHomeLayoutGeometry(){
   if(view!=="home")return;
@@ -275,8 +276,6 @@ function bindHomeLayoutEditor(){
       el.classList.remove("home-layout-dragging","home-layout-resizing");
     });
   });
-  document.querySelector("[data-layout-reset]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();resetHomeLayout();});
-  document.querySelector("[data-layout-close]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();finishHomeLayoutEdit();});
   applyHomeLayoutGeometry();
 }
 function renderPortalToolbar(){
@@ -313,7 +312,6 @@ function render(){
   if(view==="home"){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home" data-home-layout-active="${homeLayoutEditMode||!homeLayoutIsDefault()?"1":"0"}">
-        ${homeLayoutEditMode?`<div class="home-layout-editor" data-home-layout-editor><span>LAYOUT</span><button type="button" data-layout-reset aria-label="Reset layout">↺</button><button type="button" data-layout-close aria-label="Finish layout">✓</button></div>`: ""}
         <section class="hero portal-block home-hero" data-portal-block="hero" ${homeLayoutBlockAttrs("hero")}>
           <video class="home-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
             <source src="${portalVideoUrl("hero")}" type="video/mp4">
@@ -656,10 +654,12 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-home-layout-block]").forEach(function(x){
     x.addEventListener("dblclick",e=>{
-      if(homeLayoutEditMode)return;
       e.preventDefault();
       e.stopPropagation();
-      toggleHomeLayoutEdit(x.dataset.homeLayoutBlock as HomeBlockId);
+      const id=x.dataset.homeLayoutBlock as HomeBlockId;
+      if(!id)return;
+      if(homeLayoutEditMode&&homeLayoutFocusedBlock===id)finishHomeLayoutEdit();
+      else toggleHomeLayoutEdit(id);
     });
     x.addEventListener("pointerup",e=>{
       if(homeLayoutEditMode)return;
