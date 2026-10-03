@@ -5900,6 +5900,26 @@ html.visual-comfort-enabled video{
 .portal-game-fullscreen .mafia-menu-actions button{min-width:0!important;min-height:0!important;width:100%!important;height:100%!important;border:1px solid #7d898d!important;background:#11181b!important;color:#f0eee7!important;font:700 clamp(18px,3.8vw,28px) monospace!important;touch-action:manipulation!important;border-radius:0!important}
 .portal-game-fullscreen .mafia-menu-actions button:first-child{border-color:#54d6d8!important}
 .portal-game-fullscreen .mafia-action{right:4vw!important;bottom:3vh!important;display:flex!important;gap:12px!important;align-items:flex-end!important}
+.portal-game-fullscreen .mafia-levels-panel{position:absolute!important;z-index:2!important;left:5vw!important;right:5vw!important;top:11vh!important;bottom:12vh!important;overflow-y:auto!important;display:flex!important;flex-direction:column!important;gap:10px!important;padding:1vh 1vw 2vh!important;box-sizing:border-box!important;touch-action:pan-y!important}
+.portal-game-fullscreen .mafia-level-card{position:relative!important;display:block!important;width:100%!important;min-height:154px!important;padding:12px 14px!important;box-sizing:border-box!important;text-align:left!important;background:#0b1013!important;border:1px solid #303b40!important;border-left:5px solid var(--level-accent)!important;color:#f0eee7!important;border-radius:0!important;touch-action:manipulation!important}
+.portal-game-fullscreen .mafia-level-card:active{background:#182226!important}
+.portal-game-fullscreen .mafia-level-card.completed{border-top-color:#54d6d8!important}
+.portal-game-fullscreen .mafia-level-head{display:grid!important;grid-template-columns:42px 1fr 24px!important;gap:10px!important;align-items:start!important}
+.portal-game-fullscreen .mafia-level-head>strong{font:700 25px monospace!important;color:var(--level-accent)!important}
+.portal-game-fullscreen .mafia-level-head div{min-width:0!important}
+.portal-game-fullscreen .mafia-level-head b{display:block!important;font:700 clamp(18px,4.2vw,26px) monospace!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.portal-game-fullscreen .mafia-level-head small{display:block!important;margin-top:4px!important;color:#7e898d!important;font:12px monospace!important}
+.portal-game-fullscreen .mafia-level-head i{font:700 20px monospace!important;color:#54d6d8!important;font-style:normal!important;text-align:right!important}
+.portal-game-fullscreen .mafia-level-meta{display:flex!important;gap:10px!important;align-items:center!important;margin-top:10px!important;font:12px monospace!important}
+.portal-game-fullscreen .mafia-level-meta span{color:#59656b!important}
+.portal-game-fullscreen .mafia-level-meta b{color:var(--level-accent)!important}
+.portal-game-fullscreen .mafia-level-floors{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin-top:10px!important}
+.portal-game-fullscreen .mafia-level-floors span{display:block!important;padding:6px 5px!important;background:#11181b!important;color:#aab1b4!important;font:10px monospace!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+.portal-game-fullscreen .mafia-level-floors b{color:#59656b!important;margin-right:3px!important}
+.portal-game-fullscreen .mafia-level-footer{display:flex!important;justify-content:space-between!important;gap:8px!important;margin-top:10px!important;color:#7e898d!important;font:11px monospace!important}
+.portal-game-fullscreen .mafia-levels-bottom{position:absolute!important;z-index:3!important;left:6vw!important;right:6vw!important;bottom:3vh!important;height:7vh!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:3vw!important}
+.portal-game-fullscreen .mafia-levels-bottom button{border:1px solid #7d898d!important;background:#11181b!important;color:#f0eee7!important;font:700 clamp(15px,3.4vw,23px) monospace!important;border-radius:0!important;touch-action:manipulation!important}
+
 .portal-game-fullscreen .mafia-action button{min-width:190px!important;min-height:56px!important;height:9vh!important;padding:0 28px!important;font-size:clamp(18px,3.8vw,28px)!important;touch-action:manipulation!important;background:#11181b!important;border:1px solid #54d6d8!important;color:#f0eee7!important;border-radius:0!important}.portal-game-fullscreen .freezzz-mafia-canvas{width:100%!important;height:100%!important;image-rendering:pixelated!important;display:block!important}
 .portal-game-fullscreen .mafia-select-grid{top:17vh!important;height:67vh!important;padding:0 6vw!important;grid-template-rows:repeat(2,1fr)!important;gap:2vh 4vw!important}
 .portal-game-fullscreen .mafia-menu-actions{bottom:3vh!important;height:12vh!important;grid-template-columns:repeat(2,1fr)!important;grid-template-rows:1fr 1fr!important;gap:1vh 3vw!important}
