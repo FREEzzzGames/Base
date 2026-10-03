@@ -22,6 +22,7 @@ interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
 let speechCooldown=0;
+let districtMapImage: HTMLImageElement|null=null;
 const heroLines:Record<HeroId,string[]>={
  antonio:["Спокойно.","Я вижу путь.","Держимся вместе.","Нам сюда.","Всё под контролем."],
  massimo:["Вперёд!","Не отстаём!","Я здесь!","Давай!","Чисто!"],
@@ -657,7 +658,7 @@ function drawWorld(m:Mission){
  const camX=clamp(player.x-viewWidth/(2*scale),0,map.w-viewWidth/scale);
  const camY=clamp(player.y-viewHeight/(2*scale),0,map.h-viewHeight/scale);
  ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
- drawTopDownBackground();
+ if(districtMapImage?.complete&&districtMapImage.naturalWidth>0)ctx.drawImage(districtMapImage,0,0,1500,1180);else drawTopDownBackground();
  const [exitX,exitY]=topDownExit();
  rect(exitX-24,exitY-24,48,48,"#151d21");rect(exitX-17,exitY-17,34,34,hero().color);
  tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
@@ -1168,6 +1169,9 @@ function updateCombatButtonLabels(){
 function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
 function setup(){
  loadSave();selected=save.hero;
+ districtMapImage=new Image();
+ districtMapImage.decoding="async";
+ districtMapImage.src="/assets/mafia-district.svg";
  render();raf=requestAnimationFrame(loop);
  cleanup=()=>{cancelAnimationFrame(raf);};
 }
