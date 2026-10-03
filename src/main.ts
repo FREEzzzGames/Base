@@ -243,22 +243,33 @@ function bindHomeLayoutEditor(){
       if(!id)return;
       const now=Date.now();
       const previous=homeLayoutTap;
-      const isSecond=Boolean(
-        previous&&
-        previous.id===id&&
-        now-previous.time<=1200&&
-        Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48
-      );
+      const isSecond=Boolean(previous&&previous.id===id&&now-previous.time<=1200&&Math.hypot(e.clientX-previous.x,e.clientY-previous.y)<=48);
       if(homeLayoutEditMode){
-        if(!homeLayoutFocusedBlock||homeLayoutFocusedBlock===id){
-          const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
-          if(!edge)return;
-          e.preventDefault();
-          e.stopPropagation();
-          homeLayoutPointer={id,startX:e.clientX,startY:e.clientY,edge,active:true};
-          el.setPointerCapture?.(e.pointerId);
-          el.classList.add("home-layout-resizing");
+        if(homeLayoutFocusedBlock!==id){
+          if(isSecond){
+            e.preventDefault();
+            e.stopPropagation();
+            if(homeLayoutTapTimer!==null)window.clearTimeout(homeLayoutTapTimer);
+            homeLayoutTapTimer=null;
+            homeLayoutTap=null;
+            homeLayoutFocusedBlock=id;
+            render();
+          }
+          return;
         }
+        const edge=(e.target as HTMLElement).closest<HTMLElement>("[data-layout-resize]")?.dataset.layoutResize as ResizeEdge|undefined;
+        e.preventDefault();
+        e.stopPropagation();
+        homeLayoutPointer={
+          id,
+          startX:e.clientX,
+          startY:e.clientY,
+          edge,
+          active:true
+        };
+        el.setPointerCapture?.(e.pointerId);
+        el.classList.toggle("home-layout-resizing",Boolean(edge));
+        el.classList.toggle("home-layout-dragging",!edge);
         return;
       }
       if(isSecond){
@@ -280,33 +291,52 @@ function bindHomeLayoutEditor(){
         homeLayoutSuppressClick=false;
         if(view!=="home")return;
         if(moduleManager.has(id as View))portalEvents.emit("navigation:changed",{view:id as View});
-      },750);
+      },1200);
     });
     el.addEventListener("pointermove",e=>{
       if(!homeLayoutEditMode||!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
       const edge=homeLayoutPointer.edge;
-      if(!edge)return;
-      const host=home.getBoundingClientRect();
-      const delta=(edge==="left"||edge==="right")
-        ?(e.clientX-homeLayoutPointer.startX)/Math.max(1,host.width)
-        :(e.clientY-homeLayoutPointer.startY)/Math.max(1,host.height);
-      const mode=currentHomeLayoutMode();
-      const signed=(edge==="left"||edge==="top")?-delta:delta;
-      homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed)};
-      markHomeLayoutCustomized();
-      homeLayoutPointer.startX=e.clientX;
-      homeLayoutPointer.startY=e.clientY;
-      applyHomeLayoutGeometry();
+      if(edge){
+        const host=home.getBoundingClientRect();
+        const delta=(edge==="left"||edge==="right")
+          ?(e.clientX-homeLayoutPointer.startX)/Math.max(1,host.width)
+          :(e.clientY-homeLayoutPointer.startY)/Math.max(1,host.height);
+        const mode=currentHomeLayoutMode();
+        const signed=(edge==="left"||edge==="top")?-delta:delta;
+        homeLayout={...homeLayout,[mode]:resizeHomeBoundary(homeLayout[mode],homeLayoutPointer.id,edge,signed)};
+        markHomeLayoutCustomized();
+        homeLayoutPointer.startX=e.clientX;
+        homeLayoutPointer.startY=e.clientY;
+        applyHomeLayoutGeometry();
+        return;
+      }
+      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
+      if(target&&target!==el){
+        el.dataset.homeLayoutOver=target.dataset.homeLayoutBlock||"";
+      }else{
+        delete el.dataset.homeLayoutOver;
+      }
     });
-    const finishResize=(e:PointerEvent)=>{
+    const finishPointer=(e:PointerEvent)=>{
       if(!homeLayoutPointer.active||homeLayoutPointer.id!==el.dataset.homeLayoutBlock)return;
+      const edge=homeLayoutPointer.edge;
       homeLayoutPointer.active=false;
-      el.classList.remove("home-layout-resizing");
+      el.classList.remove("home-layout-resizing","home-layout-dragging");
+      delete el.dataset.homeLayoutOver;
+      if(!edge){
+        const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>("[data-home-layout-block]");
+        const targetId=target?.dataset.homeLayoutBlock as HomeBlockId|undefined;
+        if(targetId&&targetId!==homeLayoutPointer.id){
+          const mode=currentHomeLayoutMode();
+          homeLayout={...homeLayout,[mode]:swapHomeBlocks(homeLayout[mode],homeLayoutPointer.id,targetId)};
+          markHomeLayoutCustomized();
+        }
+      }
       saveHomeLayout(homeLayout);
       render();
     };
-    el.addEventListener("pointerup",finishResize);
-    el.addEventListener("pointercancel",finishResize);
+    el.addEventListener("pointerup",finishPointer);
+    el.addEventListener("pointercancel",finishPointer);
   });
 }
 function renderPortalToolbar(){
