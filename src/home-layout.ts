@@ -64,9 +64,18 @@ export function saveHomeLayout(state:HomeLayoutState):void{
 
 function validLayout(node:HomeLayoutNode):boolean{
   if(!node||typeof node!=="object")return false;
-  if(node.type==="leaf")return BLOCKS.includes(node.id);
-  if(node.type!=="split"||(node.direction!=="row"&&node.direction!=="column"))return false;
-  return Number.isFinite(node.ratio)&&node.ratio>.05&&node.ratio<.95&&validLayout(node.first)&&validLayout(node.second);
+  const ids:HomeBlockId[]=[];
+  function walk(n:HomeLayoutNode):boolean{
+    if(n.type==="leaf"){
+      if(!BLOCKS.includes(n.id)||ids.includes(n.id))return false;
+      ids.push(n.id);
+      return true;
+    }
+    if(n.type!=="split"||(n.direction!=="row"&&n.direction!=="column"))return false;
+    if(!Number.isFinite(n.ratio)||n.ratio<=.05||n.ratio>=.95)return false;
+    return walk(n.first)&&walk(n.second);
+  }
+  return walk(node)&&ids.length===BLOCKS.length;
 }
 
 export interface HomeLayoutRect{
