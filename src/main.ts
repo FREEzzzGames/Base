@@ -1,6 +1,7 @@
 import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
+import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
@@ -18,6 +19,7 @@ import { mountRpgGraphicsTest } from "./rpg-graphics-test";
 
 initTelegramBridge();
 initVisualComfort();
+initPerformanceLayer();
 
 async function checkForPortalUpdate(){
   try{
