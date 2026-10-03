@@ -5,6 +5,10 @@ const KEY="freezzz:rpg-graphics-test:v2",W=192,H=108;
 const HERO=[".....111111.....","...1122222211...","..122222222221..",".12222222222221.","1222222333222221","1222223333332221",".12222333322221.","..111222222111..","...1144444411...","..114444444411..",".11444444444441.","..114444444441..","...1114444111...","....11....11....","...11......11...","..111......111.."];
 const ENEMY=["....111111....","..1122222211..",".122222222221.","122222233322221","122223333332221",".1222333333221.","..111222222111.","...115555511...","..115555555511..",".11555555555551.","..111555555111..","...11.....11...","..111.....111.."];
 const PAL:Record<string,string>={"1":"#080808","2":"#d89470","3":"#f5f5f5","4":"#ff2020","5":"#9b9b9b","6":"#6e6e6e","7":"#c8c8c8","8":"#3a3a3a","9":"#ff5a5a","a":"#222","b":"#bdbdbd"};
+const HERO_WALK=[...HERO]; HERO_WALK[14]="....11..11..11...."; HERO_WALK[15]="...11...11...11...";
+const HERO_STEP=[...HERO]; HERO_STEP[14]=".....11..11......"; HERO_STEP[15]="....111..111....."; HERO_STEP[16]="...111....111....";
+const ENEMY_WALK=[...ENEMY]; ENEMY_WALK[14]="...111....111...."; ENEMY_WALK[15]="..1111....1111...";
+
 
 type Enemy={x:number;y:number;hp:number;max:number;elite:boolean;hit:number;cool:number};
 type Orb={x:number;y:number;kind:"xp"|"mana";life:number};
@@ -27,7 +31,7 @@ function esc(v:string){return v.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">
 export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
  const s=load();let alive=true,raf=0,last=performance.now(),elapsed=0,shake=0,flash=0;
  const keys=new Set<string>(),sparks:Spark[]=[],orbs:Orb[]=[];let enemies:Enemy[]=[];let boss:Enemy|null=null;
- let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false;
+ let px=96,py=82,attack=0,dash=0,skill=0,spawn=0,kills=0,waveDone=false,won=false,attackFx=0,skillFx=0,damageFlash=0;
  const joy={x:0,y:0,active:false};let joyPointer=-1;
 
  function resetPlay(){
@@ -61,7 +65,7 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    host.querySelector("[data-rpg-chapter]")?.addEventListener("click",buildLevel);
  }
  function buildPlay(){
-   host.innerHTML='<section class="rpgx rpgx-play"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="192" height="108"></canvas><div class="rpgx-play-hud"><div><b id="rpg-chapter">CHAPTER 01</b><span id="rpg-objective">DRONES 0/8</span></div><div class="rpgx-bars"><i><em id="rpg-hp"></em></i><i><em id="rpg-mana"></em></i></div></div><div class="rpgx-bossbar" id="rpg-bossbar" hidden><b id="rpg-boss-name"></b><i><em id="rpg-boss-hp"></em></i></div><div class="rpgx-touch"><div class="rpgx-joystick" data-rpg-joy><i></i></div><div class="rpgx-actions"><button data-rpg-attack>ATK</button><button data-rpg-skill>SKILL</button><button data-rpg-dash>DASH</button></div></div><div class="rpgx-play-top"><button data-rpg-exit>EXIT</button></div></div></section>';
+   host.innerHTML='<section class="rpgx rpgx-play"><div class="rpgx-stage"><canvas class="rpgx-canvas" width="384" height="216"></canvas><div class="rpgx-play-hud"><div><b id="rpg-chapter">CHAPTER 01</b><span id="rpg-objective">DRONES 0/8</span></div><div class="rpgx-bars"><i><em id="rpg-hp"></em></i><i><em id="rpg-mana"></em></i></div></div><div class="rpgx-bossbar" id="rpg-bossbar" hidden><b id="rpg-boss-name"></b><i><em id="rpg-boss-hp"></em></i></div><div class="rpgx-touch"><div class="rpgx-joystick" data-rpg-joy><i></i></div><div class="rpgx-actions"><button data-rpg-attack>ATK</button><button data-rpg-skill>SKILL</button><button data-rpg-dash>DASH</button></div></div><div class="rpgx-play-top"><button data-rpg-exit>EXIT</button></div></div></section>';
    bindPlay();
  }
  function bindPlay(){
@@ -72,11 +76,11 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    joyEl?.addEventListener("pointermove",e=>{if(joy.active)setJoy(e)});
    const end=()=>{joy.active=false;joy.x=0;joy.y=0;joyPointer=-1;const k=joyEl?.querySelector("i") as HTMLElement|null;if(k)k.style.transform="translate(0,0)"};
    joyEl?.addEventListener("pointerup",end);joyEl?.addEventListener("pointercancel",end);
-   host.querySelector("[data-rpg-attack]")?.addEventListener("pointerdown",()=>attack=.22);
-   host.querySelector("[data-rpg-skill]")?.addEventListener("pointerdown",()=>{if(s.mana>=25)skill=.5});
-   host.querySelector("[data-rpg-dash]")?.addEventListener("pointerdown",()=>{if(s.stamina>=20)dash=.24});
+   host.querySelector("[data-rpg-attack]")?.addEventListener("pointerdown",()=>{if(attack<=0)attack=.22});
+   host.querySelector("[data-rpg-skill]")?.addEventListener("pointerdown",()=>{if(s.mana>=25&&skill<=0){skill=.5;skillFx=.5;s.mana=clamp(s.mana-25,0,100)}});
+   host.querySelector("[data-rpg-dash]")?.addEventListener("pointerdown",()=>{if(s.stamina>=20&&dash<=0){dash=.24;s.stamina=clamp(s.stamina-20,0,100)}});
    host.querySelector("[data-rpg-exit]")?.addEventListener("click",buildLevel);
-   const keydown=(e:KeyboardEvent)=>{keys.add(e.key.toLowerCase());if(e.key===" ")attack=.22;if(e.key.toLowerCase()==="q"&&s.mana>=25)skill=.5;if(e.key.toLowerCase()==="shift"&&s.stamina>=20)dash=.24};
+   const keydown=(e:KeyboardEvent)=>{keys.add(e.key.toLowerCase());if(e.key===" "&&attack<=0)attack=.22;if(e.key.toLowerCase()==="q"&&s.mana>=25&&skill<=0){skill=.5;skillFx=.5;s.mana=clamp(s.mana-25,0,100)}if(e.key.toLowerCase()==="shift"&&s.stamina>=20&&dash<=0){dash=.24;s.stamina=clamp(s.stamina-20,0,100)}};
    const keyup=(e:KeyboardEvent)=>keys.delete(e.key.toLowerCase());
    window.addEventListener("keydown",keydown);window.addEventListener("keyup",keyup);
    (host as HTMLElement).dataset.rpgKeys="1";
@@ -100,15 +104,15 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    const my=(keys.has("w")||keys.has("arrowup")?-1:0)+(keys.has("s")||keys.has("arrowdown")?1:0)+(joy.active?joy.y:0);
    const len=Math.hypot(mx,my)||1,base=26+(dash?48:0);
    px=clamp(px+mx/len*base*dt,12,180);py=clamp(py+my/len*base*dt,40,98);
-   s.stamina=clamp(s.stamina+(dash?-42:18)*dt,0,100);s.mana=clamp(s.mana+(skill?-50:5)*dt,0,100);
-   if(dash){dash-=dt;burst(px,py,2)}else if(s.stamina<20)dash=0;
-   if(attack>0){attack-=dt;if(attack>.16)doHit(26,13)}
-   if(skill>0){if(skill>.45)doHit(60,24);skill-=dt;burst(px,py,5)}
-   for(const e of enemies){if(e.hp<=0)continue;e.hit=Math.max(0,e.hit-dt);e.cool-=dt;const d=dist(px,py,e.x,e.y);if(d>10){e.x+=(px-e.x)/Math.max(1,d)*(8+(s.chapter*2))*dt;e.y+=(py-e.y)/Math.max(1,d)*(8+(s.chapter*2))*dt}else if(e.cool<=0){s.hp-=5;e.cool=1.1;flash=.08}}
+   s.stamina=clamp(s.stamina+18*dt,0,100);s.mana=clamp(s.mana+5*dt,0,100);
+   if(dash){dash-=dt;burst(px,py,4)}
+   attackFx=Math.max(0,attackFx-dt);damageFlash=Math.max(0,damageFlash-dt);if(attack>0){attack-=dt;if(attack<=.16&&attackFx<=0){attackFx=.22;doHit(26,15)}}
+   if(skill>0){if(skill<=.45&&skillFx>.45){doHit(60,28);skillFx=.45}skill-=dt;skillFx=Math.max(0,skillFx-dt);burst(px,py,7)}
+   for(const e of enemies){if(e.hp<=0)continue;e.hit=Math.max(0,e.hit-dt);e.cool-=dt;const d=dist(px,py,e.x,e.y);if(d>10){e.x+=(px-e.x)/Math.max(1,d)*(8+(s.chapter*2))*dt;e.y+=(py-e.y)/Math.max(1,d)*(8+(s.chapter*2))*dt}else if(e.cool<=0){s.hp-=5;e.cool=1.1;flash=.08;damageFlash=.18}}
    enemies=enemies.filter(e=>e.hp>0);
    const need=6+s.chapter*2;
    if(!waveDone&&kills>=need){waveDone=true;boss={x:150,y:62,hp:180+s.chapter*50,max:180+s.chapter*50,elite:true,hit:0,cool:0};burst(150,62,30)}
-   if(boss&&boss.hp>0){boss.hit=Math.max(0,boss.hit-dt);boss.cool-=dt;const d=dist(px,py,boss.x,boss.y);if(d>16){boss.x+=(px-boss.x)/Math.max(1,d)*7*dt;boss.y+=(py-boss.y)/Math.max(1,d)*7*dt}else if(boss.cool<=0){s.hp-=12;boss.cool=.8;flash=.16;burst(px,py,8)}}
+   if(boss&&boss.hp>0){boss.hit=Math.max(0,boss.hit-dt);boss.cool-=dt;const d=dist(px,py,boss.x,boss.y);if(d>16){boss.x+=(px-boss.x)/Math.max(1,d)*7*dt;boss.y+=(py-boss.y)/Math.max(1,d)*7*dt}else if(boss.cool<=0){s.hp-=12;boss.cool=.8;flash=.16;damageFlash=.24;burst(px,py,10)}}
    for(const o of orbs){o.life-=dt;if(dist(px,py,o.x,o.y)<9){if(o.kind==="xp")s.xp=clamp(s.xp+5,0,100);else s.mana=clamp(s.mana+15,0,100);o.life=0}}
    for(const p of sparks){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=20*dt;p.life-=dt}while(sparks[0]?.life<=0)sparks.shift();orbs.splice(0,orbs.length,...orbs.filter(o=>o.life>0));
    if(s.hp<=0){s.hp=100;buildLevel();return}
@@ -117,27 +121,85 @@ export function mountRpgGraphicsTest(host:HTMLElement):()=>void{
    const bb=host.querySelector("#rpg-bossbar") as HTMLElement|null;if(bb){bb.hidden=!boss;const b=host.querySelector("#rpg-boss-hp") as HTMLElement|null;if(b&&boss)b.style.width=clamp(boss.hp/boss.max*100,0,100)+"%";const n=host.querySelector("#rpg-boss-name") as HTMLElement|null;if(n)n.textContent=LEVELS[s.chapter-1].boss}
    save(s);
  }
- function draw(now:number){
+ function drawBackground(x:CanvasRenderingContext2D,elapsed:number){
+  // Far skyline
+  x.fillStyle="#08080d";x.fillRect(0,32,W,52);
+  for(let i=0;i<18;i++){
+    const w=7+(i%4)*3,bx=i*12-((elapsed*2)%12),top=38-(i%5)*4;
+    x.fillRect(bx,top,w,46);
+    x.fillStyle=i%4===0?"#ff2020":"#242424";
+    for(let wy=top+4;wy<78;wy+=7)x.fillRect(bx+2,wy,1+(i%2),2);
+    x.fillStyle="#08080d";
+  }
+  // Mid skyline with animated parallax signs
+  x.fillStyle="#101015";
+  for(let i=0;i<11;i++){
+    const w=10+(i%3)*4,bx=i*19-((elapsed*5)%19),top=49-(i%4)*5;
+    x.fillRect(bx,top,w,35);
+    x.fillStyle=i%3===0?"#ff2020":"#3a3a3a";x.fillRect(bx+2,top+5,w-4,2);
+    x.fillStyle="#fff";x.fillRect(bx+3,top+6,2,3);
+    x.fillStyle="#101015";
+  }
+  // Ground depth layers
+  x.fillStyle="#161616";x.fillRect(0,79,W,29);
+  x.fillStyle="#242424";for(let i=0;i<10;i++){const bx=(i*24-(elapsed*12)%24);x.fillRect(bx,81,14,1)}
+  x.fillStyle="#090909";x.fillRect(0,92,W,16);
+  x.strokeStyle="rgba(255,255,255,.18)";x.lineWidth=.7;
+  for(let i=0;i<9;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*24,108);x.stroke()}
+  x.strokeStyle="rgba(255,32,32,.36)";
+  for(let i=0;i<5;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*48,108);x.stroke()}
+  // Rain and atmospheric streaks
+  for(let i=0;i<34;i++){
+    const rx=(i*37+Math.floor(elapsed*(32+i%7)))%200-2,ry=(i*19+Math.floor(elapsed*(20+i%5)))%82;
+    x.fillStyle=i%5===0?"rgba(255,32,32,.7)":"rgba(255,255,255,.42)";
+    x.fillRect(rx,ry,1,2+i%3);
+  }
+  x.fillStyle="rgba(255,255,255,.035)";x.fillRect(0,42,W,25);
+}
+function draw(now:number){
    const c=host.querySelector<HTMLCanvasElement>(".rpgx-canvas"),x=c?.getContext("2d");if(!c||!x||s.screen!=="play")return;
    const dt=Math.min(.033,(now-last)/1000);last=now;elapsed+=dt;update(dt);flash=Math.max(0,flash-dt*2.8);shake=Math.max(0,shake-dt*2);
    x.imageSmoothingEnabled=false;x.setTransform(2,0,0,2,0,0);x.fillStyle="#050505";x.fillRect(0,0,W,H);
-   const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0b0b16");g.addColorStop(1,"#020202");x.fillStyle=g;x.fillRect(0,0,W,H);
-   x.fillStyle="#10101a";for(let i=0;i<12;i++){const bx=i*18-4;x.fillRect(bx,44-(i%3)*6,11,64);x.fillStyle=i%2?"#ff2020":"#fff";x.fillRect(bx+3,52-(i%3)*6,1,18);x.fillStyle="#10101a"}
-   x.fillStyle="#171717";x.fillRect(0,83,W,25);for(let i=0;i<18;i++){x.fillStyle=i%2?"#222":"#0a0a0a";x.fillRect(i*11,84,8,1)}
-   /* 32-bit-inspired depth pass: layered architecture, perspective lights and rain */
-   x.fillStyle="#0d0d12";for(let row=0;row<5;row++){const yy=48+row*7;x.fillRect(0,yy,W,1);for(let col=0;col<16;col++){const bx=col*14-(row%2)*7;x.fillStyle=(col+row)%4===0?"#ff2020":"#262626";x.fillRect(bx+3,yy+3,2,3);x.fillStyle="#101010";x.fillRect(bx+7,yy+2,4,5)}}
-   x.strokeStyle="rgba(255,255,255,.12)";x.lineWidth=1;for(let i=0;i<13;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*18,108);x.stroke()}
-   x.strokeStyle="rgba(255,32,32,.28)";for(let i=0;i<8;i++){x.beginPath();x.moveTo(96,83);x.lineTo(i*28,108);x.stroke()}
-   for(let i=0;i<28;i++){const rx=(i*37+Math.floor(elapsed*45))%200-4,ry=(i*17+Math.floor(elapsed*(22+i%5)))%80;x.fillStyle=i%3?"rgba(255,255,255,.45)":"rgba(255,32,32,.65)";x.fillRect(rx,ry,1,2+i%3)}
-   x.fillStyle="rgba(255,255,255,.06)";x.fillRect(0,38,W,18);
+   drawBackground(x,elapsed);
+   // Perspective light pools under combatants.
+   const light=(lx:number,ly:number,r:number,color:string)=>{
+     const g=x.createRadialGradient(lx,ly,0,lx,ly,r);g.addColorStop(0,color);g.addColorStop(1,"rgba(0,0,0,0)");
+     x.fillStyle=g;x.fillRect(lx-r,ly-r,r*2,r*2);
+   };
+   light(px,py,24,"rgba(255,32,32,.16)");
+   if(boss)light(boss.x,boss.y,22,"rgba(255,255,255,.11)");
+
 
    if(shake)x.translate((Math.random()-.5)*shake*3,(Math.random()-.5)*shake*3);
-   for(const o of orbs){x.fillStyle=o.kind==="xp"?"#fff":"#ff2020";x.fillRect(o.x-1,o.y-1,3,3)}
-   for(const e of enemies){x.save();if(e.hit)x.globalAlpha=.55;x.translate(e.x-4,e.y-4);sprite(x,ENEMY,0,0,1);x.restore();x.fillStyle="#000";x.fillRect(e.x-6,e.y-8,12,1);x.fillStyle="#ff2020";x.fillRect(e.x-6,e.y-8,12*(e.hp/e.max),1)}
-   if(boss){x.fillStyle="#ff2020";x.beginPath();x.arc(boss.x,boss.y,8,0,6.28);x.fill();x.fillStyle="#fff";x.fillRect(boss.x-4,boss.y-2,8,2)}
-   x.save();x.translate(px,py);if(attack>0)x.fillStyle="#fff",x.fillRect(7,-1,9,2);if(skill>0){x.strokeStyle="#ff2020";x.lineWidth=1;x.beginPath();x.arc(0,0,13,0,6.28);x.stroke()}sprite(x,HERO,-8,-15,1);x.restore();
-   for(const p of sparks){x.fillStyle=p.life>.25?"#fff":"#ff2020";x.fillRect(p.x,p.y,1,1)}
-   if(flash){x.fillStyle="rgba(255,32,32,"+flash*.25+")";x.fillRect(0,0,W,H)}
+   for(const o of orbs){const bob=Math.sin(elapsed*8+o.x)*1.5;x.fillStyle=o.kind==="xp"?"#fff":"#ff2020";x.fillRect(o.x-2,o.y-2+bob,4,4);x.fillRect(o.x-1,o.y-3+bob,2,6)}
+   for(const e of enemies){
+     x.save();if(e.hit)x.globalAlpha=.48;
+     const moving=Math.abs(e.x-px)+Math.abs(e.y-py)>10,frame=Math.floor(elapsed*7)%2;
+     const em=moving&&frame?ENEMY_WALK:ENEMY;
+     x.translate(Math.floor(e.x-10),Math.floor(e.y-20));sprite(x,em,0,0,1);x.restore();
+     x.fillStyle="#000";x.fillRect(e.x-8,e.y-23,16,2);x.fillStyle="#ff2020";x.fillRect(e.x-8,e.y-23,16*(e.hp/e.max),2);
+   }
+   if(boss){
+     const pulse=8+Math.sin(elapsed*7)*1.5;
+     x.fillStyle="rgba(255,32,32,.18)";x.beginPath();x.arc(boss.x,boss.y,pulse+4,0,6.28);x.fill();
+     x.fillStyle="#ff2020";x.beginPath();x.arc(boss.x,boss.y,pulse,0,6.28);x.fill();
+     x.fillStyle="#fff";x.fillRect(boss.x-5,boss.y-2,10,2);
+   }
+   x.save();
+   const moving=Math.abs((keys.has("a")||keys.has("d")||keys.has("arrowleft")||keys.has("arrowright")?1:0))+Math.abs((keys.has("w")||keys.has("s")||keys.has("arrowup")||keys.has("arrowdown")?1:0))>0||joy.active;
+   const frame=moving?Math.floor(elapsed*9)%3:0;
+   const hm=frame===1?HERO_WALK:frame===2?HERO_STEP:HERO;
+   const bob=moving?Math.sin(elapsed*14)*.5:Math.sin(elapsed*3)*.3;
+   x.translate(Math.floor(px),Math.floor(py+bob));
+   if(dash>0){for(let i=1;i<=4;i++){x.globalAlpha=.12*i;x.translate(-i*3,0);sprite(x,hm,-10,-20,1);x.translate(i*3,0)}x.globalAlpha=1}
+   if(attackFx>0){
+     x.strokeStyle="#fff";x.lineWidth=1.5;x.beginPath();x.arc(7,-5,13,-.9,.8);x.stroke();
+     x.strokeStyle="#ff2020";x.beginPath();x.arc(7,-5,16,-.7,.7);x.stroke();
+   }
+   if(skillFx>0){x.strokeStyle="#ff2020";x.lineWidth=2;x.beginPath();x.arc(0,0,10+skillFx*18,0,6.28);x.stroke();x.strokeStyle="#fff";x.lineWidth=1;x.beginPath();x.arc(0,0,15+skillFx*10,0,6.28);x.stroke()}
+   sprite(x,hm,-10,-20,1);x.restore();
+   for(const p of sparks){x.fillStyle=p.life>.25?"#fff":"#ff2020";x.fillRect(Math.floor(p.x),Math.floor(p.y),1+p.life*1.2,1+p.life*1.2)}
+   if(flash){x.fillStyle="rgba(255,32,32,"+flash*.25+")";x.fillRect(0,0,W,H)}if(damageFlash){x.fillStyle="rgba(255,32,32,"+damageFlash*.32+")";x.fillRect(0,0,W,H)}
    x.setTransform(1,0,0,1,0,0);
  }
  buildMenu();
