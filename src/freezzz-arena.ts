@@ -158,6 +158,55 @@ function drawSprite(ctx:CanvasRenderingContext2D,f:Fighter,cx:number,ground:numb
     rect(ctx,-7,-52,14,3,"#161c20");
   }
 
+  // Final character-specific silhouette pass.
+  if(f.id==="vex"){
+    // VEX: cropped hair, open jacket/vest, undershirt and utility belt.
+    rect(ctx,-8,-106,16,3,"#0b1013");
+    rect(ctx,-11,-103,4,3,"#0b1013");rect(ctx,7,-103,4,3,"#0b1013");
+    rect(ctx,-13,-94,3,6,f.skinShadow);rect(ctx,10,-94,3,6,f.skinShadow);
+    poly(ctx,[-18,-77,-11,-81,-4,-75,0,-72,4,-75,11,-81,18,-77,14,-67,-14,-67],f.gearHi);
+    poly(ctx,[-12,-70,-6,-73,0,-68,6,-73,12,-70,9,-47,-9,-47],f.gear);
+    rect(ctx,-5,-67,10,20,"#080c0f");
+    rect(ctx,-15,-68,5,19,f.accent);rect(ctx,10,-68,5,19,shade(f.accent,.64));
+    rect(ctx,-12,-48,24,3,"#11181d");
+    rect(ctx,-10,-44,20,3,f.gearHi);
+    rect(ctx,-14,-38,7,3,f.accent);rect(ctx,7,-38,7,3,shade(f.accent,.7));
+  }else if(f.id==="ruma"){
+    // RUMA: wrapped head, scarf/collar, layered cloth and waist sash.
+    rect(ctx,-13,-106,26,4,"#6b432e");
+    rect(ctx,-15,-102,30,5,f.accent);
+    rect(ctx,-12,-97,4,10,f.skinShadow);rect(ctx,8,-97,4,10,f.skinShadow);
+    poly(ctx,[-20,-78,-11,-82,-4,-76,0,-72,4,-76,11,-82,20,-78,16,-66,-16,-66],shade(f.gear,.94));
+    rect(ctx,-16,-68,32,5,shade(f.accent,.62));
+    rect(ctx,-11,-61,22,4,f.gearHi);
+    poly(ctx,[-10,-56,0,-52,10,-56,8,-45,-8,-45],f.gear);
+    rect(ctx,-13,-43,26,5,shade(f.accent,.72));
+    rect(ctx,-9,-37,18,2,f.gearHi);
+  }else{
+    // KORR: industrial ear-caps, high collar, segmented chest and work trousers.
+    rect(ctx,-13,-107,26,5,"#101519");
+    rect(ctx,-17,-103,5,11,f.accent);rect(ctx,12,-103,5,11,shade(f.accent,.68));
+    rect(ctx,-19,-78,38,8,f.gearHi);
+    rect(ctx,-16,-70,32,6,f.accent);
+    poly(ctx,[-13,-63,13,-63,16,-45,8,-41,-8,-41,-16,-45],f.gear);
+    rect(ctx,-10,-57,20,4,shade(f.gearHi,.78));
+    rect(ctx,-8,-50,16,4,"#151b1f");
+    rect(ctx,-18,-43,9,5,"#15191c");rect(ctx,9,-43,9,5,"#15191c");
+    rect(ctx,-19,-37,8,3,f.accent);rect(ctx,11,-37,8,3,shade(f.accent,.68));
+  }
+
+  // Individual facial/hair details sit above the common base.
+  if(f.id==="vex"){
+    rect(ctx,-9,-102,18,2,"#11171a");
+    rect(ctx,-7,-100,3,2,"#1d252a");rect(ctx,4,-100,3,2,"#1d252a");
+  }else if(f.id==="ruma"){
+    rect(ctx,-12,-101,24,2,shade(f.accent,.72));
+    rect(ctx,-9,-99,3,5,"#59382a");rect(ctx,6,-99,3,5,"#59382a");
+  }else{
+    rect(ctx,-10,-101,20,3,"#11161a");
+    rect(ctx,-15,-97,3,7,f.accent);rect(ctx,12,-97,3,7,shade(f.accent,.68));
+  }
+
   // Individual costume identity.
   if(f.id==="vex"){
     rect(ctx,-17,-72,7,26,f.accent);rect(ctx,10,-72,7,26,shade(f.accent,.64));
@@ -282,7 +331,7 @@ function drawSelect(ctx:CanvasRenderingContext2D,selected:FighterId){
     rect(ctx,x-49,46,98,3,active?f.accent:"#263137");
     rect(ctx,x-44,51,88,87,"#070b0d");
     drawEmblem(ctx,id,x,72,active);
-    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.12);
+    drawSprite(ctx,f,x,145,frameForSelection(id)+(id==="vex"?1:id==="ruma"?3:5),false,false,1.16);
     rect(ctx,x-44,137,88,1,active?f.accent:"#263137");
     text(ctx,f.name,x,147,11,active?"#f0eee7":"#b5babc","center");
     text(ctx,f.tag,x,161,5,f.accent,"center");
@@ -361,7 +410,7 @@ export function mountFreezzzArena(host:HTMLElement):()=>void{
     update(Math.min(.05,(t-last)/1000));last=t;
     if(phase==="select")drawSelect(ctx,selected);
     else if(phase==="result")drawResult(ctx,fighters[winner],scoreA,scoreB);
-    else{drawArena(ctx,t);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,183,frame+2,true,false,1);drawSprite(ctx,fighters[selected],xA,183,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");}
+    else{drawArena(ctx,t);hud(ctx,fighters[selected],fighters[enemy],hpA,hpB,time,round,scoreA,scoreB);drawSprite(ctx,fighters[enemy],xB,184,frame+2,true,false,1.08);drawSprite(ctx,fighters[selected],xA,184,frame+(fighters[selected].id==="vex"?1:fighters[selected].id==="ruma"?4:7),false,false,1.08);if(input.guard)text(ctx,"GUARD",xA,197,5,fighters[selected].accent,"center");}
     raf=requestAnimationFrame(render);
   }
   raf=requestAnimationFrame(render);
