@@ -5220,3 +5220,27 @@ button,
   aspect-ratio:auto!important;
   margin:0!important;
 }
+
+/* BAR VISIBILITY CONTROL — arrow only, no button surface. */
+.portal-hud-toggle{
+  position:absolute!important;
+  left:50%!important;
+  bottom:84px!important;
+  transform:translateX(-50%)!important;
+  z-index:1200!important;
+  width:32px!important;height:24px!important;
+  min-width:32px!important;min-height:24px!important;
+  margin:0!important;padding:0!important;
+  border:0!important;outline:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;color:#fff!important;
+  display:grid!important;place-items:center!important;
+  appearance:none!important;-webkit-appearance:none!important;
+}
+.portal-hud-toggle-arrow{
+  display:block!important;font-size:24px!important;line-height:1!important;
+  font-weight:700!important;color:#fff!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.85)!important;
+  pointer-events:none!important;
+}
+.portal-workspace.portal-hud-hidden .portal-hud-toggle{bottom:2px!important}
+.portal-hud-toggle[data-portal-pressed="true"]{background:transparent!important;box-shadow:none!important}
