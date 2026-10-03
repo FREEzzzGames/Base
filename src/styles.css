@@ -1705,13 +1705,7 @@ main{
   font-size:clamp(.68rem,.64rem + .18vw,.8rem);
 }
 
-/* Top bar: compact on phones
-{
-  width:44px;
-  height:44px;
-  min-width:44px;
-  min-height:44px;
-}
+
 
 
 /* Portal illustrations use semantic sizes instead of a global 3x multiplier. */
@@ -2661,16 +2655,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 /* PUBLISH SYNC — toolbar/HERO profile changes are authoritative on main. */
 
 
-/* PORTAL TOOLBAR VIDEO DIM — background only, 50%. */
-.portal-toolbar::after{
-  content:""!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  background:rgba(0,0,0,.50)!important;
-  pointer-events:none!important;
-}
-
 /* HOME HERO BACKGROUND DIM — 30% black overlay. */
 .home-portal > .home-hero::after{
   content:"";
@@ -2784,8 +2768,7 @@ main{
   overflow:hidden!important;
   padding-top:1px!important;
   padding-bottom:1px!important;
-  padding-left:calc(57px + var(--tg-content-safe-area-inset-left,0px))!important;
-  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+    padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
 }
 .home-portal{
   width:100%!important;
@@ -2862,8 +2845,7 @@ main{
   main{
     height:100dvh!important;
     min-height:0!important;
-    padding-left:calc(57px + var(--tg-content-safe-area-inset-left,0px))!important;
-    padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+        padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
     padding-top:1px!important;
     padding-bottom:1px!important;
   }
@@ -2886,8 +2868,7 @@ main{
   overflow:hidden!important;
   padding-top:1px!important;
   padding-bottom:1px!important;
-  padding-left:calc(57px + var(--tg-content-safe-area-inset-left,0px))!important;
-  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
+    padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
   background:radial-gradient(circle at 50% 45%,#343a42 0%,#171b20 48%,#050607 100%)!important;
 }
 .home-portal{
@@ -2945,210 +2926,6 @@ main{
   main{height:100dvh!important;min-height:0!important;padding-top:1px!important;padding-bottom:1px!important;padding-left:calc(57px + var(--tg-content-safe-area-inset-left,0px))!important;padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important}
   .home-portal{height:calc(100dvh - 2px)!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;grid-template-areas:"hero hero" "live chat" "game radio" "library library"!important;gap:1px!important}
 }
-
-/* ================================================================
-   WORK AREA GEOMETRY — HUD AND HOME SHARE THE SAME GRID ROW
-   ================================================================ */
-.app-shell{
-  height:100dvh!important;
-  min-height:0!important;
-  display:grid!important;
-  grid-template-rows:minmax(0,1fr)!important;
-  overflow:hidden!important;
-}
-.app-shell > main{
-  grid-row:2!important;
-  min-height:0!important;
-  height:auto!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
-  padding-top:1px!important;
-  padding-bottom:1px!important;
-  padding-left:calc(56px + 1px + var(--tg-content-safe-area-inset-left,0px))!important;
-  padding-right:max(1px,var(--tg-content-safe-area-inset-right,0px))!important;
-}
-.app-shell > main .home-portal{
-  height:100%!important;
-  min-height:0!important;
-  max-height:none!important;
-  margin:0!important;
-}
-
-/* Primary-block rhythm: HUD is part of the same 1px system. */
-.app-shell > main{
-  --portal-primary-gap:1px;
-}
-
-/* ================================================================
-   HOME WORKSPACE — HUD + HOME ARE ONE PRIMARY BLOCK
-   ================================================================ */
-.portal-home-workspace{
-  position:relative!important;
-  display:grid!important;
-  grid-template-columns:56px minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr)!important;
-  gap:0!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:0!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-  background:
-    radial-gradient(circle at 50% 45%,#343a42 0%,#171b20 48%,#050607 100%)!important;
-  border:0!important;
-  box-shadow:
-    inset 0 0 0 1px #000,
-    inset 0 0 2px 1px rgba(0,0,0,.50),
-    inset 0 0 4px 2px rgba(0,0,0,.25)!important;
-}
-.portal-home-workspace::before{
-  content:""!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:900!important;
-  pointer-events:none!important;
-  border:1px solid #000!important;
-  box-shadow:
-    inset 0 0 2px 1px rgba(0,0,0,.50),
-    inset 0 0 4px 2px rgba(0,0,0,.25)!important;
-  box-sizing:border-box!important;
-}
-.portal-home-workspace > main{
-  grid-column:2!important;
-  grid-row:1!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:1px!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  position:relative!important;
-  z-index:1!important;
-}
-.portal-home-workspace > main > .home-portal{
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-height:none!important;
-  margin:0!important;
-}
-@media(max-width:699px){
-  .portal-home-workspace{
-    grid-template-columns:56px minmax(0,1fr)!important;
-    gap:0!important;
-  }
-  .portal-home-workspace > main{
-    padding:1px!important;
-  }
-}
-
-/* ================================================================
-   ROUTE WORKSPACE — preserve the pre-unification route geometry
-   ================================================================ */
-.portal-route-workspace{
-  position:relative!important;
-  display:grid!important;
-  grid-template-columns:56px minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr)!important;
-  gap:0!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  margin:0!important;
-  padding:0!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-  background:radial-gradient(circle at 50% 45%,#343a42 0%,#171b20 48%,#050607 100%)!important;
-}
-.portal-route-workspace > main{
-  grid-column:2!important;
-  grid-row:1!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:1px!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  position:relative!important;
-  z-index:1!important;
-}
-.portal-route-workspace > main > .portal-layout{
-  min-width:0!important;
-  min-height:0!important;
-  max-width:none!important;
-}
-@media(max-width:699px){
-  .portal-route-workspace{
-    grid-template-columns:56px minmax(0,1fr)!important;
-    gap:0!important;
-  }
-  .portal-route-workspace > main{
-    padding:1px!important;
-  }
-}
-
-
-
-/* ================================================================
-   ROUTE VIEWPORT FILL — Telegram Mini App
-   ================================================================ */
-.portal-route-workspace{
-  height:100dvh!important;
-  min-height:100dvh!important;
-}
-.portal-route-workspace > main{
-  height:100%!important;
-  min-height:0!important;
-}
-/* Route views fill the same working viewport as HOME.
-   GAME is intentionally excluded from this rule set. */
-.portal-route-workspace > main > .portal-layout[data-portal-layout="live"],
-.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"],
-.portal-route-workspace > main > .portal-layout[data-portal-layout="library"],
-.portal-route-workspace > main > .portal-layout[data-portal-layout="radio"]{
-  height:100%!important;
-  min-height:0!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="live"]{
-  display:flex!important;
-  flex-direction:column!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="live"] > .list{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:auto!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"]{
-  display:grid!important;
-  grid-template-rows:auto minmax(0,1fr) auto!important;
-  min-height:0!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="chat"] > .chat{
-  min-height:0!important;
-  overflow:auto!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="library"] > .hero{
-  min-height:100%!important;
-  margin-bottom:0!important;
-}
-.portal-route-workspace > main > .portal-layout[data-portal-layout="radio"]{
-  overflow:auto!important;
-}
-
 
 /* ================================================================
    MULTI-WINDOW / ROUTE WORKSPACE — single authority
@@ -3702,13 +3479,64 @@ main{
   .home-hero p{font-size:clamp(12px,5cqh,21px)!important}
 }
 
-/* TOOLBAR — single authoritative implementation */
+
+/* ================================================================
+   TOOLBAR + WORKSPACE — single authoritative layout
+   No sidebar geometry. No stacked override chains.
+   ================================================================ */
+.portal-home-workspace,
+.portal-route-workspace{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:100dvh!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  background:#050607!important;
+}
+
+.portal-workspace > main{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:1px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  z-index:1!important;
+  background:transparent!important;
+}
+
+.portal-workspace > main > .home-portal{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+}
+
+.portal-workspace > main > .portal-layout{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
 .portal-workspace > .portal-toolbar{
   position:absolute!important;
   left:0!important;
   right:0!important;
+  bottom:0!important;
   top:auto!important;
-  bottom:env(safe-area-inset-bottom,0px)!important;
   width:100%!important;
   height:84px!important;
   min-height:84px!important;
@@ -3720,35 +3548,48 @@ main{
   overflow:visible!important;
   isolation:isolate!important;
   background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
 }
+
 .portal-workspace > .portal-toolbar-background-video{
   position:absolute!important;
   inset:0!important;
-  z-index:0!important;
+  display:block!important;
   width:100%!important;
   height:100%!important;
+  max-width:none!important;
   object-fit:cover!important;
+  z-index:0!important;
   pointer-events:none!important;
 }
+
 .portal-workspace > .portal-toolbar::after{
   content:""!important;
   position:absolute!important;
   inset:0!important;
   z-index:1!important;
   background:rgba(0,0,0,.16)!important;
+  border:0!important;
+  box-shadow:none!important;
   pointer-events:none!important;
 }
+
 .portal-workspace > .portal-toolbar .portal-toolbar-main{
   position:relative!important;
-  z-index:2!important;
   width:100%!important;
   max-width:760px!important;
   height:84px!important;
   min-height:84px!important;
   margin:0 auto!important;
+  padding:0!important;
   box-sizing:border-box!important;
+  z-index:2!important;
+  pointer-events:auto!important;
 }
+
 .portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  position:relative!important;
   display:grid!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
   grid-template-rows:72px!important;
@@ -3756,93 +3597,133 @@ main{
   height:78px!important;
   min-height:78px!important;
   max-height:78px!important;
-  padding:3px 0!important;
   margin:0!important;
+  padding:3px 0!important;
   gap:0!important;
   align-items:center!important;
-  overflow:visible!important;
   box-sizing:border-box!important;
+  overflow:visible!important;
+  z-index:3!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
-  grid-column:auto!important;
+
+.portal-workspace > .portal-toolbar .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
+  position:relative!important;
   grid-row:1!important;
   width:100%!important;
-  min-width:0!important;
   height:72px!important;
+  min-width:0!important;
   min-height:72px!important;
   max-height:72px!important;
   margin:0!important;
+  padding:0!important;
   align-self:center!important;
   justify-self:stretch!important;
   box-sizing:border-box!important;
+  z-index:4!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item{
-  display:grid!important;
-  place-items:center!important;
-  padding:0!important;
+
+.portal-workspace > .portal-toolbar .portal-toolbar-item{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
   border:0!important;
   outline:0!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
   color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  cursor:pointer!important;
   touch-action:manipulation!important;
   -webkit-tap-highlight-color:transparent!important;
+  pointer-events:auto!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon{
-  width:48px!important;
-  height:48px!important;
-  max-width:48px!important;
-  max-height:48px!important;
-  color:currentColor!important;
-  filter:none!important;
-  pointer-events:none!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item:nth-child(4){
+
+.portal-workspace > .portal-toolbar .portal-toolbar-item.active{
   border:1px solid rgba(255,32,32,.72)!important;
   border-radius:10px!important;
   background:rgba(255,20,20,.16)!important;
   box-shadow:0 0 5px rgba(255,32,32,.95),0 0 12px rgba(255,32,32,.75),inset 0 0 8px rgba(255,32,32,.24)!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item:nth-child(4) .portal-toolbar-icon{
-  filter:drop-shadow(0 0 4px rgba(255,32,32,1)) drop-shadow(0 0 10px rgba(255,32,32,.9))!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
-  display:grid!important;
+
+.portal-workspace > .portal-toolbar .portal-toolbar-icon{
+  display:inline-grid!important;
   place-items:center!important;
-  position:relative!important;
-  z-index:1200!important;
-  width:100%!important;
-  height:72px!important;
-  min-height:72px!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-language-button{
-  width:72px!important;
-  min-width:72px!important;
-  height:72px!important;
-  min-height:72px!important;
-  padding:0!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  flex:0 0 48px!important;
   margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  pointer-events:none!important;
+}
+
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration{
+  display:block!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  color:#fff!important;
+  stroke:#fff!important;
+  fill:none!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration path,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration circle,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration rect,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration line,
+.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration polygon{
+  stroke:#fff!important;
+  fill:none!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:5!important;
+}
+
+.portal-workspace > .portal-toolbar .portal-toolbar-language-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:72px!important;
+  height:72px!important;
+  min-width:72px!important;
+  min-height:72px!important;
+  margin:0!important;
+  padding:0!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
   color:#fff!important;
-  display:grid!important;
-  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
   touch-action:manipulation!important;
   -webkit-tap-highlight-color:transparent!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon{
-  width:48px!important;
-  height:48px!important;
-  max-width:48px!important;
-  max-height:48px!important;
-  color:currentColor!important;
-  filter:none!important;
-  pointer-events:none!important;
-}
+
 .portal-workspace > .portal-toolbar .portal-toolbar-language-menu{
   position:fixed!important;
   top:auto!important;
@@ -3864,208 +3745,40 @@ main{
   -webkit-backdrop-filter:blur(10px)!important;
   box-shadow:0 8px 24px rgba(0,0,0,.35)!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-language-menu[hidden]{display:none!important}
+
+.portal-workspace > .portal-toolbar .portal-toolbar-language-menu[hidden]{
+  display:none!important;
+}
+
 .portal-workspace > .portal-toolbar .portal-toolbar-language-menu button{
-  min-width:42px!important;
+  display:grid!important;
+  place-items:center!important;
   width:42px!important;
-  min-height:42px!important;
   height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
   padding:0!important;
   border:0!important;
   border-radius:7px!important;
   background:transparent!important;
   color:#ff2020!important;
-  display:grid!important;
-  place-items:center!important;
   font:inherit!important;
   font-size:12px!important;
   font-weight:700!important;
   cursor:pointer!important;
   touch-action:manipulation!important;
 }
+
 .portal-workspace > .portal-toolbar .portal-toolbar-language-menu button.active{
   background:rgba(255,32,32,.15)!important;
   box-shadow:0 0 7px rgba(255,32,32,.28)!important;
 }
-.portal-workspace > .portal-toolbar .portal-toolbar-language-menu button:active{
-  background:rgba(244,234,213,.12)!important;
-}
-.portal-workspace > main{
-  padding-bottom:84px!important;
-}
+
 .portal-workspace.portal-hud-hidden > .portal-toolbar{
   transform:translateY(calc(100% + 2px))!important;
   pointer-events:none!important;
 }
+
 .portal-workspace.portal-hud-hidden > main{
   padding-bottom:1px!important;
-}
-
-/* TOOLBAR / HOME — 1px separation only */
-.portal-workspace > main{
-  padding-bottom:1px!important;
-}
-.portal-workspace > main > .home-portal{
-  height:100%!important;
-  max-height:none!important;
-  min-height:0!important;
-  margin-bottom:0!important;
-}
-.portal-workspace > .portal-toolbar{
-  bottom:0!important;
-  height:84px!important;
-  min-height:84px!important;
-  max-height:84px!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-main{
-  height:84px!important;
-  min-height:84px!important;
-  max-height:84px!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav{
-  height:78px!important;
-  min-height:78px!important;
-  max-height:78px!important;
-  padding:3px 0!important;
-  margin:0!important;
-  align-items:center!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
-  height:72px!important;
-  min-height:72px!important;
-  max-height:72px!important;
-  margin:0!important;
-  align-self:center!important;
-}
-
-/* TOOLBAR / WORKSPACE — eliminate legacy sidebar geometry */
-.portal-home-workspace,
-.portal-route-workspace{
-  grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr)!important;
-  column-gap:0!important;
-  row-gap:0!important;
-}
-.portal-home-workspace > main,
-.portal-route-workspace > main{
-  grid-column:1!important;
-  grid-row:1!important;
-  width:100%!important;
-  min-width:0!important;
-  min-height:0!important;
-  padding-left:1px!important;
-  padding-right:1px!important;
-  box-sizing:border-box!important;
-}
-.portal-workspace > main{
-  grid-column:1!important;
-  grid-row:1!important;
-  padding-left:1px!important;
-  padding-right:1px!important;
-  padding-bottom:1px!important;
-  margin:0!important;
-}
-.portal-workspace > .portal-toolbar{
-  left:0!important;
-  right:0!important;
-  bottom:0!important;
-  margin:0!important;
-}
-
-/* TOOLBAR — video is background only; controls always sit above it. */
-.portal-workspace > .portal-toolbar{
-  position:absolute!important;
-  z-index:1100!important;
-  isolation:isolate!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-.portal-workspace > .portal-toolbar-background-video{
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  pointer-events:none!important;
-}
-.portal-workspace > .portal-toolbar::after{
-  z-index:1!important;
-  pointer-events:none!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-main{
-  position:relative!important;
-  z-index:2!important;
-  pointer-events:auto!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav,
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-language-wrap{
-  position:relative!important;
-  z-index:3!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-language-button,
-.portal-workspace > .portal-toolbar .portal-toolbar-language-menu{
-  pointer-events:auto!important;
-}
-
-
-/* TOOLBAR — force navigation controls and SVG strokes above the video */
-.portal-workspace > .portal-toolbar .portal-toolbar-nav{
-  position:relative!important;
-  z-index:4!important;
-  display:grid!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-language-button{
-  position:relative!important;
-  z-index:5!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  visibility:visible!important;
-  opacity:1!important;
-  overflow:visible!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-icon{
-  display:inline-grid!important;
-  place-items:center!important;
-  width:48px!important;
-  height:48px!important;
-  min-width:48px!important;
-  min-height:48px!important;
-  max-width:48px!important;
-  max-height:48px!important;
-  flex:0 0 48px!important;
-  visibility:visible!important;
-  opacity:1!important;
-  color:#fff!important;
-  pointer-events:none!important;
-  overflow:visible!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration{
-  display:block!important;
-  width:48px!important;
-  height:48px!important;
-  min-width:48px!important;
-  min-height:48px!important;
-  max-width:48px!important;
-  max-height:48px!important;
-  visibility:visible!important;
-  opacity:1!important;
-  color:#fff!important;
-  stroke:#fff!important;
-  fill:none!important;
-  overflow:visible!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration path,
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration circle,
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration rect,
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration line,
-.portal-workspace > .portal-toolbar .portal-toolbar-icon .portal-illustration polygon{
-  stroke:#fff!important;
-  fill:none!important;
-  visibility:visible!important;
-  opacity:1!important;
 }
