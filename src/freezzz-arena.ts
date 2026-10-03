@@ -213,6 +213,50 @@ function drawBackground(ctx:CanvasRenderingContext2D,t:number,floor:number){
   text(ctx,floorNames[floor]+" / 03",312,42,6,"#a0aaad","right");
 }
 
+type MafiaMember={name:string;face:string;tie:string;family:FamilyId;fighter:FighterId;};
+const mafiaMembers:Record<FamilyId,MafiaMember>={
+  valenti:{name:"VITO",face:"#8f5d4d",tie:"#54d6d8",family:"valenti",fighter:"vex"},
+  moretti:{name:"MARCO",face:"#b87558",tie:"#c58b48",family:"moretti",fighter:"ruma"},
+  rossi:{name:"LUCA",face:"#754b40",tie:"#d86c35",family:"rossi",fighter:"korr"},
+  bellini:{name:"ENZO",face:"#a86b55",tie:"#9f83d6",family:"bellini",fighter:"vex"}
+};
+
+function drawMafiaMember(ctx:CanvasRenderingContext2D,m:MafiaMember,cx:number,ground:number,frame:number,scale=1){
+  ctx.save();ctx.translate(cx,ground);ctx.scale(scale,scale);
+  ellipse(ctx,0,0,24,3,"rgba(0,0,0,.72)");
+  // Classic dark suit, white shirt and tie.
+  limb(ctx,6,-43,10,-9,11,"#181b1e");
+  limb(ctx,-6,-43,-10,-9,11,"#181b1e");
+  rect(ctx,5,-10,12,3,"#080a0c");rect(ctx,-17,-10,12,3,"#080a0c");
+  poly(ctx,[-19,-83,-12,-89,-5,-56,0,-50,5,-56,12,-89,19,-83,12,-51,0,-45,-12,-51],"#1b1e22");
+  poly(ctx,[-9,-82,0,-68,9,-82,6,-51,0,-46,-6,-51],"#f0eee7");
+  poly(ctx,[-7,-78,0,-68,7,-78,4,-52,-4,-52],"#d5d8d7");
+  rect(ctx,-2,-68,4,19,m.tie);
+  rect(ctx,-9,-56,18,3,"#0e1114");
+  limb(ctx,-19,-76,-28,-48,8,"#1b1e22");limb(ctx,19,-76,28,-48,8,"#1b1e22");
+  ellipse(ctx,-29,-44,5,6,m.face);
+  ellipse(ctx,29,-44,5,6,m.face);
+  rect(ctx,-7,-98,14,14,m.face);
+  ellipse(ctx,0,-105,12,13,m.face);
+  // Fedora.
+  rect(ctx,-16,-117,32,5,"#111417");
+  rect(ctx,-11,-124,22,8,"#171b1f");
+  rect(ctx,-18,-119,36,3,"#080a0c");
+  // Face planes, kept deliberately simple and pixel-art readable.
+  rect(ctx,-9,-107,18,3,"#c98563");
+  rect(ctx,-8,-100,4,2,"#171b1f");rect(ctx,4,-100,4,2,"#171b1f");
+  rect(ctx,-3,-96,6,2,"#6b4038");
+  rect(ctx,-6,-92,12,2,"#d5a08b");
+  // Suit lapels and pocket square.
+  poly(ctx,[-10,-82,-2,-68,-7,-62,-14,-80],"#30353a");
+  poly(ctx,[10,-82,2,-68,7,-62,14,-80],"#30353a");
+  rect(ctx,10,-72,5,4,m.tie);
+  // Tiny material highlights.
+  rect(ctx,-14,-77,2,12,"#596166");rect(ctx,12,-77,2,12,"#596166");
+  rect(ctx,-2,-50,4,2,m.tie);
+  ctx.restore();
+}
+
 function drawPlatformPlayer(ctx:CanvasRenderingContext2D,f:Fighter,p:PlayerState,frame:number){
   const pose:Pose=input2.fire?"burst":input2.left||input2.right?"move":"idle";
   drawSprite(ctx,f,p.x,p.y,frame,false,false,1.02,pose);
@@ -357,7 +401,16 @@ export function mountFreezzzMafia(host:HTMLElement):()=>void{
     if(mode==="select"){
       ctx.fillStyle="#050708";ctx.fillRect(0,0,W2,H2);text(ctx,"FOUR FAMILIES",320,26,16,"#f0eee7","center");text(ctx,"CHOOSE YOUR NEW MEMBER",320,49,7,"#7e898d","center");
       const ids:FamilyId[]=["valenti","moretti","rossi","bellini"];
-      ids.forEach((id,i)=>{const x=80+i*160,a=id===familySelected,f=fighters[id==="valenti"?"vex":id==="moretti"?"ruma":id==="rossi"?"korr":"vex"];rect(ctx,x-68,82,136,190,a?"#151d21":"#0b1013");rect(ctx,x-68,82,136,3,a?families[id].accent:"#263137");text(ctx,families[id].name,x,95,10,a?"#f0eee7":"#aeb5b7","center");text(ctx,families[id].desc,x,113,5,"#8d989c","center");drawSprite(ctx,f,x,225,frame+i*4,false,false,.85,"idle");text(ctx,families[id].bonus,x,250,5,families[id].accent,"center");});text(ctx,"◀ ▶ SELECT    ENTER START",320,300,7,"#d5d8d7","center");text(ctx,"Career platformer · fictional city · 3 floors",320,320,5,"#58646a","center");
+      ids.forEach((id,i)=>{
+        const x=80+i*160,a=id===familySelected,m=mafiaMembers[id];
+        rect(ctx,x-68,82,136,190,a?"#151d21":"#0b1013");
+        rect(ctx,x-68,82,136,3,a?families[id].accent:"#263137");
+        text(ctx,families[id].name,x,95,10,a?"#f0eee7":"#aeb5b7","center");
+        text(ctx,m.name,x,113,7,families[id].accent,"center");
+        drawMafiaMember(ctx,m,x,225,frame+i*4,.72);
+        text(ctx,families[id].bonus,x,250,5,families[id].accent,"center");
+      });
+      text(ctx,"◀ ▶ SELECT    ENTER START",320,300,7,"#d5d8d7","center");text(ctx,"CLASSIC SUITS · FEDORAS · FOUR FAMILY MEMBERS · 3 FLOORS",320,320,5,"#58646a","center");
     }else if(mode==="shop"){
       ctx.fillStyle="#07090b";ctx.fillRect(0,0,W2,H2);text(ctx,"ARMORY & OUTFITTER",320,22,14,"#f0eee7","center");text(ctx,moneyText(player.money),320,43,8,"#d5d8d7","center");
       const ids:WeaponId[]=["pocket","service","revolver","smg","shotgun","carbine"];ids.forEach((id,i)=>{const w=weapons[id],x=58+(i%3)*210,y=72+Math.floor(i/3)*82,ok=player.rank>=w.rank&&player.skill>=w.skill;rect(ctx,x-88,y,176,66,ok?"#10171b":"#090d10");text(ctx,w.name,x-78,y+8,7,ok?"#f0eee7":"#626c70");text(ctx,"DMG "+w.damage+"  MAG "+w.mag,x-78,y+23,5,"#8d989c");text(ctx,w.cost?moneyText(w.cost):"STARTER",x+78,y+23,5,w.cost?"#d5d8d7":"#687277","right");text(ctx,"R"+w.rank+"  SK"+w.skill,x-78,y+40,5,families[player.family].accent);if(player.weapon===id)text(ctx,"EQUIPPED",x+78,y+40,5,"#d5d8d7","right");});
