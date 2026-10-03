@@ -417,7 +417,7 @@ function drawTopDownBackground(){
  // Небольшая детская площадка.
  rect(365,800,92,72,"#a7a08b");
  rect(375,810,72,52,"#8d9977");
- rect(386,818,28,7,"#b56e43); // playground beam
+ rect(386,818,28,7,"#b56e43"); // playground beam
  rect(389,825,5,24,"#6c4d38");
  rect(406,825,5,24,"#6c4d38");
  rect(420,818,20,7,"#6f7f87");
