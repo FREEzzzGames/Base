@@ -514,34 +514,7 @@ function bind(){
     const host=document.querySelector("#radio-audio-host");
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
-  document.querySelectorAll<HTMLElement>("[data-portal-card]").forEach(function(card){
-    let pressed=false;
-    const release=()=>{
-      if(!pressed)return;
-      pressed=false;
-      card.dataset.pressed="false";
-      window.setTimeout(()=>{if(card.dataset.pressed==="false")delete card.dataset.pressed;},220);
-    };
-    card.addEventListener("pointerdown",()=>{
-      pressed=true;
-      card.dataset.pressed="true";
-    });
-    card.addEventListener("pointerup",release);
-    card.addEventListener("pointercancel",release);
-    card.addEventListener("pointerleave",release);
-    card.addEventListener("keydown",e=>{
-      if(e.key!=="Enter"&&e.key!==" ")return;
-      e.preventDefault();
-      if(e.repeat)return;
-      pressed=true;
-      card.dataset.pressed="true";
-    });
-    card.addEventListener("keyup",e=>{
-      if(e.key!=="Enter"&&e.key!==" ")return;
-      e.preventDefault();
-      release();
-    });
-  });
+  bindUniversalPortalPress();
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
           e.preventDefault();
@@ -667,3 +640,64 @@ function escapeHtml(s:string){
 
 render();
 if(view==="home"&&!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
+
+function bindUniversalPortalPress(){
+  const selector='button,[role="button"],[data-view],[data-url]';
+  if((document as Document & {_freezzzUniversalPress?:boolean})._freezzzUniversalPress)return;
+  (document as Document & {_freezzzUniversalPress?:boolean})._freezzzUniversalPress=true;
+  let active:HTMLElement|null=null;
+  let activePointerId:number|null=null;
+  const isPressable=(target:EventTarget|null):HTMLElement|null=>{
+    if(!(target instanceof HTMLElement))return null;
+    const element=target.closest<HTMLElement>(selector);
+    if(!element)return null;
+    if(element.hasAttribute("disabled")||element.getAttribute("aria-disabled")==="true")return null;
+    return element;
+  };
+  const press=(element:HTMLElement,pointerId:number|null=null)=>{
+    if(active&&active!==element)release();
+    active=element;
+    activePointerId=pointerId;
+    element.dataset.portalPressed="true";
+  };
+  const release=(element?:HTMLElement)=>{
+    const target=element||active;
+    if(!target)return;
+    delete target.dataset.portalPressed;
+    if(!element||active===element){
+      active=null;
+      activePointerId=null;
+    }
+  };
+  document.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    const element=isPressable(e.target);
+    if(!element)return;
+    press(element,e.pointerId);
+  },{passive:true});
+  document.addEventListener("pointerup",e=>{
+    if(activePointerId!==null&&e.pointerId!==activePointerId)return;
+    release();
+  },{passive:true});
+  document.addEventListener("pointercancel",e=>{
+    if(activePointerId!==null&&e.pointerId!==activePointerId)return;
+    release();
+  },{passive:true});
+  document.addEventListener("pointerleave",e=>{
+    if(activePointerId!==null&&e.pointerId!==activePointerId)return;
+    release();
+  },{passive:true});
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Enter"&&e.key!==" ")return;
+    if(e.repeat)return;
+    const element=isPressable(e.target);
+    if(!element)return;
+    press(element);
+  });
+  document.addEventListener("keyup",e=>{
+    if(e.key!=="Enter"&&e.key!==" ")return;
+    const element=isPressable(e.target);
+    if(element)release(element);
+    else release();
+  });
+}
