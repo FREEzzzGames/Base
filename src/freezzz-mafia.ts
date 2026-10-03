@@ -14,7 +14,7 @@ interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:stri
 interface Dialogue{speaker:string;text:string}
 interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string; ru:string; desc:string; objective:Objective; floors:[string,string,string]; enemies:EnemyType[]; reward:number; xp:number; dialogue:Dialogue[]; optional?:string; }
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
-interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
+interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}\ninterface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
 interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
@@ -160,7 +160,7 @@ let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
-let enemies:Enemy[]=[],bullets:Bullet[]=[];
+let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,ability:false};
 let movePointerId:number|null=null;
@@ -696,7 +696,7 @@ function drawWorld(m:Mission){
  rect(exitX-24,exitY-24,48,48,"#151d21");rect(exitX-17,exitY-17,34,34,hero().color);
  tx("ВЫХОД",exitX,exitY-38,14,"#f0eee7","center");
  enemies.forEach(drawEnemy);drawPlayer();
- bullets.forEach(b=>{line(b.x-b.vx*1.8,b.y-b.vy*1.8,b.x,b.y,b.from==="player"?hero().color:"#d86c35",Math.max(1,portraitScale()*1.4));rect(b.x-2,b.y-2,4,4,b.from==="player"?hero().color:"#d86c35");});
+ grenades.forEach(g=>{ellipse(g.x,g.y,Math.max(5,g.radius*(1-g.life/70)),Math.max(5,g.radius*(1-g.life/70)),"rgba(207,110,53,.08)");ellipse(g.x,g.y,6,6,"#6e6f62");});\n bullets.forEach(b=>{line(b.x-b.vx*1.8,b.y-b.vy*1.8,b.x,b.y,b.from==="player"?hero().color:"#d86c35",Math.max(1,portraitScale()*1.4));rect(b.x-2,b.y-2,4,4,b.from==="player"?hero().color:"#d86c35");});
  ctx.restore();drawHudOverlay(m);drawSpeech();
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
@@ -754,7 +754,7 @@ function drawPlayer(){
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
 function spawnFloor(){
- floorTimer=0;objectiveProgress=0;bullets=[];enemies=[];
+ floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];
  const types=currentMission().enemies;
  const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360]];
  for(let i=0;i<Math.min(spots.length,2+floor+2);i++){
@@ -819,7 +819,7 @@ function update(dt:number){
   if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
  }
  if(mode==="play")fire();if(touch.ability)useAbility();
- const obstacles=topDownObstacles();
+ const obstacles=topDownObstacles();\n for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0){for(const e of enemies){if(e.falling)continue;const d=Math.hypot(e.x-g.x,e.y-g.y);if(d<g.radius){const k=1-d/g.radius;e.hp-=g.damage*k;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}}}if(Math.hypot(player.x-g.x,player.y-g.y)<g.radius)hurt(24);g.life=0;}}\n grenades=grenades.filter(g=>g.life>0);
  for(const b of bullets){
   const result=traceShot(b,dt,obstacles);
   if(result.blocked){b.life=0;continue;}
@@ -842,8 +842,8 @@ function update(dt:number){
   e.cool-=dt;e.shootCool-=dt;
   const dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;
   const visible=lineOfSight(e.x,e.y,player.x,player.y,obstacles);
-  updateAi(e.ai,dt,visible,dist,player.x,player.y);
-  if(e.ai.state==="retreat"){
+  const bulletThreat=bullets.some(b=>b.from==="player"&&Math.hypot((e.x-b.x), (e.y-b.y))<70&&Math.abs((e.x-b.x)*b.vy-(e.y-b.y)*b.vx)<2600);\n  if(bulletThreat)e.ai.state="dodge";\n  updateAi(e.ai,dt,visible,dist,player.x,player.y);\n  if(bulletThreat)e.ai.state="dodge";
+  if(e.ai.state==="dodge"){\n   const side=e.ai.strafe||1;\n   const q=moveTopDown(e.x,e.y,-dy/dist*1.35*scale*side,dx/dist*1.35*scale*side,15*scale);e.x=q[0];e.y=q[1];\n  }else if(e.ai.state==="retreat"){
    const q=moveTopDown(e.x,e.y,-dx/dist*.7*scale+(-dy/dist)*e.ai.strafe*.35*scale,-dy/dist*.7*scale+(dx/dist)*e.ai.strafe*.35*scale,15*scale);e.x=q[0];e.y=q[1];
   }else if(e.ai.state==="chase"||e.ai.state==="attack"){
    const mult=e.type==="rusher"?1:e.type==="brawler"?.72:e.type==="flanker"?.62:.22;
@@ -1079,7 +1079,7 @@ function handleKey(e:KeyboardEvent){
  }
  if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}
  if(mode==="play"&&(e.key==="r"||e.key==="R"))startReload(player.combat,HS_WEAPONS[save.weapon]);
- if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g)say("ГРАНАТА","player",player.x,player.y-45);}
+ if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g){grenades.push(g);say("ГРАНАТА","player",player.x,player.y-45);}}
 
  if(e.key==="Escape"){mode="select";dialogueOpen=false;renderCanvas();return;}
  if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else fire();return;}
