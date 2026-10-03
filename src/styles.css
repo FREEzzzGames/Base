@@ -3555,7 +3555,7 @@ main{
   pointer-events:none!important;
 }
 
-.portal-workspace > .portal-bar-nav{
+.portal-workspace > .portal-bar > .portal-bar-surface + .portal-bar-nav{
   position:relative!important;
   z-index:2!important;
   width:min(100%,760px)!important;
