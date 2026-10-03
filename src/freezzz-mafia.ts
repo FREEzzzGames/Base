@@ -125,7 +125,7 @@ const weapons=[{name:"POCKET 9",damage:2,rate:18,mag:12,cost:0},{name:"SERVICE",
 
 let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRenderingContext2D|null=null;
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
-let frame=0,last=0,raf=0,cleanup:()=>void=()=>{};
+let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,facing:1};
@@ -187,7 +187,6 @@ function drawMafiaMember(m:MafiaVisual,cx:number,ground:number,frame:number,scal
  poly([-10,-82,-2,-68,-7,-62,-14,-80],"#30353a");poly([10,-82,2,-68,7,-62,14,-80],"#30353a");
  rect(10,-72,5,4,m.tie);rect(-14,-77,2,12,"#596166");rect(12,-77,2,12,"#596166");rect(-2,-50,4,2,m.tie);
  ctx.restore();
- drawHudOverlay(m);
 }
 function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
 
@@ -222,6 +221,7 @@ function drawHudOverlay(m:Mission){
  tx("ЭТАЖ "+(floor+1)+"/3 · "+objectiveRu(m.objective),18,62,fs*.82,"#aab1b4");
 }
 function drawWorld(m:Mission){
+ if(!ctx)return;
  // Масштаб по высоте: игровая сцена занимает всю высоту Telegram Mini App.
  // Камера следует за игроком по X, поэтому широкая логическая сцена естественно
  // обрезается по бокам, а не сжимается по вертикали.
@@ -241,6 +241,7 @@ function drawWorld(m:Mission){
  bullets.forEach(b=>rect(b.x,b.y,5,2,b.from==="player"?hero().color:"#d86c35"));
  if(flash>0){rect(0,0,W,H,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
  ctx.restore();
+ drawHudOverlay(m);
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
  const suits:Record<EnemyType,string>={brawler:"#30242a",shooter:"#26323a",heavy:"#40352a",rusher:"#3a2024",guard:"#28342e",sniper:"#302a40",suppressor:"#403323",flanker:"#26313d"};
@@ -402,6 +403,7 @@ function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:nu
  return row+1;
 }
 function drawSelect(){
+ if(!ctx)return;
  const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
  const gapX=viewWidth*.035,padX=viewWidth*.06,cardW=(viewWidth-padX*2-gapX)/2;
  const gapY=viewHeight*.02,top=viewHeight*.18,cardH=Math.min(viewHeight*.265,(viewHeight-top-viewHeight*.18-gapY)/2);
