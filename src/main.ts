@@ -362,7 +362,7 @@ function homeCard(v:Exclude<View,"home">){
   const background=backgrounds[v];
   const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
   const title=titles[v];
-  return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}">
+  return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`<video class="home-card-background-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${background}" type="video/mp4"></video>`:""}
     <span class="home-card-title">${title}</span>
   </div>`;
