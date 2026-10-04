@@ -17,6 +17,9 @@ interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:stri
 interface Dialogue{speaker:string;text:string}
 interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string; ru:string; desc:string; objective:Objective; floors:[string,string,string]; enemies:EnemyType[]; reward:number; xp:number; dialogue:Dialogue[]; optional?:string; }
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
+interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
+interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;type:EnemyType;attackRange:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -170,6 +173,13 @@ let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],compl
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[],arenaPickups:ArenaPickup[]=[];
 let arenaPickupTimer=0;
+let siegeTowers:SiegeTower[]=[];
+let siegeBases:SiegeBase[]=[];
+let siegeMobs:SiegeMob[]=[];
+let siegeWave=0;
+let siegeWaveTimer=0;
+let siegeMessage="";
+let siegeOver=false;
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
 let touch={left:false,right:false,jump:false,ability:false};
 let movePointerId:number|null=null;
@@ -728,6 +738,8 @@ function drawWorld(m:Mission){
  const camY=clamp(player.y-viewHeight/(2*scale),0,ARENA_H-viewHeight/scale);
  ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
  drawArenaBackground();
+ drawSiegeStructures();
+ drawSiegeMobs();
  arenaPickups.forEach(drawArenaPickup);
  enemies.forEach(drawEnemy);drawPlayer();
  grenades.forEach(g=>{ellipse(g.x,g.y,Math.max(5,g.radius*(1-g.life/70)),Math.max(5,g.radius*(1-g.life/70)),"rgba(207,110,53,.10)");ellipse(g.x,g.y,6,6,"#6e6f62");});
@@ -737,20 +749,69 @@ function drawWorld(m:Mission){
 }
 function drawArenaBackground(){
  rect(0,0,ARENA_W,ARENA_H,"#30383b");
- // Simplified CS-style compact arena: two bases, central lanes and cover.
- rect(0,0,ARENA_W,180,"#26363a");rect(0,ARENA_H-180,ARENA_W,180,"#34443b");
- for(let y=180;y<ARENA_H-180;y+=80)rect(0,y,ARENA_W,2,"rgba(210,210,190,.08)");
- for(let x=0;x<ARENA_W;x+=80)line(x,180,x,ARENA_H-180,"rgba(0,0,0,.10)",1);
- rect(0,160,ARENA_W,18,"#5c6766");rect(0,ARENA_H-178,ARENA_W,18,"#68736b");
- // Central combat lanes.
- rect(330,180,340,1140,"#414a4b");rect(340,180,10,1140,"#59605d");rect(650,180,10,1140,"#59605d");
- // Cover blocks.
+ rect(0,0,ARENA_W,210,"#26363a");rect(0,ARENA_H-210,ARENA_W,210,"#34443b");
+ for(let y=210;y<ARENA_H-210;y+=70)rect(0,y,ARENA_W,2,"rgba(210,210,190,.08)");
+ for(let x=0;x<ARENA_W;x+=80)line(x,210,x,ARENA_H-210,"rgba(0,0,0,.10)",1);
+ const lanes=[250,500,750];
+ lanes.forEach(x=>{rect(x-54,210,108,1110,"rgba(18,25,27,.18)");line(x,210,x,1320,"rgba(225,220,198,.12)",2);});
  for(const o of arenaObstacles()){rect(o.x+5,o.y+7,o.w,o.h,"rgba(0,0,0,.25)");rect(o.x,o.y,o.w,o.h,"#56605e");rect(o.x+8,o.y+8,o.w-16,Math.min(12,o.h-16),"#707875");}
- // Side base markings.
- rect(70,80,220,45,hero().color);rect(710,80,220,45,"#b34b42");
- tx("ИГРОК",180,108,16,"#0a1112","center");tx("ВРАГ",820,108,16,"#f0eee7","center");
- // Spawn barriers.
- line(30,180,970,180,"#d7d2bc",3);line(30,1320,970,1320,"#d7d2bc",3);
+ rect(70,48,860,118,"#20292c");rect(95,68,810,78,"#2d383a");
+ rect(95,68,270,78,hero().color);rect(635,68,270,78,"#9b403d");
+ tx("БАЗА ИГРОКА",230,108,18,"#071011","center");tx("ВРАЖЕСКАЯ БАЗА",770,108,18,"#f0eee7","center");
+ rect(0,190,ARENA_W,20,"#596463");rect(0,ARENA_H-230,ARENA_W,20,"#68736b");
+ line(30,210,970,210,"#d7d2bc",3);line(30,1320,970,1320,"#d7d2bc",3);
+ tx("ТРИ ЛИНИИ · ВОЛНЫ МОБОВ",ARENA_W/2,245,18,"#aeb6b8","center");
+}
+function initSiege(){
+ siegeTowers=[];siegeBases=[];siegeMobs=[];siegeWave=0;siegeWaveTimer=0;siegeOver=false;siegeMessage="";
+ const lanes=[250,500,750];
+ lanes.forEach((x,lane)=>{
+  siegeTowers.push({x,y:310,team:"enemy",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:1180,team:"player",lane,hp:900,maxHp:900,cool:0});
+ });
+ siegeBases.push({x:500,y:105,team:"enemy",hp:2600,maxHp:2600});
+ siegeBases.push({x:500,y:1395,team:"player",hp:2600,maxHp:2600});
+ spawnSiegeWave();
+}
+function spawnSiegeWave(){
+ if(siegeOver)return;
+ siegeWave++;siegeWaveTimer=0;
+ const lanes=[250,500,750];
+ const count=Math.min(6,2+Math.floor(siegeWave/2));
+ for(let lane=0;lane<3;lane++){
+  for(let i=0;i<count;i++){
+   const type:EnemyType=i%5===0?"heavy":i%3===0?"shooter":"rusher";
+   const hp=70+siegeWave*9+(type==="heavy"?80:0),damage=type==="heavy"?24:type==="shooter"?13:18;
+   siegeMobs.push({x:lanes[lane]+(i%2?18:-18),y:250+i*24,team:"enemy",lane,hp,maxHp:hp,speed:type==="rusher"?1.55:1.15,damage,cool:20+i*8,type,attackRange:type==="shooter"?150:42});
+   siegeMobs.push({x:lanes[lane]+(i%2?-18:18),y:1260-i*24,team:"player",lane,hp,maxHp:hp,speed:type==="rusher"?1.55:1.15,damage,cool:20+i*8,type,attackRange:type==="shooter"?150:42});
+  }
+ }
+}
+function drawSiegeStructures(){
+ siegeTowers.forEach(t=>{
+  const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#d85b52";
+  rect(t.x-34,t.y-20,68,40,"rgba(0,0,0,.32)");
+  rect(t.x-27,t.y-58,54,78,alive?"#505b5b":"#252a2b");
+  rect(t.x-20,t.y-73,40,18,alive?teamColor:"#3b4040");
+  rect(t.x-14,t.y-88,28,15,alive?"#78827f":"#414646");
+  if(alive){rect(t.x-35,t.y-102,70,6,"#151a1c");rect(t.x-35,t.y-102,70*clamp(t.hp/t.maxHp,0,1),6,teamColor);}
+  tx("T"+(t.lane+1),t.x,t.y+28,14,alive?teamColor:"#697174","center");
+ });
+ siegeBases.forEach(b=>{
+  const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#d85b52";
+  rect(b.x-105,b.y-42,210,84,alive?"#273235":"#242728");
+  rect(b.x-82,b.y-58,164,16,teamColor);
+  rect(b.x-48,b.y-88,96,30,alive?"#596465":"#393d3d");
+  if(alive){rect(b.x-105,b.y+50,210,8,"#151a1c");rect(b.x-105,b.y+50,210*clamp(b.hp/b.maxHp,0,1),8,teamColor);}
+  tx(alive?(b.team==="player"?"БАЗА":"ВРАЖЕСКАЯ БАЗА"):"БАЗА РАЗРУШЕНА",b.x,b.y+68,15,alive?teamColor:"#777f81","center");
+ });
+}
+function drawSiegeMobs(){
+ siegeMobs.forEach(m=>{
+  const col=m.team==="player"?hero().color:"#d85b52";
+  drawMafiaMember({face:m.team==="player"?hero().face:"#8f574d",tie:col,suit:m.team==="player"?"#25353a":"#39272a"},m.x,m.y,frame,.52);
+  rect(m.x-18,m.y-72,36,4,"#151a1c");rect(m.x-18,m.y-72,36*clamp(m.hp/m.maxHp,0,1),4,col);
+ });
 }
 function drawArenaPickup(p:ArenaPickup){
  const pulse=1+Math.sin(frame*.08+p.x)*.08;
@@ -951,7 +1012,7 @@ function updateArenaPickups(dt:number){
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
  player={x:ARENA_W/2,y:ARENA_H-150,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
- if(save.activeTenderId&&arenaMission){resetArenaPickups();spawnArenaWave();}else arenaPickups=[];
+ if(save.activeTenderId&&arenaMission){resetArenaPickups();spawnArenaWave();initSiege();}else {arenaPickups=[];siegeTowers=[];siegeBases=[];siegeMobs=[];siegeOver=false;}
 }
 function fire(){
  if(mode!=="play")return;
@@ -1000,15 +1061,12 @@ function update(dt:number){
  if(mode!=="play")return;
 
  if(save.activeTenderId&&arenaMission){
-  arenaTaskTimer+=dt;arenaSpawnTimer+=dt;
+  arenaTaskTimer+=dt;arenaSpawnTimer+=dt;updateSiege(dt);
+  if(siegeOver)return;
   if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();
   const [exitX,exitY]=topDownExit(),scale=portraitScale();
   const reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<55*scale;
-  const done=(arenaMission.objective==="survive"&&arenaTaskTimer>=arenaMission.target*60)||
-    ((arenaMission.objective==="reach")&&reachedExit)||
-    ((arenaMission.objective==="recover")&&reachedExit)||
-    ((arenaMission.objective==="defend")&&arenaTaskProgress>=arenaMission.target)||
-    ((arenaMission.objective==="clear")&&arenaTaskProgress>=arenaMission.target);
+  const done=false;
   if(done)completeArenaTask();
  }
  if(frame%420===0){
@@ -1097,6 +1155,51 @@ function update(dt:number){
  enemies=enemies.filter(e=>!e.falling||e.y<ARENA_H+80);
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
+}
+function updateSiege(dt:number){
+ if(siegeOver)return;
+ siegeWaveTimer+=dt;
+ if(siegeWaveTimer>720)spawnSiegeWave();
+ for(let i=siegeMobs.length-1;i>=0;i--){
+  const m=siegeMobs[i];if(m.hp<=0){siegeMobs.splice(i,1);continue;}
+  const enemyTowers=siegeTowers.filter(t=>t.team!==m.team&&t.lane===m.lane&&t.hp>0);
+  const targetTower=enemyTowers[0];
+  const targetBase=siegeBases.find(b=>b.team!==m.team)!;
+  const txTarget=targetTower?targetTower.x:targetBase.x,tyTarget=targetTower?targetTower.y:targetBase.y;
+  const dx=txTarget-m.x,dy=tyTarget-m.y,dist=Math.hypot(dx,dy)||1;
+  if(dist>m.attackRange){m.x+=dx/dist*m.speed*dt;m.y+=dy/dist*m.speed*dt;}
+  else if(m.cool<=0){
+   m.cool=45;
+   if(targetTower)targetTower.hp=Math.max(0,targetTower.hp-m.damage);
+   else if(siegeTowers.filter(t=>t.team!==m.team&&t.hp>0).length===0)targetBase.hp=Math.max(0,targetBase.hp-m.damage);
+  }
+  m.cool-=dt;
+  if(m.type==="shooter"&&m.team==="enemy"&&Math.hypot(player.x-m.x,player.y-m.y)<170&&m.cool<=0){m.cool=55;hurt(6);}
+ }
+ for(const b of bullets){
+  if(b.from!=="player")continue;
+  for(let i=siegeMobs.length-1;i>=0;i--){
+   const m=siegeMobs[i];
+   if(m.team==="enemy"&&m.hp>0&&Math.hypot(b.x-m.x,b.y-m.y)<28){m.hp=Math.max(0,m.hp-b.damage);b.life=0;break;}
+  }
+  if(b.life<=0)continue;
+  for(const t of siegeTowers){
+   if(t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
+  }
+  if(b.life>0){
+   const enemyBase=siegeBases.find(x=>x.team==="enemy")!;
+   if(enemyBase.hp>0&&siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0&&Math.hypot(b.x-enemyBase.x,b.y-enemyBase.y)<115){enemyBase.hp=Math.max(0,enemyBase.hp-b.damage);b.life=0;}
+  }
+ }
+ for(const t of siegeTowers){
+  if(t.hp<=0)continue;t.cool-=dt;if(t.cool>0)continue;
+  const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.lane===t.lane&&m.hp>0).sort((a,b)=>Math.abs(a.y-t.y)-Math.abs(b.y-t.y))[0];
+  if(hostile&&Math.abs(hostile.y-t.y)<270){t.cool=45;hostile.hp=Math.max(0,hostile.hp-34);continue;}
+  if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
+ }
+ const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
+ if(enemyBase.hp<=0){siegeOver=true;siegeMessage="ПОБЕДА · ВРАЖЕСКАЯ БАЗА РАЗРУШЕНА";completeArenaTask();return;}
+ if(playerBase.hp<=0){siegeOver=true;siegeMessage="ПОРАЖЕНИЕ · ВАША БАЗА РАЗРУШЕНА";mode="result";dialogueOpen=false;render();}
 }
 function completeArenaTask(){
  const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
@@ -1358,7 +1461,9 @@ function drawWeaponMenu(){
  c.restore();
 }
 function drawResult(){
- const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");tx("МИССИЯ ЗАВЕРШЕНА",viewWidth/2,viewHeight*.18,menuTextSize(.045,28,40),hero().color,"center");tx(m.ru,viewWidth/2,viewHeight*.27,menuTextSize(.032,21,32),"#f0eee7","center");
+ const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");
+ if(siegeMessage){tx(siegeMessage,viewWidth/2,viewHeight*.18,menuTextSize(.042,26,40),siegeMessage.startsWith("ПОБЕДА")?hero().color:"#d85b52","center");}
+ else tx("МИССИЯ ЗАВЕРШЕНА",viewWidth/2,viewHeight*.18,menuTextSize(.045,28,40),hero().color,"center");tx(m.ru,viewWidth/2,viewHeight*.27,menuTextSize(.032,21,32),"#f0eee7","center");
  tx("+$"+m.reward,viewWidth/2,viewHeight*.39,menuTextSize(.04,26,38),"#d9b86c","center");tx("+"+m.xp+" XP",viewWidth/2,viewHeight*.46,menuTextSize(.026,18,26),"#aab1b4","center");
  tx("РАНГ · "+rankRu(rankNames[rank()]),viewWidth/2,viewHeight*.54,menuTextSize(.023,16,24),hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,viewWidth/2,viewHeight*.59,menuTextSize(.021,15,22),"#f0eee7","center");
  if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",viewWidth/2,viewHeight*.68,menuTextSize(.02,14,22),"#aab1b4","center");
