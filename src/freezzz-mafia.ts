@@ -19,7 +19,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
 interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
 interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
-interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;type:EnemyType;attackRange:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -325,13 +325,17 @@ function topDownMap(){
  return {w,h,roads,buildings,river:{x:0,y:0,w:0,h:0},bridge:{x:0,y:0,w:0,h:0}};
 }
 function topDownExit(){return mode==="play"&&arenaMission?[ARENA_W/2,90]:[1365,455];}
-const ARENA_W=1000,ARENA_H=1500;
-function arenaObstacles(){return [
- {x:70,y:220,w:250,h:70},{x:680,y:220,w:250,h:70},
- {x:70,y:470,w:170,h:170},{x:380,y:410,w:240,h:80},{x:760,y:470,w:170,h:170},
- {x:120,y:790,w:260,h:75},{x:620,y:790,w:260,h:75},
- {x:310,y:1050,w:380,h:85},{x:55,y:1210,w:180,h:90},{x:765,y:1210,w:180,h:90}
-];}
+const ARENA_W=1000,ARENA_H=2700;
+function arenaObstacles(){
+ const core=[
+  {x:70,y:520,w:250,h:70},{x:680,y:520,w:250,h:70},
+  {x:70,y:770,w:170,h:170},{x:380,y:710,w:240,h:80},{x:760,y:770,w:170,h:170},
+  {x:120,y:1090,w:260,h:75},{x:620,y:1090,w:260,h:75},
+  {x:310,y:1350,w:380,h:85}
+ ];
+ const mirrored=core.map(o=>({x:o.x,y:ARENA_H-(o.y+o.h),w:o.w,h:o.h}));
+ return [...core,...mirrored];
+}
 function topDownObstacles(){
  const m=topDownMap(),out:{x:number;y:number;w:number;h:number}[]=[];
  for(const b of m.buildings)out.push({x:b.x,y:b.y,w:b.w,h:b.h});
@@ -748,30 +752,53 @@ function drawWorld(m:Mission){
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function drawArenaBackground(){
+ const mid=ARENA_H/2;
  rect(0,0,ARENA_W,ARENA_H,"#30383b");
  rect(0,0,ARENA_W,210,"#26363a");rect(0,ARENA_H-210,ARENA_W,210,"#34443b");
  for(let y=210;y<ARENA_H-210;y+=70)rect(0,y,ARENA_W,2,"rgba(210,210,190,.08)");
  for(let x=0;x<ARENA_W;x+=80)line(x,210,x,ARENA_H-210,"rgba(0,0,0,.10)",1);
  const lanes=[250,500,750];
- lanes.forEach(x=>{rect(x-54,210,108,1110,"rgba(18,25,27,.18)");line(x,210,x,1320,"rgba(225,220,198,.12)",2);});
+ lanes.forEach(x=>{rect(x-54,210,108,ARENA_H-420,"rgba(18,25,27,.18)");line(x,210,x,ARENA_H-210,"rgba(225,220,198,.12)",2);});
  for(const o of arenaObstacles()){rect(o.x+5,o.y+7,o.w,o.h,"rgba(0,0,0,.25)");rect(o.x,o.y,o.w,o.h,"#56605e");rect(o.x+8,o.y+8,o.w-16,Math.min(12,o.h-16),"#707875");}
+ rect(70,mid-34,860,68,"rgba(25,31,32,.62)");line(70,mid,930,mid,"#8b918d",2);
+ tx("ЦЕНТРАЛЬНЫЙ РУБЕЖ",ARENA_W/2,mid-8,15,"#aeb6b8","center");
  rect(70,48,860,118,"#20292c");rect(95,68,810,78,"#2d383a");
  rect(95,68,270,78,hero().color);rect(635,68,270,78,"#9b403d");
  tx("БАЗА ИГРОКА",230,108,18,"#071011","center");tx("ВРАЖЕСКАЯ БАЗА",770,108,18,"#f0eee7","center");
  rect(0,190,ARENA_W,20,"#596463");rect(0,ARENA_H-230,ARENA_W,20,"#68736b");
- line(30,210,970,210,"#d7d2bc",3);line(30,1320,970,1320,"#d7d2bc",3);
- tx("ТРИ ЛИНИИ · ВОЛНЫ МОБОВ",ARENA_W/2,245,18,"#aeb6b8","center");
+ line(30,210,970,210,"#d7d2bc",3);line(30,ARENA_H-210,970,ARENA_H-210,"#d7d2bc",3);
+ tx("ТРИ ЛИНИИ · 3+2+1 МОБОВ · СНАЧАЛА ФРОНТ",ARENA_W/2,245,18,"#aeb6b8","center");
 }
 function initSiege(){
  siegeTowers=[];siegeBases=[];siegeMobs=[];siegeWave=0;siegeWaveTimer=0;siegeOver=false;siegeMessage="";
- const lanes=[250,500,750];
+ const lanes=[250,500,750],enemyTowerY=420,playerTowerY=ARENA_H-420;
  lanes.forEach((x,lane)=>{
-  siegeTowers.push({x,y:310,team:"enemy",lane,hp:900,maxHp:900,cool:0});
-  siegeTowers.push({x,y:1180,team:"player",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:enemyTowerY,team:"enemy",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:playerTowerY,team:"player",lane,hp:900,maxHp:900,cool:0});
  });
  siegeBases.push({x:500,y:105,team:"enemy",hp:2600,maxHp:2600});
- siegeBases.push({x:500,y:1395,team:"player",hp:2600,maxHp:2600});
+ siegeBases.push({x:500,y:ARENA_H-105,team:"player",hp:2600,maxHp:2600});
  spawnSiegeWave();
+}
+function spawnSiegeWave(){
+ if(siegeOver)return;
+ siegeWave++;siegeWaveTimer=0;
+ const lanes=[250,500,750];
+ const formation:("brawler"|"shooter"|"sniper")[]=["brawler","brawler","brawler","shooter","shooter","sniper"];
+ for(let lane=0;lane<3;lane++){
+  formation.forEach((type,i)=>{
+   const waveScale=siegeWave-1;
+   const hp=(type==="brawler"?105:type==="shooter"?78:64)+waveScale*7;
+   const damage=type==="brawler"?24:type==="shooter"?15:28;
+   const speed=type==="brawler"?1.38:type==="shooter"?1.05:.78;
+   const range=type==="brawler"?42:type==="shooter"?210:430;
+   const x=lanes[lane]+(i%3-1)*22;
+   const enemyY=250+i*30,playerY=ARENA_H-250-i*30;
+   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8};
+   siegeMobs.push({x,y:enemyY,team:"enemy",...common});
+   siegeMobs.push({x,y:playerY,team:"player",...common});
+  });
+ }
 }
 function spawnSiegeWave(){
  if(siegeOver)return;
@@ -1156,45 +1183,76 @@ function update(dt:number){
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
 }
+function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
+ const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
+ const direct=moveTopDown(m.x,m.y,nx*step,ny*step,r);
+ if(Math.hypot(direct[0]-m.x,direct[1]-m.y)>0.1){m.x=direct[0];m.y=direct[1];return;}
+ const sideA=moveTopDown(m.x,m.y,-ny*step*1.7,nx*step*1.7,r);
+ const sideB=moveTopDown(m.x,m.y,ny*step*1.7,-nx*step*1.7,r);
+ const da=Math.hypot(sideA[0]-m.targetX,sideA[1]-m.targetY);
+ const db=Math.hypot(sideB[0]-m.targetX,sideB[1]-m.targetY);
+ const q=da<=db?sideA:sideB;m.x=q[0];m.y=q[1];
+}
+function siegeClosestEnemyMob(m:SiegeMob){
+ return siegeMobs.filter(o=>o.team!==m.team&&o.lane===m.lane&&o.hp>0)
+  .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+}
 function updateSiege(dt:number){
  if(siegeOver)return;
  siegeWaveTimer+=dt;
- if(siegeWaveTimer>720)spawnSiegeWave();
+ if(siegeWaveTimer>900)spawnSiegeWave();
  for(let i=siegeMobs.length-1;i>=0;i--){
   const m=siegeMobs[i];if(m.hp<=0){siegeMobs.splice(i,1);continue;}
-  const enemyTowers=siegeTowers.filter(t=>t.team!==m.team&&t.lane===m.lane&&t.hp>0);
-  const targetTower=enemyTowers[0];
-  const targetBase=siegeBases.find(b=>b.team!==m.team)!;
-  const txTarget=targetTower?targetTower.x:targetBase.x,tyTarget=targetTower?targetTower.y:targetBase.y;
-  const dx=txTarget-m.x,dy=tyTarget-m.y,dist=Math.hypot(dx,dy)||1;
-  if(dist>m.attackRange){m.x+=dx/dist*m.speed*dt;m.y+=dy/dist*m.speed*dt;}
-  else if(m.cool<=0){
-   m.cool=45;
-   if(targetTower)targetTower.hp=Math.max(0,targetTower.hp-m.damage);
-   else if(siegeTowers.filter(t=>t.team!==m.team&&t.hp>0).length===0)targetBase.hp=Math.max(0,targetBase.hp-m.damage);
+  m.cool-=dt;m.think-=dt;
+  const enemyMob=siegeClosestEnemyMob(m);
+  const enemyTower=siegeTowers.find(t=>t.team!==m.team&&t.lane===m.lane&&t.hp>0);
+  const enemyBase=siegeBases.find(b=>b.team!==m.team)!;
+  if(enemyMob){
+   const d=Math.hypot(enemyMob.x-m.x,enemyMob.y-m.y)||1;m.targetX=enemyMob.x;m.targetY=enemyMob.y;
+   if(m.type==="brawler"){
+    if(d>m.attackRange)siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt,18);
+    else if(m.cool<=0){m.cool=48;enemyMob.hp=Math.max(0,enemyMob.hp-m.damage);}
+   }else{
+    const preferred=m.type==="sniper"?330:155;
+    if(d>preferred+35)siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt,18);
+    else if(d<preferred-45)siegeStep(m,m.x-enemyMob.x,m.y-enemyMob.y,dt,18);
+    else{
+     const sx=-(enemyMob.y-m.y)/(d||1)*m.strafe,sy=(enemyMob.x-m.x)/(d||1)*m.strafe;
+     siegeStep(m,sx,sy,dt*.65,18);
+     if(m.cool<=0){m.cool=m.type==="sniper"?105:32;enemyMob.hp=Math.max(0,enemyMob.hp-(m.type==="sniper"?m.damage*1.55:m.damage*.72));}
+    }
+   }
+   if(m.type!=="brawler"&&!lineOfSight(m.x,m.y,enemyMob.x,enemyMob.y,arenaObstacles()))siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt*.45,18);
+  }else if(enemyTower){
+   const d=Math.hypot(enemyTower.x-m.x,enemyTower.y-m.y)||1;m.targetX=enemyTower.x;m.targetY=enemyTower.y;
+   if(d>m.attackRange)siegeStep(m,enemyTower.x-m.x,enemyTower.y-m.y,dt,18);
+   else if(m.cool<=0){m.cool=m.type==="brawler"?52:m.type==="shooter"?38:90;enemyTower.hp=Math.max(0,enemyTower.hp-m.damage);}
+  }else if(siegeTowers.filter(t=>t.team!==m.team&&t.hp>0).length===0){
+   const d=Math.hypot(enemyBase.x-m.x,enemyBase.y-m.y)||1;m.targetX=enemyBase.x;m.targetY=enemyBase.y;
+   if(d>m.attackRange)siegeStep(m,enemyBase.x-m.x,enemyBase.y-m.y,dt,18);
+   else if(m.cool<=0){m.cool=55;enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);}
   }
-  m.cool-=dt;
-  if(m.type==="shooter"&&m.team==="enemy"&&Math.hypot(player.x-m.x,player.y-m.y)<170&&m.cool<=0){m.cool=55;hurt(6);}
  }
  for(const b of bullets){
-  if(b.from!=="player")continue;
+  if(b.from!=="player"||b.life<=0)continue;
   for(let i=siegeMobs.length-1;i>=0;i--){
    const m=siegeMobs[i];
    if(m.team==="enemy"&&m.hp>0&&Math.hypot(b.x-m.x,b.y-m.y)<28){m.hp=Math.max(0,m.hp-b.damage);b.life=0;break;}
   }
   if(b.life<=0)continue;
   for(const t of siegeTowers){
-   if(t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
+   const laneHasMobs=siegeMobs.some(m=>m.team==="enemy"&&m.lane===t.lane&&m.hp>0);
+   if(t.hp>0&&!laneHasMobs&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
   }
   if(b.life>0){
-   const enemyBase=siegeBases.find(x=>x.team==="enemy")!;
-   if(enemyBase.hp>0&&siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0&&Math.hypot(b.x-enemyBase.x,b.y-enemyBase.y)<115){enemyBase.hp=Math.max(0,enemyBase.hp-b.damage);b.life=0;}
+   const enemyBase=siegeBases.find(x=>x.team==="enemy")!,allTowersDown=siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0;
+   if(enemyBase.hp>0&&allTowersDown&&Math.hypot(b.x-enemyBase.x,b.y-enemyBase.y)<115){enemyBase.hp=Math.max(0,enemyBase.hp-b.damage);b.life=0;}
   }
  }
  for(const t of siegeTowers){
   if(t.hp<=0)continue;t.cool-=dt;if(t.cool>0)continue;
   const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.lane===t.lane&&m.hp>0).sort((a,b)=>Math.abs(a.y-t.y)-Math.abs(b.y-t.y))[0];
-  if(hostile&&Math.abs(hostile.y-t.y)<270){t.cool=45;hostile.hp=Math.max(0,hostile.hp-34);continue;}
+  if(hostile&&Math.abs(hostile.y-t.y)<330){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
   if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
  }
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
