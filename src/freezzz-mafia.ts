@@ -796,7 +796,7 @@ function drawArenaBackground(){
  for(let x=82;x<=918;x+=64)line(x,0,x,ARENA_H,"rgba(0,0,0,.12)",1);
  const lanes=[250,500,750];
  lanes.forEach((x,i)=>{rect(x-58,180,116,2340,i===1?"rgba(64,180,188,.075)":"rgba(10,20,24,.12)");line(x,180,x,2520,i===1?"rgba(82,218,226,.28)":"rgba(190,210,210,.10)",2);for(let y=220;y<2480;y+=180)rect(x-48,y,96,3,i===1?"rgba(85,220,226,.18)":"rgba(200,220,220,.07)");});
- ARENA_CARGO.forEach(([x,y,w,h],i)=>{rect(x+7,y+8,w,h,"rgba(0,0,0,.35)");rect(x,y,w,h,i%3===0?"#45545a":i%3===1?"#3e4b50":"#4b4b55");rect(x+8,y+8,w-16,7,i%2?"#6c8589":"#657276");for(let k=1;k<4;k++)line(x+k*w/4,y+18,x+k*w/4,y+h-8,"rgba(10,15,17,.35)",2);rect(x+14,y+h-15,w-28,4,"rgba(77,211,220,.25)");});
+ ARENA_CARGO.forEach(({x,y,w,h},i)=>{rect(x+7,y+8,w,h,"rgba(0,0,0,.35)");rect(x,y,w,h,i%3===0?"#45545a":i%3===1?"#3e4b50":"#4b4b55");rect(x+8,y+8,w-16,7,i%2?"#6c8589":"#657276");for(let k=1;k<4;k++)line(x+k*w/4,y+18,x+k*w/4,y+h-8,"rgba(10,15,17,.35)",2);rect(x+14,y+h-15,w-28,4,"rgba(77,211,220,.25)");});
  for(const yy of [520,1010,1510,1980,2380]){line(90,yy,910,yy,"#17282d",12);line(90,yy,910,yy,"rgba(75,211,220,.22)",3);for(let x=120;x<900;x+=95)ellipse(x,yy,4,4,"rgba(104,235,239,.65)");}
  rect(0,0,68,ARENA_H,"#03060a");rect(932,0,68,ARENA_H,"#03060a");
  for(let y=0;y<ARENA_H;y+=110){line(55,y,68,y+22,"#52636a",2);line(932,y+22,945,y,"#52636a",2);}
