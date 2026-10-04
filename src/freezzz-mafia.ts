@@ -270,10 +270,12 @@ function getTestLayout():TestFloorLayout{
 
 function drawHudOverlay(m:Mission){
  rect(8,8,viewWidth-16,40,"rgba(4,8,11,.96)");
- const fs=Math.max(10,Math.min(18,viewWidth*.019));
- tx("ALIEN CARGO DECK",18,15,fs,hero().color);tx("COMBAT",viewWidth*.27,15,fs,"#f0eee7");
- tx("HP "+Math.max(0,Math.round(player.hp)),viewWidth*.48,15,fs*.72,"#d5d8d7");
- tx("MAG "+player.combat.ammo+"/"+player.combat.reserve,viewWidth*.94,15,fs*.72,hero().color,"right");
+ const fs=Math.max(9,Math.min(15,viewWidth*.017));
+ // Keep every field inside its own column; never allow the title to collide with COMBAT.
+ tx("CARGO DECK",18,15,fs,hero().color);
+ tx("COMBAT",viewWidth*.42,15,fs,"#f0eee7","center");
+ tx("HP "+Math.max(0,Math.round(player.hp)),viewWidth*.72,15,fs*.72,"#d5d8d7","center");
+ tx("MAG "+player.combat.ammo+"/"+player.combat.reserve,viewWidth-18,15,fs*.72,hero().color,"right");
  tx("WAVE "+siegeWave,18,62,fs*.78,"#d9b86c");
  tx(arenaTaskLabel+" · "+arenaTaskProgress+"/"+arenaTaskTarget,18,79,fs*.70,hero().color);
 }
@@ -827,11 +829,16 @@ function spawnSiegeWave(){
   "brawler","brawler","brawler","shooter","shooter","sniper"
  ];
  const spawnPoints={
-  enemy:{x:500,y:300},
+  enemy:{x:500,y:1880},
   player:{x:500,y:2240}
  };
- const scatter=[
-  [150,560],[350,760],[500,930],[650,760],[850,560],[500,1120]
+ // Compact combat line: enemies start inside the initial camera window instead
+ // of 2,000+ world units away from the player.
+ const enemyScatter=[
+  [170,1940],[350,2020],[500,2080],[650,2020],[830,1940],[500,1870]
+ ];
+ const playerScatter=[
+  [170,2180],[350,2220],[500,2260],[650,2220],[830,2180],[500,2140]
  ];
  formation.forEach((type,i)=>{
   const waveScale=siegeWave-1;
@@ -844,7 +851,7 @@ function spawnSiegeWave(){
    const dir=team==="enemy"?1:-1;
    const spread=(i-2.5)*13;
    const sx=s.x+spread,sy=s.y+dir*(i%3)*14;
-   const target=scatter[i];
+   const target=team==="enemy"?enemyScatter[i]:playerScatter[i];
    const common={
     lane:-1,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,
     targetX:target[0],targetY:target[1],strafe:i%2?1:-1,think:i*8,
@@ -852,7 +859,7 @@ function spawnSiegeWave(){
     burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,
     animSpeed:.08,hitFlash:0,attackFx:0,stepFx:Math.random()*6.28,
     path:[],pathIndex:0,pathTimer:0,spawnGrace:150,scatterX:target[0],
-    scatterY:team==="enemy"?target[1]:ARENA_H-target[1]
+    scatterY:target[1]
    };
    siegeMobs.push({x:sx,y:sy,team,...common});
   }
@@ -985,13 +992,17 @@ function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,s
 function drawAlienCombatant(m:SiegeMob){
  if(!ctx)return;
  const enemy=m.team==="enemy";
+ const visualScale=enemy?1:.76;
  const accent=enemy
    ? (m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff")
    : (m.type==="brawler"?"#54f2ee":m.type==="shooter"?"#5fe8ff":"#8eabff");
  let kind="sniper",scale=.82,weapon=true;
  if(m.type==="brawler"){kind=(m.role%2===0)?"heavy":"rusher";scale=kind==="heavy"?1.18:1.02;weapon=false;}
  else if(m.type==="shooter"){kind=(m.role%2===0)?"guard":"suppressor";scale=kind==="guard"?1.02:1.08;weapon=true;}
- drawRobotMob(m.x,m.y,kind,scale,accent,m.animState,m.anim,m.hp,m.maxHp,weapon,m.hitFlash);
+ ctx.save();
+ ctx.globalAlpha=enemy?1:.58;
+ drawRobotMob(m.x,m.y,kind,scale*visualScale,accent,m.animState,m.anim,m.hp,m.maxHp,weapon,m.hitFlash);
+ ctx.restore();
 }
 
 function drawArenaPickup(p:ArenaPickup){
