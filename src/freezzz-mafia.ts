@@ -1726,6 +1726,10 @@ function advanceDialogue(){
  }
  if(mode==="result"){
    dialogueOpen=false;
+   if(save.activeTenderId&&arenaMission){
+     advanceTenderMission();
+     return;
+   }
    if(m.number===1){
      mode="select";selected=null;save.hero=null;storeSave();
    }else{
