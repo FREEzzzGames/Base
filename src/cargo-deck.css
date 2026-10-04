@@ -364,3 +364,18 @@
   height:24px!important;
   font-size:20px!important;
 }
+
+/* CARGO DECK — gesture combat: no visible aim/fire circle. */
+.cargo-deck-ui .cargo-combat-zone{
+  position:absolute!important;
+  left:42%!important;
+  right:0!important;
+  top:82px!important;
+  bottom:0!important;
+  z-index:9!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  background:transparent!important;
+}
+.cargo-deck-ui .cargo-aim{display:none!important}
+.cargo-deck-ui .cargo-fire{display:none!important}
