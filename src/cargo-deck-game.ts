@@ -6,6 +6,7 @@ interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;co
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
 const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
+const PLAYER_SPAWN={x:500,y:2420} as const;
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
@@ -44,7 +45,7 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=a+Math.random()*(b-a);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,a+60]as const}
-function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:500,y:2250,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
+function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
 function init(){mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:500,y:250,hp:2600,maxHp:2600};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:350,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:2280,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
@@ -54,7 +55,7 @@ function spawnWave(){
   waveStart=frame;
 
   // Spawn zone is deliberately inside the player's initial camera:
-  // y=1820..1900 is below the 1680 cargo row and above the 1935 row.
+  // y=2035..2070 is above the player and below the 1935 cargo row.
   // This prevents side-lane spawns from materialising inside containers
   // or outside the visible combat area.
   const total=Math.min(12,5+Math.floor(wave*.7));
@@ -460,27 +461,27 @@ function drawPlayer(){
  const c=L().color,px=player.x,py=player.y;
  ctx!.save();
  // Shadow and boots.
- ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(px,py+18,27,8,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+ ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(px,py+20,30,9,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
  // Body silhouette.
  ctx!.shadowColor=c;ctx!.shadowBlur=player.hit>0?28:14;
- ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-18,24,35,0,0,Math.PI*2);ctx!.fill();
+ ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-20,26,38,0,0,Math.PI*2);ctx!.fill();
  ctx!.shadowBlur=0;
  // Tactical vest.
- ctx!.fillStyle="#2b373b";ctx!.fillRect(px-17,py-37,34,30);
- ctx!.strokeStyle=c;ctx!.lineWidth=1.5;ctx!.strokeRect(px-17,py-37,34,30);
- ctx!.fillStyle="#0d1417";ctx!.fillRect(px-10,py-33,20,4);ctx!.fillRect(px-12,py-24,24,4);
+ ctx!.fillStyle="#2b373b";ctx!.fillRect(px-18,py-40,36,32);
+ ctx!.strokeStyle=c;ctx!.lineWidth=1.5;ctx!.strokeRect(px-18,py-40,36,32);
+ ctx!.fillStyle="#0d1417";ctx!.fillRect(px-11,py-35,22,5);ctx!.fillRect(px-13,py-24,26,5);
  // Head / helmet.
- ctx!.fillStyle="#10171a";ctx!.beginPath();ctx!.arc(px,py-48,12,0,Math.PI*2);ctx!.fill();
- ctx!.fillStyle=c;ctx!.fillRect(px-9,py-51,18,4);ctx!.fillStyle="#d6e0e2";ctx!.fillRect(px+3,py-49,5,2);
+ ctx!.fillStyle="#10171a";ctx!.beginPath();ctx!.arc(px,py-52,13,0,Math.PI*2);ctx!.fill();
+ ctx!.fillStyle=c;ctx!.fillRect(px-10,py-55,20,4);ctx!.fillStyle="#d6e0e2";ctx!.fillRect(px+4,py-53,6,2);
  // Arms follow the weapon line.
  const a=aim,side=player.facing||1;
- const hx=px+Math.cos(a)*13,hy=py-24+Math.sin(a)*13;
+ const hx=px+Math.cos(a)*14,hy=py-27+Math.sin(a)*14;
  ctx!.strokeStyle="#7d8a8e";ctx!.lineWidth=7;ctx!.lineCap="round";
- ctx!.beginPath();ctx!.moveTo(px-11,py-24);ctx!.lineTo(hx,hy);ctx!.moveTo(px+10,py-20);ctx!.lineTo(hx+Math.cos(a)*5,hy+Math.sin(a)*5);ctx!.stroke();
+ ctx!.beginPath();ctx!.moveTo(px-12,py-25);ctx!.lineTo(hx,hy);ctx!.moveTo(px+11,py-21);ctx!.lineTo(hx+Math.cos(a)*5,hy+Math.sin(a)*5);ctx!.stroke();
  // Weapon silhouette with readable receiver / magazine / stock / barrel.
  const recoil=Math.min(5,player.combat.recoil*.28);
  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
- const gx=px+Math.cos(a)*(18+side*4)-Math.cos(a)*recoil,gy=py-25+Math.sin(a)*(18+side*4)-Math.sin(a)*recoil;
+ const gx=px+Math.cos(a)*(19+side*4)-Math.cos(a)*recoil,gy=py-27+Math.sin(a)*(19+side*4)-Math.sin(a)*recoil;
  ctx!.save();ctx!.translate(gx,gy);ctx!.rotate(a);
  ctx!.fillStyle="#090d0f";ctx!.fillRect(-12,-5,gunLen,10);
  ctx!.fillStyle="#303b3f";ctx!.fillRect(-8,-4,Math.max(20,gunLen-22),7);
@@ -496,9 +497,9 @@ function drawPlayer(){
  }
  ctx!.restore();
  // Player outline.
- ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.beginPath();ctx!.ellipse(px,py-18,27,42,0,0,Math.PI*2);ctx!.stroke();
+ ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.beginPath();ctx!.ellipse(px,py-20,29,44,0,0,Math.PI*2);ctx!.stroke();
  // Health / armor bars.
- bar(px-30,py-70,60,5,player.hp,player.maxHp,c);bar(px-30,py-62,60,3,player.armor,90,"#9aa9b0");
+ bar(px-32,py-74,64,5,player.hp,player.maxHp,c);bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
 function drawWorld(){
