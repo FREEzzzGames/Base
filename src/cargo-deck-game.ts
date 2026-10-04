@@ -503,10 +503,17 @@ function drawPlayer(){
  ctx!.restore();
 }
 function drawWorld(){
+  // The world is 1000px wide while the Telegram game surface is usually
+  // portrait. Keep the camera centered on the operator so the FULL platform
+  // width is occupied by the gameplay viewport instead of showing only the
+  // left slice of the 1000px world.
+  const maxCamX=Math.max(0,W-viewW);
+  const targetCamX=player.x-viewW*.5;
+  const camX=Math.max(0,Math.min(maxCamX,targetCamX));
   cam=Math.max(0,Math.min(H-viewH,player.y-viewH*.58));
   rect(0,0,viewW,viewH,"#05090b");
   ctx!.save();
-  ctx!.translate(0,-cam);
+  ctx!.translate(-camX,-cam);
 
   for(let y=0;y<H;y+=80)rect(0,y,W,1,"#172126");
   for(let x=0;x<W;x+=80)rect(x,0,1,H,"#10181c");
