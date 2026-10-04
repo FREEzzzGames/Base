@@ -1227,8 +1227,8 @@ function updateSiege(dt:number){
   }
   if(b.life<=0)continue;
   for(const t of siegeTowers){
-   const laneHasMobs=siegeMobs.some(m=>m.team==="enemy"&&m.lane===t.lane&&m.hp>0);
-   if(t.hp>0&&!laneHasMobs&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
+   const enemyMobsRemain=siegeMobs.some(m=>m.team==="enemy"&&m.hp>0);
+   if(t.hp>0&&!enemyMobsRemain&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
   }
   if(b.life>0){
    const enemyBase=siegeBases.find(x=>x.team==="enemy")!,allTowersDown=siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0;
