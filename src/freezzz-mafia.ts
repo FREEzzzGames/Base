@@ -2192,13 +2192,3 @@ function weaponRu(s:string){
  const map:Record<string,string>={"POCKET 9":"КАРМАННЫЙ","SERVICE":"СЛУЖЕБНЫЙ","REVOLVER":"РЕВОЛЬВЕР","SMG":"АВТОМАТ","SHOTGUN":"ДРОБОВИК","CARBINE":"КАРАБИН"};
  return map[s]||s;
 }
-function spawnArenaWave(){
- arenaWave++;arenaSpawnTimer=0;
- const types:EnemyType[]=arenaMission?.enemies?.length?(arenaMission.enemies as EnemyType[]):["guard","rusher","shooter"];
- const count=Math.min(10,3+Math.floor(arenaWave*.65));
- const spots=[[140,150],[300,170],[500,145],[700,170],[860,150],[220,330],[500,300],[780,330]];
- for(let i=0;i<count;i++){
-  const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];
-  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
- }
-}
