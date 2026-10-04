@@ -19,7 +19,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
 interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
 interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
-interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number;anim:number;animState:"idle"|"run"|"strafe"|"attack"|"hit"|"retreat"|"death";animSpeed:number;hitFlash:number;attackFx:number;stepFx:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -794,7 +794,7 @@ function spawnSiegeWave(){
    const range=type==="brawler"?42:type==="shooter"?210:430;
    const x=lanes[lane]+(i%3-1)*22;
    const enemyY=250+i*30,playerY=ARENA_H-250-i*30;
-   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8,morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,burstCool:20+i*5,assist:0};
+   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8,morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,animSpeed:.08,hitFlash:0,attackFx:0,stepFx:Math.random()*6.28};
    siegeMobs.push({x,y:enemyY,team:"enemy",...common});
    siegeMobs.push({x,y:playerY,team:"player",...common});
   });
@@ -822,8 +822,32 @@ function drawSiegeStructures(){
 function drawSiegeMobs(){
  siegeMobs.forEach(m=>{
   const col=m.team==="player"?hero().color:"#d85b52";
-  drawMafiaMember({face:m.team==="player"?hero().face:"#8f574d",tie:col,suit:m.team==="player"?"#25353a":"#39272a"},m.x,m.y,frame,.52);
+  const moving=m.animState==="run"||m.animState==="strafe"||m.animState==="retreat";
+  const walk=Math.sin(m.anim)* (moving?2.8:0);
+  const bob=moving?Math.abs(Math.sin(m.anim))*.9:Math.sin(m.anim*.5)*.35;
+  const lean=m.animState==="strafe"?m.strafe*.045:m.animState==="retreat"?-.035:0;
+  const attackKick=m.attackFx>0?Math.sin(m.attackFx*Math.PI)*2.5:0;
+  const flash=m.hitFlash>0?0.75:1;
+  const sc=.52;
+  ctx!.save();ctx!.translate(m.x,m.y+bob);ctx!.rotate(lean);
+  ctx!.globalAlpha=flash;
+  drawMafiaMember({face:m.team==="player"?hero().face:"#8f574d",tie:col,suit:m.team==="player"?"#25353a":"#39272a"},0,0,frame+walk*2,sc);
+  // Положение корпуса и оружия отражает тип действия.
+  if(m.type!=="brawler"){
+   const gunAngle=m.strafe*.08+(m.animState==="retreat"?.18:0);
+   drawWeaponSprite(m.type==="sniper"?5:3,m.strafe*20-4,-34+attackKick,gunAngle,sc);
+  }
+  if(m.animState==="attack"&&m.attackFx>0){
+   ctx!.globalAlpha=Math.min(1,m.attackFx);
+   ellipse(m.strafe*10,-40,7+m.attackFx*3,7+m.attackFx*3,col);
+  }
+  if(m.animState==="hit"&&m.hitFlash>0){
+   ctx!.globalAlpha=.8;
+   for(let k=0;k<3;k++)line(-10+k*8,-35,(-10+k*8)+m.strafe*7,-42-k*3,"#f0eee7",1.5);
+  }
+  ctx!.restore();
   rect(m.x-18,m.y-72,36,4,"#151a1c");rect(m.x-18,m.y-72,36*clamp(m.hp/m.maxHp,0,1),4,col);
+  if(m.animState==="retreat")tx("!",m.x,m.y-82,12,"#d8b86c","center");
  });
 }
 function drawArenaPickup(p:ArenaPickup){
@@ -1222,12 +1246,12 @@ function updateSiege(dt:number){
   const nearbyAllies=allies.filter(a=>Math.hypot(a.x-m.x,a.y-m.y)<180).length;
   const nearbyEnemies=siegeMobs.filter(a=>a.team!==m.team&&a.hp>0&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
   m.morale=clamp(65+nearbyAllies*12-nearbyEnemies*10,15,130);
-  m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);
+  m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);\n  m.animState=m.retreating?"retreat":"idle";
   if(m.retreating){
    const homeY=m.team==="enemy"?230:ARENA_H-230;
    m.targetX=m.x;m.targetY=homeY;
    siegeStep(m,m.x-500,m.y-homeY,dt,18);
-   if(hpRatio<.2&&m.cool<=0){m.cool=75;m.hp=Math.min(m.maxHp,m.hp+2);}
+   if(hpRatio<.2&&m.cool<=0){m.cool=75;m.hp=Math.min(m.maxHp,m.hp+2);}\n   m.animState="retreat";
    continue;
   }
 
@@ -1239,13 +1263,13 @@ function updateSiege(dt:number){
 
    if(m.type==="brawler"){
     if(d>m.attackRange)siegeStep(m,priority.x-m.x,priority.y-m.y,dt*(m.morale>100?1.12:1),18);
-    else if(m.cool<=0){m.cool=44;m.burst=2;priority.hp=Math.max(0,priority.hp-m.damage*(m.morale>105?1.15:1));}
+    else if(m.cool<=0){m.cool=44;m.burst=2;m.animState="attack";m.attackFx=1;priority.hp=Math.max(0,priority.hp-m.damage*(m.morale>105?1.15:1));}
    }else{
     const preferred=m.type==="sniper"?360:165;
     const blocked=siegeHasCover(m,priority.x,priority.y);
-    if(blocked)siegeStep(m,priority.x-m.x,priority.y-m.y,dt*.8,18);
-    else if(d>preferred+45)siegeStep(m,priority.x-m.x,priority.y-m.y,dt,18);
-    else if(d<preferred-60)siegeStep(m,m.x-priority.x,m.y-priority.y,dt,18);
+    if(blocked){m.animState="run";siegeStep(m,priority.x-m.x,priority.y-m.y,dt*.8,18);
+    else if(d>preferred+45){m.animState="run";siegeStep(m,priority.x-m.x,priority.y-m.y,dt,18);
+    else if(d<preferred-60){m.animState="retreat";siegeStep(m,m.x-priority.x,m.y-priority.y,dt,18);
     else{
      // Стрейф и короткие остановки делают стрелков менее предсказуемыми.
      if(m.think<=0){m.think=45+Math.random()*55;m.strafe=Math.random()<.5?-1:1;}
@@ -1260,7 +1284,7 @@ function updateSiege(dt:number){
      }
     }
    }
-  }else if(enemyTower){
+  }else if(enemyTower){\n   m.animState="run";
    // Башни только после уничтожения всей волны.
    const d=Math.hypot(enemyTower.x-m.x,enemyTower.y-m.y)||1;
    m.targetX=enemyTower.x;m.targetY=enemyTower.y;
