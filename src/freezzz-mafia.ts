@@ -1159,25 +1159,47 @@ function drawShop(){
 function drawTenders(){
  const c=ctx!;c.save();const W=viewWidth,H=viewHeight;c.fillStyle="#070a0c";c.fillRect(0,0,W,H);
  const g=c.createRadialGradient(W*.18,H*.12,0,W*.18,H*.12,W*.55);g.addColorStop(0,"rgba(216,108,53,.18)");g.addColorStop(1,"rgba(7,10,12,0)");c.fillStyle=g;c.fillRect(0,0,W,H);
- tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.06,H*.055,menuTextSize(.032,21,30),"#d86c35");tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.06,H*.09,menuTextSize(.014,9,14),"#68777f");
+ tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.06,H*.055,menuTextSize(.032,21,30),"#d86c35");
+ tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.06,H*.09,menuTextSize(.014,9,14),"#68777f");
  tx((tenderPage+1)+"/"+Math.ceil(TENDERS.length/3),W*.94,H*.055,menuTextSize(.016,11,15),hero().color,"right");
  const top=H*.12,bottom=H*.90,gap=H*.018,cardH=(bottom-top-gap*2)/3,left=W*.045,cardW=W*.91;
  const pageItems=TENDERS.slice(tenderPage*3,tenderPage*3+3);
- pageItems.forEach((t,i)=>{const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
- c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
- tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
- drawWrapped(t.lore,left+12,y+56,Math.max(28,Math.floor(W/18)),menuTextSize(.009,7,10),menuTextSize(.010,7,11),"#aeb6b8","left");
- tx(t.weaponType+" · "+t.caliber,left+12,y+82,menuTextSize(.010,7,10),"#d9b86c","left");
- tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+12,y+100,menuTextSize(.009,7,10),"#7f8b90","left");
- tx("ТРЕБ.: "+t.requirements.join(" · "),left+12,y+117,menuTextSize(.0085,6,9),"#8d999d","left");
- tx("$"+t.reward+" НАГРАДА · $"+t.advance+" АВАНС · $"+t.penalty+" ШТРАФ · "+t.durationHours+"Ч",left+12,y+134,menuTextSize(.009,7,10),"#c6a86d","left");
- drawWrapped("РИСК: "+t.risk,left+12,y+151,Math.max(30,Math.floor(W/19)),menuTextSize(.0085,6,9),menuTextSize(.009,7,10),"#9a6c55","left");
- tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
+ const bodyChars=Math.max(31,Math.floor(W/16.2));
+ pageItems.forEach((t,i)=>{
+   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
+   c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;
+   c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;
+   c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
+
+   tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");
+   tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");
+   tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
+   tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
+
+   const loreSize=menuTextSize(.009,7,10),loreLine=loreSize*1.18;
+   const loreRows=Math.min(3,drawWrapped(t.lore,left+12,y+57,bodyChars,loreLine,loreSize,"#aeb6b8","left"));
+   let cy=y+57+loreRows*loreLine+8;
+
+   tx(t.weaponType+" · "+t.caliber,left+12,cy,menuTextSize(.010,7,10),"#d9b86c","left");cy+=18;
+   tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+12,cy,menuTextSize(.009,7,10),"#7f8b90","left");cy+=17;
+
+   const reqSize=menuTextSize(.0085,6,9),reqLine=reqSize*1.2;
+   const reqRows=Math.min(2,drawWrapped("ТРЕБ.: "+t.requirements.join(" · "),left+12,cy,bodyChars,reqLine,reqSize,"#8d999d","left"));
+   cy+=reqRows*reqLine+6;
+
+   tx("$"+t.reward+" НАГРАДА · $"+t.advance+" АВАНС · $"+t.penalty+" ШТРАФ · "+t.durationHours+"Ч",left+12,cy,menuTextSize(.009,7,10),"#c6a86d","left");cy+=17;
+   const riskSize=menuTextSize(.0085,6,9),riskLine=riskSize*1.2;
+   drawWrapped("РИСК: "+t.risk,left+12,cy,bodyChars,riskLine,riskSize,"#9a6c55","left");
  });
  const bh=Math.min(38,H*.052),by=H-bh-H*.025;
- tx("‹",W*.08,by+bh*.68,menuTextSize(.028,18,26),tenderPage>0?"#d86c35":"#394248","center");
- tx("›",W*.92,by+bh*.68,menuTextSize(.028,18,26),tenderPage<Math.ceil(TENDERS.length/3)-1?"#d86c35":"#394248","center");
+ const enabledPrev=tenderPage>0,enabledNext=tenderPage<Math.ceil(TENDERS.length/3)-1;
+ c.save();c.strokeStyle="#283136";c.lineWidth=1;c.fillStyle="rgba(10,14,16,.86)";
+ c.beginPath();c.roundRect(W*.045,by,W*.18,bh,4);c.fill();c.stroke();
+ c.beginPath();c.roundRect(W*.405,by,W*.19,bh,4);c.fill();c.stroke();
+ c.beginPath();c.roundRect(W*.775,by,W*.18,bh,4);c.fill();c.stroke();c.restore();
+ tx("‹",W*.135,by+bh*.68,menuTextSize(.028,18,26),enabledPrev?"#d86c35":"#394248","center");
  tx("НАЗАД",W/2,by+bh*.68,menuTextSize(.014,9,13),"#aeb6b8","center");
+ tx("›",W*.865,by+bh*.68,menuTextSize(.028,18,26),enabledNext?"#d86c35":"#394248","center");
  c.restore();
 }
 function drawWeaponMenu(){
@@ -1366,7 +1388,7 @@ function render(){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
   }else if(mode==="tenders"){
-    ui.innerHTML=TENDERS.slice(tenderPage*3,tenderPage*3+3).map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:4.5%;right:4.5%;top:${12+i*26.0}%;height:22%;opacity:.001;border:0;background:transparent"></button>`).join("")+`<button data-action="tender-prev" style="position:absolute;left:0;bottom:2%;width:20%;height:7%;opacity:.02">‹</button><button data-action="menu" style="position:absolute;left:40%;bottom:2%;width:20%;height:7%;opacity:.02">НАЗАД</button><button data-action="tender-next" style="position:absolute;right:0;bottom:2%;width:20%;height:7%;opacity:.02">›</button>`;
+    ui.innerHTML=TENDERS.slice(tenderPage*3,tenderPage*3+3).map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:4.5%;right:4.5%;top:${12+i*26.0}%;height:22%;opacity:0;appearance:none;border:0;background:transparent;outline:none;box-shadow:none"></button>`).join("")+`<button data-action="tender-prev" style="position:absolute;left:0;bottom:2%;width:20%;height:7%;opacity:0">‹</button><button data-action="menu" style="position:absolute;left:40%;bottom:2%;width:20%;height:7%;opacity:0">НАЗАД</button><button data-action="tender-next" style="position:absolute;right:0;bottom:2%;width:20%;height:7%;opacity:0">›</button>`;
   }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
