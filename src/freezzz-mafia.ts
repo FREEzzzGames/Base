@@ -1,7 +1,7 @@
 import { portalVideoUrl } from "./video-assets";
 import { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
 import { drawPhotorealDistrict } from "./freezzz-photoreal-map";
-import { TENDERS, tenderById, difficultyRu } from "./freezzz-tenders";
+import { TENDERS, tenderById, difficultyRu, arenaMissionsForTender, type ArenaMission } from "./freezzz-tenders";
 import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
@@ -1046,6 +1046,7 @@ function beginSelected(){
 function advanceDialogue(){
  const m=currentMission();
  if(mode==="shop"){mode="play";dialogueOpen=false;return;}
+ if(mode==="arena"){startTenderMission();return;}
  if(mode==="family"){
    if(selected)markStorySeen(selected);
    floor=Math.max(0,Math.min(2,save.resumeFloor?.[selected!]??0));
@@ -1092,7 +1093,7 @@ function renderCanvas(){
    drawWorld(m);return;
  }
  if(mode==="select"){drawSelect();return;}
- if(mode==="arena"){drawLevels();return;}
+ if(mode==="arena"){drawArenaBriefing();return;}
  if(mode==="family"){drawFamily();return;}
  if(mode==="briefing"){drawBriefing();return;}
  if(mode==="shop"){drawShop();return;}
@@ -1147,10 +1148,23 @@ function drawSelect(){
    tx(h.ability,x+cardW/2,y+cardH*.92,menuTextSize(.010,8,12),"#aab1b4","center");
  });
 }
-function drawLevels(){
- rect(0,0,viewWidth,viewHeight,"#07090b");const t=save.activeTenderId?tenderById(save.activeTenderId):null;
- tx("АРЕНА",viewWidth*.07,viewHeight*.07,menuTextSize(.045,28,40),hero().color);tx("НЕПРЕРЫВНЫЕ ВОЛНЫ · ЗАДАЧИ · ТЕНДЕР",viewWidth*.07,viewHeight*.115,menuTextSize(.014,9,14),"#68777f");
- if(t){tx(t.title,viewWidth*.07,viewHeight*.21,menuTextSize(.032,21,30),"#f0eee7");tx(t.client,viewWidth*.07,viewHeight*.265,menuTextSize(.016,11,16),"#aeb6b8");tx("ТИП · "+t.weaponType+" · "+t.caliber,viewWidth*.07,viewHeight*.33,menuTextSize(.017,12,18),"#d9b86c");tx("ЗАДАЧА · "+arenaTaskLabel,viewWidth*.07,viewHeight*.42,menuTextSize(.024,16,24),hero().color);tx("ВОЛНА · "+arenaWave,viewWidth*.07,viewHeight*.49,menuTextSize(.02,14,21),"#f0eee7");tx("УБИТО · "+arenaKills,viewWidth*.07,viewHeight*.55,menuTextSize(.018,12,18),"#aeb6b8");tx("ПРОГРЕСС · "+arenaTaskProgress+" / "+arenaTaskTarget,viewWidth*.07,viewHeight*.61,menuTextSize(.018,12,18),"#aeb6b8");}else{tx("Сначала прими тендер",viewWidth/2,viewHeight*.40,menuTextSize(.026,18,26),"#aeb6b8","center");tx("Без контракта арена не запускается.",viewWidth/2,viewHeight*.47,menuTextSize(.018,12,18),"#59656b","center");}
+function drawArenaBriefing(){
+ rect(0,0,viewWidth,viewHeight,"#07090b");
+ const t=save.activeTenderId?tenderById(save.activeTenderId):null;
+ tx("АРЕНА",viewWidth*.07,viewHeight*.07,menuTextSize(.045,28,40),hero().color);
+ tx("ОДНА АРЕНА · ПОСЛЕДОВАТЕЛЬНЫЕ МИССИИ",viewWidth*.07,viewHeight*.115,menuTextSize(.014,9,14),"#68777f");
+ if(t&&arenaMission){
+  tx(t.code+" · "+t.title,viewWidth*.07,viewHeight*.20,menuTextSize(.026,18,28),"#f0eee7");
+  tx(t.client,viewWidth*.07,viewHeight*.25,menuTextSize(.016,11,16),"#aeb6b8");
+  tx("МИССИЯ "+arenaMission.order+" / 3",viewWidth*.07,viewHeight*.35,menuTextSize(.020,14,21),hero().color);
+  tx(arenaMission.title,viewWidth*.07,viewHeight*.42,menuTextSize(.030,20,30),"#f0eee7");
+  drawWrapped(arenaMission.briefing,viewWidth*.07,viewHeight*.49,Math.max(26,Math.floor(viewWidth/15)),menuTextSize(.021,15,22),menuTextSize(.021,15,22),"#aeb6b8");
+  tx("ЦЕЛЬ · "+arenaTaskLabel,viewWidth*.07,viewHeight*.65,menuTextSize(.018,12,19),hero().color);
+  tx("ПРАВИЛО · "+arenaMission.arenaRule,viewWidth*.07,viewHeight*.71,menuTextSize(.016,11,17),"#8d999d");
+ }else{
+  tx("ТЕНДЕР НЕ ПРИНЯТ",viewWidth/2,viewHeight*.40,menuTextSize(.028,19,28),"#aeb6b8","center");
+  tx("Выбери контракт, чтобы открыть арену.",viewWidth/2,viewHeight*.47,menuTextSize(.018,12,18),"#68777f","center");
+ }
 }
 function drawFamily(){
  const h=hero();
@@ -1347,16 +1361,14 @@ function bindButtons(){
    if(a==="play"&&selected){beginSelected();render();}
    if(a==="exit")exitToPortal();
    if(a==="menu"){returnToMainMenu();}
-   if(a==="levels"){mode="arena";dialogueOpen=false;render();}
-   if(a==="cheat"){activateCheatAll();}
-   if(a==="level"){startMissionById(el.dataset.level||"");}
-   if(a==="advance"){advanceDialogue();render();}
+      if(a==="cheat"){activateCheatAll();}
+      if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="weaponMenu";render();}
    if(a==="weapon-menu"){mode="weaponMenu";render();}
    if(a==="tenders"){tenderPage=0;mode="tenders";render();}
    if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
    if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
-   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!(save.completedTenders||[]).includes(t.id)){save.activeTenderId=t.id;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaWave=0;arenaKills=0;arenaTaskSetup();mode="play";spawnFloor();storeSave();render();}}
+   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!(save.completedTenders||[]).includes(t.id)){save.activeTenderId=t.id;save.arenaMissionIndex=0;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaTaskSetup();mode="arena";storeSave();render();}}
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
@@ -1419,21 +1431,7 @@ function render(){
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="arena"){
-   ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
- }else if(mode==="levels"){
-   const cards=allMissions.map((m)=>{
-     const accent=m.hero==="shared"?"#f0eee7":heroes[m.hero].color;
-     const owner=m.hero==="shared"?"ОБЩАЯ МИССИЯ":heroes[m.hero].family.toUpperCase()+" · "+heroes[m.hero].name;
-     const done=save.completed.includes(m.id);
-     const floors=m.floors.map((f,n)=>'<span><b>'+String(n+1)+'</b> '+floorRu(f)+'</span>').join("");
-     return '<button class="mafia-level-card '+(done?"completed":"")+'" data-action="level" data-level="'+m.id+'" style="--level-accent:'+accent+'">'+
-       '<div class="mafia-level-head"><strong>'+String(m.number).padStart(2,"0")+'</strong><div><b>'+esc(m.ru)+'</b><small>'+esc(owner)+'</small></div><i>'+(done?"✓":"")+'</i></div>'+
-       '<div class="mafia-level-meta"><span>ЦЕЛЬ</span><b>'+esc(objectiveRu(m.objective))+'</b></div>'+
-       '<div class="mafia-level-floors">'+floors+'</div>'+
-       '<div class="mafia-level-footer"><span>НАГРАДА $'+m.reward+'</span><span>'+m.xp+' XP</span><span>3 ЭТАЖА</span></div>'+
-       '</button>';
-   }).join("");
-   ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
+   ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="advance">НАЧАТЬ МИССИЮ</button><button data-action="tenders">ТЕНДЕРЫ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
  }else if(mode==="play"){
    ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
