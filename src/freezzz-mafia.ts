@@ -1667,14 +1667,16 @@ function updateSiege(dt:number){
   }
 
   // 4. Все вражеские мобы уничтожены: штурм ближайшей живой башни.
-  let tower:SiegeTower|undefined;
+  let towerIndex=-1;
   let towerDist=Infinity;
-  for(const candidate of siegeTowers){
+  for(let ti=0;ti<siegeTowers.length;ti++){
+   const candidate=siegeTowers[ti];
    if(candidate.team===m.team||candidate.hp<=0)continue;
    const d2=(candidate.x-m.x)*(candidate.x-m.x)+(candidate.y-m.y)*(candidate.y-m.y);
-   if(d2<towerDist){tower=candidate;towerDist=d2;}
+   if(d2<towerDist){towerIndex=ti;towerDist=d2;}
   }
-  if(tower){
+  if(towerIndex>=0){
+   const tower=siegeTowers[towerIndex];
    m.targetX=tower.x;m.targetY=tower.y;m.animState="run";
    const d=Math.hypot(tower.x-m.x,tower.y-m.y);
    if(d>m.attackRange)siegeMoveTo(m,tower.x,tower.y,dt,18);
