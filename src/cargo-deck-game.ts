@@ -9,7 +9,11 @@ const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
 const cargoFloorImage=new Image();
 const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
 cargoFloorImage.src=cargoFloorUrl;
+const cargoContainerImage=new Image();
+const cargoContainerUrl=new URL("../cargo-container-hazard.svg",import.meta.url).href;
+cargoContainerImage.src=cargoContainerUrl;
 let cargoFloorPattern:CanvasPattern|null=null;
+let cargoContainerPattern:CanvasPattern|null=null;
 const PLAYER_SPAWN={x:500,y:2420} as const;
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
@@ -508,42 +512,29 @@ function drawPlayer(){
 function drawCargoContainer(o:HsObstacle,idx:number){
   const x=o.x,y=o.y,w=o.w,h=o.h;
   ctx!.save();
-  // Soft ground shadow.
-  ctx!.globalAlpha=.34;
-  ctx!.fillStyle="#000";
-  ctx!.fillRect(x+5,y+h+5,w-10,5);
-  ctx!.globalAlpha=1;
+  ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.fillRect(x+5,y+h+5,w-10,6);ctx!.globalAlpha=1;
 
-  // Layered cargo metal.
-  const g=ctx!.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,"#27383e");
-  g.addColorStop(.12,"#1d2a30");
-  g.addColorStop(.82,"#111b20");
-  g.addColorStop(1,"#0a1115");
-  ctx!.fillStyle=g;ctx!.fillRect(x,y,w,h);
-
-  ctx!.strokeStyle="#3b5960";ctx!.lineWidth=1;
-  ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
-
-  // Structural rails.
-  ctx!.strokeStyle="rgba(84,214,216,.22)";
-  ctx!.beginPath();
-  ctx!.moveTo(x+5,y+7);ctx!.lineTo(x+w-5,y+7);
-  ctx!.moveTo(x+5,y+h-6);ctx!.lineTo(x+w-5,y+h-6);
-  ctx!.stroke();
-
-  const sections=Math.max(2,Math.floor(w/58));
-  ctx!.strokeStyle="rgba(8,14,17,.72)";
-  for(let i=1;i<sections;i++){
-    const sx=x+(w/sections)*i;
-    ctx!.beginPath();ctx!.moveTo(sx,y+9);ctx!.lineTo(sx,y+h-9);ctx!.stroke();
+  if(!cargoContainerPattern&&cargoContainerImage.complete&&cargoContainerImage.naturalWidth){
+    cargoContainerPattern=ctx!.createPattern(cargoContainerImage,"repeat");
+  }
+  if(cargoContainerPattern){
+    ctx!.fillStyle=cargoContainerPattern;ctx!.fillRect(x,y,w,h);
+  }else{
+    const g=ctx!.createLinearGradient(x,y,x,y+h);
+    g.addColorStop(0,"#31383b");g.addColorStop(.5,"#171b1e");g.addColorStop(1,"#090c0e");
+    ctx!.fillStyle=g;ctx!.fillRect(x,y,w,h);
   }
 
-  // Small technical hatch / identification marks.
-  ctx!.fillStyle=idx%3===0?"rgba(84,214,216,.38)":"rgba(255,255,255,.13)";
-  ctx!.fillRect(x+10,y+12,Math.min(24,w-20),2);
-  ctx!.fillStyle="rgba(84,214,216,.12)";
-  ctx!.fillRect(x+10,y+h-14,Math.min(42,w-20),3);
+  // Dark cargo face and restrained cyan edge keep the hazard texture readable.
+  ctx!.fillStyle="rgba(5,8,10,.48)";ctx!.fillRect(x,y,w,h);
+  ctx!.strokeStyle="rgba(84,214,216,.34)";ctx!.lineWidth=1;
+  ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
+  ctx!.strokeStyle="rgba(0,0,0,.72)";
+  ctx!.beginPath();ctx!.moveTo(x+w*.5,y+3);ctx!.lineTo(x+w*.5,y+h-3);ctx!.stroke();
+
+  const sections=Math.max(2,Math.floor(w/58));
+  ctx!.strokeStyle="rgba(10,13,14,.55)";
+  for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;ctx!.beginPath();ctx!.moveTo(sx,y+5);ctx!.lineTo(sx,y+h-5);ctx!.stroke();}
   ctx!.restore();
 }
 
