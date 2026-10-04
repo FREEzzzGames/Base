@@ -6,6 +6,9 @@ interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;co
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
 const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
+const cargoFloorImage=new Image();
+cargoFloorImage.src="/cargo-deck-floor.svg";
+let cargoFloorPattern:CanvasPattern|null=null;
 const PLAYER_SPAWN={x:500,y:2420} as const;
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
@@ -552,8 +555,15 @@ function drawWorld(){
   ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
   ctx!.scale(worldZoom,worldZoom);
 
-  // Quiet industrial deck: large panels, almost invisible grid, localized light.
-  rect(0,0,W,H,"#070d11");
+  // Full-platform industrial floor texture, based on the supplied diamond-plate reference.
+  if(!cargoFloorPattern&&cargoFloorImage.complete&&cargoFloorImage.naturalWidth){
+    cargoFloorPattern=ctx!.createPattern(cargoFloorImage,"repeat");
+  }
+  if(cargoFloorPattern){
+    ctx!.save();ctx!.globalAlpha=.52;ctx!.fillStyle=cargoFloorPattern;ctx!.fillRect(0,0,W,H);ctx!.restore();
+  }else{
+    rect(0,0,W,H,"#070d11");
+  }
   for(let y=0;y<H;y+=240){
     ctx!.fillStyle="rgba(24,43,49,.22)";ctx!.fillRect(38,y,W-76,1);
     ctx!.fillStyle="rgba(0,0,0,.18)";ctx!.fillRect(38,y+1,W-76,54);
