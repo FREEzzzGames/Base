@@ -70,7 +70,7 @@ export const HS_WEAPONS:HsWeaponDef[]=[
 ];
 
 export function createCombatState(w:HsWeaponDef):HsCombatState {
-  return {ammo:w.magazine,reserve:w.reserve,reloadTimer:0,fireTimer:0,recoil:0,shotCounter:0,grenades:2,grenadeCooldown:0};
+  return {ammo:w.magazine,reserve:Number.POSITIVE_INFINITY,reloadTimer:0,fireTimer:0,recoil:0,shotCounter:0,grenades:2,grenadeCooldown:0};
 }
 export function startReload(s:HsCombatState,w:HsWeaponDef){
   if(s.reloadTimer<=0&&s.ammo<w.magazine&&s.reserve>0)s.reloadTimer=w.reloadTime;
