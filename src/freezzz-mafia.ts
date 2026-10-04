@@ -1226,7 +1226,7 @@ function drawWeaponMenu(){
  const margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);button(margin,top,W*.37,headerH,"ВЫБОР ОРУЖИЯ",true);button(W*.47,top,W*.25,headerH,"АРСЕНАЛ");button(W*.76,top,W*.17,headerH,"×");
  const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);glass(margin,searchY,W*.86,searchH);tx("⌕",margin+W*.035,searchY+searchH*.65,menuTextSize(.028,19,25),"#5b6d77","center");tx("Выберите оружие",margin+W*.095,searchY+searchH*.65,menuTextSize(.018,12,17),"#52636c","left");tx("6",W-margin-W*.035,searchY+searchH*.65,menuTextSize(.016,11,15),"#77858c","center");
  const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;button(W*.08,bottomY,W*.34,bottomH,"НАЗАД");button(W*.53,bottomY,W*.39,bottomH,"В БОЙ",true);
- const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;const gap=H*.010,cardH=Math.min(78,H*.090),left=margin,cardW=W-margin*2;
+ const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;const gap=H*.007,cardH=Math.min(64,H*.075),left=margin,cardW=W-margin*2;
  c.save();c.beginPath();c.rect(0,listTop,W,listBottom-listTop);c.clip();
  weapons.forEach((w,i)=>{const y=listTop+i*(cardH+gap),owned=save.weapon>=i,active=save.weapon===i;glass(left,y,cardW,cardH,active);c.save();c.globalAlpha=owned?1:.30;drawWeaponSprite(i,left+cardW*.25,y+cardH*.50,0,Math.min(.54,cardW/740));c.restore();tx(String(i+1).padStart(2,"0"),left+cardW*.43,y+cardH*.24,menuTextSize(.012,8,12),active?hero().color:"#68777f","left");tx(weaponRu(w.name),left+cardW*.43,y+cardH*.47,menuTextSize(.018,12,17),"#20323a","left");tx("УРОН "+w.damage+" · МАГ "+w.mag+" · "+Math.round(w.rate*60)+"/МИН",left+cardW*.43,y+cardH*.68,menuTextSize(.009,7,10),"#64737a","left");const bw=cardW*.27,bh=Math.min(21,cardH*.24),bx=left+cardW*.69,by=y+cardH*.64;button(bx,by,bw,bh,owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",active);});
  c.restore();
@@ -1256,7 +1256,7 @@ function handleKey(e:KeyboardEvent){
    if(e.key==="Enter"&&selected)beginSelected();
    return;
  }
- if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}
+ if(mode==="shop"){mode="weaponMenu";return;}
  if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
  if(mode==="weaponMenu"){
    if(e.key>="1"&&e.key<="9"){const n=Number(e.key)-1;if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
@@ -1290,7 +1290,7 @@ function bindButtons(){
      }
      const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);
      const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;
-     const gap=H*.010,cardH=Math.min(78,H*.090),left=margin,cardW=W-margin*2;
+     const gap=H*.007,cardH=Math.min(64,H*.075),left=margin,cardW=W-margin*2;
      if(x>=left&&x<=left+cardW&&y>=listTop&&y<listBottom){
        const n=Math.floor((y-listTop)/(cardH+gap));
        const inside=(y-listTop)-n*(cardH+gap);
@@ -1321,7 +1321,7 @@ function bindButtons(){
    if(a==="tenders"){tenderPage=0;mode="tenders";render();}
    if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
    if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
-   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!save.completed.includes(t.linkedMission)){save.activeTenderId=t.id;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0)missionIndex=mi;save.hero=selected;arenaWave=0;arenaKills=0;arenaTaskSetup();mode="play";spawnFloor();storeSave();render();}}
+   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!save.completed.includes(t.linkedMission)){save.activeTenderId=t.id;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaWave=0;arenaKills=0;arenaTaskSetup();mode="play";spawnFloor();storeSave();render();}}
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
@@ -1383,6 +1383,8 @@ function render(){
    ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button><button data-action="levels">АРЕНА</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
+ }else if(mode==="arena"){
+   ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
  }else if(mode==="levels"){
    const cards=allMissions.map((m)=>{
      const accent=m.hero==="shared"?"#f0eee7":heroes[m.hero].color;
@@ -1398,7 +1400,7 @@ function render(){
    }).join("");
    ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
