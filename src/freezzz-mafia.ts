@@ -868,7 +868,7 @@ function spawnSiegeWave(){
  ];
  formation.forEach((type,i)=>{
   const waveScale=siegeWave-1;
-  const hp=(type==="brawler"?105:type==="shooter"?78:64)+waveScale*7;
+  // TTK tuning: mobs must survive tower fire long enough to use cover and reposition.\n  const hp=(type==="brawler"?125:type==="shooter"?98:88)+waveScale*8;
   const damage=type==="brawler"?24:type==="shooter"?15:28;
   const speed=type==="brawler"?1.38:type==="shooter"?1.05:.78;
   const range=type==="brawler"?42:type==="shooter"?210:430;
@@ -879,7 +879,7 @@ function spawnSiegeWave(){
    const sx=s.x+spread,sy=s.y+dir*(i%3)*14;
    const target=team==="enemy"?enemyScatter[i]:playerScatter[i];
    const common={
-    lane:-1,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,
+    lane:i<2?0:i<4?1:2,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,
     targetX:target[0],targetY:target[1],strafe:i%2?1:-1,think:i*8,
     morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,
     burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,
@@ -1685,9 +1685,26 @@ function updateSiege(dt:number){
 
  for(const t of siegeTowers){
   if(t.hp<=0)continue;t.cool-=dt;if(t.cool>0)continue;
-  const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.hp>0).sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
-  if(hostile&&Math.hypot(hostile.x-t.x,hostile.y-t.y)<360){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
-  if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
+  // Башни распределяют огонь по своим линиям, чтобы не удалять одного моба мгновенным фокусом.
+  let hostile:SiegeMob|undefined;
+  let bestD=Infinity;
+  for(const m of siegeMobs){
+   if(m.team===t.team||m.hp<=0)continue;
+   const d=Math.hypot(m.x-t.x,m.y-t.y);
+   if(d>=360)continue;
+   const lanePenalty=m.lane===t.lane?0:120;
+   const score=d+lanePenalty;
+   if(score<bestD){bestD=score;hostile=m;}
+  }
+  if(hostile){
+   t.cool=54;
+   const towerDamage=t.team==="enemy"?6:7;
+   hostile.hp=Math.max(0,hostile.hp-towerDamage);
+   hostile.hitFlash=1;
+   hostile.animState="hit";
+   continue;
+  }
+  if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=60;hurt(7);}
  }
  const taskObjective=arenaMission?.objective||"clear";
  const surviveDone=(taskObjective==="survive"||taskObjective==="defend")&&arenaTaskTimer>=arenaTaskTarget*60;
