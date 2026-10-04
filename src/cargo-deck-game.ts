@@ -509,10 +509,54 @@ function drawPlayer(){
  bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
+function drawCargoLight(o:HsObstacle,idx:number){
+  const x=o.x,y=o.y,w=o.w,h=o.h;
+  const cx=x+w*.5;
+  const top=y-10;
+  const spread=Math.max(34,w*.42);
+  const bottom=y+h+Math.min(82,Math.max(42,h*.75));
+
+  ctx!.save();
+  ctx!.globalCompositeOperation="screen";
+  ctx!.beginPath();
+  ctx!.moveTo(cx-spread*.42,top);
+  ctx!.lineTo(cx+spread*.42,top);
+  ctx!.lineTo(cx+spread,bottom);
+  ctx!.lineTo(cx-spread,bottom);
+  ctx!.closePath();
+  const g=ctx!.createLinearGradient(cx,top,cx,bottom);
+  g.addColorStop(0,"rgba(255,205,108,.34)");
+  g.addColorStop(.18,"rgba(255,194,91,.25)");
+  g.addColorStop(.58,"rgba(255,170,64,.10)");
+  g.addColorStop(1,"rgba(255,150,45,0)");
+  ctx!.fillStyle=g;ctx!.fill();
+
+  // Concentrated warm pool directly under the invisible lamp.
+  const rg=ctx!.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);
+  rg.addColorStop(0,"rgba(255,220,145,.28)");
+  rg.addColorStop(.35,"rgba(255,186,82,.13)");
+  rg.addColorStop(1,"rgba(255,150,45,0)");
+  ctx!.fillStyle=rg;
+  ctx!.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);
+  ctx!.restore();
+}
+
 function drawCargoContainer(o:HsObstacle,idx:number){
   const x=o.x,y=o.y,w=o.w,h=o.h;
   ctx!.save();
-  ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.fillRect(x+5,y+h+5,w-10,6);ctx!.globalAlpha=1;
+
+  // Deep contact shadow and the broad shadow cast away from the overhead light.
+  ctx!.globalAlpha=.72;
+  ctx!.fillStyle="#000";
+  ctx!.filter="blur(5px)";
+  ctx!.beginPath();
+  ctx!.moveTo(x+4,y+h+4);ctx!.lineTo(x+w-4,y+h+4);
+  ctx!.lineTo(x+w+18,y+h+22);ctx!.lineTo(x-18,y+h+22);ctx!.closePath();ctx!.fill();
+  ctx!.filter="none";
+  ctx!.globalAlpha=.9;
+  ctx!.fillStyle="rgba(0,0,0,.9)";
+  ctx!.fillRect(x+6,y+h-1,w-12,7);
+  ctx!.globalAlpha=1;
 
   if(!cargoContainerPattern&&cargoContainerImage.complete&&cargoContainerImage.naturalWidth){
     cargoContainerPattern=ctx!.createPattern(cargoContainerImage,"repeat");
@@ -523,16 +567,27 @@ function drawCargoContainer(o:HsObstacle,idx:number){
     ctx!.fillStyle="#17191a";ctx!.fillRect(x,y,w,h);
   }
 
-  // Keep the reference hazard texture clearly visible; depth comes from the edge and seams.
-  ctx!.fillStyle="rgba(5,8,10,.14)";ctx!.fillRect(x,y,w,h);
-  ctx!.strokeStyle="rgba(84,214,216,.34)";ctx!.lineWidth=1;
+  // Reference-style top/side shading: warm on the upper face, dark on the lower edge.
+  const shade=ctx!.createLinearGradient(x,y,x,y+h);
+  shade.addColorStop(0,"rgba(255,215,130,.16)");
+  shade.addColorStop(.28,"rgba(255,185,80,.04)");
+  shade.addColorStop(.62,"rgba(0,0,0,.10)");
+  shade.addColorStop(1,"rgba(0,0,0,.48)");
+  ctx!.fillStyle=shade;ctx!.fillRect(x,y,w,h);
+
+  ctx!.strokeStyle="rgba(255,211,118,.28)";ctx!.lineWidth=1;
   ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
-  ctx!.strokeStyle="rgba(0,0,0,.72)";
+  ctx!.strokeStyle="rgba(84,214,216,.24)";
+  ctx!.strokeRect(x+2.5,y+2.5,w-5,h-5);
+  ctx!.strokeStyle="rgba(0,0,0,.78)";
   ctx!.beginPath();ctx!.moveTo(x+w*.5,y+3);ctx!.lineTo(x+w*.5,y+h-3);ctx!.stroke();
 
   const sections=Math.max(2,Math.floor(w/58));
-  ctx!.strokeStyle="rgba(10,13,14,.55)";
-  for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;ctx!.beginPath();ctx!.moveTo(sx,y+5);ctx!.lineTo(sx,y+h-5);ctx!.stroke();}
+  ctx!.strokeStyle="rgba(8,10,11,.62)";
+  for(let i=1;i<sections;i++){
+    const sx=x+(w/sections)*i;
+    ctx!.beginPath();ctx!.moveTo(sx,y+5);ctx!.lineTo(sx,y+h-5);ctx!.stroke();
+  }
   ctx!.restore();
 }
 
@@ -576,6 +631,15 @@ function drawWorld(){
     ctx!.fillStyle=i%5===0?"rgba(84,214,216,.18)":"rgba(130,155,162,.10)";
     ctx!.fillRect(x,y,1,1);
   }
+
+  // Reference lighting pass: the deck stays 60% darker, while invisible overhead lamps create warm triangular pools.
+  ctx!.save();
+  ctx!.fillStyle="rgba(0,0,0,.60)";
+  ctx!.fillRect(0,0,W,H);
+  ctx!.restore();
+
+  // Ambient overhead light cones are behind the containers, so the containers occlude them naturally.
+  for(let oi=0;oi<OBS.length;oi++)drawCargoLight(OBS[oi],oi);
 
   // Cargo cover.
   for(let oi=0;oi<OBS.length;oi++)drawCargoContainer(OBS[oi],oi);
