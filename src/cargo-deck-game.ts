@@ -5,7 +5,63 @@ interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;sp
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
-const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
+type ArenaId="cargo"|"school";
+interface ArenaConfig{
+  id:ArenaId;
+  name:string;
+  subtitle:string;
+  width:number;
+  height:number;
+  playerSpawn:{x:number;y:number};
+  enemyBaseY:number;
+  playerBaseY:number;
+  core:{x:number;y:number;hp:number};
+  obstacles:HsObstacle[];
+  routes:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>;
+}
+const ARENAS:Record<ArenaId,ArenaConfig>={
+  cargo:{
+    id:"cargo",name:"CARGO DECK",subtitle:"INDUSTRIAL FREIGHT PLATFORM",width:1000,height:2700,
+    playerSpawn:{x:500,y:2420},enemyBaseY:350,playerBaseY:2280,core:{x:500,y:250,hp:2600},
+    obstacles:[
+      {x:82,y:330,w:175,h:88},{x:743,y:330,w:175,h:88},{x:330,y:490,w:150,h:72},{x:550,y:490,w:150,h:72},
+      {x:72,y:720,w:150,h:74},{x:778,y:720,w:150,h:74},{x:292,y:875,w:142,h:72},{x:566,y:875,w:142,h:72},
+      {x:112,y:1110,w:182,h:88},{x:706,y:1110,w:182,h:88},{x:372,y:1280,w:96,h:68},{x:532,y:1280,w:96,h:68},
+      {x:86,y:1510,w:170,h:82},{x:744,y:1510,w:170,h:82},{x:310,y:1680,w:150,h:72},{x:540,y:1680,w:150,h:72},
+      {x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
+      {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}
+    ],
+    routes:[
+      [{x:300,y:450},{x:300,y:650},{x:270,y:845},{x:270,y:1045},{x:300,y:1240},{x:300,y:1450},{x:285,y:1645},{x:285,y:1865},{x:305,y:2080},{x:305,y:2200},{x:320,y:2250}],
+      [{x:500,y:450},{x:500,y:650},{x:500,y:845},{x:500,y:1045},{x:500,y:1240},{x:500,y:1450},{x:500,y:1645},{x:500,y:1865},{x:500,y:2080},{x:500,y:2200}],
+      [{x:700,y:450},{x:700,y:650},{x:730,y:845},{x:730,y:1045},{x:700,y:1240},{x:700,y:1450},{x:715,y:1645},{x:715,y:1865},{x:695,y:2080},{x:695,y:2200},{x:680,y:2250}]
+    ]
+  },
+  school:{
+    id:"school",name:"BLOCK 17",subtitle:"ABANDONED SOVIET SCHOOL · SPORTS WING",width:1000,height:1778,
+    playerSpawn:{x:500,y:1570},enemyBaseY:230,playerBaseY:1500,core:{x:500,y:108,hp:2600},
+    obstacles:[
+      {x:58,y:128,w:228,h:86},{x:716,y:128,w:226,h:86},
+      {x:646,y:238,w:105,h:58},{x:790,y:238,w:105,h:58},
+      {x:72,y:610,w:265,h:62},{x:88,y:704,w:218,h:70},
+      {x:690,y:602,w:210,h:66},{x:620,y:735,w:120,h:54},{x:792,y:740,w:118,h:54},
+      {x:80,y:1030,w:92,h:74},{x:238,y:1078,w:100,h:92},{x:78,y:1350,w:116,h:80},{x:250,y:1415,w:88,h:76},
+      {x:650,y:1088,w:120,h:70},{x:808,y:1150,w:112,h:82},{x:646,y:1305,w:94,h:78},{x:790,y:1395,w:126,h:76},
+      {x:412,y:1460,w:66,h:190},{x:522,y:1460,w:66,h:190}
+    ],
+    routes:[
+      [{x:360,y:300},{x:360,y:470},{x:360,y:650},{x:360,y:850},{x:360,y:1060},{x:360,y:1260},{x:360,y:1450},{x:400,y:1510}],
+      [{x:500,y:300},{x:500,y:470},{x:500,y:650},{x:500,y:850},{x:500,y:1060},{x:500,y:1260},{x:500,y:1450}],
+      [{x:640,y:300},{x:640,y:470},{x:640,y:650},{x:640,y:850},{x:640,y:1060},{x:640,y:1260},{x:640,y:1450},{x:600,y:1510}]
+    ]
+  }
+};
+let arenaId:ArenaId="cargo";
+let W=ARENAS.cargo.width,H=ARENAS.cargo.height;
+let PLAYER_SPAWN={...ARENAS.cargo.playerSpawn};
+let OBS:HsObstacle[]=ARENAS.cargo.obstacles.map(o=>({...o}));
+let LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=ARENAS.cargo.routes;
+const KEY="freezzz:cargo-deck:v2";
 const cargoFloorImage=new Image();
 const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
 cargoFloorImage.src=cargoFloorUrl;
@@ -18,51 +74,107 @@ let staticDeckCanvas:HTMLCanvasElement|null=null;
 let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
 function buildStaticDeck():void{
-  if(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth||!cargoContainerImage.complete||!cargoContainerImage.naturalWidth)return;
-  if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCanvas.width=W;staticDeckCanvas.height=H;staticDeckCtx=staticDeckCanvas.getContext("2d");}
+  if(arenaId==="cargo"&&(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth||!cargoContainerImage.complete||!cargoContainerImage.naturalWidth))return;
+  if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
+  staticDeckCanvas.width=W;staticDeckCanvas.height=H;
   const g=staticDeckCtx;if(!g)return;
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
-  const floor=g.createPattern(cargoFloorImage,"repeat");
-  if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
-  for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
-  for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
-  g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
-  g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
-  const cp=g.createPattern(cargoContainerImage,"repeat");
-  for(let oi=0;oi<OBS.length;oi++){
-    const o=OBS[oi],x=o.x,y=o.y,w=o.w,h=o.h,cx=x+w*.5,top=y-10,bottom=y+h+Math.min(82,Math.max(42,h*.75)),spread=Math.max(34,w*.42);
-    g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-spread*.42,top);g.lineTo(cx+spread*.42,top);g.lineTo(cx+spread,bottom);g.lineTo(cx-spread,bottom);g.closePath();
-    const cone=g.createLinearGradient(cx,top,cx,bottom);cone.addColorStop(0,"rgba(255,205,108,.34)");cone.addColorStop(.18,"rgba(255,194,91,.25)");cone.addColorStop(.58,"rgba(255,170,64,.10)");cone.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=cone;g.fill();
-    const pool=g.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);pool.addColorStop(0,"rgba(255,220,145,.28)");pool.addColorStop(.35,"rgba(255,186,82,.13)");pool.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=pool;g.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);g.restore();
-    g.save();g.globalAlpha=.78;g.fillStyle="#000";g.beginPath();g.moveTo(x+4,y+h+4);g.lineTo(x+w-4,y+h+4);g.lineTo(x+w+18,y+h+22);g.lineTo(x-18,y+h+22);g.closePath();g.fill();g.globalAlpha=.9;g.fillRect(x+6,y+h-1,w-12,7);g.restore();
-    g.fillStyle=cp||"#17191a";g.fillRect(x,y,w,h);
-    const shade=g.createLinearGradient(x,y,x,y+h);shade.addColorStop(0,"rgba(255,215,130,.16)");shade.addColorStop(.28,"rgba(255,185,80,.04)");shade.addColorStop(.62,"rgba(0,0,0,.10)");shade.addColorStop(1,"rgba(0,0,0,.48)");g.fillStyle=shade;g.fillRect(x,y,w,h);
-    g.strokeStyle="rgba(255,211,118,.28)";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);g.strokeStyle="rgba(84,214,216,.24)";g.strokeRect(x+2.5,y+2.5,w-5,h-5);g.strokeStyle="rgba(0,0,0,.78)";g.beginPath();g.moveTo(x+w*.5,y+3);g.lineTo(x+w*.5,y+h-3);g.stroke();
-    const sections=Math.max(2,Math.floor(w/58));g.strokeStyle="rgba(8,10,11,.62)";for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;g.beginPath();g.moveTo(sx,y+5);g.lineTo(sx,y+h-5);g.stroke()}
+
+  if(arenaId==="cargo"){
+    const floor=g.createPattern(cargoFloorImage,"repeat");
+    if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
+    for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
+    for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
+    g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
+    g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
+    const cp=g.createPattern(cargoContainerImage,"repeat");
+    for(let oi=0;oi<OBS.length;oi++){
+      const o=OBS[oi],x=o.x,y=o.y,w=o.w,h=o.h,cx=x+w*.5,top=y-10,bottom=y+h+Math.min(82,Math.max(42,h*.75)),spread=Math.max(34,w*.42);
+      g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-spread*.42,top);g.lineTo(cx+spread*.42,top);g.lineTo(cx+spread,bottom);g.lineTo(cx-spread,bottom);g.closePath();
+      const cone=g.createLinearGradient(cx,top,cx,bottom);cone.addColorStop(0,"rgba(255,205,108,.34)");cone.addColorStop(.18,"rgba(255,194,91,.25)");cone.addColorStop(.58,"rgba(255,170,64,.10)");cone.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=cone;g.fill();
+      const pool=g.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);pool.addColorStop(0,"rgba(255,220,145,.28)");pool.addColorStop(.35,"rgba(255,186,82,.13)");pool.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=pool;g.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);g.restore();
+      g.save();g.globalAlpha=.78;g.fillStyle="#000";g.beginPath();g.moveTo(x+4,y+h+4);g.lineTo(x+w-4,y+h+4);g.lineTo(x+w+18,y+h+22);g.lineTo(x-18,y+h+22);g.closePath();g.fill();g.globalAlpha=.9;g.fillRect(x+6,y+h-1,w-12,7);g.restore();
+      g.fillStyle=cp||"#17191a";g.fillRect(x,y,w,h);
+      const shade=g.createLinearGradient(x,y,x,y+h);shade.addColorStop(0,"rgba(255,215,130,.16)");shade.addColorStop(.28,"rgba(255,185,80,.04)");shade.addColorStop(.62,"rgba(0,0,0,.10)");shade.addColorStop(1,"rgba(0,0,0,.48)");g.fillStyle=shade;g.fillRect(x,y,w,h);
+      g.strokeStyle="rgba(255,211,118,.28)";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);g.strokeStyle="rgba(84,214,216,.24)";g.strokeRect(x+2.5,y+2.5,w-5,h-5);g.strokeStyle="rgba(0,0,0,.78)";g.beginPath();g.moveTo(x+w*.5,y+3);g.lineTo(x+w*.5,y+h-3);g.stroke();
+      const sections=Math.max(2,Math.floor(w/58));g.strokeStyle="rgba(8,10,11,.62)";for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;g.beginPath();g.moveTo(sx,y+5);g.lineTo(sx,y+h-5);g.stroke()}
+    }
+  }else{
+    // BLOCK 17: top-down abandoned Soviet school / sports wing.
+    g.fillStyle="#3a3a36";g.fillRect(0,0,W,H);
+    const concrete=g.createLinearGradient(0,0,W,H);concrete.addColorStop(0,"#4a4a43");concrete.addColorStop(.48,"#343633");concrete.addColorStop(1,"#292b29");g.fillStyle=concrete;g.fillRect(0,0,W,H);
+
+    const room=(x:number,y:number,w:number,h:number,fill:string)=>{
+      g.fillStyle=fill;g.fillRect(x,y,w,h);g.strokeStyle="#161816";g.lineWidth=18;g.strokeRect(x+9,y+9,w-18,h-18);
+      g.strokeStyle="rgba(206,204,184,.16)";g.lineWidth=2;g.strokeRect(x+18,y+18,w-36,h-36);
+    };
+    room(34,34,566,520,"#806e52"); // basketball court
+    room(610,34,356,430,"#51524d"); // meeting room
+    room(34,584,354,374,"#69665a"); // lit classroom
+    room(612,530,354,410,"#292c2b"); // dark classroom
+    room(34,1000,354,610,"#252827"); // ritual/utility room
+    room(612,980,354,700,"#565044"); // warm storage
+
+    // Basketball court, bleachers and windows — matching the reference composition.
+    g.fillStyle="#9a815d";g.fillRect(52,52,530,484);
+    g.strokeStyle="rgba(238,231,204,.68)";g.lineWidth=3;
+    g.strokeRect(78,78,478,432);g.beginPath();g.moveTo(317,78);g.lineTo(317,510);g.stroke();
+    g.beginPath();g.arc(317,294,48,0,Math.PI*2);g.stroke();
+    g.strokeRect(78,184,125,220);g.strokeRect(431,184,125,220);
+    g.beginPath();g.arc(203,294,62,-Math.PI/2,Math.PI/2);g.stroke();g.beginPath();g.arc(431,294,62,Math.PI/2,Math.PI*1.5);g.stroke();
+    for(let i=0;i<3;i++){const yy=96+i*34;g.fillStyle="rgba(54,39,28,.88)";g.fillRect(74,yy,175,22);g.fillRect(385,yy,175,22);g.strokeStyle="rgba(15,15,13,.55)";g.strokeRect(74,yy,175,22);g.strokeRect(385,yy,175,22)}
+    for(let i=0;i<5;i++){g.fillStyle="rgba(246,239,203,.70)";g.fillRect(70+i*100,42,78,30);g.strokeStyle="rgba(34,34,30,.72)";g.strokeRect(70+i*100,42,78,30)}
+    g.fillStyle="rgba(255,224,139,.16)";g.fillRect(48,48,540,490);
+
+    // Upper-right meeting room: two long tables and chairs.
+    const table=(x:number,y:number,w:number,h:number)=>{
+      g.fillStyle="#807c6b";g.fillRect(x,y,w,h);g.strokeStyle="#1e211f";g.lineWidth=6;g.strokeRect(x,y,w,h);
+      g.fillStyle="#b7a986";g.fillRect(x-18,y+16,14,h-32);g.fillRect(x+w+4,y+16,14,h-32);
+      for(let yy=y+30;yy<y+h-10;yy+=46){g.fillStyle="#716b5a";g.fillRect(x-24,yy,18,28);g.fillRect(x+w+6,yy,18,28)}
+    };
+    table(676,112,82,210);table(812,112,82,210);
+    g.fillStyle="rgba(255,214,117,.22)";g.fillRect(624,62,300,60);
+
+    // Left classroom, shelves and warm windows.
+    for(let i=0;i<4;i++){g.fillStyle="#6d523c";g.fillRect(70+i*76,664,54,76);g.strokeStyle="#25251f";g.strokeRect(70+i*76,664,54,76)}
+    g.fillStyle="#e4c06c";g.fillRect(52,620,18,250);g.fillStyle="rgba(255,220,130,.18)";g.fillRect(54,618,170,260);
+    for(let i=0;i<4;i++){g.fillStyle="#705c45";g.fillRect(92+i*55,820,42,36)}
+
+    // Right classroom shelves / desks.
+    for(let i=0;i<5;i++){g.fillStyle="#5b5143";g.fillRect(632,570+i*60,70,42);g.strokeStyle="#1c1e1c";g.strokeRect(632,570+i*60,70,42)}
+    g.fillStyle="#625b4c";g.fillRect(774,610,108,82);g.strokeStyle="#181a18";g.strokeRect(774,610,108,82);
+    g.fillStyle="#4e4a41";g.fillRect(728,760,120,62);
+
+    // Central corridor and lower stairwell.
+    g.fillStyle="#474844";g.fillRect(388,530,224,1170);
+    g.strokeStyle="#1a1c1b";g.lineWidth=16;g.strokeRect(396,538,208,1154);
+    g.fillStyle="#242625";g.fillRect(430,1288,140,330);
+    for(let y=1300;y<1610;y+=30){g.strokeStyle="#8d8b7c";g.lineWidth=3;g.beginPath();g.moveTo(438,y);g.lineTo(562,y);g.stroke()}
+
+    // Lower-left ritual/utility room.
+    g.strokeStyle="rgba(232,224,196,.72)";g.lineWidth=5;g.beginPath();g.arc(206,1280,92,0,Math.PI*2);g.stroke();
+    g.beginPath();g.arc(206,1280,62,0,Math.PI*2);g.stroke();
+    for(let i=0;i<5;i++){const a=i*Math.PI*2/5-Math.PI/2;g.beginPath();g.moveTo(206+Math.cos(a)*62,1280+Math.sin(a)*62);g.lineTo(206+Math.cos(a+1.25)*62,1280+Math.sin(a+1.25)*62);g.stroke()}
+    g.fillStyle="rgba(255,244,205,.08)";g.fillRect(56,1060,300,460);
+
+    // Lower-right storage, crates and warm window/light.
+    for(let i=0;i<3;i++){for(let j=0;j<3;j++){const x=660+i*82,y=1100+j*104;g.fillStyle="#6a5b47";g.fillRect(x,y,58,68);g.strokeStyle="#282720";g.strokeRect(x,y,58,68);}}
+    g.fillStyle="#f1c84f";g.fillRect(692,1560,92,74);g.fillRect(812,1560,42,74);
+    const glow=g.createRadialGradient(760,1570,4,760,1570,240);glow.addColorStop(0,"rgba(255,222,105,.36)");glow.addColorStop(1,"rgba(255,190,55,0)");g.fillStyle=glow;g.fillRect(560,1320,400,400);
+
+    // Reference-style overhead light cones; no visible lamps.
+    const lights=[[110,610,360,860],[760,520,970,820],[690,1010,940,1260],[160,1000,350,1250],[500,400,720,650]];
+    for(const [cx,top,bx,by] of lights){g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-24,top);g.lineTo(cx+24,top);g.lineTo(bx,by);g.lineTo(cx-120,by);g.closePath();const lg=g.createLinearGradient(cx,top,cx,by);lg.addColorStop(0,"rgba(255,225,145,.28)");lg.addColorStop(.4,"rgba(255,202,105,.13)");lg.addColorStop(1,"rgba(255,180,70,0)");g.fillStyle=lg;g.fill();g.restore()}
+
+    // Cracks, debris and grime: deterministic, cheap, static.
+    g.strokeStyle="rgba(15,16,15,.55)";g.lineWidth=2;
+    for(let i=0;i<28;i++){const x=40+(i*137)%900,y=520+(i*83)%(H-560);g.beginPath();g.moveTo(x,y);g.lineTo(x+18+((i*17)%34),y+12+((i*11)%30));g.lineTo(x+6,y+34+((i*7)%26));g.stroke()}
+    for(let i=0;i<42;i++){const x=20+(i*97)%950,y=70+(i*149)%(H-120);g.fillStyle=i%3===0?"rgba(24,25,23,.55)":"rgba(130,123,106,.28)";g.fillRect(x,y,3+(i%5)*2,3+(i%4)*2)}
+    g.fillStyle="rgba(0,0,0,.20)";g.fillRect(0,0,W,H);
   }
   staticDeckReady=true;
-}
-cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
+}cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
 cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
-const PLAYER_SPAWN={x:500,y:2420} as const;
-const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
-ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
-VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
-RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
-const OBS:HsObstacle[]=[
-{x:82,y:330,w:175,h:88},{x:743,y:330,w:175,h:88},{x:330,y:490,w:150,h:72},{x:550,y:490,w:150,h:72},
-{x:72,y:720,w:150,h:74},{x:778,y:720,w:150,h:74},{x:292,y:875,w:142,h:72},{x:566,y:875,w:142,h:72},
-{x:112,y:1110,w:182,h:88},{x:706,y:1110,w:182,h:88},{x:372,y:1280,w:96,h:68},{x:532,y:1280,w:96,h:68},
-{x:86,y:1510,w:170,h:82},{x:744,y:1510,w:170,h:82},{x:310,y:1680,w:150,h:72},{x:540,y:1680,w:150,h:72},
-{x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
-{x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
-const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
-  // Deterministic corridors with 18px collision radius clearance.
-  // Lanes shift only where a container row blocks the nominal x position.
-  [{x:300,y:450},{x:300,y:650},{x:270,y:845},{x:270,y:1045},{x:300,y:1240},{x:300,y:1450},{x:285,y:1645},{x:285,y:1865},{x:305,y:2080},{x:305,y:2200},{x:320,y:2250}],
-  [{x:500,y:450},{x:500,y:650},{x:500,y:845},{x:500,y:1045},{x:500,y:1240},{x:500,y:1450},{x:500,y:1645},{x:500,y:1865},{x:500,y:2080},{x:500,y:2200}],
-  [{x:700,y:450},{x:700,y:650},{x:730,y:845},{x:730,y:1045},{x:700,y:1240},{x:700,y:1450},{x:715,y:1645},{x:715,y:1865},{x:695,y:2080},{x:695,y:2200},{x:680,y:2250}]
-];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
@@ -81,7 +193,7 @@ function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=a+Math.random()*(b-a);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,a+60]as const}
 function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
-function init(){mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:500,y:250,hp:2600,maxHp:2600};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:350,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:2280,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
+function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x:x*2/2,y:A.enemyBaseY,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x:x*2/2,y:A.playerBaseY,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
   wave++;
@@ -95,7 +207,7 @@ function spawnWave(){
   const total=Math.min(12,5+Math.floor(wave*.7));
   const b=Math.max(2,Math.round(total*.42));
   const s=Math.max(1,Math.round(total*.34));
-  const lanes=[300,500,700];
+  const lanes=LANE_ROUTES.map(r=>r[0]?.x||500);
 
   for(let i=0;i<total;i++){
     const type:MobType=i<b?"brawler":i<b+s?"shooter":"sniper";
@@ -115,7 +227,7 @@ function spawnWave(){
     }
     if(!found){
       // Deterministic safe fallbacks for the three lanes.
-      const fallback=[[300,408],[500,408],[700,408]] as const;
+      const fallback=lanes.map(x=>[x,ARENAS[arenaId].enemyBaseY+58] as const);
       const q=fallback[lane];
       sx=q[0];sy=q[1];
     }
@@ -487,8 +599,52 @@ function updateNodes(dt:number){
 }function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
 function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}function sy(y:number){return y-cam}
-function drawLoadout(){rect(0,0,viewW,viewH,"#070b0e");txt("FREEzzyPortal",viewW/2,48,24,"#f0eee7","center");txt("CARGO DECK",viewW/2,82,13,"#54d6d8","center");(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{const y=135+i*145,l=LOAD[id],a=id===sel;rect(26,y,viewW-52,116,"#11191d");ctx!.strokeStyle=a?l.color:"#3b474b";ctx!.lineWidth=a?2:1;ctx!.strokeRect(26,y,viewW-52,116);ctx!.fillStyle=l.color;ctx!.shadowColor=l.color;ctx!.shadowBlur=15;ctx!.beginPath();ctx!.ellipse(72,y+56,22,34,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;txt(l.name,110,y+25,18,l.color);txt(l.ability,110,y+51,11,"#f0eee7");txt("HP "+l.hp+" · ARMOR "+l.armor+" · SPEED "+l.speed.toFixed(2),110,y+75,10,"#8e9b9f");txt(a?"SELECTED":"TAP TO SELECT",viewW-38,y+96,9,a?l.color:"#7b888c","right")});txt("OPEN WEAPONS "+save.inventory.length+"/"+HS_WEAPONS.length,viewW/2,595,11,"#aeb8ba","center");txt("BEST WAVE "+save.bestWave+" · BEST KILLS "+save.bestKills,viewW/2,620,10,"#66757a","center")}
-function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,22,"#f0eee7","center");txt("РУЧНОЙ ВЫБОР · PICKUP НЕ ПЕРЕКЛЮЧАЕТ ОРУЖИЕ",viewW/2,60,8,"#66757a","center");const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length));save.inventory.forEach((id,i)=>{const y=78+i*(h+5),w=HS_WEAPONS[id],a=id===player.weapon;rect(24,y,viewW-48,h,"#11191d");ctx!.strokeStyle=a?L().color:"#344146";ctx!.strokeRect(24,y,viewW-48,h);txt(String(i+1).padStart(2,"0"),38,y+h*.3,9,"#66757a");txt(w.name,72,y+h*.3,14,a?L().color:"#f0eee7");txt("DMG "+w.damage+" · MAG "+w.magazine+" · "+Math.round(3600/w.fireInterval)+" RPM",72,y+h*.65,9,"#8e9b9f")});txt("TAP CARD / NUMBER KEY",viewW/2,viewH-25,10,"#aeb8ba","center")}
+function drawLoadout(){
+  rect(0,0,viewW,viewH,"#070b0e");
+  txt("FREEzzyPortal",viewW/2,34,21,"#f0eee7","center");
+  txt("SELECT ARENA",viewW/2,62,10,"#54d6d8","center");
+
+  const cards=[
+    {id:"cargo" as ArenaId,x:18,y:86,w:viewW/2-27,h:260,color:"#54d6d8"},
+    {id:"school" as ArenaId,x:viewW/2+9,y:86,w:viewW/2-27,h:260,color:"#d8b56a"}
+  ];
+  for(const c of cards){
+    const A=ARENAS[c.id],selected=arenaId===c.id;
+    rect(c.x,c.y,c.w,c.h,"#11171a");
+    ctx!.strokeStyle=selected?c.color:"#394449";ctx!.lineWidth=selected?2:1;ctx!.strokeRect(c.x+.5,c.y+.5,c.w-1,c.h-1);
+    // Compact top-down preview. The school preview follows the uploaded reference layout.
+    ctx!.save();ctx!.translate(c.x+8,c.y+28);ctx!.scale((c.w-16)/1000,(c.h-62)/A.height);
+    if(c.id==="cargo"){
+      ctx!.fillStyle="#182126";ctx!.fillRect(0,0,1000,A.height);
+      for(const o of ARENAS.cargo.obstacles){ctx!.fillStyle="#4b5456";ctx!.fillRect(o.x,o.y,o.w,o.h)}
+      ctx!.fillStyle="rgba(255,190,75,.20)";for(const o of ARENAS.cargo.obstacles){ctx!.fillRect(o.x-10,o.y+o.h,o.w+20,Math.min(100,o.h))}
+    }else{
+      ctx!.fillStyle="#454640";ctx!.fillRect(0,0,1000,A.height);
+      ctx!.fillStyle="#8d7455";ctx!.fillRect(34,34,566,520);
+      ctx!.fillStyle="#5a5b55";ctx!.fillRect(610,34,356,430);
+      ctx!.fillStyle="#66645a";ctx!.fillRect(34,584,354,374);
+      ctx!.fillStyle="#292c2b";ctx!.fillRect(612,530,354,410);
+      ctx!.fillStyle="#252827";ctx!.fillRect(34,1000,354,610);
+      ctx!.fillStyle="#5c5548";ctx!.fillRect(612,980,354,700);
+      ctx!.fillStyle="#474844";ctx!.fillRect(388,530,224,1170);
+      ctx!.strokeStyle="rgba(240,230,205,.72)";ctx!.lineWidth=6;ctx!.strokeRect(78,78,478,432);ctx!.beginPath();ctx!.moveTo(317,78);ctx!.lineTo(317,510);ctx!.stroke();ctx!.arc(317,294,48,0,Math.PI*2);ctx!.stroke();
+      ctx!.fillStyle="#6e5944";for(let i=0;i<6;i++)ctx!.fillRect(70+i*82,100,64,22);
+      ctx!.strokeStyle="rgba(240,230,205,.48)";ctx!.lineWidth=5;ctx!.beginPath();ctx!.arc(206,1280,92,0,Math.PI*2);ctx!.stroke();
+      ctx!.fillStyle="#f1c84f";ctx!.fillRect(692,1560,92,74);ctx!.fillRect(812,1560,42,74);
+    }
+    ctx!.restore();
+    txt(A.name,c.x+10,c.y+16,11,c.color);
+    txt(A.subtitle,c.x+c.w-10,c.y+16,6,"#7f8a8d","right");
+  }
+
+  txt("OPERATOR",viewW/2,374,9,"#7f8a8d","center");
+  (["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{
+    const l=LOAD[id],x=18+i*((viewW-36)/3),w=(viewW-48)/3,a=id===sel;
+    rect(x,390,w,86,a?"#182328":"#11191d");ctx!.strokeStyle=a?l.color:"#354147";ctx!.strokeRect(x+.5,390+.5,w-1,85);
+    txt(l.name,x+w/2,408,10,l.color,"center");txt(l.ability,x+w/2,430,8,"#f0eee7","center");txt("HP "+l.hp+" · AR "+l.armor,x+w/2,450,7,"#7e898d","center");txt(a?"SELECTED":"TAP",x+w/2,466,6,a?l.color:"#66757a","center");
+  });
+  txt("TAP AN ARENA TO DEPLOY · NO PLAY BUTTON",viewW/2,viewH-28,8,"#8a9699","center");
+}function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,22,"#f0eee7","center");txt("РУЧНОЙ ВЫБОР · PICKUP НЕ ПЕРЕКЛЮЧАЕТ ОРУЖИЕ",viewW/2,60,8,"#66757a","center");const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length));save.inventory.forEach((id,i)=>{const y=78+i*(h+5),w=HS_WEAPONS[id],a=id===player.weapon;rect(24,y,viewW-48,h,"#11191d");ctx!.strokeStyle=a?L().color:"#344146";ctx!.strokeRect(24,y,viewW-48,h);txt(String(i+1).padStart(2,"0"),38,y+h*.3,9,"#66757a");txt(w.name,72,y+h*.3,14,a?L().color:"#f0eee7");txt("DMG "+w.damage+" · MAG "+w.magazine+" · "+Math.round(3600/w.fireInterval)+" RPM",72,y+h*.65,9,"#8e9b9f")});txt("TAP CARD / NUMBER KEY",viewW/2,viewH-25,10,"#aeb8ba","center")}
 function drawResult(){rect(0,0,viewW,viewH,"#05090b");const c=won?"#54d6d8":"#ff557d";txt("CARGO DECK",viewW/2,90,24,c,"center");txt(won?"CARGO DECK SECURED":(resultReason||"MISSION FAILED"),viewW/2,135,17,"#f0eee7","center");txt("WAVE "+String(wave).padStart(2,"0"),viewW/2,205,15,c,"center");txt("ENEMIES DESTROYED · "+kills,viewW/2,245,12,"#aeb8ba","center");txt("SURVIVAL TIME · "+fmt(time),viewW/2,278,12,"#aeb8ba","center");txt("CORE INTEGRITY · "+Math.round(core.hp/core.maxHp*100)+"%",viewW/2,311,12,"#aeb8ba","center");txt(won?"ARENA SECURED":"RETRY AVAILABLE",viewW/2,390,12,c,"center")}
 function fmt(s:number){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
 function drawPlayer(){
@@ -696,7 +852,7 @@ function renderUI(){
       '<button class="cargo-grenade" data-cargo="grenade" aria-label="Граната">G</button>'+
       '<button class="cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Спецвозможность">✦</button>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
-  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';
+  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
   else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
   else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
   bindUI()
@@ -704,6 +860,7 @@ function renderUI(){
 function render(){obsGradients=null;if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
 function bindUI(){
+  ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school")return;arenaId=id;save.loadout=sel;persist();start()});
   ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});
   ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{
     const a=b.dataset.cargo;
