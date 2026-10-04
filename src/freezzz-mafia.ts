@@ -19,7 +19,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
 interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
 interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
-interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number;anim:number;animState:"idle"|"run"|"strafe"|"attack"|"hit"|"retreat"|"death";animSpeed:number;hitFlash:number;attackFx:number;stepFx:number;path:Array<[number,number]>;pathIndex:number;pathTimer:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number;anim:number;animState:"idle"|"run"|"strafe"|"attack"|"hit"|"retreat"|"death";animSpeed:number;hitFlash:number;attackFx:number;stepFx:number;path:Array<[number,number]>;pathIndex:number;pathTimer:number;spawnGrace:number;scatterX:number;scatterY:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -783,24 +783,44 @@ function initSiege(){
 function spawnSiegeWave(){
  if(siegeOver)return;
  siegeWave++;siegeWaveTimer=0;
- const lanes=[250,500,750];
- const formation:("brawler"|"shooter"|"sniper")[]=["brawler","brawler","brawler","shooter","shooter","sniper"];
- for(let lane=0;lane<3;lane++){
-  formation.forEach((type,i)=>{
-   const waveScale=siegeWave-1;
-   const hp=(type==="brawler"?105:type==="shooter"?78:64)+waveScale*7;
-   const damage=type==="brawler"?24:type==="shooter"?15:28;
-   const speed=type==="brawler"?1.38:type==="shooter"?1.05:.78;
-   const range=type==="brawler"?42:type==="shooter"?210:430;
-   const x=lanes[lane]+(i%3-1)*22;
-   const enemyY=250+i*30,playerY=ARENA_H-250-i*30;
-   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8,morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,animSpeed:.08,hitFlash:0,attackFx:0,stepFx:Math.random()*6.28,path:[],pathIndex:0,pathTimer:0};
-   siegeMobs.push({x,y:enemyY,team:"enemy",...common});
-   siegeMobs.push({x,y:playerY,team:"player",...common});
-  });
- }
-}
-function drawSiegeStructures(){
+
+ // Один спавн на команду. Линий спавна больше нет.
+ // Все бойцы появляются у центра своей базы, после чего расходятся по карте.
+ const formation:("brawler"|"brawler"|"brawler"|"shooter"|"shooter"|"sniper")[]=[
+  "brawler","brawler","brawler","shooter","shooter","sniper"
+ ];
+ const spawnPoints={
+  enemy:{x:500,y:205},
+  player:{x:500,y:ARENA_H-205}
+ };
+ const scatter=[
+  [150,560],[350,760],[500,930],[650,760],[850,560],[500,1120]
+ ];
+ formation.forEach((type,i)=>{
+  const waveScale=siegeWave-1;
+  const hp=(type==="brawler"?105:type==="shooter"?78:64)+waveScale*7;
+  const damage=type==="brawler"?24:type==="shooter"?15:28;
+  const speed=type==="brawler"?1.38:type==="shooter"?1.05:.78;
+  const range=type==="brawler"?42:type==="shooter"?210:430;
+  for(const team of ["enemy","player"] as const){
+   const s=spawnPoints[team];
+   const dir=team==="enemy"?1:-1;
+   const spread=(i-2.5)*13;
+   const sx=s.x+spread,sy=s.y+dir*(i%3)*14;
+   const target=scatter[i];
+   const common={
+    lane:-1,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,
+    targetX:target[0],targetY:target[1],strafe:i%2?1:-1,think:i*8,
+    morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,
+    burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,
+    animSpeed:.08,hitFlash:0,attackFx:0,stepFx:Math.random()*6.28,
+    path:[],pathIndex:0,pathTimer:0,spawnGrace:150,scatterX:target[0],
+    scatterY:team==="enemy"?target[1]:ARENA_H-target[1]
+   };
+   siegeMobs.push({x:sx,y:sy,team,...common});
+  }
+ });
+}function drawSiegeStructures(){
  siegeTowers.forEach(t=>{
   const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#d85b52";
   rect(t.x-34,t.y-20,68,40,"rgba(0,0,0,.32)");
@@ -1291,7 +1311,7 @@ function updateSiege(dt:number){
  for(let i=siegeMobs.length-1;i>=0;i--){
   const m=siegeMobs[i];
   if(m.hp<=0){siegeMobs.splice(i,1);continue;}
-  m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.pathTimer-=dt;
+  m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.pathTimer-=dt;m.spawnGrace=Math.max(0,m.spawnGrace-dt);
   m.hitFlash=Math.max(0,m.hitFlash-dt*.09);m.attackFx=Math.max(0,m.attackFx-dt*.09);m.anim+=dt*m.animSpeed;
   const hpRatio=m.hp/m.maxHp;
   const nearbyAllies=liveMobs.filter(a=>a!==m&&a.team===m.team&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
@@ -1325,8 +1345,17 @@ function updateSiege(dt:number){
    continue;
   }
 
-  // 2. Ближайший видимый враг — преследуем независимо от линии.
+  // После единственного спавна бойцы сначала расходятся веером.
+  // Если противник уже обнаружен, боевой приоритет немедленно отменяет рассредоточение.
   const visible=siegeNearest(m,()=>true,true);
+  if(!attackTarget&&!visible&&m.spawnGrace>0){
+   m.targetX=m.scatterX;m.targetY=m.scatterY;m.animState="run";
+   siegeMoveTo(m,m.scatterX,m.scatterY,dt,18);
+   continue;
+  }
+
+  // 2. Ближайший видимый враг — преследуем независимо от линии.
+
   if(visible){
    m.targetX=visible.x;m.targetY=visible.y;
    const d=Math.hypot(visible.x-m.x,visible.y-m.y);
