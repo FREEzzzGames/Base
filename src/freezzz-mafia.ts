@@ -333,12 +333,19 @@ function topDownMap(){
 }
 function topDownExit(){return mode==="play"&&arenaMission?[ARENA_W/2,90]:[1365,455];}
 const ARENA_W=1000,ARENA_H=1500;
-function arenaObstacles(){return [
- {x:70,y:220,w:250,h:70},{x:680,y:220,w:250,h:70},
- {x:70,y:470,w:170,h:170},{x:380,y:410,w:240,h:80},{x:760,y:470,w:170,h:170},
- {x:120,y:790,w:260,h:75},{x:620,y:790,w:260,h:75},
- {x:310,y:1050,w:380,h:85},{x:55,y:1210,w:180,h:90},{x:765,y:1210,w:180,h:90}
-];}
+const ARENA_CARGO:{x:number;y:number;w:number;h:number}[]=[
+ {x:112,y:390,w:170,h:86},{x:720,y:390,w:170,h:86},
+ {x:110,y:790,w:150,h:74},{x:740,y:790,w:150,h:74},
+ {x:120,y:1210,w:180,h:88},{x:700,y:1210,w:180,h:88},
+ {x:105,y:1680,w:165,h:82},{x:730,y:1680,w:165,h:82},
+ {x:120,y:2100,w:170,h:86},{x:710,y:2100,w:170,h:86}
+];
+function arenaObstacles(){
+ const out=ARENA_CARGO.map(o=>({...o}));
+ for(const t of siegeTowers)if(t.hp>0)out.push({x:t.x-34,y:t.y-48,w:68,h:62});
+ for(const b of siegeBases)if(b.hp>0)out.push({x:b.x-108,y:b.y-48,w:216,h:92});
+ return out;
+}
 function topDownObstacles(){
  const m=topDownMap(),out:{x:number;y:number;w:number;h:number}[]=[];
  for(const b of m.buildings)out.push({x:b.x,y:b.y,w:b.w,h:b.h});
@@ -350,10 +357,30 @@ function circleRectHit(x:number,y:number,r:number,o:{x:number;y:number;w:number;
 }
 function moveTopDown(x:number,y:number,dx:number,dy:number,r:number){
  const arena=mode==="play"&&!!arenaMission;
- const W=arena?ARENA_W:topDownMap().w,H=arena?ARENA_H:topDownMap().h,obs=arena?arenaObstacles():topDownObstacles();
- let nx=clamp(x+dx,r,W-r),ny=clamp(y+dy,r,H-r);
- if(!obs.some(o=>circleRectHit(nx,y,r,o)))x=nx;
- if(!obs.some(o=>circleRectHit(x,ny,r,o)))y=ny;
+ const minY=arena?180:r,maxY=arena?2520-r:(arena?ARENA_H-r:topDownMap().h-r);
+ const W=arena?ARENA_W:topDownMap().w;
+ const obs=arena?arenaObstacles():topDownObstacles();
+ const maxMove=Math.max(Math.abs(dx),Math.abs(dy));
+ const steps=Math.max(1,Math.ceil(maxMove/4));
+ const sx=dx/steps,sy=dy/steps;
+ for(let i=0;i<steps;i++){
+  // X sweep: find the furthest safe point before contact.
+  const tx=clamp(x+sx,r,W-r);
+  if(!obs.some(o=>circleRectHit(tx,y,r,o)))x=tx;
+  else{
+   let lo=0,hi=1;
+   for(let k=0;k<7;k++){const mid=(lo+hi)*.5;if(!obs.some(o=>circleRectHit(clamp(x+sx*mid,r,W-r),y,r,o)))lo=mid;else hi=mid;}
+   x=clamp(x+sx*lo,r,W-r);
+  }
+  // Y sweep uses the updated X, producing natural wall sliding at corners.
+  const ty=clamp(y+sy,minY,maxY);
+  if(!obs.some(o=>circleRectHit(x,ty,r,o)))y=ty;
+  else{
+   let lo=0,hi=1;
+   for(let k=0;k<7;k++){const mid=(lo+hi)*.5;if(!obs.some(o=>circleRectHit(x,clamp(y+sy*mid,minY,maxY),r,o)))lo=mid;else hi=mid;}
+   y=clamp(y+sy*lo,minY,maxY);
+  }
+ }
  return [x,y];
 }
 function drawFacadeWindow(x:number,y:number,w:number,h:number,variant:number){
@@ -745,10 +772,16 @@ function drawWorld(m:Mission){
  const camY=clamp(player.y-viewHeight/(2*scale),0,ARENA_H-viewHeight/scale);
  ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
  drawArenaBackground();
- drawSiegeStructures();
- drawSiegeMobs();
- arenaPickups.forEach(drawArenaPickup);
- enemies.forEach(drawEnemy);drawPlayer();
+ // Top-down painter's order: entities are sorted by their physical Y anchor,
+ // so cargo structures correctly occlude characters instead of simply stacking by code order.
+ const actors:{y:number;draw:()=>void}[]=[];
+ siegeTowers.forEach(t=>actors.push({y:t.y,draw:()=>drawSiegeTower(t)}));
+ siegeBases.forEach(b=>actors.push({y:b.y,draw:()=>drawSiegeBase(b)}));
+ siegeMobs.forEach(m=>actors.push({y:m.y,draw:()=>drawAlienCombatant(m)}));
+ arenaPickups.forEach(p=>actors.push({y:p.y,draw:()=>drawArenaPickup(p)}));
+ enemies.forEach(e=>actors.push({y:e.y,draw:()=>drawEnemy(e)}));
+ actors.push({y:player.y,draw:drawPlayer});
+ actors.sort((a,b)=>a.y-b.y);actors.forEach(a=>a.draw());
  grenades.forEach(g=>{ellipse(g.x,g.y,Math.max(5,g.radius*(1-g.life/70)),Math.max(5,g.radius*(1-g.life/70)),"rgba(207,110,53,.10)");ellipse(g.x,g.y,6,6,"#6e6f62");});
  bullets.forEach(b=>{line(b.x-b.vx*1.8,b.y-b.vy*1.8,b.x,b.y,b.from==="player"?hero().color:"#d86c35",Math.max(1,1.2));rect(b.x-2,b.y-2,4,4,b.from==="player"?hero().color:"#d86c35");});
  ctx.restore();drawHudOverlay(m);drawSpeech();
@@ -763,8 +796,7 @@ function drawArenaBackground(){
  for(let x=82;x<=918;x+=64)line(x,0,x,ARENA_H,"rgba(0,0,0,.12)",1);
  const lanes=[250,500,750];
  lanes.forEach((x,i)=>{rect(x-58,180,116,2340,i===1?"rgba(64,180,188,.075)":"rgba(10,20,24,.12)");line(x,180,x,2520,i===1?"rgba(82,218,226,.28)":"rgba(190,210,210,.10)",2);for(let y=220;y<2480;y+=180)rect(x-48,y,96,3,i===1?"rgba(85,220,226,.18)":"rgba(200,220,220,.07)");});
- const cargo=[[112,390,170,86],[720,390,170,86],[110,790,150,74],[740,790,150,74],[120,1210,180,88],[700,1210,180,88],[105,1680,165,82],[730,1680,165,82],[120,2100,170,86],[710,2100,170,86]] as [number,number,number,number][];
- cargo.forEach(([x,y,w,h],i)=>{rect(x+7,y+8,w,h,"rgba(0,0,0,.35)");rect(x,y,w,h,i%3===0?"#45545a":i%3===1?"#3e4b50":"#4b4b55");rect(x+8,y+8,w-16,7,i%2?"#6c8589":"#657276");for(let k=1;k<4;k++)line(x+k*w/4,y+18,x+k*w/4,y+h-8,"rgba(10,15,17,.35)",2);rect(x+14,y+h-15,w-28,4,"rgba(77,211,220,.25)");});
+ ARENA_CARGO.forEach(([x,y,w,h],i)=>{rect(x+7,y+8,w,h,"rgba(0,0,0,.35)");rect(x,y,w,h,i%3===0?"#45545a":i%3===1?"#3e4b50":"#4b4b55");rect(x+8,y+8,w-16,7,i%2?"#6c8589":"#657276");for(let k=1;k<4;k++)line(x+k*w/4,y+18,x+k*w/4,y+h-8,"rgba(10,15,17,.35)",2);rect(x+14,y+h-15,w-28,4,"rgba(77,211,220,.25)");});
  for(const yy of [520,1010,1510,1980,2380]){line(90,yy,910,yy,"#17282d",12);line(90,yy,910,yy,"rgba(75,211,220,.22)",3);for(let x=120;x<900;x+=95)ellipse(x,yy,4,4,"rgba(104,235,239,.65)");}
  rect(0,0,68,ARENA_H,"#03060a");rect(932,0,68,ARENA_H,"#03060a");
  for(let y=0;y<ARENA_H;y+=110){line(55,y,68,y+22,"#52636a",2);line(932,y+22,945,y,"#52636a",2);}
@@ -777,11 +809,12 @@ function initSiege(){
  siegeTowers=[];siegeBases=[];siegeMobs=[];siegeWave=0;siegeWaveTimer=0;siegeOver=false;siegeMessage="";
  const lanes=[250,500,750];
  lanes.forEach((x,lane)=>{
-  siegeTowers.push({x,y:310,team:"enemy",lane,hp:900,maxHp:900,cool:0});
-  siegeTowers.push({x,y:1180,team:"player",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:340,team:"enemy",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:2320,team:"player",lane,hp:900,maxHp:900,cool:0});
  });
- siegeBases.push({x:500,y:105,team:"enemy",hp:2600,maxHp:2600});
- siegeBases.push({x:500,y:1395,team:"player",hp:2600,maxHp:2600});
+ siegeBases.push({x:500,y:220,team:"enemy",hp:2600,maxHp:2600});
+ siegeBases.push({x:500,y:2470,team:"player",hp:2600,maxHp:2600});
+ // Player and both teams are created in the same encounter transaction.
  spawnSiegeWave();
 }
 function spawnSiegeWave(){
@@ -794,8 +827,8 @@ function spawnSiegeWave(){
   "brawler","brawler","brawler","shooter","shooter","sniper"
  ];
  const spawnPoints={
-  enemy:{x:500,y:205},
-  player:{x:500,y:ARENA_H-205}
+  enemy:{x:500,y:300},
+  player:{x:500,y:2240}
  };
  const scatter=[
   [150,560],[350,760],[500,930],[650,760],[850,560],[500,1120]
@@ -825,24 +858,23 @@ function spawnSiegeWave(){
   }
  });
 }
-function drawSiegeStructures(){
- siegeTowers.forEach(t=>{
-  const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#e05b78";
-  ellipse(t.x,t.y+8,43,13,"rgba(0,0,0,.35)");rect(t.x-30,t.y-52,60,58,alive?"#3b4b50":"#252b2e");
-  poly([t.x-30,t.y-52,t.x-18,t.y-76,t.x+18,t.y-76,t.x+30,t.y-52],alive?"#536a70":"#343b3e");
-  rect(t.x-20,t.y-68,40,9,teamColor);ellipse(t.x,t.y-32,13,13,alive?"#8ce9ec":"#444b4d");if(alive)ellipse(t.x,t.y-32,6,6,teamColor);
-  rect(t.x-35,t.y-91,70,6,"#101619");if(alive)rect(t.x-35,t.y-91,70*clamp(t.hp/t.maxHp,0,1),6,teamColor);
-  tx("NODE "+String(t.lane+1),t.x,t.y+17,11,alive?teamColor:"#697174","center");
- });
- siegeBases.forEach(b=>{
-  const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#e05b78";
-  rect(b.x-116,b.y-38,232,76,alive?"#202e33":"#20282b");rect(b.x-96,b.y-62,192,20,teamColor);
-  poly([b.x-58,b.y-38,b.x-30,b.y-78,b.x+30,b.y-78,b.x+58,b.y-38],alive?"#536b70":"#373e40");
-  ellipse(b.x,b.y-38,19,19,alive?"#8ce9ec":"#454c4d");if(alive)ellipse(b.x,b.y-38,9,9,teamColor);
-  rect(b.x-116,b.y+48,232,8,"#101619");if(alive)rect(b.x-116,b.y+48,232*clamp(b.hp/b.maxHp,0,1),8,teamColor);
-  tx(alive?(b.team==="player"?"CARGO CORE":"HOST CORE"):"CORE OFFLINE",b.x,b.y+63,13,alive?teamColor:"#777f81","center");
- });
+function drawSiegeTower(t:SiegeTower){
+ const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#e05b78";
+ ellipse(t.x,t.y+8,43,13,"rgba(0,0,0,.35)");rect(t.x-30,t.y-52,60,58,alive?"#3b4b50":"#252b2e");
+ poly([t.x-30,t.y-52,t.x-18,t.y-76,t.x+18,t.y-76,t.x+30,t.y-52],alive?"#536a70":"#343b3e");
+ rect(t.x-20,t.y-68,40,9,teamColor);ellipse(t.x,t.y-32,13,13,alive?"#8ce9ec":"#444b4d");if(alive)ellipse(t.x,t.y-32,6,6,teamColor);
+ rect(t.x-35,t.y-91,70,6,"#101619");if(alive)rect(t.x-35,t.y-91,70*clamp(t.hp/t.maxHp,0,1),6,teamColor);
+ tx("NODE "+String(t.lane+1),t.x,t.y+17,11,alive?teamColor:"#697174","center");
 }
+function drawSiegeBase(b:SiegeBase){
+ const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#e05b78";
+ rect(b.x-116,b.y-38,232,76,alive?"#202e33":"#20282b");rect(b.x-96,b.y-62,192,20,teamColor);
+ poly([b.x-58,b.y-38,b.x-30,b.y-78,b.x+30,b.y-78,b.x+58,b.y-38],alive?"#536b70":"#373e40");
+ ellipse(b.x,b.y-38,19,19,alive?"#8ce9ec":"#454c4d");if(alive)ellipse(b.x,b.y-38,9,9,teamColor);
+ rect(b.x-116,b.y+48,232,8,"#101619");if(alive)rect(b.x-116,b.y+48,232*clamp(b.hp/b.maxHp,0,1),8,teamColor);
+ tx(alive?(b.team==="player"?"CARGO CORE":"HOST CORE"):"CORE OFFLINE",b.x,b.y+63,13,alive?teamColor:"#777f81","center");
+}
+function drawSiegeStructures(){siegeTowers.forEach(drawSiegeTower);siegeBases.forEach(drawSiegeBase);}
 function drawAlienCombatant(m:SiegeMob){
  if(!ctx)return;
  const playerTeam=m.team==="player";
@@ -1088,7 +1120,8 @@ function updateArenaPickups(dt:number){
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
- player={x:ARENA_W/2,y:ARENA_H-150,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
+ // Spawn the hero first, then instantiate the exact same encounter tick for both factions.
+ player={x:500,y:2385,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
  arenaMission=ALIEN_ARENA_MISSION;arenaTaskSetup();resetArenaPickups();initSiege();
 }
 function fire(){
@@ -1128,7 +1161,11 @@ function useAbility(){
 }
 function hurt(amount:number){
  const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
- if(player.hp<=0){player.hp=player.maxHp;player.armor=save.armor*5;spawnFloor();}
+ if(player.hp<=0){
+  player.hp=player.maxHp;player.armor=save.armor*5;
+  // Respawn is an explicit full encounter reset: hero and mobs never appear on different lifecycles.
+  spawnFloor();
+ }
 }
 
 function update(dt:number){
@@ -1232,6 +1269,24 @@ function update(dt:number){
  enemies=enemies.filter(e=>!e.falling||e.y<ARENA_H+80);
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
+}
+function resolveSiegeMobCollisions(){
+ const live=siegeMobs.filter(m=>m.hp>0);
+ for(let i=0;i<live.length;i++)for(let j=i+1;j<live.length;j++){
+  const a=live[i],b=live[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.001;
+  const minDist=30;
+  if(d>=minDist)continue;
+  const push=(minDist-d)*.5,nx=dx/d,ny=dy/d;
+  const ar=moveTopDown(a.x,a.y,-nx*push,-ny*push,18),br=moveTopDown(b.x,b.y,nx*push,ny*push,18);
+  a.x=ar[0];a.y=ar[1];b.x=br[0];b.y=br[1];
+ }
+ const pr=22;
+ for(const m of live){
+  const dx=m.x-player.x,dy=m.y-player.y,d=Math.hypot(dx,dy)||.001,minDist=pr+18;
+  if(d>=minDist)continue;
+  const nx=dx/d,ny=dy/d,push=minDist-d;
+  const q=moveTopDown(m.x,m.y,nx*push,ny*push,18);m.x=q[0];m.y=q[1];
+ }
 }
 function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean,visibleOnly=false){
  const obs=arenaObstacles();
@@ -1402,6 +1457,8 @@ function updateSiege(dt:number){
   if(bd>m.attackRange)siegeMoveTo(m,enemyBase.x,enemyBase.y,dt,18);
   else if(m.cool<=0){m.cool=52;m.attackFx=1;enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);}
  }
+
+ resolveSiegeMobCollisions();
 
  // Реакция на огонь игрока.
  for(const b of bullets){
@@ -1883,7 +1940,20 @@ function updateCombatButtonLabels(){
  const special=root.querySelector<HTMLElement>('[data-action="special"]');
  if(special)special.textContent=player.ability>0?"СПЕЦ "+(player.ability/60).toFixed(1):"СПЕЦ";
 }
-function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
+let physicsAccumulator=0;
+const PHYSICS_STEP=1;
+const MAX_PHYSICS_STEPS=4;
+function loop(t:number){
+ const frameDt=Math.min(4,(t-last)/16.67||1);last=t;
+ physicsAccumulator+=frameDt;
+ let steps=0;
+ while(physicsAccumulator>=PHYSICS_STEP&&steps<MAX_PHYSICS_STEPS){
+  if(mode==="play"){update(PHYSICS_STEP);updateCombatButtonLabels();}
+  physicsAccumulator-=PHYSICS_STEP;steps++;
+ }
+ if(steps===MAX_PHYSICS_STEPS&&physicsAccumulator>=PHYSICS_STEP)physicsAccumulator=0;
+ renderCanvas();raf=requestAnimationFrame(loop);
+}
 function setup(){
  loadSave();selected=save.hero||"antonio";
   render();raf=requestAnimationFrame(loop);
