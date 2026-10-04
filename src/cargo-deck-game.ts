@@ -19,7 +19,7 @@ const OBS:HsObstacle[]=[
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],wave=0,kills=0,time=0,waveWait=0,msg="",msgT=0,won=false;
-let frame=0,last=0,raf=0,cam=0,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
