@@ -1,6 +1,7 @@
 import { portalVideoUrl } from "./video-assets";
 import { drawDistrictMicroDetails, drawWeaponEffects } from "./freezzz-world-detail";
 import { drawPhotorealDistrict } from "./freezzz-photoreal-map";
+import { TENDERS, tenderById, difficultyRu } from "./freezzz-tenders";
 import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, spawnShots, traceShot, lineOfSight, recoilAngle, updateAi, grenade as throwHsGrenade, type HsCombatState, type HsAi } from "./freezzz-combat-core";
 /* FREEzzz МАФИЯ — campaign game module
  * Fictional 2D platformer. Story/content is data-driven so the campaign can grow
@@ -9,7 +10,7 @@ import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, sp
 type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
 type HeroId="antonio"|"massimo"|"salvatore"|"giuseppe";
 type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
-type Mode="select"|"levels"|"family"|"briefing"|"play"|"shop"|"weaponMenu"|"result";
+type Mode="select"|"levels"|"family"|"briefing"|"play"|"shop"|"weaponMenu"|"tenders"|"result";
 type Objective="reach"|"find"|"clear"|"escort"|"defend"|"recover"|"escape"|"survive";
 
 interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:string; ability:string; abilityDesc:string; bio:string; }
@@ -19,7 +20,7 @@ interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:numbe
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
-interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
+interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
@@ -171,7 +172,7 @@ let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
 function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
@@ -965,6 +966,8 @@ function update(dt:number){
  if(objectiveDone){if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}else completeMission();}
 }
 function completeMission(){
+ const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
+ if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
  if(!save.completed.includes(m.id))save.completed.push(m.id);
  save.rank=rank();
@@ -1042,6 +1045,7 @@ function renderCanvas(){
  if(mode==="family"){drawFamily();return;}
  if(mode==="briefing"){drawBriefing();return;}
  if(mode==="shop"){drawShop();return;}
+ if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
  if(mode==="weaponMenu"){drawWeaponMenu();return;}
  if(mode==="result"){drawResult();return;}
 }
@@ -1151,6 +1155,17 @@ function drawShop(){
  rect(0,0,viewWidth,viewHeight,"#07090b");tx("АРСЕНАЛ",viewWidth*.07,viewHeight*.08,menuTextSize(.04,26,38),hero().color);tx("ДЕНЬГИ $"+save.money,viewWidth*.93,viewHeight*.08,menuTextSize(.022,15,24),"#d9b86c","right");
  weapons.forEach((w,i)=>{const y=viewHeight*(.18+i*.075);const owned=save.weapon>=i;tx(String(i+1),viewWidth*.07,y,menuTextSize(.02,14,20),"#59656b");tx(weaponRu(w.name),viewWidth*.13,y,menuTextSize(.023,16,24),"#f0eee7");tx("$"+w.cost,viewWidth*.58,y,menuTextSize(.021,15,22),"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",viewWidth*.78,y,menuTextSize(.021,15,22),owned?hero().color:"#aab1b4");});
 }
+function drawTenders(){
+ const c=ctx!;c.save();const W=viewWidth,H=viewHeight;c.fillStyle="#070a0c";c.fillRect(0,0,W,H);
+ const g=c.createRadialGradient(W*.18,H*.12,0,W*.18,H*.12,W*.55);g.addColorStop(0,"rgba(216,108,53,.18)");g.addColorStop(1,"rgba(7,10,12,0)");c.fillStyle=g;c.fillRect(0,0,W,H);
+ tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.07,H*.055,menuTextSize(.032,21,30),"#d86c35");tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.07,H*.092,menuTextSize(.015,10,15),"#68777f");
+ tx("АКТИВНЫЙ: "+(save.activeTenderId?(tenderById(save.activeTenderId)?.title||"—"):"НЕТ"),W*.93,H*.055,menuTextSize(.013,9,13),hero().color,"right");
+ const top=H*.115,bottom=H*.90,gap=10,cardH=Math.min(154,(bottom-top-gap*2)/3),left=W*.055,cardW=W*.89;
+ TENDERS.forEach((t,i)=>{const y=top+i*(cardH+gap);if(y>bottom+cardH)return;const active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
+ c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.35)";c.shadowBlur=active?12:6;c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
+ tx(t.code,left+16,y+24,menuTextSize(.012,8,12),active?hero().color:"#6d797e");tx(t.title,left+16,y+48,menuTextSize(.020,13,19),"#f0eee7","left");tx(t.client,left+16,y+69,menuTextSize(.012,8,12),"#aeb6b8","left");tx(t.weaponType+" · "+t.caliber,left+16,y+91,menuTextSize(.013,9,13),"#d9b86c","left");tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+16,y+112,menuTextSize(.010,7,10),"#7f8b90","left");tx("НАГРАДА $"+t.reward+" · АВАНС $"+t.advance+" · ШТРАФ $"+t.penalty,left+16,y+131,menuTextSize(.010,7,10),"#aeb6b8","left");tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-16,y+25,menuTextSize(.012,8,12),done?"#68777f":active?hero().color:"#d86c35","right");});
+ tx("ТАП ПО КАРТОЧКЕ · СРОК / РИСК / ТРЕБОВАНИЯ",W/2,H*.94,menuTextSize(.011,8,11),"#59656b","center");c.restore();
+}
 function drawWeaponMenu(){
  const c=ctx!;c.save();const W=viewWidth,H=viewHeight;
  const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#eef5f7");bg.addColorStop(.52,"#e2eaee");bg.addColorStop(1,"#f5f7f8");c.fillStyle=bg;c.fillRect(0,0,W,H);
@@ -1251,6 +1266,8 @@ function bindButtons(){
    if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="shop";render();}
    if(a==="weapon-menu"){mode="weaponMenu";render();}
+   if(a==="tenders"){mode="tenders";render();}
+   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!save.completed.includes(t.linkedMission)){save.activeTenderId=t.id;storeSave();render();}}
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
@@ -1327,11 +1344,13 @@ function render(){
    }).join("");
    ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="shop">МАГАЗИН</button><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
-}else{
+  }else if(mode==="tenders"){
+    ui.innerHTML=TENDERS.map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:5.5%;right:5.5%;top:${11.5+i*17.0}%;height:15%;opacity:.001;border:0;background:transparent"></button>`).join("")+`<button data-action="menu" style="position:absolute;bottom:2%;left:30%;right:30%;height:7%;opacity:.03">НАЗАД</button>`;
+  }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
  bindButtons();renderCanvas();
