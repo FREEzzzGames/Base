@@ -114,27 +114,8 @@ export function segmentRectHit(x0:number,y0:number,x1:number,y1:number,o:HsObsta
 export function lineOfSight(ax:number,ay:number,bx:number,by:number,obstacles:HsObstacle[]){
   return !obstacles.some(o=>segmentRectHit(ax,ay,bx,by,o)!==null);
 }
-export function traceShot(s:HsShot,dt:number,obstacles:HsObstacle[]){
-  const nx=s.x+s.vx*dt,ny=s.y+s.vy*dt;
-  let bestT=1;
-  for(const o of obstacles){
-    const t=segmentRectHit(s.x,s.y,nx,ny,o);
-    if(t!==null&&t<bestT)bestT=t;
-  }
-  if(bestT<1){
-    s.x+=s.vx*dt*bestT;s.y+=s.vy*dt*bestT;
-    const loss=.28;
-    s.penetration-=loss;
-    if(s.penetration>0){
-      s.x+=s.vx*.8;s.y+=s.vy*.8;
-      s.damage*=.62;
-      return {blocked:false,hitObstacle:true};
-    }
-    return {blocked:true,hitObstacle:true};
-  }
-  s.x=nx;s.y=ny;s.life-=dt;
-  return {blocked:false,hitObstacle:false};
-}
+const TRACE_RESULT={blocked:false,hitObstacle:false};
+export function traceShot(s:HsShot,dt:number,obstacles:HsObstacle[]){const nx=s.x+s.vx*dt,ny=s.y+s.vy*dt;let bestT=1;for(const o of obstacles){const t=segmentRectHit(s.x,s.y,nx,ny,o);if(t!==null&&t<bestT)bestT=t}if(bestT<1){s.x+=s.vx*dt*bestT;s.y+=s.vy*dt*bestT;const loss=.28;s.penetration-=loss;if(s.penetration>0){s.x+=s.vx*.8;s.y+=s.vy*.8;s.damage*=.62;TRACE_RESULT.blocked=false;TRACE_RESULT.hitObstacle=true;return TRACE_RESULT}TRACE_RESULT.blocked=true;TRACE_RESULT.hitObstacle=true;return TRACE_RESULT}s.x=nx;s.y=ny;s.life-=dt;TRACE_RESULT.blocked=false;TRACE_RESULT.hitObstacle=false;return TRACE_RESULT}
 export function spawnShots(x:number,y:number,angle:number,w:HsWeaponDef,from:"player"|"enemy",shotId:number){
   const out:HsShot[]=[];
   for(let i=0;i<w.pellets;i++){
