@@ -875,48 +875,118 @@ function drawSiegeBase(b:SiegeBase){
  tx(alive?(b.team==="player"?"CARGO CORE":"HOST CORE"):"CORE OFFLINE",b.x,b.y+63,13,alive?teamColor:"#777f81","center");
 }
 function drawSiegeStructures(){siegeTowers.forEach(drawSiegeTower);siegeBases.forEach(drawSiegeBase);}
+function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,state:string,anim:number,hp:number,maxHp:number,weapon:boolean,hitFlash=0){
+ if(!ctx)return;
+ const moving=state==="run"||state==="strafe"||state==="retreat";
+ const walk=moving?Math.sin(anim)*4:0;
+ const bob=moving?Math.abs(Math.sin(anim))*.9:0;
+ const hit=hitFlash>0;
+ const body="#394247",dark="#1a2225",mid="#566268",metal="#7f8d91",light="#b6c0c0";
+ ctx.save();
+ ctx.translate(x,y+bob);
+ ctx.scale(scale,scale);
+ ctx.globalAlpha=hit?.72:1;
+ ctx.lineJoin="round";
+ ctx.lineCap="round";
+ ellipse(0,5,25,7,"rgba(0,0,0,.52)");
+
+ if(kind==="rusher"||kind==="flanker"){
+   // Low multi-legged machine: spider/insect silhouettes from the reference sheets.
+   const legCol=kind==="rusher"?dark:"#263337";
+   const legs=kind==="rusher"?4:6;
+   for(let i=0;i<legs;i++){
+     const side=i%2?-1:1;
+     const row=Math.floor(i/2);
+     const ox=side*(8+row*5), oy=-2+row*7;
+     const lift=Math.sin(anim*.9+i)*2;
+     limb(ox,oy,side*(19+row*6),8+row*5+lift,4,legCol);
+     line(side*(19+row*6),8+row*5+lift,side*(27+row*5),4+row*8+lift,legCol,3);
+   }
+   if(kind==="rusher"){
+     ellipse(0,-20,20,15,body);poly([-20,-20,-11,-31,4,-35,20,-25,17,-10,-8,-8],mid);
+     ellipse(6,-23,9,7,dark);ellipse(8,-24,3,3,accent);
+     line(-6,-30,-13,-39,metal,2);line(1,-32,4,-42,metal,2);
+   }else{
+     poly([-22,-19,-11,-32,10,-31,23,-16,15,-5,-14,-6],dark);
+     ellipse(0,-21,13,10,mid);ellipse(5,-23,5,5,dark);ellipse(5,-23,2.5,2.5,accent);
+     rect(-8,-31,18,3,accent);
+   }
+ }else if(kind==="heavy"){
+   // Tall industrial biped: broad shoulders, exposed joints and a boxy core.
+   limb(-14,-8,-22+walk,-32,8,dark);limb(14,-8,22-walk,-32,8,dark);
+   rect(-22,-42,44,35,body);rect(-15,-37,30,24,mid);
+   rect(-10,-31,20,10,dark);rect(-6,-29,12,5,accent);
+   ellipse(-22,-30,7,8,metal);ellipse(22,-30,7,8,metal);
+   limb(-12,-6,-14+walk,-36,7,dark);limb(12,-6,14-walk,-36,7,dark);
+   ellipse(-14+walk,-37,5,5,light);ellipse(14-walk,-37,5,5,light);
+   rect(-10,-54,20,13,mid);rect(-7,-57,14,5,dark);ellipse(0,-52,5,5,accent);
+   rect(-5,-66,10,9,metal);rect(-2,-72,4,7,light);
+ }else if(kind==="guard"){
+   // Compact sentry with a camera head and rectangular chassis.
+   limb(-9,-8,-13+walk,-31,5,dark);limb(9,-8,13-walk,-31,5,dark);
+   rect(-17,-34,34,29,body);rect(-13,-30,26,19,mid);
+   rect(-10,-27,20,8,dark);ellipse(0,-23,5,5,accent);ellipse(0,-23,2,2,light);
+   rect(-11,-47,22,13,metal);rect(-8,-44,16,7,dark);
+   ellipse(-5,-41,3,3,accent);ellipse(5,-41,3,3,accent);
+   line(0,-47,0,-56,light,2);ellipse(0,-59,3,3,accent);
+   limb(-16,-24,-25,-10,4,dark);limb(16,-24,25,-10,4,dark);
+ }else if(kind==="sniper"){
+   // Long-legged observation platform / tripod silhouette.
+   limb(-7,-5,-16+walk,-43,5,dark);limb(7,-5,16-walk,-43,5,dark);
+   limb(-2,-5,0,-48,5,dark);
+   ellipse(0,-50,6,6,metal);rect(-7,-69,14,17,body);
+   rect(-5,-66,10,8,dark);ellipse(0,-62,4,4,accent);
+   line(5,-61,29,-65,metal,3);rect(26,-68,13,6,mid);ellipse(39,-65,4,4,accent);
+   line(0,-70,0,-79,light,2);ellipse(0,-82,3,3,accent);
+ }else if(kind==="suppressor"){
+   // Floating drone with articulated arms and a central sensor.
+   ellipse(0,-26,22,18,body);ellipse(0,-28,13,10,mid);
+   ellipse(0,-29,7,7,dark);ellipse(0,-29,3,3,accent);
+   line(-18,-29,-29,-40,metal,4);line(18,-29,29,-40,metal,4);
+   ellipse(-31,-42,6,6,light);ellipse(31,-42,6,6,light);
+   line(-12,-14,-22,-2,dark,5);line(12,-14,22,-2,dark,5);
+   ellipse(-24,1,5,5,metal);ellipse(24,1,5,5,metal);
+   line(0,-44,0,-54,light,2);ellipse(0,-57,3,3,accent);
+ }else if(kind==="flanker"){
+   // Four-legged low-profile reconnaissance mech.
+   const side=-1;
+   limb(-14,-7,-25+walk,-25,5,dark);limb(14,-7,25-walk,-25,5,dark);
+   limb(-9,-4,-15-walk,3,4,dark);limb(9,-4,15+walk,3,4,dark);
+   poly([-20,-29,-8,-39,10,-37,21,-26,12,-12,-12,-12],body);
+   rect(-11,-31,22,10,mid);ellipse(7,-27,5,5,dark);ellipse(8,-27,2.5,2.5,accent);
+   line(-2,-37,-6,-45,light,2);ellipse(-6,-48,2.5,2.5,accent);
+ }else{
+   // Default shooter / brawler: modular humanoid robot.
+   limb(-9,-7,-15+walk,-32,6,dark);limb(9,-7,15-walk,-32,6,dark);
+   rect(-15,-39,30,30,body);rect(-11,-34,22,20,mid);
+   rect(-8,-29,16,8,dark);ellipse(0,-25,4,4,accent);
+   rect(-10,-56,20,17,metal);rect(-7,-52,14,9,dark);
+   ellipse(-5,-48,3,3,accent);ellipse(5,-48,3,3,accent);
+   line(0,-56,0,-64,light,2);ellipse(0,-67,3,3,accent);
+   limb(-15,-29,-27,-18,5,dark);limb(15,-29,27,-18,5,dark);
+   ellipse(-28,-17,5,5,metal);ellipse(28,-17,5,5,metal);
+ }
+ if(weapon && (kind==="shooter"||kind==="sniper"||kind==="suppressor"||kind==="guard")){
+   const wy=kind==="sniper"?-62:kind==="suppressor"?-18:-28;
+   const wx=kind==="sniper"?18:kind==="suppressor"?18:16;
+   const len=kind==="sniper"?42:31;
+   line(wx,wy,wx+len,wy-3,metal,4);rect(wx+len-4,wy-6,9,7,mid);
+   rect(wx+6,wy-2,13,3,accent);ellipse(wx+len+1,wy-3,3,3,accent);
+ }
+ ctx.restore();
+ const hpW=36*scale;
+ rect(x-hpW/2,y-92*scale,hpW,4,"#101619");
+ rect(x-hpW/2,y-92*scale,hpW*clamp(hp/Math.max(1,maxHp),0,1),4,accent);
+}
+
 function drawAlienCombatant(m:SiegeMob){
  if(!ctx)return;
- const playerTeam=m.team==="player";
- const specs={
-  brawler:{scale:1.22,body:playerTeam?"#1b6570":"#6d253f",skin:playerTeam?"#67d9d5":"#c35d78",accent:playerTeam?"#54f2ee":"#ff557d"},
-  shooter:{scale:.94,body:playerTeam?"#214d66":"#69402a",skin:playerTeam?"#58b4cf":"#d28b55",accent:playerTeam?"#5fe8ff":"#ffb04f"},
-  sniper:{scale:.76,body:playerTeam?"#303d67":"#49356e",skin:playerTeam?"#8195db":"#9e72d0",accent:playerTeam?"#8eabff":"#cf7cff"}
- }[m.type];
- const moving=m.animState==="run"||m.animState==="strafe"||m.animState==="retreat";
- const walk=Math.sin(m.anim)*(moving?2.8:0),bob=moving?Math.abs(Math.sin(m.anim))*.9:0;
- const flash=m.hitFlash>0?.72:1,attackKick=m.attackFx>0?Math.sin(m.attackFx*Math.PI)*2.5:0;
- ctx!.save();ctx!.translate(m.x,m.y+bob);ctx!.scale(specs.scale,specs.scale);ctx!.globalAlpha=flash;
- ellipse(0,4,25,7,"rgba(0,0,0,.48)");
- if(m.type==="brawler"){
-  limb(-12,-8,-20+walk,-31,8,specs.body);limb(12,-8,20-walk,-31,8,specs.body);
-  poly([-22,-32,-18,-55,-9,-65,0,-61,9,-65,18,-55,22,-32,14,-9,0,-4,-14,-9],specs.body);
-  ellipse(0,-72,15,17,specs.skin);rect(-15,-75,30,6,specs.accent);
-  ellipse(-7,-73,3,4,specs.accent);ellipse(7,-73,3,4,specs.accent);
- }else if(m.type==="shooter"){
-  limb(-8,-8,-14+walk,-31,6,specs.body);limb(8,-8,14-walk,-31,6,specs.body);
-  poly([-15,-32,-11,-55,-4,-62,4,-62,11,-55,15,-32,9,-10,0,-6,-9,-10],specs.body);
-  ellipse(0,-68,10,14,specs.skin);rect(-10,-71,20,5,specs.accent);
-  drawAlienWeapon(1,m.strafe*18-3,-36+attackKick,m.strafe*.08+(m.animState==="retreat"?.18:0),.95,specs.accent);
- }else{
-  limb(-6,-8,-10+walk,-31,5,specs.body);limb(6,-8,10-walk,-31,5,specs.body);
-  poly([-12,-31,-9,-53,-3,-58,3,-58,9,-53,12,-31,7,-11,0,-7,-7,-11],specs.body);
-  ellipse(0,-64,8,12,specs.skin);rect(-9,-67,18,4,specs.accent);
-  drawAlienWeapon(2,m.strafe*16-3,-34+attackKick,m.strafe*.06,.82,specs.accent);
- }
- // Team beacon and type marker.
- ellipse(0,-86,4,4,specs.accent);
- ctx!.restore();
- const hpW=36*specs.scale;rect(m.x-hpW/2,m.y-92*specs.scale,hpW,4,"#101619");rect(m.x-hpW/2,m.y-92*specs.scale,hpW*clamp(m.hp/m.maxHp,0,1),4,specs.accent);
+ const accent=m.team==="player"
+   ? (m.type==="brawler"?"#54f2ee":m.type==="shooter"?"#5fe8ff":"#8eabff")
+   : (m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff");
+ const kind=m.type==="brawler"?"heavy":m.type==="shooter"?"shooter":"sniper";
+ drawRobotMob(m.x,m.y,kind,m.type==="brawler"?1.22:m.type==="shooter"?.94:.76,accent,m.animState,m.anim,m.hp,m.maxHp,m.type!=="brawler",m.hitFlash);
 }
-function drawAlienWeapon(kind:number,x:number,y:number,angle:number,sc:number,col:string){
- if(!ctx)return;ctx!.save();ctx!.translate(x,y);ctx!.rotate(angle);ctx!.scale(sc,sc);
- rect(-4,-4,42,8,"rgba(3,8,10,.75)");
- if(kind===1){rect(0,-3,29,6,"#62777a");rect(25,-5,15,10,"#3a4d52");poly([10,3,19,3,15,14,8,12],"#25383c");rect(3,-1,12,2,col);}
- else{rect(0,-4,37,8,"#718487");rect(29,-6,12,12,"#34484d");rect(5,-2,20,4,col);ellipse(39,0,4,4,col);}
- ctx!.restore();
-}
-function drawSiegeMobs(){siegeMobs.forEach(drawAlienCombatant);}
 
 function drawArenaPickup(p:ArenaPickup){
  const pulse=1+Math.sin(frame*.08+p.x)*.08;
@@ -931,21 +1001,24 @@ function drawArenaPickup(p:ArenaPickup){
  }
 }
 function enemyVisual(type:EnemyType):MafiaVisual{
- const suits:Record<EnemyType,string>={brawler:"#30242a",shooter:"#26323a",heavy:"#40352a",rusher:"#3a2024",guard:"#28342e",sniper:"#302a40",suppressor:"#403323",flanker:"#26313d"};
- const ties:Record<EnemyType,string>={brawler:"#b94f46",shooter:"#6d8790",heavy:"#c58b48",rusher:"#a94c42",guard:"#68776f",sniper:"#75658d",suppressor:"#9b7546",flanker:"#6d7e92"};
- return {face:"#9a6554",tie:ties[type],suit:suits[type]};
+ const suits:Record<EnemyType,string>={brawler:"#30383b",shooter:"#343c40",heavy:"#3f4548",rusher:"#273438",guard:"#394246",sniper:"#343c47",suppressor:"#3b4044",flanker:"#29383c"};
+ const ties:Record<EnemyType,string>={brawler:"#ff557d",shooter:"#ffb04f",heavy:"#ffd06a",rusher:"#ff655c",guard:"#63e4eb",sniper:"#cf7cff",suppressor:"#e4b14e",flanker:"#65c9ff"};
+ return {face:"#a8b2b3",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
  if(!ctx)return;
- const cfg={brawler:{s:1.18,b:"#61243a",sk:"#c35c78",a:"#ff557d"},shooter:{s:.92,b:"#674027",sk:"#d18a55",a:"#ffb04f"},heavy:{s:1.34,b:"#4d3c27",sk:"#c9a06a",a:"#ffd06a"},rusher:{s:1.02,b:"#6a2831",sk:"#d76a66",a:"#ff655c"},guard:{s:1.0,b:"#343f43",sk:"#7eabb0",a:"#63e4eb"},sniper:{s:.78,b:"#49336a",sk:"#9c73c5",a:"#cf7cff"},suppressor:{s:1.1,b:"#4e3a22",sk:"#bd965f",a:"#e4b14e"},flanker:{s:.86,b:"#273e59",sk:"#679bc0",a:"#65c9ff"}}[e.type];
- const step=Math.sin(frame*.18)*2;
- ctx.save();ctx.translate(e.x,e.y);ctx.scale(cfg.s,cfg.s);
- ellipse(0,4,23,7,"rgba(0,0,0,.48)");
- limb(-7,-8,-11+step,-31,6,cfg.b);limb(7,-8,11-step,-31,6,cfg.b);
- poly([-16,-32,-12,-53,-5,-61,0,-58,5,-61,12,-53,16,-32,9,-10,0,-6,-9,-10],cfg.b);
- ellipse(0,-67,9,13,cfg.sk);rect(-10,-70,20,5,cfg.a);ellipse(-4,-68,2.5,2.5,cfg.a);ellipse(4,-68,2.5,2.5,cfg.a);
- ctx.restore();
- const bw=34*cfg.s;rect(e.x-bw/2,e.y-91*cfg.s,bw,4,"#101619");rect(e.x-bw/2,e.y-91*cfg.s,bw*clamp(e.hp/e.maxHp,0,1),4,cfg.a);
+ const map:Record<EnemyType,{kind:string;scale:number;accent:string;weapon:boolean}>={
+  brawler:{kind:"brawler",scale:1.18,accent:"#ff557d",weapon:false},
+  shooter:{kind:"shooter",scale:.96,accent:"#ffb04f",weapon:true},
+  heavy:{kind:"heavy",scale:1.34,accent:"#ffd06a",weapon:false},
+  rusher:{kind:"rusher",scale:1.02,accent:"#ff655c",weapon:false},
+  guard:{kind:"guard",scale:1.0,accent:"#63e4eb",weapon:true},
+  sniper:{kind:"sniper",scale:.86,accent:"#cf7cff",weapon:true},
+  suppressor:{kind:"suppressor",scale:1.08,accent:"#e4b14e",weapon:true},
+  flanker:{kind:"flanker",scale:.9,accent:"#65c9ff",weapon:false}
+ };
+ const cfg=map[e.type];
+ drawRobotMob(e.x,e.y,cfg.kind,cfg.scale,cfg.accent,e.ai.state,frame*.18,e.hp,e.maxHp,cfg.weapon,e.falling?0:0);
 }
 function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:number){
  if(!ctx)return;
