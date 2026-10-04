@@ -671,7 +671,7 @@ function renderUI(){
       return '<button class="cargo-inventory-item'+(active?' active':'')+'" data-cargo-weapon="'+id+'" aria-label="Переключить '+w.name+'"><span class="cargo-inventory-icon">'+weaponIcon+'</span><span class="cargo-inventory-name">'+w.name+'</span><span class="cargo-inventory-ammo">'+(active?player.combat.ammo+" / "+player.combat.reserve:"")+'</span></button>';
     }).join("");
     const med=player.medkits>0?'<button class="cargo-inventory-item cargo-medkit" data-cargo="medkit" aria-label="Использовать аптечку"><span class="cargo-med-icon">+</span><span class="cargo-inventory-name">MEDKIT</span><span class="cargo-inventory-ammo">x'+player.medkits+'</span></button>':"";
-    ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div>'+inventory+med+'</div>'+
+    ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div><div class="cargo-inventory-list">'+inventory+'</div>'+med+'</div>'+
       '<div class="cargo-touch-zone" aria-hidden="true"></div>'+
       '<div class="cargo-aim"><span class="cargo-aim-core"></span><button class="cargo-fire" data-cargo="fire" aria-label="Огонь">🔥</button></div>'+
       '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автострельба">AUTO</button>'+
@@ -726,7 +726,7 @@ function bindUI(){
   }
 
   // The weapon bar is also a touch carousel: swipe up/down to cycle weapons.
-  const inv=ui?.querySelector<HTMLElement>(".cargo-inventory");
+  const inv=ui?.querySelector<HTMLElement>(".cargo-inventory-list");
   if(inv){
     let sy=0;
     inv.addEventListener("pointerdown",e=>{sy=e.clientY});
