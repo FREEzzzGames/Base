@@ -1539,14 +1539,35 @@ function siegeMoveTo(m:SiegeMob,x:number,y:number,dt:number,r=18){
  siegeStep(m,x-m.x,y-m.y,dt,r);
 }
 function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
- const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
- const direct=moveTopDown(m.x,m.y,nx*step,ny*step,r);
- if(Math.hypot(direct[0]-m.x,direct[1]-m.y)>0.1){m.x=direct[0];m.y=direct[1];return;}
- const sideA=moveTopDown(m.x,m.y,-ny*step*1.9,nx*step*1.9,r);
- const sideB=moveTopDown(m.x,m.y,ny*step*1.9,-nx*step*1.9,r);
- const da=Math.hypot(sideA[0]-m.targetX,sideA[1]-m.targetY);
- const db=Math.hypot(sideB[0]-m.targetX,sideB[1]-m.targetY);
- const q=da<=db?sideA:sideB;m.x=q[0];m.y=q[1];
+ const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=Math.max(.8,m.speed*dt);
+ const startX=m.x,startY=m.y;
+ const direct=moveTopDown(startX,startY,nx*step,ny*step,r);
+ if(Math.hypot(direct[0]-startX,direct[1]-startY)>0.1){m.x=direct[0];m.y=direct[1];return;}
+
+ // Локальный обход угла: одна попытка в сторону часто оставляла моба
+ // зажатым между двумя контейнерами. Проверяем несколько направлений
+ // и несколько радиусов, выбирая точку, которая реально приближает к цели.
+ const targetX=m.targetX,targetY=m.targetY;
+ let bestX=startX,bestY=startY,bestScore=Infinity,bestMove=0;
+ const angles=[0,.45,-.45,.9,-.9,1.35,-1.35,Math.PI];
+ const radii=[step*1.8,step*3.2,step*5.2];
+ for(const radius of radii){
+  for(const offset of angles){
+   const ca=Math.cos(offset),sa=Math.sin(offset);
+   const q=moveTopDown(startX,startY,(nx*ca-ny*sa)*radius,(ny*ca+nx*sa)*radius,r);
+   const moved=Math.hypot(q[0]-startX,q[1]-startY);
+   if(moved<.1)continue;
+   const toTarget=Math.hypot(q[0]-targetX,q[1]-targetY);
+   const score=toTarget-(moved*.22);
+   if(score<bestScore){bestScore=score;bestMove=moved;bestX=q[0];bestY=q[1];}
+  }
+ }
+ if(bestMove>0){m.x=bestX;m.y=bestY;return;}
+
+ // Крайний случай: моб оказался в узком кармане. Отходим от цели,
+ // чтобы следующим тиком получить другой угол выхода вместо вечного клинча.
+ const back=moveTopDown(startX,startY,-nx*step*2.5,-ny*step*2.5,r);
+ if(Math.hypot(back[0]-startX,back[1]-startY)>.1){m.x=back[0];m.y=back[1];}
 }
 function updateSiege(dt:number){
  if(siegeOver)return;
