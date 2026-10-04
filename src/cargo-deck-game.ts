@@ -7,7 +7,8 @@ interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];best
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
 const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
 const cargoFloorImage=new Image();
-cargoFloorImage.src="/cargo-deck-floor.svg";
+const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
+cargoFloorImage.src=cargoFloorUrl;
 let cargoFloorPattern:CanvasPattern|null=null;
 const PLAYER_SPAWN={x:500,y:2420} as const;
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
@@ -560,7 +561,11 @@ function drawWorld(){
     cargoFloorPattern=ctx!.createPattern(cargoFloorImage,"repeat");
   }
   if(cargoFloorPattern){
-    ctx!.save();ctx!.globalAlpha=.52;ctx!.fillStyle=cargoFloorPattern;ctx!.fillRect(0,0,W,H);ctx!.restore();
+    ctx!.save();
+    ctx!.globalAlpha=.72;
+    ctx!.fillStyle=cargoFloorPattern;
+    ctx!.fillRect(0,0,W,H);
+    ctx!.restore();
   }else{
     rect(0,0,W,H,"#070d11");
   }
