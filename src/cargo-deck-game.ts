@@ -216,11 +216,11 @@ function spawnWave(){
     const scale=Math.min(2.35,1+(wave-1)*.10);
     const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
 
-    let sx=lanes[lane],sy=390+Math.random()*36;
+    const spawnY=ARENAS[arenaId].enemyBaseY+40;let sx=lanes[lane],sy=spawnY+Math.random()*36;
     let found=false;
     for(let tries=0;tries<18;tries++){
       const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*34;
-      const y=390+Math.random()*36;
+      const y=spawnY+Math.random()*36;
       if(!obstacles().some(o=>hitCircle(x,y,18,o))&&Math.hypot(x-player.x,y-player.y)>340){
         sx=x;sy=y;found=true;break;
       }
@@ -244,7 +244,7 @@ function spawnWave(){
 
   msg="WAVE "+String(wave).padStart(2,"0")+" · "+total+" HOSTILES";
   msgT=110;
-  effects.push({x:500,y:2035,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
+  effects.push({x:ARENAS[arenaId].width*.5,y:Math.min(ARENAS[arenaId].height-260,ARENAS[arenaId].height*.76),text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
 }function hurt(a:number){
   const block=Math.min(player.armor,a*.5);
   player.armor-=block;
