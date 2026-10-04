@@ -775,7 +775,7 @@ function bindUI(){
         combatTapTimer=0;
         if(!combatTapPending)return;
         combatTapPending=false;
-        fireHeld=true;
+        if(combatTouchId!==null)fireHeld=true;
         fire(true);
       },DOUBLE_MS);
     });
