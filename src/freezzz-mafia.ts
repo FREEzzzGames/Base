@@ -994,64 +994,97 @@ function hurt(amount:number){
 }
 
 function update(dt:number){
- frame++;speechCooldown=Math.max(0,speechCooldown-dt);if(speech)speech.timer-=dt;
- if(mode==="play"&&save.activeTenderId&&arenaMission){arenaTaskTimer+=dt;arenaSpawnTimer+=dt;if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();const exitForArena=topDownExit();const reachedArenaExit=Math.hypot(player.x-exitForArena[0],player.y-exitForArena[1])<55*portraitScale();const done=(arenaMission.objective==="survive"&&arenaTaskTimer>=arenaMission.target*60)||(arenaMission.objective==="reach"&&reachedArenaExit)||(arenaMission.objective==="recover"&&arenaTaskProgress>=1)||(arenaMission.objective==="defend"&&arenaTaskProgress>=arenaMission.target)||(arenaMission.objective==="clear"&&arenaTaskProgress>=arenaMission.target);if(done)completeArenaTask();}
- if(mode==="play"&&frame%420===0){const lines=heroLines[selected||"antonio"];say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);}
+ frame++;
+ speechCooldown=Math.max(0,speechCooldown-dt);
+ if(speech)speech.timer-=dt;
+ if(mode!=="play")return;
+
+ if(save.activeTenderId&&arenaMission){
+  arenaTaskTimer+=dt;arenaSpawnTimer+=dt;
+  if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();
+  const [exitX,exitY]=topDownExit(),scale=portraitScale();
+  const reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<55*scale;
+  const done=(arenaMission.objective==="survive"&&arenaTaskTimer>=arenaMission.target*60)||
+    ((arenaMission.objective==="reach")&&reachedExit)||
+    ((arenaMission.objective==="recover")&&reachedExit)||
+    ((arenaMission.objective==="defend")&&arenaTaskProgress>=arenaMission.target)||
+    ((arenaMission.objective==="clear")&&arenaTaskProgress>=arenaMission.target);
+  if(done)completeArenaTask();
+ }
+ if(frame%420===0){
+  const lines=heroLines[selected||"antonio"];
+  say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);
+ }
+
  const weapon=HS_WEAPONS[save.weapon];
  stepWeapon(player.combat,weapon,dt);
  player.ammo=player.combat.ammo;
  player.cool=player.combat.fireTimer;
- player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
+ player.ability=Math.max(0,player.ability-dt);
+ player.weaponSwap=Math.max(0,player.weaponSwap-dt);
+
  const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
  if(Math.abs(moveX)>.12||Math.abs(moveY)>.12){
   const len=Math.hypot(moveX,moveY)||1;
-  const moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
+  const moved=moveTopDown(player.x,player.y,(moveX/len)*speed,(moveY/len)*speed,18*scale);
   player.x=moved[0];player.y=moved[1];
   if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
  }
- if(mode==="play")fire();if(touch.ability)useAbility();
- if(mode==="play"&&arenaMission)updateArenaPickups(dt);
- const obstacles=topDownObstacles();
- for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0){for(const e of enemies){if(e.falling)continue;const d=Math.hypot(e.x-g.x,e.y-g.y);if(d<g.radius){const k=1-d/g.radius;e.hp-=g.damage*k;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;if(save.activeTenderId){arenaKills++;arenaTaskProgress++;}}}}if(Math.hypot(player.x-g.x,player.y-g.y)<g.radius)hurt(24);g.life=0;}}
+ fire();if(touch.ability)useAbility();
+ updateArenaPickups(dt);
+
+ const obstacles=arenaObstacles();
+ for(const g of grenades){
+  g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;
+  if(g.life<=0){
+   for(const e of enemies)if(!e.falling){
+    const d=Math.hypot(e.x-g.x,e.y-g.y);
+    if(d<g.radius){
+     const k=1-d/g.radius;e.hp-=g.damage*k;
+     if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;arenaKills++;arenaTaskProgress++;}
+    }
+   }
+   if(Math.hypot(player.x-g.x,player.y-g.y)<g.radius)hurt(24);
+   g.life=0;
+  }
+ }
  grenades=grenades.filter(g=>g.life>0);
+
  for(const b of bullets){
   const result=traceShot(b,dt,obstacles);
   if(result.blocked){b.life=0;continue;}
-  if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20*scale){b.life=0;hurt(Math.max(3,b.damage*.38));}
+  if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20*scale){b.life=0;hurt(Math.max(3,b.damage*.38));continue;}
   if(b.from==="player"){
    for(let i=0;i<enemies.length;i++){
     const e=enemies[i];if(e.falling||b.hitIds.has(i))continue;
     if(Math.hypot(b.x-e.x,b.y-e.y)<24*scale){
-      b.hitIds.add(i);e.hp-=b.damage;b.damage*=.62;b.penetration-=.12;
-      if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
-      if(b.penetration<=0)b.life=0;break;
+     b.hitIds.add(i);e.hp-=b.damage;b.damage*=.62;b.penetration-=.12;
+     if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;arenaKills++;arenaTaskProgress++;}
+     if(b.penetration<=0)b.life=0;break;
     }
    }
   }
  }
- bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<(mode==="play"&&arenaMission?ARENA_W:topDownMap().w)+30&&b.y>-30&&b.y<(mode==="play"&&arenaMission?ARENA_H:topDownMap().h)+30);
+ bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<ARENA_W+30&&b.y>-30&&b.y<ARENA_H+30);
+
  for(let i=0;i<enemies.length;i++){
   const e=enemies[i];
   if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
   e.cool-=dt;e.shootCool-=dt;
   const dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;
   const visible=lineOfSight(e.x,e.y,player.x,player.y,obstacles);
-  const bulletThreat=bullets.some(b=>b.from==="player"&&Math.hypot((e.x-b.x), (e.y-b.y))<70&&Math.abs((e.x-b.x)*b.vy-(e.y-b.y)*b.vx)<2600);
+  const bulletThreat=bullets.some(b=>b.from==="player"&&Math.hypot(e.x-b.x,e.y-b.y)<70&&Math.abs((e.x-b.x)*b.vy-(e.y-b.y)*b.vx)<2600);
   if(bulletThreat)e.ai.state="dodge";
   updateAi(e.ai,dt,visible,dist,player.x,player.y);
-  if(bulletThreat)e.ai.state="dodge";
   if(e.ai.state==="dodge"){
-   const side=e.ai.strafe||1;
-   const q=moveTopDown(e.x,e.y,-dy/dist*1.35*scale*side,dx/dist*1.35*scale*side,15*scale);e.x=q[0];e.y=q[1];
+   const side=e.ai.strafe||1,q=moveTopDown(e.x,e.y,-dy/dist*1.35*scale*side,dx/dist*1.35*scale*side,15*scale);e.x=q[0];e.y=q[1];
   }else if(e.ai.state==="retreat"){
    const q=moveTopDown(e.x,e.y,-dx/dist*.7*scale+(-dy/dist)*e.ai.strafe*.35*scale,-dy/dist*.7*scale+(dx/dist)*e.ai.strafe*.35*scale,15*scale);e.x=q[0];e.y=q[1];
   }else if(e.ai.state==="chase"||e.ai.state==="attack"){
    const mult=e.type==="rusher"?1:e.type==="brawler"?.72:e.type==="flanker"?.62:.22;
-   const side=e.ai.strafe*(visible?.28:0);
-   const q=moveTopDown(e.x,e.y,(dx/dist*mult-dy/dist*side)*scale,(dy/dist*mult+dx/dist*side)*scale,15*scale);e.x=q[0];e.y=q[1];
+   const side=e.ai.strafe*(visible?.28:0),q=moveTopDown(e.x,e.y,(dx/dist*mult-dy/dist*side)*scale,(dy/dist*mult+dx/dist*side)*scale,15*scale);e.x=q[0];e.y=q[1];
   }else if(!visible&&e.ai.alert>0){
-   const d2=Math.hypot(e.ai.lastSeenX-e.x,e.ai.lastSeenY-e.y)||1;
-   const q=moveTopDown(e.x,e.y,(e.ai.lastSeenX-e.x)/d2*.3*scale,(e.ai.lastSeenY-e.y)/d2*.3*scale,15*scale);e.x=q[0];e.y=q[1];
+   const d2=Math.hypot(e.ai.lastSeenX-e.x,e.ai.lastSeenY-e.y)||1,q=moveTopDown(e.x,e.y,(e.ai.lastSeenX-e.x)/d2*.3*scale,(e.ai.lastSeenY-e.y)/d2*.3*scale,15*scale);e.x=q[0];e.y=q[1];
   }
   if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0&&visible){
    e.shootCool=e.type==="suppressor"?24:e.type==="sniper"?95:62;
@@ -1061,11 +1094,11 @@ function update(dt:number){
   }
   if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?16:8);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
  }
- enemies=enemies.filter(e=>!e.falling||e.y<(mode==="play"&&arenaMission?ARENA_H:topDownMap().h)+80);
+ enemies=enemies.filter(e=>!e.falling||e.y<ARENA_H+80);
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
- const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
- if(!save.activeTenderId){const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);if(objectiveDone){if(floor<2){floor++;if(selectfunction completeArenaTask(){
+}
+function completeArenaTask(){
  const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
  const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
  say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);advanceTenderMission();
@@ -1568,525 +1601,5 @@ function useAbility(){
 function hurt(amount:number){
  const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
  if(player.hp<=0){player.hp=player.maxHp;player.armor=save.armor*5;spawnFloor();}
-}
-
-function update(dt:number){
- frame++;speechCooldown=Math.max(0,speechCooldown-dt);if(speech)speech.timer-=dt;
- if(mode==="play"&&save.activeTenderId&&arenaMission){arenaTaskTimer+=dt;arenaSpawnTimer+=dt;if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();const exitForArena=topDownExit();const reachedArenaExit=Math.hypot(player.x-exitForArena[0],player.y-exitForArena[1])<55*portraitScale();const done=(arenaMission.objective==="survive"&&arenaTaskTimer>=arenaMission.target*60)||(arenaMission.objective==="reach"&&reachedArenaExit)||(arenaMission.objective==="recover"&&arenaTaskProgress>=1)||(arenaMission.objective==="defend"&&arenaTaskProgress>=arenaMission.target)||(arenaMission.objective==="clear"&&arenaTaskProgress>=arenaMission.target);if(done)completeArenaTask();}
- if(mode==="play"&&frame%420===0){const lines=heroLines[selected||"antonio"];say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);}
- const weapon=HS_WEAPONS[save.weapon];
- stepWeapon(player.combat,weapon,dt);
- player.ammo=player.combat.ammo;
- player.cool=player.combat.fireTimer;
- player.ability=Math.max(0,player.ability-dt);player.weaponSwap=Math.max(0,player.weaponSwap-dt);
- const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
- if(Math.abs(moveX)>.12||Math.abs(moveY)>.12){
-  const len=Math.hypot(moveX,moveY)||1;
-  const moved=moveTopDown(player.x,player.y,(moveX/Math.max(1,len))*speed,(moveY/Math.max(1,len))*speed,18*scale);
-  player.x=moved[0];player.y=moved[1];
-  if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
- }
- if(mode==="play")fire();if(touch.ability)useAbility();
- const obstacles=topDownObstacles();
- for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0){for(const e of enemies){if(e.falling)continue;const d=Math.hypot(e.x-g.x,e.y-g.y);if(d<g.radius){const k=1-d/g.radius;e.hp-=g.damage*k;if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;if(save.activeTenderId){arenaKills++;arenaTaskProgress++;}}}}if(Math.hypot(player.x-g.x,player.y-g.y)<g.radius)hurt(24);g.life=0;}}
- grenades=grenades.filter(g=>g.life>0);
- for(const b of bullets){
-  const result=traceShot(b,dt,obstacles);
-  if(result.blocked){b.life=0;continue;}
-  if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20*scale){b.life=0;hurt(Math.max(3,b.damage*.38));}
-  if(b.from==="player"){
-   for(let i=0;i<enemies.length;i++){
-    const e=enemies[i];if(e.falling||b.hitIds.has(i))continue;
-    if(Math.hypot(b.x-e.x,b.y-e.y)<24*scale){
-      b.hitIds.add(i);e.hp-=b.damage;b.damage*=.62;b.penetration-=.12;
-      if(e.hp<=0){e.falling=true;e.vy=-4.5*scale;save.money+=25;save.xp+=18;}
-      if(b.penetration<=0)b.life=0;break;
-    }
-   }
-  }
- }
- bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<topDownMap().w+30&&b.y>-30&&b.y<topDownMap().h+30);
- for(let i=0;i<enemies.length;i++){
-  const e=enemies[i];
-  if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
-  e.cool-=dt;e.shootCool-=dt;
-  const dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;
-  const visible=lineOfSight(e.x,e.y,player.x,player.y,obstacles);
-  const bulletThreat=bullets.some(b=>b.from==="player"&&Math.hypot((e.x-b.x), (e.y-b.y))<70&&Math.abs((e.x-b.x)*b.vy-(e.y-b.y)*b.vx)<2600);
-  if(bulletThreat)e.ai.state="dodge";
-  updateAi(e.ai,dt,visible,dist,player.x,player.y);
-  if(bulletThreat)e.ai.state="dodge";
-  if(e.ai.state==="dodge"){
-   const side=e.ai.strafe||1;
-   const q=moveTopDown(e.x,e.y,-dy/dist*1.35*scale*side,dx/dist*1.35*scale*side,15*scale);e.x=q[0];e.y=q[1];
-  }else if(e.ai.state==="retreat"){
-   const q=moveTopDown(e.x,e.y,-dx/dist*.7*scale+(-dy/dist)*e.ai.strafe*.35*scale,-dy/dist*.7*scale+(dx/dist)*e.ai.strafe*.35*scale,15*scale);e.x=q[0];e.y=q[1];
-  }else if(e.ai.state==="chase"||e.ai.state==="attack"){
-   const mult=e.type==="rusher"?1:e.type==="brawler"?.72:e.type==="flanker"?.62:.22;
-   const side=e.ai.strafe*(visible?.28:0);
-   const q=moveTopDown(e.x,e.y,(dx/dist*mult-dy/dist*side)*scale,(dy/dist*mult+dx/dist*side)*scale,15*scale);e.x=q[0];e.y=q[1];
-  }else if(!visible&&e.ai.alert>0){
-   const d2=Math.hypot(e.ai.lastSeenX-e.x,e.ai.lastSeenY-e.y)||1;
-   const q=moveTopDown(e.x,e.y,(e.ai.lastSeenX-e.x)/d2*.3*scale,(e.ai.lastSeenY-e.y)/d2*.3*scale,15*scale);e.x=q[0];e.y=q[1];
-  }
-  if((e.type==="shooter"||e.type==="sniper"||e.type==="suppressor")&&e.shootCool<=0&&visible){
-   e.shootCool=e.type==="suppressor"?24:e.type==="sniper"?95:62;
-   const a=Math.atan2(dy,dx)+(Math.random()-.5)*(e.type==="sniper"?.025:.11);
-   const ew=HS_WEAPONS[e.type==="sniper"?5:e.type==="suppressor"?3:1];
-   for(const shot of spawnShots(e.x,e.y,a,ew,"enemy",frame*100+i))bullets.push({...shot});
-  }
-  if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?16:8);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
- }
- enemies=enemies.filter(e=>!e.falling||e.y<topDownMap().h+80);
- if(enemies.length===0)objectiveProgress=1;
- floorTimer+=dt;
- const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
- if(!save.activeTenderId){const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);if(objectiveDone){if(floor<2){floor++;if(selectfunction completeArenaTask(){
- const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
- const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
- say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);advanceTenderMission();
-}
-function completeMission(){
- const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
- if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
- mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
- if(!save.completed.includes(m.id))save.completed.push(m.id);
- save.rank=rank();
- const h=selected;
- if(h){const next=missionIndexForHero(h);setResumeMission(next,0);}
- dialogueIndex=0;dialogueOpen=true;storeSave();render();
-}
-function nextMission(){
- const h=selected!;missionIndex=missionIndexForHero(h);
- if(missionIndex<0)missionIndex=0;
- setResumeMission(missionIndex,0);
- mode="briefing";dialogueIndex=0;dialogueOpen=true;
-}
-function beginSelected(){
- const h=selected;if(!h)return;
- save.hero=h;save.rank=rank();missionIndex=missionIndexForHero(h);
- if(storySeen(h)){
-   floor=Math.max(0,Math.min(2,save.resumeFloor?.[h]??0));
-   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();
- }else{
-   mode="family";dialogueIndex=0;dialogueOpen=false;
- }
- storeSave();
-}
-function advanceDialogue(){
- const m=currentMission();
- if(mode==="shop"){mode="play";dialogueOpen=false;return;}
- if(mode==="arena"){startTenderMission();return;}
- if(mode==="family"){
-   if(selected)markStorySeen(selected);
-   floor=Math.max(0,Math.min(2,save.resumeFloor?.[selected!]??0));
-   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();return;
- }
- if(mode==="result"){
-   dialogueOpen=false;
-   if(m.number===1){
-     mode="select";selected=null;save.hero=null;storeSave();
-   }else{
-     nextMission();
-   }
-   return;
- }
- if(!dialogueOpen){dialogueOpen=true;dialogueIndex=0;return;}
- dialogueIndex++;
- if(dialogueIndex>=m.dialogue.length){dialogueOpen=false;if(mode==="briefing"){mode="play";floor=0;spawnFloor();}else if(mode==="play"){}}
-}
-function missionForHero():Mission{const m=currentMission();return m;}
-function startMissionById(id:string){
- const i=allMissions.findIndex(m=>m.id===id);if(i<0)return;
- missionIndex=i;const m=allMissions[i];
- if(m.hero!=="shared")selected=m.hero;
- save.hero=selected;
- save.storySeen=save.storySeen||{};
- if(selected)save.storySeen[selected]=true;
- floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
- spawnFloor();saveResumeState();storeSave();render();
-}
-function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
-function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.weapon=weapons.length-1;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="arena";dialogueOpen=false;render();}
-
-function renderCanvas(){
- if(!ctx)return;
- resizeCanvas();
- const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
- ctx.setTransform(dpr,0,0,dpr,0,0);
- ctx.clearRect(0,0,viewWidth,viewHeight);
- ctx.imageSmoothingEnabled=false;
- const m=currentMission();
- if(mode==="play"){
-   // Игровой мир уже полностью рассчитывается в реальных portrait-координатах
-   // текущего viewport. Старый масштаб 640x448 здесь больше не применяется.
-   drawWorld(m);return;
- }
- if(mode==="select"){drawSelect();return;}
- if(mode==="arena"){drawArenaBriefing();return;}
- if(mode==="family"){drawFamily();return;}
- if(mode==="briefing"){drawBriefing();return;}
- if(mode==="shop"){drawShop();return;}
- if(mode==="tenders"){drawTenders();return;}
-  if(mode==="weaponMenu"){drawWeaponMenu();return;}
- if(mode==="result"){drawResult();return;}
-}
-function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
-function menuTextSize(base:number,min:number,max:number){return Math.max(min,Math.min(max,viewWidth*base));}
-function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:number,size:number,color:string,align:CanvasTextAlign="left"){
- const words=text.split(/\s+/);let line="";let row=0;
- for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars){tx(line,x,y+row*lineHeight,size,color,align);line=word;row++;}else line=next;}
- if(line)tx(line,x,y+row*lineHeight,size,color,align);
- return row+1;
-}
-function drawSelect(){
- const c=ctx;if(!c)return;
- const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
- const padX=viewWidth*.06,gapX=viewWidth*.04;
- const top=viewHeight*.17,gridH=viewHeight*.55,gapY=viewHeight*.018;
- const cardW=(viewWidth-padX*2-gapX)/2;
- const cardH=(gridH-gapY)/2;
- tx("ЧЕТЫРЕ СЫРА, МАЦЕРАРИЙ",viewWidth/2,viewHeight*.045,menuTextSize(.038,24,36),"#f0eee7","center");
- tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
- ids.forEach((id,i)=>{
-   const h=heroes[id],col=i%2,row=Math.floor(i/2);
-   const x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
-   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
-   rect(x,y,cardW,4,a?h.color:"#263137");
-
-   // Карточка имеет жёсткие независимые зоны: заголовок → имя → персонаж → описание → способность.
-   tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
-   tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
-
-   // Полная фигура живёт в собственной зоне: голова не режется клипом, ноги не уходят в описание.
-   const avatarTop=y+cardH*.25;
-   const avatarBottom=y+cardH*.76;
-   const avatarZoneH=avatarBottom-avatarTop;
-   const artScale=Math.max(.90,Math.min(1.08,cardW/270));
-   const spin=performance.now()/1000*.42+i*.8;
-   const spinX=.72+.28*Math.abs(Math.cos(spin));
-   c.save();
-   c.beginPath();
-   c.rect(x+8,avatarTop,cardW-16,avatarZoneH);
-   c.clip();
-   c.translate(x+cardW/2,avatarBottom);
-   c.scale(spinX,1);
-   drawMafiaMember({face:h.face,tie:h.color,suit:"#20262b"},0,0,frame+i*4,artScale);
-   c.restore();
-
-   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.011,8,13),h.color,"center");
-   tx(h.ability,x+cardW/2,y+cardH*.92,menuTextSize(.010,8,12),"#aab1b4","center");
- });
-}
-function drawArenaBriefing(){
- rect(0,0,viewWidth,viewHeight,"#07090b");const t=save.activeTenderId?tenderById(save.activeTenderId):null;
- tx("АРЕНА",viewWidth*.07,viewHeight*.07,menuTextSize(.045,28,40),hero().color);
- tx("ОДНА АРЕНА · ПОСЛЕДОВАТЕЛЬНЫЕ МИССИИ",viewWidth*.07,viewHeight*.115,menuTextSize(.014,9,14),"#68777f");
- if(t&&arenaMission){tx(t.code+" · "+t.title,viewWidth*.07,viewHeight*.20,menuTextSize(.026,18,28),"#f0eee7");tx(t.client,viewWidth*.07,viewHeight*.25,menuTextSize(.016,11,16),"#aeb6b8");tx("МИССИЯ "+arenaMission.order+" / 3",viewWidth*.07,viewHeight*.35,menuTextSize(.020,14,21),hero().color);tx(arenaMission.title,viewWidth*.07,viewHeight*.42,menuTextSize(.030,20,30),"#f0eee7");drawWrapped(arenaMission.briefing,viewWidth*.07,viewHeight*.49,Math.max(26,Math.floor(viewWidth/15)),menuTextSize(.021,15,22),menuTextSize(.021,15,22),"#aeb6b8");tx("ЦЕЛЬ · "+arenaTaskLabel,viewWidth*.07,viewHeight*.65,menuTextSize(.018,12,19),hero().color);tx("ПРАВИЛО · "+arenaMission.arenaRule,viewWidth*.07,viewHeight*.71,menuTextSize(.016,11,17),"#8d999d");}else{tx("ТЕНДЕР НЕ ПРИНЯТ",viewWidth/2,viewHeight*.40,menuTextSize(.028,19,28),"#aeb6b8","center");tx("Выбери контракт, чтобы открыть арену.",viewWidth/2,viewHeight*.47,menuTextSize(.018,12,18),"#68777f","center");}
-}
-function drawFamily(){
- const h=hero();
- rect(0,0,viewWidth,viewHeight,"#07090b");
- const title=menuTextSize(.04,28,38);
- const familySize=menuTextSize(.052,34,52);
- const nameSize=menuTextSize(.028,20,30);
- tx("ИСТОРИЯ СЕМЬИ",viewWidth/2,viewHeight*.055,title,h.color,"center");
- tx(h.family.toUpperCase(),viewWidth/2,viewHeight*.135,familySize,"#f0eee7","center");
- tx(h.name,viewWidth/2,viewHeight*.205,nameSize,"#aab1b4","center");
-
- const maxChars=Math.max(25,Math.floor(viewWidth/14.5));
- const bodySize=menuTextSize(.025,18,26);
- const bodyLine=bodySize*1.38;
- const smallSize=menuTextSize(.022,16,23);
- const smallLine=smallSize*1.38;
- let y=viewHeight*.285;
-
- const introRows=drawWrapped(familyText[h.family].intro,viewWidth/2,y,maxChars,bodyLine,bodySize,"#f0eee7","center");
- y+=introRows*bodyLine+viewHeight*.055;
-
- const bioRows=drawWrapped(h.bio,viewWidth/2,y,maxChars,smallLine,smallSize,"#c2c7c8","center");
- y+=bioRows*smallLine+viewHeight*.06;
-
- tx("СПОСОБНОСТЬ · "+h.ability,viewWidth/2,y,menuTextSize(.025,18,26),h.color,"center");
- y+=menuTextSize(.025,18,26)*1.8;
- drawWrapped(h.abilityDesc,viewWidth/2,y,maxChars,smallLine,smallSize,"#aab1b4","center");
-}
-function drawBriefing(){
- const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");
- tx("МИССИЯ "+String(m.number).padStart(2,"0"),viewWidth*.07,viewHeight*.07,menuTextSize(.025,18,26),hero().color);
- tx(m.ru,viewWidth*.07,viewHeight*.15,menuTextSize(.042,28,44),"#f0eee7");
- tx("ЦЕЛЬ · "+objectiveRu(m.objective),viewWidth*.07,viewHeight*.28,menuTextSize(.024,17,25),hero().color);
- m.floors.forEach((f,i)=>{tx("ЭТАЖ "+(i+1),viewWidth*.07,viewHeight*(.36+i*.07),menuTextSize(.018,13,20),"#59656b");tx(floorRu(f),viewWidth*.20,viewHeight*(.355+i*.07),menuTextSize(.024,16,25),"#f0eee7");});
- tx("НАГРАДА  $"+m.reward+"   ОПЫТ "+m.xp,viewWidth*.07,viewHeight*.72,menuTextSize(.021,15,22),"#d9b86c");
- if(dialogueOpen)drawDialogue();
-}
-function drawDialogue(){
- const m=currentMission(),d=m.dialogue[Math.min(dialogueIndex,m.dialogue.length-1)];if(!d)return;
- const bubbleW=viewWidth*.86,bubbleH=Math.min(viewHeight*.25,260),bx=(viewWidth-bubbleW)/2,by=viewHeight*.68;
- const speaker=speakerRu(d.speaker),accent=hero().color;
- rect(bx,by,bubbleW,bubbleH,"#f0eee7");
- rect(bx+4,by+4,bubbleW-8,bubbleH-8,"#101518");
- // Хвост комикса.
- const tailX=d.speaker===hero().name?bx+bubbleW*.72:bx+bubbleW*.24;
- poly([tailX-18,by+bubbleH,tailX,by+bubbleH+Math.min(34,viewHeight*.025),tailX+12,by+bubbleH],"#101518");
- rect(bx,by,bubbleW,5,accent);
- tx(speaker,bx+22,by+30,menuTextSize(.024,17,27),accent,"left");
- drawWrapped(d.text,bx+22,by+72,Math.max(25,Math.floor(viewWidth/17)),menuTextSize(.026,19,30),menuTextSize(.028,20,32),"#f0eee7","left");
- tx("ТАП",bx+bubbleW-22,by+bubbleH-18,menuTextSize(.016,11,17),"#8e999d","right");
-}
-function drawShop(){
- rect(0,0,viewWidth,viewHeight,"#07090b");tx("АРСЕНАЛ",viewWidth*.07,viewHeight*.08,menuTextSize(.04,26,38),hero().color);tx("ДЕНЬГИ $"+save.money,viewWidth*.93,viewHeight*.08,menuTextSize(.022,15,24),"#d9b86c","right");
- weapons.forEach((w,i)=>{const y=viewHeight*(.18+i*.075);const owned=save.weapon>=i;tx(String(i+1),viewWidth*.07,y,menuTextSize(.02,14,20),"#59656b");tx(weaponRu(w.name),viewWidth*.13,y,menuTextSize(.023,16,24),"#f0eee7");tx("$"+w.cost,viewWidth*.58,y,menuTextSize(.021,15,22),"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",viewWidth*.78,y,menuTextSize(.021,15,22),owned?hero().color:"#aab1b4");});
-}
-function drawTenders(){
- const c=ctx!;c.save();const W=viewWidth,H=viewHeight;c.fillStyle="#070a0c";c.fillRect(0,0,W,H);
- const g=c.createRadialGradient(W*.18,H*.12,0,W*.18,H*.12,W*.55);g.addColorStop(0,"rgba(216,108,53,.18)");g.addColorStop(1,"rgba(7,10,12,0)");c.fillStyle=g;c.fillRect(0,0,W,H);
- tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.06,H*.055,menuTextSize(.032,21,30),"#d86c35");
- tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.06,H*.09,menuTextSize(.014,9,14),"#68777f");
- tx((tenderPage+1)+"/"+Math.ceil(TENDERS.length/3),W*.94,H*.055,menuTextSize(.016,11,15),hero().color,"right");
- const top=H*.12,bottom=H*.90,gap=H*.018,cardH=(bottom-top-gap*2)/3,left=W*.045,cardW=W*.91;
- const pageItems=TENDERS.slice(tenderPage*3,tenderPage*3+3);
- const bodyChars=Math.max(31,Math.floor(W/16.2));
- pageItems.forEach((t,i)=>{
-   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
-   c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;
-   c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;
-   c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
-
-   tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");
-   tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");
-   tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
-   tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
-
-   const loreSize=menuTextSize(.009,7,10),loreLine=loreSize*1.18;
-   const loreRows=Math.min(3,drawWrapped(t.lore,left+12,y+57,bodyChars,loreLine,loreSize,"#aeb6b8","left"));
-   let cy=y+57+loreRows*loreLine+8;
-
-   tx(t.weaponType+" · "+t.caliber,left+12,cy,menuTextSize(.010,7,10),"#d9b86c","left");cy+=18;
-   tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+12,cy,menuTextSize(.009,7,10),"#7f8b90","left");cy+=17;
-
-   const reqSize=menuTextSize(.0085,6,9),reqLine=reqSize*1.2;
-   const reqRows=Math.min(2,drawWrapped("ТРЕБ.: "+t.requirements.join(" · "),left+12,cy,bodyChars,reqLine,reqSize,"#8d999d","left"));
-   cy+=reqRows*reqLine+6;
-
-   tx("$"+t.reward+" НАГРАДА · $"+t.advance+" АВАНС · $"+t.penalty+" ШТРАФ · "+t.durationHours+"Ч",left+12,cy,menuTextSize(.009,7,10),"#c6a86d","left");cy+=17;
-   const riskSize=menuTextSize(.0085,6,9),riskLine=riskSize*1.2;
-   drawWrapped("РИСК: "+t.risk,left+12,cy,bodyChars,riskLine,riskSize,"#9a6c55","left");
- });
- const bh=Math.min(38,H*.052),by=H-bh-H*.025;
- const enabledPrev=tenderPage>0,enabledNext=tenderPage<Math.ceil(TENDERS.length/3)-1;
- c.save();c.strokeStyle="#283136";c.lineWidth=1;c.fillStyle="rgba(10,14,16,.86)";
- c.beginPath();c.roundRect(W*.045,by,W*.18,bh,4);c.fill();c.stroke();
- c.beginPath();c.roundRect(W*.405,by,W*.19,bh,4);c.fill();c.stroke();
- c.beginPath();c.roundRect(W*.775,by,W*.18,bh,4);c.fill();c.stroke();c.restore();
- tx("‹",W*.135,by+bh*.68,menuTextSize(.028,18,26),enabledPrev?"#d86c35":"#394248","center");
- tx("НАЗАД",W/2,by+bh*.68,menuTextSize(.014,9,13),"#aeb6b8","center");
- tx("›",W*.865,by+bh*.68,menuTextSize(.028,18,26),enabledNext?"#d86c35":"#394248","center");
- c.restore();
-}
-function drawWeaponMenu(){
- const c=ctx!;c.save();const W=viewWidth,H=viewHeight;
- const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#eef5f7");bg.addColorStop(.52,"#e2eaee");bg.addColorStop(1,"#f5f7f8");c.fillStyle=bg;c.fillRect(0,0,W,H);
- c.globalAlpha=.15;c.fillStyle=hero().color;c.beginPath();c.arc(W*.08,H*.17,W*.20,0,Math.PI*2);c.fill();c.fillStyle="#e07b42";c.beginPath();c.arc(W*.94,H*.72,W*.18,0,Math.PI*2);c.fill();c.globalAlpha=1;
- const glass=(x:number,y:number,w:number,h:number,active=false)=>{c.save();c.shadowColor=active?"rgba(37,196,204,.28)":"rgba(42,61,72,.12)";c.shadowBlur=active?12:9;c.shadowOffsetY=5;const g=c.createLinearGradient(x,y,x,y+h);g.addColorStop(0,"rgba(255,255,255,.76)");g.addColorStop(.5,"rgba(248,252,253,.54)");g.addColorStop(1,active?"rgba(209,241,243,.58)":"rgba(222,232,237,.50)");c.fillStyle=g;c.beginPath();c.roundRect(x,y,w,h,Math.min(22,h*.34));c.fill();c.shadowBlur=0;c.shadowOffsetY=0;c.strokeStyle=active?"rgba(45,204,210,.88)":"rgba(255,255,255,.92)";c.lineWidth=1.4;c.stroke();c.fillStyle="rgba(255,255,255,.38)";c.beginPath();c.roundRect(x+3,y+3,w-6,Math.max(5,h*.12),Math.min(9,h*.07));c.fill();c.restore();};
- const button=(x:number,y:number,w:number,h:number,label:string,active=false)=>{glass(x,y,w,h,active);const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,active?"#56d8d8":"rgba(255,255,255,.82)");g.addColorStop(1,active?"#2cb6bd":"rgba(222,231,235,.72)");c.fillStyle=g;c.beginPath();c.roundRect(x+7,y+7,w-14,h-14,Math.min(17,h*.34));c.fill();c.strokeStyle="rgba(255,255,255,.72)";c.stroke();tx(label,x+w/2,y+h*.60,menuTextSize(.017,11,17),active?"#153b40":"#263740","center");if(active){c.fillStyle="#e69a45";c.beginPath();c.arc(x+w-19,y+h/2,5,0,Math.PI*2);c.fill();}};
- const margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);tx("АРСЕНАЛ",margin,top+headerH*.68,menuTextSize(.032,21,30),hero().color,"left");button(W*.76,top,W*.17,headerH,"×");
- const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);glass(margin,searchY,W*.86,searchH);tx("⌕",margin+W*.035,searchY+searchH*.65,menuTextSize(.028,19,25),"#5b6d77","center");tx("Выберите оружие",margin+W*.095,searchY+searchH*.65,menuTextSize(.018,12,17),"#52636c","left");tx(String(weapons.length),W-margin-W*.035,searchY+searchH*.65,menuTextSize(.016,11,15),"#77858c","center");
- const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;button(W*.08,bottomY,W*.34,bottomH,"НАЗАД");button(W*.53,bottomY,W*.39,bottomH,"В БОЙ",true);
- const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;const gap=H*.007,cardH=Math.min(64,H*.075),left=margin,cardW=W-margin*2;
- c.save();c.beginPath();c.rect(0,listTop,W,listBottom-listTop);c.clip();
- weapons.forEach((w,i)=>{const y=listTop+i*(cardH+gap),owned=save.weapon>=i,active=save.weapon===i;glass(left,y,cardW,cardH,active);c.save();c.globalAlpha=owned?1:.30;drawWeaponSprite(i,left+cardW*.25,y+cardH*.50,0,Math.min(.54,cardW/740));c.restore();tx(String(i+1).padStart(2,"0"),left+cardW*.43,y+cardH*.24,menuTextSize(.012,8,12),active?hero().color:"#68777f","left");tx(weaponRu(w.name),left+cardW*.43,y+cardH*.47,menuTextSize(.018,12,17),"#20323a","left");tx("УРОН "+w.damage+" · МАГ "+w.mag+" · "+Math.round(w.rate*60)+"/МИН",left+cardW*.43,y+cardH*.68,menuTextSize(.009,7,10),"#64737a","left");const bw=cardW*.27,bh=Math.min(21,cardH*.24),bx=left+cardW*.69,by=y+cardH*.64;button(bx,by,bw,bh,owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",active);});
- c.restore();
- const contentH=weapons.length*(cardH+gap)-gap,viewport=listBottom-listTop;if(contentH>viewport){const trackH=viewport*.72,trackY=listTop+(viewport-trackH)/2,thumbH=Math.max(22,trackH*viewport/contentH);c.fillStyle="rgba(255,255,255,.45)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,trackH,4);c.fill();c.fillStyle="rgba(65,180,188,.72)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,thumbH,4);c.fill();}
- c.restore();
-}
-function drawResult(){
- const m=currentMission();rect(0,0,viewWidth,viewHeight,"#07090b");tx("МИССИЯ ЗАВЕРШЕНА",viewWidth/2,viewHeight*.18,menuTextSize(.045,28,40),hero().color,"center");tx(m.ru,viewWidth/2,viewHeight*.27,menuTextSize(.032,21,32),"#f0eee7","center");
- tx("+$"+m.reward,viewWidth/2,viewHeight*.39,menuTextSize(.04,26,38),"#d9b86c","center");tx("+"+m.xp+" XP",viewWidth/2,viewHeight*.46,menuTextSize(.026,18,26),"#aab1b4","center");
- tx("РАНГ · "+rankRu(rankNames[rank()]),viewWidth/2,viewHeight*.54,menuTextSize(.023,16,24),hero().color,"center");tx("ВСЕГО ДЕНЕГ · $"+save.money,viewWidth/2,viewHeight*.59,menuTextSize(.021,15,22),"#f0eee7","center");
- if(m.number===10)tx("ЧЕТЫРЕ СЕМЬИ ТЕПЕРЬ СВЯЗАНЫ.",viewWidth/2,viewHeight*.68,menuTextSize(.02,14,22),"#aab1b4","center");
- if(m.number===13)tx("ГЛАВА I ЗАВЕРШЕНА",viewWidth/2,viewHeight*.68,menuTextSize(.026,18,26),hero().color,"center");
-}
-
-function buyOrSelectWeapon(n:number){
- if(n<0||n>=weapons.length)return;
- const w=weapons[n];
- if(save.weapon>=n){save.weapon=n;storeSave();return;}
- if(save.money>=w.cost){save.money-=w.cost;save.weapon=n;storeSave();}
-}
-
-function handleKey(e:KeyboardEvent){
- if(["ArrowLeft","ArrowRight","ArrowUp"," ","Enter"].includes(e.key))e.preventDefault();
- if(mode==="select"){
-   if(e.key==="ArrowRight"){const ids=["antonio","massimo","salvatore","giuseppe"] as HeroId[];const i=selected?ids.indexOf(selected):-1;selected=ids[(i+1+4)%4];}
-   if(e.key==="ArrowLeft"){const ids=["antonio","massimo","salvatore","giuseppe"] as HeroId[];const i=selected?ids.indexOf(selected):0;selected=ids[(i-1+4)%4];}
-   if(e.key==="Enter"&&selected)beginSelected();
-   return;
- }
- if(mode==="shop"){mode="weaponMenu";return;}
- if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
- if(mode==="weaponMenu"){
-   if(e.key>="1"&&e.key<="9"){const n=Number(e.key)-1;if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
-   if(e.key==="Escape"){mode="play";render();}
-   return;
- }
- if(mode==="play"&&(e.key==="r"||e.key==="R"))startReload(player.combat,HS_WEAPONS[save.weapon]);
- if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g){grenades.push(g);say("ГРАНАТА","player",player.x,player.y-45);}}
-
- if(e.key==="Escape"){mode="select";dialogueOpen=false;renderCanvas();return;}
- if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else fire();return;}
- keys.add(e.key);
-}
-function keyup(e:KeyboardEvent){keys.delete(e.key);}
-function exitToPortal(){
- saveResumeState();
- mode="select";dialogueOpen=false;
- window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}));
-}
-function bindButtons(){
- if(canvas&&mode==="weaponMenu"){
-   const hit=(e:PointerEvent)=>{
-     e.preventDefault();
-     const r=canvas!.getBoundingClientRect();
-     const x=e.clientX-r.left,y=e.clientY-r.top;
-     const W=viewWidth,H=viewHeight,margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);
-     const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;
-     if(y>=bottomY){
-       if(x>=W*.08&&x<=W*.42){mode="play";render();return;}
-       if(x>=W*.53&&x<=W*.92){mode="play";render();return;}
-     }
-     const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);
-     const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;
-     const gap=H*.007,cardH=Math.min(64,H*.075),left=margin,cardW=W-margin*2;
-     if(x>=left&&x<=left+cardW&&y>=listTop&&y<listBottom){
-       const n=Math.floor((y-listTop)/(cardH+gap));
-       const inside=(y-listTop)-n*(cardH+gap);
-       if(n>=0&&n<weapons.length&&inside<=cardH){
-         if(save.weapon>=n){
-           save.weapon=n;storeSave();
-           player.combat=createCombatState(HS_WEAPONS[n]);
-           player.ammo=HS_WEAPONS[n].magazine;
-           mode="play";render();
-         }
-       }
-     }
-   };
-   canvas.addEventListener("pointerup",hit);
- }
- root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;render();});
- root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{
-   const a=el.dataset.action;
-   if(a==="play"&&selected){beginSelected();render();}
-   if(a==="exit")exitToPortal();
-   if(a==="menu"){returnToMainMenu();}
-      if(a==="cheat"){activateCheatAll();}
-      if(a==="advance"){advanceDialogue();render();}
-   if(a==="shop"){mode="weaponMenu";render();}
-   if(a==="weapon-menu"){mode="weaponMenu";render();}
-   if(a==="tenders"){tenderPage=0;mode="tenders";render();}
-   if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
-   if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
-   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!(save.completedTenders||[]).includes(t.id)){save.activeTenderId=t.id;save.arenaMissionIndex=0;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaTaskSetup();mode="arena";storeSave();render();}}
-   if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
-   if(a==="weapon-back"){mode="play";render();}
-   if(a==="swap")switchWeapon();
-   if(a==="special")useAbility();
- });
- root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
- const moveSensor=root?.querySelector<HTMLElement>(".mafia-touch-move");
- if(moveSensor){
-   const updateMove=(e:PointerEvent)=>{
-     const r=moveSensor.getBoundingClientRect();
-     const dx=(e.clientX-(r.left+r.width/2))/(r.width*.42);
-     const dy=(e.clientY-(r.top+r.height/2))/(r.height*.42);
-     moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));
-     const stick=moveSensor.querySelector<HTMLElement>(".mafia-touch-stick");
-     if(stick)stick.style.transform='translate('+Math.max(-34,Math.min(34,dx*34))+'px,'+Math.max(-34,Math.min(34,dy*34))+'px)';
-   };
-   const stopMove=(e:PointerEvent)=>{if(e.pointerId===movePointerId){movePointerId=null;moveX=0;moveY=0;touch.jump=false;const stick=moveSensor.querySelector<HTMLElement>(".mafia-touch-stick");if(stick)stick.style.transform='translate(0,0)';}};
-   moveSensor.addEventListener("pointerdown",e=>{e.preventDefault();movePointerId=e.pointerId;moveSensor.setPointerCapture(e.pointerId);updateMove(e);});
-   moveSensor.addEventListener("pointermove",e=>{if(e.pointerId===movePointerId)updateMove(e);});
-   moveSensor.addEventListener("pointerup",stopMove);moveSensor.addEventListener("pointercancel",stopMove);
- }
- const sensor=root?.querySelector<HTMLElement>(".mafia-aim-sensor");
- if(sensor){
-   const setAim=(e:PointerEvent)=>{const r=sensor.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);if(Math.hypot(dx,dy)<10)return;aimAngle=Math.atan2(dy,dx);aimActive=true;};
-   sensor.addEventListener("pointerdown",e=>{e.preventDefault();aimPointerId=e.pointerId;sensor.setPointerCapture(e.pointerId);setAim(e);});
-   sensor.addEventListener("pointermove",e=>{if(e.pointerId===aimPointerId)setAim(e);});
-   const stop=(e:PointerEvent)=>{if(e.pointerId===aimPointerId){aimPointerId=null;aimActive=false;}};
-   sensor.addEventListener("pointerup",stop);sensor.addEventListener("pointercancel",stop);
- }
-}
-function resizeCanvas(){
- if(!root||!canvas||!ctx)return;
- const w=Math.max(320,root.clientWidth||window.innerWidth);
- const h=Math.max(480,root.clientHeight||window.innerHeight);
- const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
- const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
- if(canvas.width!==pw||canvas.height!==ph){
-   canvas.width=pw;canvas.height=ph;
-   canvas.style.width=w+"px";canvas.style.height=h+"px";
- }
- ctx.setTransform(dpr,0,0,dpr,0,0);
- ctx.imageSmoothingEnabled=false;
- viewWidth=w;viewHeight=h;
-}
-function render(){
- if(!root)return;
- root.innerHTML='<div class="freezzz-mafia-frame">'+(mode==="select"?'<video class="mafia-menu-live-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>':mode==="play"?'<video class="mafia-level-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>':"")+'<canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui"></div></div>';
- if(mode==="select"){
-   const bg=root.querySelector<HTMLVideoElement>(".mafia-menu-live-bg");
-   if(bg){bg.src=portalVideoUrl("live");bg.play().catch(()=>{});}
- }else if(mode==="play"){
-   const bg=root.querySelector<HTMLVideoElement>(".mafia-level-bg");
-   if(bg){bg.src=portalVideoUrl("library");bg.play().catch(()=>{});}
- }
- canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;
- resizeCanvas();
- const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
- if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button><button data-action="levels">АРЕНА</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
- }else if(mode==="family"){
-   ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
- }else if(mode==="arena"){
-   ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="advance">НАЧАТЬ МИССИЮ</button><button data-action="tenders">ТЕНДЕРЫ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
- }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
-  }else if(mode==="weaponMenu"){
-    // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
-    ui.innerHTML="";
-  }else if(mode==="tenders"){
-    ui.innerHTML=TENDERS.slice(tenderPage*3,tenderPage*3+3).map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:4.5%;right:4.5%;top:${12+i*26.0}%;height:22%;opacity:0;appearance:none;border:0;background:transparent;outline:none;box-shadow:none"></button>`).join("")+`<button data-action="tender-prev" style="position:absolute;left:0;bottom:2%;width:20%;height:7%;opacity:0">‹</button><button data-action="menu" style="position:absolute;left:40%;bottom:2%;width:20%;height:7%;opacity:0">НАЗАД</button><button data-action="tender-next" style="position:absolute;right:0;bottom:2%;width:20%;height:7%;opacity:0">›</button>`;
-  }else{
-   ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
- }
- bindButtons();renderCanvas();
-}
-function updateCombatButtonLabels(){
- if(!root||mode!=="play")return;
- const special=root.querySelector<HTMLElement>('[data-action="special"]');
- if(special)special.textContent=player.ability>0?"СПЕЦ "+(player.ability/60).toFixed(1):"СПЕЦ";
-}
-function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
-function setup(){
- loadSave();selected=save.hero;
-  render();raf=requestAnimationFrame(loop);
- cleanup=()=>{cancelAnimationFrame(raf);};
-}
-export function mountFreezzzMafia(host:HTMLElement){cleanup();root=host;mode="select";dialogueOpen=false;setup();return ()=>{saveResumeState();cleanup();root=null;canvas=null;ctx=null;};}function floorRu(s:string){
- const map:Record<string,string>={OFFICE:"ОФИС","UPPER OFFICE":"ВЕРХНИЙ ОФИС",ESCAPE:"ОТХОД","FRONT OFFICE":"ПЕРЕДНИЙ ОФИС","RECORD ROOM":"АРХИВ",ROOFTOP:"КРЫША",STREET:"УЛИЦА",BLOCK:"КВАРТАЛ","BACK STREET":"ЗАДНЯЯ УЛИЦА",GARAGE:"ГАРАЖ",ENTRANCE:"ВХОД",STORAGE:"СКЛАД",BAR:"БАР","BACK ROOM":"ЗАДНЯЯ КОМНАТА",ALLEY:"ПЕРЕУЛОК",WAREHOUSE:"СКЛАД",DEPOT:"ДЕПО","LOADING BAY":"ПОГРУЗОЧНАЯ ЗОНА","UPPER CATWALK":"ВЕРХНЯЯ ПЛОЩАДКА","CONTROL ROOM":"ЦЕНТР УПРАВЛЕНИЯ","SERVICE FLOOR":"СЛУЖЕБНЫЙ ЭТАЖ","UPPER FLOOR":"ВЕРХНИЙ ЭТАЖ","LOCKED FLOOR":"ЗАКРЫТЫЙ ЭТАЖ","ROOF ACCESS":"ВЫХОД НА КРЫШУ","MEETING FLOOR":"ЭТАЖ ВСТРЕЧИ","ROSSI HQ":"ШТАБ РОССИ","MORETTI HQ":"ШТАБ МОРЕТТИ","VALENTI OFFICE":"ОФИС ВАЛЕНТИ","PORT":"ПОРТ","CONTAINER YARD":"КОНТЕЙНЕРНЫЙ ДВОР","CONTROL FLOOR":"ЭТАЖ УПРАВЛЕНИЯ","SERVICE HALL":"СЛУЖЕБНЫЙ КОРИДОР","MEETING ROOM":"КОМНАТА ВСТРЕЧИ","SERVICE TUNNEL":"СЛУЖЕБНЫЙ ТОННЕЛЬ","NIGHT DOCK":"НОЧНОЙ ПРИЧАЛ","CRANE FLOOR":"ЭТАЖ КРАНА","NIGHT STREET":"НОЧНАЯ УЛИЦА","DISTRICT":"РАЙОН","CROSSING":"ПЕРЕКРЁСТОК","ARCHIVE":"АРХИВ","HIDDEN ROOM":"СКРЫТАЯ КОМНАТА","SECURE ARCHIVE":"ЗАКРЫТЫЙ АРХИВ","FINAL FLOOR":"ФИНАЛЬНЫЙ ЭТАЖ","ENTRY":"ВХОД","CROSSROADS":"ПЕРЕКРЁСТОК","SPLIT LEVEL":"РАЗДЕЛЁННЫЙ ЭТАЖ","OUTER BLOCK":"ВНЕШНИЙ КВАРТАЛ"};
- return map[s]||s;
-}
-function speakerRu(s:string){
- const map:Record<string,string>={CONTACT:"СВЯЗНОЙ",ACCOUNTANT:"БУХГАЛТЕР",SENIOR:"СТАРШИЙ",GUARD:"ОХРАННИК","OLD CONTACT":"СТАРЫЙ КОНТАКТ",UNKNOWN:"НЕИЗВЕСТНЫЙ","OLD FRIEND":"СТАРЫЙ ЗНАКОМЫЙ",STRANGER:"НЕЗНАКОМЕЦ"};
- return map[s]||s;
-}
-function enemyRu(s:string){
- const map:Record<string,string>={guard:"ОХРАНА",brawler:"БОРЕЦ",rusher:"ШТУРМОВИК",shooter:"СТРЕЛОК",flanker:"ОБХОДЧИК",heavy:"ТЯЖЁЛЫЙ",suppressor:"ПОДАВИТЕЛЬ",sniper:"СНАЙПЕР"};
- return map[s]||s;
-}
-function weaponRu(s:string){
- const map:Record<string,string>={"POCKET 9":"КАРМАННЫЙ","SERVICE":"СЛУЖЕБНЫЙ","REVOLVER":"РЕВОЛЬВЕР","SMG":"АВТОМАТ","SHOTGUN":"ДРОБОВИК","CARBINE":"КАРАБИН"};
- return map[s]||s;
 }
 
