@@ -1859,13 +1859,13 @@ function render(){
  resizeCanvas();
  const ui=root.querySelector<HTMLElement>(".freezzz-mafia-ui")!;
  if(mode==="select"){
-   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play" '+(selected?"":"disabled")+'>ИГРАТЬ</button><button data-action="exit">ВЫХОД</button><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
+   ui.innerHTML='<div class="mafia-select-grid">'+(["antonio","massimo","salvatore","giuseppe"] as HeroId[]).map(id=>'<button class="'+(id===selected?"selected":"")+'" aria-label="Выбрать '+heroes[id].name+'" data-hero="'+id+'"></button>').join("")+'</div><div class="mafia-menu-actions"><button data-action="play">ИГРАТЬ</button></div>';
  }else if(mode==="family"){
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">ПРОПУСТИТЬ</button></div>';
  }else if(mode==="arena"){
    ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="advance">НАЧАТЬ МИССИЮ</button><button data-action="tenders">ТЕНДЕРЫ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="tenders">ТЕНДЕРЫ</button><button data-action="menu">МЕНЮ</button></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
