@@ -379,3 +379,11 @@
 }
 .cargo-deck-ui .cargo-aim{display:none!important}
 .cargo-deck-ui .cargo-fire{display:none!important}
+
+/* Right-wall stack: AUTO / GRENADE / SPECIAL */
+.cargo-deck-ui .cargo-auto,
+.cargo-deck-ui .cargo-grenade,
+.cargo-deck-ui .cargo-special{
+  right:6px!important;
+  left:auto!important;
+}
