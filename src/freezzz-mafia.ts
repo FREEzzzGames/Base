@@ -19,7 +19,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
 interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
 interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
-interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number;anim:number;animState:"idle"|"run"|"strafe"|"attack"|"hit"|"retreat"|"death";animSpeed:number;hitFlash:number;attackFx:number;stepFx:number;path:Array<[number,number]>;pathIndex:number;pathTimer:number;spawnGrace:number;scatterX:number;scatterY:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number;anim:number;animState:"idle"|"run"|"strafe"|"attack"|"hit"|"retreat"|"death";animSpeed:number;hitFlash:number;attackFx:number;stepFx:number;spawnGrace:number;scatterX:number;scatterY:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -167,7 +167,7 @@ let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRe
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let tenderPage=0;
-let arenaWave=0,arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaSpawnTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
+let arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
 let arenaMission:ArenaMission|null=null;
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,weaponInventory:[0],medkits:0,completed:[],completedTenders:[],arenaMissionIndex:0,storySeen:{},resumeMission:{},resumeFloor:{}};
@@ -878,7 +878,7 @@ function spawnSiegeWave(){
     morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,
     burstCool:20+i*5,assist:0,anim:Math.random()*6.28,animState:"idle" as const,
     animSpeed:.08,hitFlash:0,attackFx:0,stepFx:Math.random()*6.28,
-    path:[],pathIndex:0,pathTimer:0,spawnGrace:150,scatterX:target[0],
+    spawnGrace:150,scatterX:target[0],
     scatterY:target[1]
    };
    siegeMobs.push({x:sx,y:sy,team,...common});
@@ -1196,7 +1196,7 @@ function arenaTaskSetup(){
  const tenderId=save.activeTenderId;
  const missions=tenderId?arenaMissionsForTender(tenderId):[];
  arenaMission=missions[save.arenaMissionIndex||0]||ALIEN_ARENA_MISSION;
- arenaTaskProgress=0;arenaTaskTimer=0;arenaWave=0;arenaKills=0;arenaSpawnTimer=0;
+ arenaTaskProgress=0;arenaTaskTimer=0;arenaKills=0;
  arenaTaskTarget=arenaMission.target;
  const labels:Record<ArenaMission["objective"],string>={
   clear:"УНИЧТОЖИТЬ ВРАГОВ",
@@ -1264,7 +1264,7 @@ function updateArenaPickups(dt:number){
  arenaPickups=arenaPickups.filter(p=>p.life>0);
 }
 function spawnFloor(){
- floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
+ floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];arenaKills=0;arenaTaskTimer=0;
  // Spawn the hero first, then instantiate the exact same encounter tick for both factions.
  save.weaponInventory=Array.from(new Set([0,...(save.weaponInventory||[]),save.weapon])).slice(0,8);
 player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,medkits:Math.max(0,Math.min(5,save.medkits||0)),combat:createCombatState(HS_WEAPONS[save.weapon])};
@@ -1376,7 +1376,7 @@ function update(dt:number){
  const hpRatio=player.hp/Math.max(1,player.maxHp);if(hpRatio<=.30)criticalPulse=Math.min(1,criticalPulse+.035);else criticalPulse=Math.max(0,criticalPulse-.06);
 
  if(arenaMission){
-  arenaTaskTimer+=dt;arenaSpawnTimer+=dt;updateSiege(dt);
+  arenaTaskTimer+=dt;updateSiege(dt);
   if(siegeOver)return;
   // CARGO DECK uses the siege runtime exclusively; no legacy wave spawner here.
   const [exitX,exitY]=topDownExit(),scale=portraitScale();
@@ -1525,52 +1525,12 @@ function siegeAttackable(m:SiegeMob){
  }
  return best;
 }
-function siegeGridBlocked(gx:number,gy:number,cell:number){
- const x=gx*cell+cell*.5,y=gy*cell+cell*.5;
- if(x<24||x>ARENA_W-24||y<140||y>ARENA_H-140)return true;
- return arenaObstacles().some(o=>circleRectHit(x,y,22,o));
-}
-function siegeBuildPath(m:SiegeMob,targetX:number,targetY:number){
- const cell=50,cols=Math.ceil(ARENA_W/cell),rows=Math.ceil(ARENA_H/cell);
- const sx=Math.max(0,Math.min(cols-1,Math.floor(m.x/cell))),sy=Math.max(0,Math.min(rows-1,Math.floor(m.y/cell)));
- const txg=Math.max(0,Math.min(cols-1,Math.floor(targetX/cell))),tyg=Math.max(0,Math.min(rows-1,Math.floor(targetY/cell)));
- const start=sx+","+sy,goal=txg+","+tyg;
- const open:Array<{x:number;y:number;g:number;f:number;key:string;parent:string|null}>=[{x:sx,y:sy,g:0,f:Math.abs(txg-sx)+Math.abs(tyg-sy),key:start,parent:null}];
- const best=new Map<string,number>([[start,0]]);
- const parent=new Map<string,string|null>();
- const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]];
- let found:string|null=null;
- let guard=0;
- while(open.length&&guard++<2200){
-  open.sort((p,q)=>p.f-q.f);
-  const cur=open.shift()!;
-  if(cur.key===goal){found=cur.key;parent.set(cur.key,cur.parent);break;}
-  for(const [dx,dy] of dirs){
-   const nx=cur.x+dx,ny=cur.y+dy;
-   if(nx<0||ny<0||nx>=cols||ny>=rows||siegeGridBlocked(nx,ny,cell))continue;
-   if(dx!==0&&dy!==0&&(siegeGridBlocked(cur.x+dx,cur.y,cell)||siegeGridBlocked(cur.x,cur.y+dy,cell)))continue;
-   const key=nx+","+ny,g=cur.g+(dx&&dy?1.414:1);
-   if(g>=(best.get(key)??Infinity))continue;
-   best.set(key,g);parent.set(key,cur.key);
-   open.push({x:nx,y:ny,g,f:g+Math.hypot(txg-nx,tyg-ny),key,parent:cur.key});
-  }
- }
- if(!found){m.path=[];m.pathIndex=0;return false;}
- const cells:Array<[number,number]>=[];let k: string|null=found;
- while(k&&k!==start){
-  const [x,y]=k.split(",").map(Number);cells.push([x*cell+cell*.5,y*cell+cell*.5]);k=parent.get(k)||null;
- }
- cells.reverse();
- m.path=cells;m.pathIndex=0;m.pathTimer=70;
- return true;
-}
 function siegeMoveTo(m:SiegeMob,x:number,y:number,dt:number,r=18){
  // CARGO DECK uses direct steering plus collision sliding. The previous per-mob
  // A* search rebuilt a ~20x52 grid repeatedly and caused frame-time spikes
  // once the first siege wave became active on mobile devices.
  m.targetX=x;m.targetY=y;
  siegeStep(m,x-m.x,y-m.y,dt,r);
- m.pathTimer=18;
 }
 function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
  const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
@@ -1594,7 +1554,7 @@ function updateSiege(dt:number){
    if(m.team==="enemy"){arenaKills++;arenaTaskProgress=Math.min(arenaTaskTarget,arenaTaskProgress+1);}
    siegeMobs.splice(i,1);continue;
   }
-  m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.pathTimer-=dt;m.spawnGrace=Math.max(0,m.spawnGrace-dt);
+  m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.spawnGrace=Math.max(0,m.spawnGrace-dt);
   m.hitFlash=Math.max(0,m.hitFlash-dt*.09);m.attackFx=Math.max(0,m.attackFx-dt*.09);m.anim+=dt*m.animSpeed;
   const hpRatio=m.hp/m.maxHp;
   let nearbyAllies=0,nearbyEnemies=0;
