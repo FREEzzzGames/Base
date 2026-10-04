@@ -262,13 +262,13 @@ function getTestLayout():TestFloorLayout{
 }
 
 function drawHudOverlay(m:Mission){
- rect(8,8,viewWidth-16,40,"rgba(5,7,8,.94)");
+ rect(8,8,viewWidth-16,40,"rgba(4,8,11,.96)");
  const fs=Math.max(10,Math.min(18,viewWidth*.019));
- tx("FREEzzz АРЕНА",18,15,fs,hero().color);tx(hero().name,viewWidth*.20,15,fs,"#f0eee7");
- tx("$"+save.money,viewWidth*.42,15,fs*.82,"#d9b86c");tx("HP "+Math.max(0,Math.round(player.hp)),viewWidth*.58,15,fs*.72,"#d5d8d7");
- tx("МАГ "+player.combat.ammo+"/"+player.combat.reserve,viewWidth*.94,15,fs*.72,hero().color,"right");
- if(save.activeTenderId){const t=tenderById(save.activeTenderId);if(t){tx("ТЕНДЕР · "+t.code+" · ВОЛНА "+arenaWave,18,62,fs*.78,"#d9b86c");tx(arenaTaskLabel+" · "+arenaTaskProgress+"/"+arenaTaskTarget,18,79,fs*.70,hero().color);}}
- else tx("ВЫБЕРИ ТЕНДЕР",18,62,fs*.82,"#aab1b4");
+ tx("ALIEN CARGO DECK",18,15,fs,hero().color);tx("COMBAT",viewWidth*.27,15,fs,"#f0eee7");
+ tx("HP "+Math.max(0,Math.round(player.hp)),viewWidth*.48,15,fs*.72,"#d5d8d7");
+ tx("MAG "+player.combat.ammo+"/"+player.combat.reserve,viewWidth*.94,15,fs*.72,hero().color,"right");
+ tx("WAVE "+siegeWave,18,62,fs*.78,"#d9b86c");
+ tx(arenaTaskLabel+" · "+arenaTaskProgress+"/"+arenaTaskTarget,18,79,fs*.70,hero().color);
 }
 function portraitScale(){return Math.max(.85,Math.min(2.15,Math.min(viewWidth/360,viewHeight/780)));}
 function topDownMap(){
@@ -748,19 +748,23 @@ function drawWorld(m:Mission){
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function drawArenaBackground(){
- rect(0,0,ARENA_W,ARENA_H,"#30383b");
- rect(0,0,ARENA_W,210,"#26363a");rect(0,ARENA_H-210,ARENA_W,210,"#34443b");
- for(let y=210;y<ARENA_H-210;y+=70)rect(0,y,ARENA_W,2,"rgba(210,210,190,.08)");
- for(let x=0;x<ARENA_W;x+=80)line(x,210,x,ARENA_H-210,"rgba(0,0,0,.10)",1);
+ if(!ctx)return;
+ rect(0,0,ARENA_W,ARENA_H,"#05080d");
+ for(let i=0;i<180;i++){const x=(i*137+Math.floor(frame*.12))%ARENA_W,y=(i*83+Math.floor(frame*.035))%ARENA_H;if(x<70||x>930)rect(x,y,1+(i%3===0?1:0),1,"rgba(180,220,255,"+(.28+(i%5)*.09)+")");}
+ rect(68,0,864,ARENA_H,"#222b30");rect(82,0,836,ARENA_H,"#303a3e");
+ for(let y=0;y<ARENA_H;y+=72)line(82,y,918,y,"rgba(190,215,218,.08)",1);
+ for(let x=82;x<=918;x+=64)line(x,0,x,ARENA_H,"rgba(0,0,0,.12)",1);
  const lanes=[250,500,750];
- lanes.forEach(x=>{rect(x-54,210,108,1110,"rgba(18,25,27,.18)");line(x,210,x,1320,"rgba(225,220,198,.12)",2);});
- for(const o of arenaObstacles()){rect(o.x+5,o.y+7,o.w,o.h,"rgba(0,0,0,.25)");rect(o.x,o.y,o.w,o.h,"#56605e");rect(o.x+8,o.y+8,o.w-16,Math.min(12,o.h-16),"#707875");}
- rect(70,48,860,118,"#20292c");rect(95,68,810,78,"#2d383a");
- rect(95,68,270,78,hero().color);rect(635,68,270,78,"#9b403d");
- tx("БАЗА ИГРОКА",230,108,18,"#071011","center");tx("ВРАЖЕСКАЯ БАЗА",770,108,18,"#f0eee7","center");
- rect(0,190,ARENA_W,20,"#596463");rect(0,ARENA_H-230,ARENA_W,20,"#68736b");
- line(30,210,970,210,"#d7d2bc",3);line(30,1320,970,1320,"#d7d2bc",3);
- tx("ТРИ ЛИНИИ · ВОЛНЫ МОБОВ",ARENA_W/2,245,18,"#aeb6b8","center");
+ lanes.forEach((x,i)=>{rect(x-58,180,116,2340,i===1?"rgba(64,180,188,.075)":"rgba(10,20,24,.12)");line(x,180,x,2520,i===1?"rgba(82,218,226,.28)":"rgba(190,210,210,.10)",2);for(let y=220;y<2480;y+=180)rect(x-48,y,96,3,i===1?"rgba(85,220,226,.18)":"rgba(200,220,220,.07)");});
+ const cargo=[[112,390,170,86],[720,390,170,86],[110,790,150,74],[740,790,150,74],[120,1210,180,88],[700,1210,180,88],[105,1680,165,82],[730,1680,165,82],[120,2100,170,86],[710,2100,170,86]] as [number,number,number,number][];
+ cargo.forEach(([x,y,w,h],i)=>{rect(x+7,y+8,w,h,"rgba(0,0,0,.35)");rect(x,y,w,h,i%3===0?"#45545a":i%3===1?"#3e4b50":"#4b4b55");rect(x+8,y+8,w-16,7,i%2?"#6c8589":"#657276");for(let k=1;k<4;k++)line(x+k*w/4,y+18,x+k*w/4,y+h-8,"rgba(10,15,17,.35)",2);rect(x+14,y+h-15,w-28,4,"rgba(77,211,220,.25)");});
+ for(const yy of [520,1010,1510,1980,2380]){line(90,yy,910,yy,"#17282d",12);line(90,yy,910,yy,"rgba(75,211,220,.22)",3);for(let x=120;x<900;x+=95)ellipse(x,yy,4,4,"rgba(104,235,239,.65)");}
+ rect(0,0,68,ARENA_H,"#03060a");rect(932,0,68,ARENA_H,"#03060a");
+ for(let y=0;y<ARENA_H;y+=110){line(55,y,68,y+22,"#52636a",2);line(932,y+22,945,y,"#52636a",2);}
+ rect(82,70,836,98,"#151d21");rect(102,88,796,62,"#25343a");rect(102,88,260,62,"#234c53");rect(638,88,260,62,"#4a3038");tx("CARGO DECK // COMBAT ZONE",500,109,17,"#d8e3e3","center");
+ rect(82,ARENA_H-168,836,98,"#151d21");rect(102,ARENA_H-150,796,62,"#25343a");tx("CARGO CORE // DEFENSE LINE",500,ARENA_H-127,16,"#d8e3e3","center");
+ line(82,180,918,180,"#708083",3);line(82,2520,918,2520,"#708083",3);
+ tx("LANE 01",250,218,12,"rgba(180,215,218,.55)","center");tx("LANE 02",500,218,12,"rgba(180,215,218,.55)","center");tx("LANE 03",750,218,12,"rgba(180,215,218,.55)","center");
 }
 function initSiege(){
  siegeTowers=[];siegeBases=[];siegeMobs=[];siegeWave=0;siegeWaveTimer=0;siegeOver=false;siegeMessage="";
@@ -816,54 +820,49 @@ function spawnSiegeWave(){
 }
 function drawSiegeStructures(){
  siegeTowers.forEach(t=>{
-  const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#d85b52";
-  rect(t.x-34,t.y-20,68,40,"rgba(0,0,0,.32)");
-  rect(t.x-27,t.y-58,54,78,alive?"#505b5b":"#252a2b");
-  rect(t.x-20,t.y-73,40,18,alive?teamColor:"#3b4040");
-  rect(t.x-14,t.y-88,28,15,alive?"#78827f":"#414646");
-  if(alive){rect(t.x-35,t.y-102,70,6,"#151a1c");rect(t.x-35,t.y-102,70*clamp(t.hp/t.maxHp,0,1),6,teamColor);}
-  tx("T"+(t.lane+1),t.x,t.y+28,14,alive?teamColor:"#697174","center");
+  const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#e05b78";
+  ellipse(t.x,t.y+8,43,13,"rgba(0,0,0,.35)");rect(t.x-30,t.y-52,60,58,alive?"#3b4b50":"#252b2e");
+  poly([t.x-30,t.y-52,t.x-18,t.y-76,t.x+18,t.y-76,t.x+30,t.y-52],alive?"#536a70":"#343b3e");
+  rect(t.x-20,t.y-68,40,9,teamColor);ellipse(t.x,t.y-32,13,13,alive?"#8ce9ec":"#444b4d");if(alive)ellipse(t.x,t.y-32,6,6,teamColor);
+  rect(t.x-35,t.y-91,70,6,"#101619");if(alive)rect(t.x-35,t.y-91,70*clamp(t.hp/t.maxHp,0,1),6,teamColor);
+  tx("NODE "+String(t.lane+1),t.x,t.y+17,11,alive?teamColor:"#697174","center");
  });
  siegeBases.forEach(b=>{
-  const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#d85b52";
-  rect(b.x-105,b.y-42,210,84,alive?"#273235":"#242728");
-  rect(b.x-82,b.y-58,164,16,teamColor);
-  rect(b.x-48,b.y-88,96,30,alive?"#596465":"#393d3d");
-  if(alive){rect(b.x-105,b.y+50,210,8,"#151a1c");rect(b.x-105,b.y+50,210*clamp(b.hp/b.maxHp,0,1),8,teamColor);}
-  tx(alive?(b.team==="player"?"БАЗА":"ВРАЖЕСКАЯ БАЗА"):"БАЗА РАЗРУШЕНА",b.x,b.y+68,15,alive?teamColor:"#777f81","center");
+  const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#e05b78";
+  rect(b.x-116,b.y-38,232,76,alive?"#202e33":"#20282b");rect(b.x-96,b.y-62,192,20,teamColor);
+  poly([b.x-58,b.y-38,b.x-30,b.y-78,b.x+30,b.y-78,b.x+58,b.y-38],alive?"#536b70":"#373e40");
+  ellipse(b.x,b.y-38,19,19,alive?"#8ce9ec":"#454c4d");if(alive)ellipse(b.x,b.y-38,9,9,teamColor);
+  rect(b.x-116,b.y+48,232,8,"#101619");if(alive)rect(b.x-116,b.y+48,232*clamp(b.hp/b.maxHp,0,1),8,teamColor);
+  tx(alive?(b.team==="player"?"CARGO CORE":"HOST CORE"):"CORE OFFLINE",b.x,b.y+63,13,alive?teamColor:"#777f81","center");
  });
 }
-function drawSiegeMobs(){
- siegeMobs.forEach(m=>{
-  const col=m.team==="player"?hero().color:"#d85b52";
-  const moving=m.animState==="run"||m.animState==="strafe"||m.animState==="retreat";
-  const walk=Math.sin(m.anim)* (moving?2.8:0);
-  const bob=moving?Math.abs(Math.sin(m.anim))*.9:Math.sin(m.anim*.5)*.35;
-  const lean=m.animState==="strafe"?m.strafe*.045:m.animState==="retreat"?-.035:0;
-  const attackKick=m.attackFx>0?Math.sin(m.attackFx*Math.PI)*2.5:0;
-  const flash=m.hitFlash>0?0.75:1;
-  const sc=.52;
-  ctx!.save();ctx!.translate(m.x,m.y+bob);ctx!.rotate(lean);
-  ctx!.globalAlpha=flash;
-  drawMafiaMember({face:m.team==="player"?hero().face:"#8f574d",tie:col,suit:m.team==="player"?"#25353a":"#39272a"},0,0,frame+walk*2,sc);
-  // Положение корпуса и оружия отражает тип действия.
-  if(m.type!=="brawler"){
-   const gunAngle=m.strafe*.08+(m.animState==="retreat"?.18:0);
-   drawWeaponSprite(m.type==="sniper"?5:3,m.strafe*20-4,-34+attackKick,gunAngle,sc);
-  }
-  if(m.animState==="attack"&&m.attackFx>0){
-   ctx!.globalAlpha=Math.min(1,m.attackFx);
-   ellipse(m.strafe*10,-40,7+m.attackFx*3,7+m.attackFx*3,col);
-  }
-  if(m.animState==="hit"&&m.hitFlash>0){
-   ctx!.globalAlpha=.8;
-   for(let k=0;k<3;k++)line(-10+k*8,-35,(-10+k*8)+m.strafe*7,-42-k*3,"#f0eee7",1.5);
-  }
-  ctx!.restore();
-  rect(m.x-18,m.y-72,36,4,"#151a1c");rect(m.x-18,m.y-72,36*clamp(m.hp/m.maxHp,0,1),4,col);
-  if(m.animState==="retreat")tx("!",m.x,m.y-82,12,"#d8b86c","center");
- });
+function drawAlienCombatant(m:SiegeMob){
+ if(!ctx)return;
+ const col=m.team==="player"?hero().color:"#e05b78",moving=m.animState==="run"||m.animState==="strafe"||m.animState==="retreat";
+ const walk=Math.sin(m.anim)*(moving?2.8:0),bob=moving?Math.abs(Math.sin(m.anim))*.9:Math.sin(m.anim*.5)*.35,attackKick=m.attackFx>0?Math.sin(m.attackFx*Math.PI)*2.5:0,flash=m.hitFlash>0?.72:1;
+ ctx!.save();ctx!.translate(m.x,m.y+bob);ctx!.globalAlpha=flash;
+ ellipse(0,2,24,7,"rgba(0,0,0,.45)");
+ poly([-17,-35,-10,-51,0,-58,10,-51,17,-35,11,-12,0,-7,-11,-12],m.team==="player"?"#28444a":"#422b36");
+ ellipse(0,-62,10,13,m.team==="player"?"#6b9fa1":"#7d5360");ellipse(-5,-64,2.5,3,col);ellipse(5,-64,2.5,3,col);
+ limb(-10,-28,-19+walk,-6,5,m.team==="player"?"#315a60":"#533640");limb(10,-28,19-walk,-6,5,m.team==="player"?"#315a60":"#533640");
+ limb(-8,-8,-13+walk,13,6,m.team==="player"?"#21383d":"#33262c");limb(8,-8,13-walk,13,6,m.team==="player"?"#21383d":"#33262c");
+ ellipse(-13+walk,15,6,3,m.team==="player"?"#5c8d90":"#704754");ellipse(13-walk,15,6,3,m.team==="player"?"#5c8d90":"#704754");
+ for(let i=0;i<3;i++)ellipse(-3+i*3,-29+i*7,2.2,2.2,col);
+ if(m.type!=="brawler")drawAlienWeapon(m.type==="sniper"?2:1,m.strafe*20-4,-34+attackKick,m.strafe*.08+(m.animState==="retreat"?.18:0),.62,col);
+ if(m.animState==="attack"&&m.attackFx>0)ellipse(m.strafe*12,-40,7+m.attackFx*3,7+m.attackFx*3,col);
+ if(m.animState==="hit"&&m.hitFlash>0)for(let k=0;k<3;k++)line(-10+k*8,-35,(-10+k*8)+m.strafe*7,-42-k*3,"#f0eee7",1.5);
+ ctx!.restore();
+ rect(m.x-18,m.y-74,36,4,"#101619");rect(m.x-18,m.y-74,36*clamp(m.hp/m.maxHp,0,1),4,col);if(m.animState==="retreat")tx("!",m.x,m.y-84,12,"#d8b86c","center");
 }
+function drawAlienWeapon(kind:number,x:number,y:number,angle:number,sc:number,col:string){
+ if(!ctx)return;ctx!.save();ctx!.translate(x,y);ctx!.rotate(angle);ctx!.scale(sc,sc);
+ rect(-4,-4,42,8,"rgba(3,8,10,.75)");
+ if(kind===1){rect(0,-3,29,6,"#62777a");rect(25,-5,15,10,"#3a4d52");poly([10,3,19,3,15,14,8,12],"#25383c");rect(3,-1,12,2,col);}
+ else{rect(0,-4,37,8,"#718487");rect(29,-6,12,12,"#34484d");rect(5,-2,20,4,col);ellipse(39,0,4,4,col);}
+ ctx!.restore();
+}
+function drawSiegeMobs(){siegeMobs.forEach(drawAlienCombatant);}
+
 function drawArenaPickup(p:ArenaPickup){
  const pulse=1+Math.sin(frame*.08+p.x)*.08;
  if(p.kind==="medkit"){
