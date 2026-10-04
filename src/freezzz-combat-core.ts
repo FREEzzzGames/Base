@@ -63,7 +63,10 @@ export const HS_WEAPONS:HsWeaponDef[]=[
  {id:"revolver",name:"REVOLVER",damage:38,fireInterval:28,magazine:6,reserve:48,reloadTime:104,spread:.025,pellets:1,muzzleSpeed:10.2,range:900,penetration:.28,recoil:1.7,cost:700},
  {id:"smg",name:"SMG",damage:14,fireInterval:7,magazine:24,reserve:144,reloadTime:92,spread:.09,pellets:1,muzzleSpeed:8.5,range:650,penetration:.10,recoil:.55,cost:1100},
  {id:"shotgun",name:"SHOTGUN",damage:14,fireInterval:34,magazine:5,reserve:35,reloadTime:112,spread:.18,pellets:7,muzzleSpeed:7.5,range:420,penetration:.05,recoil:2.4,cost:1400},
- {id:"carbine",name:"CARBINE",damage:30,fireInterval:16,magazine:10,reserve:60,reloadTime:98,spread:.035,pellets:1,muzzleSpeed:10.8,range:1050,penetration:.38,recoil:1.2,cost:1800}
+ {id:"carbine",name:"CARBINE",damage:30,fireInterval:16,magazine:10,reserve:60,reloadTime:98,spread:.035,pellets:1,muzzleSpeed:10.8,range:1050,penetration:.38,recoil:1.2,cost:1800},
+ {id:"assault",name:"ASSAULT",damage:32,fireInterval:9,magazine:30,reserve:180,reloadTime:104,spread:.055,pellets:1,muzzleSpeed:11.2,range:980,penetration:.32,recoil:1.05,cost:2400},
+ {id:"compact",name:"COMPACT CARBINE",damage:27,fireInterval:12,magazine:20,reserve:120,reloadTime:96,spread:.045,pellets:1,muzzleSpeed:10.4,range:900,penetration:.25,recoil:.82,cost:2200},
+ {id:"marksman",name:"MARKSMAN",damage:48,fireInterval:24,magazine:10,reserve:80,reloadTime:116,spread:.018,pellets:1,muzzleSpeed:12.5,range:1250,penetration:.48,recoil:1.8,cost:3200}
 ];
 
 export function createCombatState(w:HsWeaponDef):HsCombatState {
