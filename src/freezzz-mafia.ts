@@ -1282,7 +1282,7 @@ function autoFireAngle(){
  };
  enemies.forEach(e=>{if(!e.falling&&e.hp>0)consider(e.x,e.y);});
  siegeMobs.forEach(m=>{if(m.team==="enemy"&&m.hp>0)consider(m.x,m.y);});
- return best?Math.atan2(best.y-player.y,best.x-player.x):null;
+ const target=best as {x:number;y:number;d:number}|null; return target?Math.atan2(target.y-player.y,target.x-player.x):null;
 }
 function fire(manual=false){
  if(mode!=="play")return;
