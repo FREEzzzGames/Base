@@ -181,7 +181,7 @@ let siegeWave=0;
 let siegeWaveTimer=0;
 let siegeMessage="";
 let siegeOver=false;
-let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
+let floor=0,floorTimer=0,objectiveProgress=0,flash=0,damagePulse=0,criticalPulse=0;
 let touch={left:false,right:false,jump:false,ability:false};
 let movePointerId:number|null=null;
 let moveX=0,moveY=0;
@@ -1292,11 +1292,15 @@ function useAbility(){
  const h=hero().id;
  if(h==="antonio"){
    enemies.forEach(e=>{e.cool=Math.max(e.cool,110);e.shootCool=Math.max(e.shootCool,110);});
+   for(const m of siegeMobs)if(m.team==="enemy"&&m.hp>0){m.cool=Math.max(m.cool,110);m.burstCool=Math.max(m.burstCool,110);m.think=Math.max(m.think,70);}
  }else if(h==="massimo"){
-   player.vx=player.facing*10;
-   player.vy=-6.5*portraitScale();
+   const sc=portraitScale();
+   const q=moveTopDown(player.x,player.y,player.facing*110*sc,0,18*sc);
+   player.x=q[0];player.y=q[1];
+   damagePulse=Math.max(damagePulse,.18);
  }else if(h==="salvatore"){
    enemies.forEach(e=>{e.vx*=.15;e.shootCool=Math.max(e.shootCool,150);});
+   for(const m of siegeMobs)if(m.team==="enemy"&&m.hp>0){m.speed*=.15;m.cool=Math.max(m.cool,75);m.burstCool=Math.max(m.burstCool,75);}
  }else if(h==="giuseppe"){
    player.armor=Math.max(player.armor,player.maxHp*.35);
  }
@@ -2026,8 +2030,7 @@ function bindButtons(){
    if(a==="exit")return;
    if(a==="menu"){returnToMainMenu();}
    if(a==="advance"){advanceDialogue();render();}
-      if(a==="cheat"){activateCheatAll();}
-      if(a==="advance"){advanceDialogue();render();}
+   if(a==="cheat"){activateCheatAll();}
    if(a==="shop"){mode="weaponMenu";render();}
    if(a==="weapon-menu"){mode="weaponMenu";render();}
    if(a==="tenders")return;
