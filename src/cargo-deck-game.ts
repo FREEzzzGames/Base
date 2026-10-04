@@ -55,10 +55,9 @@ function spawnWave(){
   waveState="fighting";
   waveStart=frame;
 
-  // Spawn zone is deliberately inside the player's initial camera:
-  // y=2035..2070 is above the player and below the 1935 cargo row.
-  // This prevents side-lane spawns from materialising inside containers
-  // or outside the visible combat area.
+  // Spawn directly at the enemy base / enemy tower line.
+  // Enemies now enter the arena from their own rear deployment zone
+  // instead of materialising near the player.
   const total=Math.min(12,5+Math.floor(wave*.7));
   const b=Math.max(2,Math.round(total*.42));
   const s=Math.max(1,Math.round(total*.34));
@@ -71,18 +70,18 @@ function spawnWave(){
     const scale=Math.min(2.35,1+(wave-1)*.10);
     const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
 
-    let sx=lanes[lane],sy=2035+Math.random()*35;
+    let sx=lanes[lane],sy=390+Math.random()*36;
     let found=false;
     for(let tries=0;tries<18;tries++){
       const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*34;
-      const y=2035+Math.random()*35;
+      const y=390+Math.random()*36;
       if(!obstacles().some(o=>hitCircle(x,y,18,o))&&Math.hypot(x-player.x,y-player.y)>340){
         sx=x;sy=y;found=true;break;
       }
     }
     if(!found){
       // Deterministic safe fallbacks for the three lanes.
-      const fallback=[[300,2050],[500,2050],[700,2050]] as const;
+      const fallback=[[300,408],[500,408],[700,408]] as const;
       const q=fallback[lane];
       sx=q[0];sy=q[1];
     }
