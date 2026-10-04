@@ -866,7 +866,7 @@ function arenaTaskSetup(){
 }
 function spawnArenaWave(){
  arenaWave++;arenaSpawnTimer=0;const t=save.activeTenderId?tenderById(save.activeTenderId):null;const m=t?allMissions.find(m=>m.id===t.linkedMission)||currentMission():currentMission();
- const types=m.enemies.length?m.enemies:["guard","rusher","shooter"],count=Math.min(10,3+Math.floor(arenaWave*.75));const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360],[340,650],[900,620]];
+ const types:EnemyType[]=(m.enemies.length?m.enemies:["guard","rusher","shooter"]) as EnemyType[],count=Math.min(10,3+Math.floor(arenaWave*.75));const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360],[340,650],[900,620]];
  for(let i=0;i<count;i++){const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+save.rank*4+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});}
 }
 function spawnFloor(){
