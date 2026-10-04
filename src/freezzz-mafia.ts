@@ -246,8 +246,6 @@ function drawAlienHero(id:HeroId,cx:number,ground:number,frame:number,scale=1,me
 }
 function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
 
-function heroVisual():MafiaVisual{const h=hero();return {face:h.face,tie:h.color};}
-
 function drawBackdrop(){
  rect(0,0,W,H,"#080b0d");
  for(let i=0;i<18;i++){const x=(i*73+floor*19)%W,y=45+(i*31)%250;rect(x,y,1,1,"#657077");}
@@ -867,7 +865,7 @@ function drawAlienCombatant(m:SiegeMob){
   limb(-8,-8,-14+walk,-31,6,specs.body);limb(8,-8,14-walk,-31,6,specs.body);
   poly([-15,-32,-11,-55,-4,-62,4,-62,11,-55,15,-32,9,-10,0,-6,-9,-10],specs.body);
   ellipse(0,-68,10,14,specs.skin);rect(-10,-71,20,5,specs.accent);
-  if(m.type!=="brawler")drawAlienWeapon(1,m.strafe*18-3,-36+attackKick,m.strafe*.08+(m.animState==="retreat"?.18:0),.95,specs.accent);
+  drawAlienWeapon(1,m.strafe*18-3,-36+attackKick,m.strafe*.08+(m.animState==="retreat"?.18:0),.95,specs.accent);
  }else{
   limb(-6,-8,-10+walk,-31,5,specs.body);limb(6,-8,10-walk,-31,5,specs.body);
   poly([-12,-31,-9,-53,-3,-58,3,-58,9,-53,12,-31,7,-11,0,-7,-7,-11],specs.body);
@@ -906,13 +904,16 @@ function enemyVisual(type:EnemyType):MafiaVisual{
  return {face:"#9a6554",tie:ties[type],suit:suits[type]};
 }
 function drawEnemy(e:Enemy){
- const v=enemyVisual(e.type),sc=Math.max(.52,Math.min(.68,viewWidth/1200));
- drawMafiaMember(v,e.x,e.y,frame,sc);
- if(!e.falling){
-   const bw=30*sc;
-   rect(e.x-bw/2,e.y-82*sc,bw,3*sc,"#20282c");
-   rect(e.x-bw/2,e.y-82*sc,bw*clamp(e.hp/e.maxHp,0,1),3*sc,v.tie);
- }
+ if(!ctx)return;
+ const cfg={brawler:{s:1.18,b:"#61243a",sk:"#c35c78",a:"#ff557d"},shooter:{s:.92,b:"#674027",sk:"#d18a55",a:"#ffb04f"},heavy:{s:1.34,b:"#4d3c27",sk:"#c9a06a",a:"#ffd06a"},rusher:{s:1.02,b:"#6a2831",sk:"#d76a66",a:"#ff655c"},guard:{s:1.0,b:"#343f43",sk:"#7eabb0",a:"#63e4eb"},sniper:{s:.78,b:"#49336a",sk:"#9c73c5",a:"#cf7cff"},suppressor:{s:1.1,b:"#4e3a22",sk:"#bd965f",a:"#e4b14e"},flanker:{s:.86,b:"#273e59",sk:"#679bc0",a:"#65c9ff"}}[e.type];
+ const step=Math.sin(frame*.18)*2;
+ ctx.save();ctx.translate(e.x,e.y);ctx.scale(cfg.s,cfg.s);
+ ellipse(0,4,23,7,"rgba(0,0,0,.48)");
+ limb(-7,-8,-11+step,-31,6,cfg.b);limb(7,-8,11-step,-31,6,cfg.b);
+ poly([-16,-32,-12,-53,-5,-61,0,-58,5,-61,12,-53,16,-32,9,-10,0,-6,-9,-10],cfg.b);
+ ellipse(0,-67,9,13,cfg.sk);rect(-10,-70,20,5,cfg.a);ellipse(-4,-68,2.5,2.5,cfg.a);ellipse(4,-68,2.5,2.5,cfg.a);
+ ctx.restore();
+ const bw=34*cfg.s;rect(e.x-bw/2,e.y-91*cfg.s,bw,4,"#101619");rect(e.x-bw/2,e.y-91*cfg.s,bw*clamp(e.hp/e.maxHp,0,1),4,cfg.a);
 }
 function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:number){
  if(!ctx)return;
@@ -1034,14 +1035,15 @@ function drawPlayer(){
  drawWeaponEffects(ctx!,muzzleX,muzzleY,angle,sc,save.weapon,player.combat.fireTimer>w.fireInterval-4,hero().color);
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
+const ALIEN_ARENA_MISSION:ArenaMission={
+ id:"ALIEN-CARGO-01",tenderId:"alien",order:1,title:"БОРТ КОРАБЛЯ",
+ briefing:"Чужой экипаж захватил открытую грузовую платформу. Удержи CARGO CORE и уничтожь волну нападающих.",
+ objective:"clear",target:8,reward:0,enemies:["brawler","shooter","sniper"],arenaRule:"CARGO DECK"
+};
 function arenaTaskSetup(){
- const t=save.activeTenderId?tenderById(save.activeTenderId):null;
- const list=t?arenaMissionsForTender(t.id):[];
- arenaMission=list[Math.max(0,Math.min(list.length-1,save.arenaMissionIndex||0))]||null;
+ arenaMission=ALIEN_ARENA_MISSION;
  arenaTaskProgress=0;arenaTaskTimer=0;arenaWave=0;arenaKills=0;arenaSpawnTimer=0;
- if(!arenaMission){arenaTaskTarget=0;arenaTaskLabel="НЕТ МИССИИ";return;}
- arenaTaskTarget=arenaMission.target;
- arenaTaskLabel=arenaMission.objective==="survive"?"ВЫЖИТЬ · "+arenaMission.target+" СЕК":arenaMission.objective==="reach"?"ДОБРАТЬСЯ ДО ТОЧКИ":arenaMission.objective==="recover"?"ИЗВЛЕЧЬ ЦЕЛЬ":arenaMission.objective==="defend"?"ЗАЩИТИТЬ ТОЧКУ":"УНИЧТОЖИТЬ ГРУППУ · "+arenaMission.target;
+ arenaTaskTarget=arenaMission.target;arenaTaskLabel="УНИЧТОЖИТЬ ВРАГОВ · "+arenaMission.target;
 }
 function startTenderMission(){beginSelected();}
 function advanceTenderMission(){
