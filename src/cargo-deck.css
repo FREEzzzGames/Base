@@ -235,3 +235,67 @@
   .cargo-deck-ui .cargo-grenade{right:calc(16vw + var(--aim-size) + 6px)!important}
   .cargo-deck-ui .cargo-special{right:calc(16vw + (var(--aim-size) - var(--small-size)) / 2)!important}
 }
+
+
+/* CARGO DECK — free-touch movement + compact vertical combat stack. */
+.cargo-deck-ui{
+  --aim-size:clamp(150px,30vw,190px);
+  /* Previous small-button diameter was 50% of the aim circle.
+     Reducing its radius by 30% makes the diameter 35% of the aim circle. */
+  --small-size:calc(var(--aim-size) * .35);
+  --hud-bottom:max(18px,calc(4vh + var(--tg-safe-area-inset-bottom,0px)));
+}
+.cargo-deck-ui .cargo-touch-zone{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:82px!important;
+  bottom:0!important;
+  z-index:1!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  background:transparent!important;
+}
+.cargo-deck-ui .cargo-move{display:none!important}
+
+/* Weapon bar: buttons remain real touch targets; the whole bar also supports
+   vertical swipe to cycle through the inventory. */
+.cargo-deck-ui .cargo-inventory{
+  z-index:8!important;
+  touch-action:pan-y!important;
+  user-select:none!important;
+}
+.cargo-deck-ui .cargo-inventory-item{
+  cursor:pointer!important;
+}
+.cargo-deck-ui .cargo-aim{
+  z-index:10!important;
+  width:var(--aim-size)!important;
+  height:var(--aim-size)!important;
+  right:17vw!important;
+  bottom:var(--hud-bottom)!important;
+}
+
+/* Auto / grenade / special form one centered column directly above FIRE. */
+.cargo-deck-ui .cargo-auto,
+.cargo-deck-ui .cargo-grenade,
+.cargo-deck-ui .cargo-special{
+  width:var(--small-size)!important;
+  height:var(--small-size)!important;
+  min-width:0!important;
+  min-height:0!important;
+  right:calc(17vw + (var(--aim-size) - var(--small-size)) / 2)!important;
+  left:auto!important;
+  border-radius:50%!important;
+  box-sizing:border-box!important;
+  z-index:12!important;
+}
+.cargo-deck-ui .cargo-auto{
+  bottom:calc(var(--hud-bottom) + var(--aim-size) + 6px)!important;
+}
+.cargo-deck-ui .cargo-grenade{
+  bottom:calc(var(--hud-bottom) + var(--aim-size) + var(--small-size) + 12px)!important;
+}
+.cargo-deck-ui .cargo-special{
+  bottom:calc(var(--hud-bottom) + var(--aim-size) + (var(--small-size) * 2) + 18px)!important;
+}
