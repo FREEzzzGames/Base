@@ -17,9 +17,9 @@ const OBS:HsObstacle[]=[
 {x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
 {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
 const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
-  [{x:250,y:1900},{x:300,y:2025},{x:300,y:2250}],
-  [{x:500,y:1900},{x:690,y:2025},{x:690,y:2250}],
-  [{x:750,y:1900},{x:700,y:2025},{x:700,y:2250}]
+  [{x:300,y:2055},{x:300,y:2220}],
+  [{x:500,y:2055},{x:500,y:2220}],
+  [{x:700,y:2055},{x:700,y:2220}]
 ];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
@@ -50,7 +50,7 @@ function spawnWave(){
   const total=Math.min(12,5+Math.floor(wave*.7));
   const b=Math.max(2,Math.round(total*.42));
   const s=Math.max(1,Math.round(total*.34));
-  const lanes=[250,500,750];
+  const lanes=[300,500,700];
 
   for(let i=0;i<total;i++){
     const type:MobType=i<b?"brawler":i<b+s?"shooter":"sniper";
@@ -59,18 +59,18 @@ function spawnWave(){
     const scale=Math.min(2.35,1+(wave-1)*.10);
     const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
 
-    let sx=lanes[lane],sy=1820+Math.random()*80;
+    let sx=lanes[lane],sy=2035+Math.random()*35;
     let found=false;
     for(let tries=0;tries<18;tries++){
-      const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*56;
-      const y=1820+Math.random()*80;
+      const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*34;
+      const y=2035+Math.random()*35;
       if(!obstacles().some(o=>hitCircle(x,y,18,o))&&Math.hypot(x-player.x,y-player.y)>340){
         sx=x;sy=y;found=true;break;
       }
     }
     if(!found){
       // Deterministic safe fallbacks for the three lanes.
-      const fallback=[[250,1850],[500,1850],[750,1850]] as const;
+      const fallback=[[300,2050],[500,2050],[700,2050]] as const;
       const q=fallback[lane];
       sx=q[0];sy=q[1];
     }
@@ -87,7 +87,7 @@ function spawnWave(){
 
   msg="WAVE "+String(wave).padStart(2,"0")+" · "+total+" HOSTILES";
   msgT=110;
-  effects.push({x:500,y:1780,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
+  effects.push({x:500,y:2035,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
 }function hurt(a:number){
   const block=Math.min(player.armor,a*.5);
   player.armor-=block;
