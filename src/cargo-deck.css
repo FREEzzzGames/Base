@@ -387,3 +387,8 @@
   right:6px!important;
   left:auto!important;
 }
+
+/* Weapon panel width matches the radius/diameter scale of the utility buttons. */
+.cargo-deck-ui .cargo-inventory{
+  width:var(--small-size)!important;
+}
