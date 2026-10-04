@@ -454,47 +454,51 @@ function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,2
 function drawResult(){rect(0,0,viewW,viewH,"#05090b");const c=won?"#54d6d8":"#ff557d";txt("CARGO DECK",viewW/2,90,24,c,"center");txt(won?"CARGO DECK SECURED":(resultReason||"MISSION FAILED"),viewW/2,135,17,"#f0eee7","center");txt("WAVE "+String(wave).padStart(2,"0"),viewW/2,205,15,c,"center");txt("ENEMIES DESTROYED · "+kills,viewW/2,245,12,"#aeb8ba","center");txt("SURVIVAL TIME · "+fmt(time),viewW/2,278,12,"#aeb8ba","center");txt("CORE INTEGRITY · "+Math.round(core.hp/core.maxHp*100)+"%",viewW/2,311,12,"#aeb8ba","center");txt(won?"ARENA SECURED":"RETRY AVAILABLE",viewW/2,390,12,c,"center")}
 function fmt(s:number){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
 function drawPlayer(){
- const c=L().color,px=player.x,py=player.y;
+ const c=L().color,px=player.x,py=player.y,a=aim,side=player.facing||1;
  ctx!.save();
- // Shadow and boots.
- ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(px,py+20,30,9,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
- // Body silhouette.
- ctx!.shadowColor=c;ctx!.shadowBlur=player.hit>0?28:14;
- ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-20,26,38,0,0,Math.PI*2);ctx!.fill();
- ctx!.shadowBlur=0;
- // Single clean operator silhouette.
- ctx!.fillStyle="#202b2f";ctx!.fillRect(px-15,py-36,30,28);
- ctx!.strokeStyle=c;ctx!.lineWidth=1;ctx!.strokeRect(px-15,py-36,30,28);
- // Minimal operator marker.
- ctx!.fillStyle="#10171a";ctx!.beginPath();ctx!.arc(px,py-46,10,0,Math.PI*2);ctx!.fill();
- ctx!.fillStyle=c;ctx!.fillRect(px-8,py-49,16,3);
- // Arms follow the weapon line.
- const a=aim,side=player.facing||1;
+
+ // Ground contact and directional operator halo.
+ ctx!.globalAlpha=.32;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(px,py+21,31,9,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=.14;
+ ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(px,py-18,47+Math.sin(frame*.08)*2,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+
+ // Compact armored silhouette.
+ ctx!.shadowColor=c;ctx!.shadowBlur=player.hit>0?30:16;
+ ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-20,27,39,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
+ ctx!.fillStyle="#26343a";ctx!.fillRect(px-15,py-38,30,29);
+ ctx!.strokeStyle=c;ctx!.lineWidth=1.5;ctx!.strokeRect(px-15,py-38,30,29);
+
+ // Helmet / visor.
+ ctx!.fillStyle="#0a1115";ctx!.beginPath();ctx!.arc(px,py-48,11,0,Math.PI*2);ctx!.fill();
+ ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=7;ctx!.fillRect(px-8,py-50,16,3);ctx!.shadowBlur=0;
+
+ // Chest energy line.
+ ctx!.globalAlpha=.72;ctx!.fillStyle=c;ctx!.fillRect(px-10,py-26,20,2);ctx!.globalAlpha=1;
+
+ // Arms and weapon direction.
  const hx=px+Math.cos(a)*14,hy=py-27+Math.sin(a)*14;
- ctx!.strokeStyle="#7d8a8e";ctx!.lineWidth=7;ctx!.lineCap="round";
+ ctx!.strokeStyle="#87979c";ctx!.lineWidth=7;ctx!.lineCap="round";
  ctx!.beginPath();ctx!.moveTo(px-12,py-25);ctx!.lineTo(hx,hy);ctx!.moveTo(px+11,py-21);ctx!.lineTo(hx+Math.cos(a)*5,hy+Math.sin(a)*5);ctx!.stroke();
- // Weapon silhouette with readable receiver / magazine / stock / barrel.
+
  const recoil=Math.min(5,player.combat.recoil*.28);
  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
  const gx=px+Math.cos(a)*(19+side*4)-Math.cos(a)*recoil,gy=py-27+Math.sin(a)*(19+side*4)-Math.sin(a)*recoil;
  ctx!.save();ctx!.translate(gx,gy);ctx!.rotate(a);
- ctx!.fillStyle="#090d0f";ctx!.fillRect(-12,-5,gunLen,10);
- ctx!.fillStyle="#303b3f";ctx!.fillRect(-8,-4,Math.max(20,gunLen-22),7);
- ctx!.fillStyle=c;ctx!.fillRect(3,-2,Math.max(10,gunLen-28),3);
- // Magazine.
- ctx!.fillStyle="#11181b";ctx!.fillRect(Math.max(8,gunLen*.38),4,7,13);
+ ctx!.fillStyle="#080d10";ctx!.fillRect(-14,-5,gunLen+16,10);
+ ctx!.fillStyle="#35454a";ctx!.fillRect(-7,-4,Math.max(20,gunLen-21),7);
+ ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=5;ctx!.fillRect(3,-2,Math.max(10,gunLen-28),3);ctx!.shadowBlur=0;
+ ctx!.fillStyle="#11191d";ctx!.fillRect(Math.max(8,gunLen*.38),4,7,13);
  ctx!.strokeStyle="#6e7b7f";ctx!.lineWidth=1;ctx!.strokeRect(Math.max(8,gunLen*.38),4,7,13);
- // Stock and muzzle.
- ctx!.fillStyle="#11181b";ctx!.fillRect(-16,-3,8,7);ctx!.fillRect(gunLen-2,-3,16,5);
+ ctx!.fillStyle="#11191d";ctx!.fillRect(-17,-3,9,7);ctx!.fillRect(gunLen-2,-3,17,5);
  if(muzzleFlash>0){
    const alpha=Math.min(1,muzzleFlash*1.8);ctx!.globalAlpha=alpha;ctx!.shadowColor="#fff1a6";ctx!.shadowBlur=18;ctx!.fillStyle="#ffe58a";
-   ctx!.beginPath();ctx!.moveTo(gunLen+15,0);ctx!.lineTo(gunLen+31,-7);ctx!.lineTo(gunLen+23,0);ctx!.lineTo(gunLen+31,7);ctx!.closePath();ctx!.fill();
+   ctx!.beginPath();ctx!.moveTo(gunLen+14,0);ctx!.lineTo(gunLen+31,-7);ctx!.lineTo(gunLen+23,0);ctx!.lineTo(gunLen+31,7);ctx!.closePath();ctx!.fill();
  }
  ctx!.restore();
- // Player outline.
- ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.beginPath();ctx!.ellipse(px,py-20,29,44,0,0,Math.PI*2);ctx!.stroke();
- // Health / armor bars.
- bar(px-32,py-74,64,5,player.hp,player.maxHp,c);bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
+
+ // Clean outer silhouette.
+ ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.beginPath();ctx!.ellipse(px,py-20,30,45,0,0,Math.PI*2);ctx!.stroke();
+ bar(px-32,py-74,64,5,player.hp,player.maxHp,c);
+ bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
 function drawCargoContainer(o:HsObstacle,idx:number){
