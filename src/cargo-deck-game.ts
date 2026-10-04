@@ -32,7 +32,7 @@ const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveOriginX=0,moveOriginY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
 function ensureObsGradients():CanvasGradient[]{if(obsGradients&&obsGradCtx===ctx)return obsGradients;obsGradCtx=ctx;obsGradients=OBS.map(o=>{const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);g.addColorStop(0,"#3b464b");g.addColorStop(.55,"#242d31");g.addColorStop(1,"#171d20");return g});return obsGradients}
@@ -672,7 +672,7 @@ function renderUI(){
     }).join("");
     const med=player.medkits>0?'<button class="cargo-inventory-item cargo-medkit" data-cargo="medkit" aria-label="Использовать аптечку"><span class="cargo-med-icon">+</span><span class="cargo-inventory-name">MEDKIT</span><span class="cargo-inventory-ammo">x'+player.medkits+'</span></button>':"";
     ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div>'+inventory+med+'</div>'+
-      '<div class="cargo-move"><span></span></div>'+
+      '<div class="cargo-touch-zone" aria-hidden="true"></div>'+
       '<div class="cargo-aim"><span class="cargo-aim-core"></span><button class="cargo-fire" data-cargo="fire" aria-label="Огонь">🔥</button></div>'+
       '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автострельба">AUTO</button>'+
       '<button class="cargo-grenade" data-cargo="grenade" aria-label="Граната">G</button>'+
@@ -693,7 +693,7 @@ function bindUI(){
     else if(a==="weapon"){mode="weapon";render()}
     else if(a==="fire"){fireHeld=true;fire(true)}
     else if(a==="reload"){startReload(player.combat,weapon())}
-    else if(a==="auto"){auto=!auto;b.classList.toggle("active",auto);msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60}
+    else if(a==="auto"){auto=!auto;msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60;renderUI()}
     else if(a==="medkit"){medkit();renderUI()}
     else if(a==="grenade")grenade();
     else if(a==="ability")special();
@@ -702,30 +702,72 @@ function bindUI(){
   });
   ui?.querySelectorAll<HTMLElement>("[data-cargo-weapon]").forEach(b=>b.onclick=()=>{
     const n=Number(b.dataset.cargoWeapon);
-    if(Number.isFinite(n))chooseWeapon(n)
+    if(Number.isFinite(n)&&save.inventory.includes(n))chooseWeapon(n)
   });
+
   const f=ui?.querySelector<HTMLElement>('[data-cargo="fire"]');
   if(f){
     const stop=()=>fireHeld=false;
     f.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();fireHeld=true;fire(true)});
     f.addEventListener("pointerup",stop);f.addEventListener("pointercancel",stop);f.addEventListener("pointerleave",stop)
   }
-  const mv=ui?.querySelector<HTMLElement>(".cargo-move");
-  if(mv){
-    const upd=(e:PointerEvent)=>{const r=mv.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width*.42),dy=(e.clientY-r.top-r.height/2)/(r.height*.42);moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));const s=mv.querySelector("span")as HTMLElement|null;if(s)s.style.transform=`translate(${Math.max(-32,Math.min(32,dx*32))}px,${Math.max(-32,Math.min(32,dy*32))}px)`};
-    const stop=(e:PointerEvent)=>{if(e.pointerId===moveId){moveId=null;moveX=moveY=0}};
-    mv.addEventListener("pointerdown",e=>{e.preventDefault();moveId=e.pointerId;mv.setPointerCapture(e.pointerId);upd(e)});
-    mv.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});
-    mv.addEventListener("pointerup",stop);mv.addEventListener("pointercancel",stop)
-  }
+
+  // Aim remains a dedicated control at the reference size.
   const as=ui?.querySelector<HTMLElement>(".cargo-aim");
   if(as){
-    const set=(e:PointerEvent)=>{const r=as.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;if(Math.hypot(dx,dy)>8){aim=Math.atan2(dy,dx);if(Math.abs(dx)>5)player.facing=dx<0?-1:1}};
-    as.addEventListener("pointerdown",e=>{e.preventDefault();aimId=e.pointerId;as.setPointerCapture(e.pointerId);set(e)});
+    const set=(e:PointerEvent)=>{
+      const r=as.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
+      if(Math.hypot(dx,dy)>8){aim=Math.atan2(dy,dx);if(Math.abs(dx)>5)player.facing=dx<0?-1:1}
+    };
+    as.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();aimId=e.pointerId;as.setPointerCapture(e.pointerId);set(e)});
     as.addEventListener("pointermove",e=>{if(e.pointerId===aimId)set(e)});
     const stop=(e:PointerEvent)=>{if(e.pointerId===aimId)aimId=null};
     as.addEventListener("pointerup",stop);as.addEventListener("pointercancel",stop)
   }
+
+  // The weapon bar is also a touch carousel: swipe up/down to cycle weapons.
+  const inv=ui?.querySelector<HTMLElement>(".cargo-inventory");
+  if(inv){
+    let sy=0;
+    inv.addEventListener("pointerdown",e=>{sy=e.clientY});
+    inv.addEventListener("pointerup",e=>{
+      const dy=e.clientY-sy;
+      if(Math.abs(dy)<24)return;
+      const ids=save.inventory;
+      if(!ids.length)return;
+      const cur=Math.max(0,ids.indexOf(player.weapon));
+      const next=ids[(cur+(dy<0?1:-1)+ids.length)%ids.length];
+      chooseWeapon(next);
+    });
+  }
+
+  // Movement is now screen-wide touch control. It accepts any touch/mouse
+  // point that is not already consumed by a UI/button. No visible movement ring.
+  const touch=ui?.querySelector<HTMLElement>(".cargo-touch-zone");
+  if(touch){
+    const stop=(e:PointerEvent)=>{
+      if(e.pointerId===moveId){moveId=null;moveX=moveY=0}
+    };
+    const upd=(e:PointerEvent)=>{
+      const r=touch.getBoundingClientRect();
+      const cx=e.clientX,cy=e.clientY;
+      const ox=moveOriginX,oy=moveOriginY;
+      const dx=cx-ox,dy=cy-oy,len=Math.hypot(dx,dy)||1,max=Math.max(55,Math.min(105,Math.min(r.width,r.height)*.16));
+      moveX=Math.max(-1,Math.min(1,dx/max));
+      moveY=Math.max(-1,Math.min(1,dy/max));
+    };
+    touch.addEventListener("pointerdown",e=>{
+      if(e.button!==undefined&&e.button!==0)return;
+      e.preventDefault();
+      moveId=e.pointerId;
+      moveOriginX=e.clientX;moveOriginY=e.clientY;
+      touch.setPointerCapture(e.pointerId);
+      upd(e);
+    });
+    touch.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});
+    touch.addEventListener("pointerup",stop);touch.addEventListener("pointercancel",stop);
+  }
+
   if(mode==="weapon"){
     const h=ui?.querySelector(".cargo-weapon-hit");
     h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
