@@ -186,6 +186,7 @@ let touch={left:false,right:false,jump:false,ability:false};
 let movePointerId:number|null=null;
 let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
+let fireHeld=false,manualFireQueued=false,autoFire=true;
 const completedKey="freezzz:mafia-save:v2";
 
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,completedTenders:s.completedTenders||[],arenaMissionIndex:typeof s.arenaMissionIndex==="number"?s.arenaMissionIndex:0,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},weaponInventory:Array.isArray(s.weaponInventory)&&s.weaponInventory.length?s.weaponInventory:[0],medkits:Math.max(0,Math.min(5,Number(s.medkits)||0))};}catch{}}
@@ -1265,17 +1266,46 @@ player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:
  if(!arenaMission)arenaTaskSetup();
  resetArenaPickups();initSiege();
 }
-function fire(){
+function autoFireAngle(){
+ const obs=arenaObstacles();
+ let best:{x:number;y:number;d:number}|null=null;
+ const consider=(x:number,y:number)=>{
+  const d=Math.hypot(x-player.x,y-player.y);
+  if(d>760||d<8)return;
+  if(!lineOfSight(player.x,player.y,x,y,obs))return;
+  if(!best||d<best.d)best={x,y,d};
+ };
+ enemies.forEach(e=>{if(!e.falling&&e.hp>0)consider(e.x,e.y);});
+ siegeMobs.forEach(m=>{if(m.team==="enemy"&&m.hp>0)consider(m.x,m.y);});
+ return best?Math.atan2(best.y-player.y,best.x-player.x):null;
+}
+function fire(manual=false){
  if(mode!=="play")return;
  const w=HS_WEAPONS[save.weapon];
  if(player.combat.reloadTimer>0)return;
+ let angle=aimAngle;
+ if(autoFire&&!manual){
+  const targetAngle=autoFireAngle();
+  if(targetAngle===null)return;
+  angle=targetAngle;
+ }
  if(!consumeShot(player.combat,w))return;
  player.ammo=player.combat.ammo;
  const scale=portraitScale();
  const handX=player.x+player.facing*29*scale;
  const handY=player.y-44*scale;
- const angle=recoilAngle(aimAngle,player.combat);
+ angle=recoilAngle(angle,player.combat);
  for(const shot of spawnShots(handX,handY,angle,w,"player",player.combat.shotCounter*100))bullets.push({...shot});
+}
+function manualFire(){
+ manualFireQueued=true;
+}
+function toggleAutoFire(){
+ autoFire=!autoFire;
+ fireHeld=false;
+ manualFireQueued=false;
+ say(autoFire?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ","player",player.x,player.y-55);
+ updateCombatButtonLabels();
 }
 function switchWeapon(){
  if(mode!=="play"||player.weaponSwap>0)return;
@@ -1372,7 +1402,10 @@ function update(dt:number){
   player.x=moved[0];player.y=moved[1];
   if(Math.abs(moveX)>.12)player.facing=moveX<0?-1:1;
  }
- fire();if(touch.ability)useAbility();
+ if(autoFire)fire(false);
+ else if(fireHeld||manualFireQueued)fire(true);
+ manualFireQueued=false;
+ if(touch.ability)useAbility();
  updateArenaPickups(dt);
 
  const obstacles=arenaObstacles();
@@ -1752,7 +1785,7 @@ function startMissionById(id:string){
  floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
  spawnFloor();saveResumeState();storeSave();render();
 }
-function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
+function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;fireHeld=false;manualFireQueued=false;mode="select";dialogueOpen=false;render();}
 function activateCheatAll(){return;}
 
 function renderCanvas(){
@@ -1967,7 +2000,7 @@ function handleKey(e:KeyboardEvent){
  if(mode==="play"&&(e.key==="g"||e.key==="G")){const g=throwHsGrenade(player.combat,player.x,player.y,aimAngle);if(g){grenades.push(g);say("ГРАНАТА","player",player.x,player.y-45);}}
 
  if(e.key==="Escape"){mode="select";dialogueOpen=false;renderCanvas();return;}
- if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else fire();return;}
+ if(e.key==="Enter"||e.key===" "){if(mode!=="play")advanceDialogue();else manualFire();return;}
  keys.add(e.key);
 }
 function keyup(e:KeyboardEvent){keys.delete(e.key);}
@@ -2062,10 +2095,18 @@ function bindButtons(){
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weaponInventory.includes(n)){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=player.combat.ammo;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
+   if(a==="fire")manualFire();
+   if(a==="auto-fire")toggleAutoFire();
    if(a==="medkit")useMedkit();
    if(a==="special")useAbility();
  });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
+ const fireButton=root?.querySelector<HTMLElement>('[data-action="fire"]');
+ if(fireButton){
+  fireButton.addEventListener("pointerdown",e=>{e.preventDefault();fireHeld=true;manualFire();fireButton.setPointerCapture?.(e.pointerId);});
+  const stopFire=()=>{fireHeld=false;};
+  fireButton.addEventListener("pointerup",stopFire);fireButton.addEventListener("pointercancel",stopFire);fireButton.addEventListener("pointerleave",stopFire);
+ }
  const moveSensor=root?.querySelector<HTMLElement>(".mafia-touch-move");
  if(moveSensor){
    const updateMove=(e:PointerEvent)=>{
@@ -2124,7 +2165,7 @@ function render(){
  }else if(mode==="arena"){
    ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="advance">НАЧАТЬ МИССИЮ</button><button data-action="tenders">ТЕНДЕРЫ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="medkit">АПТЕЧКА · '+player.medkits+'</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="menu">МЕНЮ</button></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="fire">ОГОНЬ</button><button data-action="auto-fire">АВТО</button><button data-action="medkit">АПТЕЧКА · '+player.medkits+'</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
@@ -2138,7 +2179,11 @@ function render(){
 function updateCombatButtonLabels(){
  if(!root||mode!=="play")return;
  const special=root.querySelector<HTMLElement>('[data-action="special"]');
+ const auto=root.querySelector<HTMLElement>('[data-action="auto-fire"]');
+ const fireBtn=root.querySelector<HTMLElement>('[data-action="fire"]');
  if(special)special.textContent=player.ability>0?"СПЕЦ "+(player.ability/60).toFixed(1):"СПЕЦ";
+ if(auto)auto.textContent=autoFire?"АВТО":"РУЧНАЯ";
+ if(fireBtn)fireBtn.textContent=autoFire?"ОГОНЬ":"ОГОНЬ · УДЕРЖ";
 }
 let physicsAccumulator=0;
 const PHYSICS_STEP=1;
