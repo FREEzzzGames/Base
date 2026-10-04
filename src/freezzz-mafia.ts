@@ -1345,9 +1345,9 @@ function update(dt:number){
   if(siegeOver)return;
   // CARGO DECK uses the siege runtime exclusively; no legacy wave spawner here.
   const [exitX,exitY]=topDownExit(),scale=portraitScale();
-  const reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<55*scale;
-  const done=false;
-  if(done)completeArenaTask();
+  const reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<95*scale;
+  const taskObjective=arenaMission?.objective||"clear";
+  if(taskObjective==="reach"&&reachedExit)completeArenaTask();
  }
  if(frame%420===0){
   const lines=heroLines[selected||"antonio"];
