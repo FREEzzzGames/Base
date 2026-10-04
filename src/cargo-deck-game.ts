@@ -1,4 +1,5 @@
 import{HS_WEAPONS,createCombatState,consumeShot,startReload,stepWeapon,spawnShots,traceShot,lineOfSight,recoilAngle,grenade as makeGrenade,type HsCombatState,type HsObstacle}from"./freezzz-combat-core";
+import * as VFX from"./cargo-deck-vfx";
 type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type MobType="brawler"|"shooter"|"sniper";type LoadoutId="ASSAULT"|"VANGUARD"|"RECON";
 interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
@@ -111,10 +112,13 @@ function damage(m:Mob,a:number){
   m.hp=Math.max(0,m.hp-a);
   m.hit=1;
   m.state="hit";
+  VFX.emitHitFlash(m.x,m.y);
+  VFX.emitImpact(m.x,m.y,Math.atan2(m.y-player.y,m.x-player.x));
   floatText(m.x,m.y-70,"-"+Math.max(1,Math.round(a)),m.type==="brawler"?"#ff557d":"#f0eee7");
   if(m.hp===0&&m.team==="enemy"){
     kills++;
     floatText(m.x,m.y-95,"DOWN","#54d6d8");
+    VFX.emitDeath(m.x,m.y,m.type==="sniper"?VFX.VFX_COLORS.PURPLE:m.type==="shooter"?VFX.VFX_COLORS.CYAN:VFX.VFX_COLORS.CRIMSON);
     if(Math.random()<.22)pickups.push({x:m.x,y:m.y,kind:Math.random()<.65?"medkit":"weapon",weapon:Math.floor(Math.random()*HS_WEAPONS.length),life:99999});
   }
 }
@@ -192,7 +196,10 @@ function updateMob(m:Mob,dt:number){
         if(m.think<=0){
           const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
           const w=HS_WEAPONS[5];
-          for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
+          for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
+            bullets.push({...sh});
+            VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.075,VFX.VFX_COLORS.PURPLE,1.5,.55);
+          }
           m.cool=78;
         }
       }else if(m.cool<=0){
@@ -209,7 +216,10 @@ function updateMob(m:Mob,dt:number){
         m.cool=30;
         const w=HS_WEAPONS[1];
         const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
-        for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
+        for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
+        bullets.push({...sh});
+        VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.07,VFX.VFX_COLORS.CYAN,1.25,.5);
+      }
       }
       if(!laneActive){
         if(d>165)stepMob(m,playerAttack.x,playerAttack.y,dt);
@@ -269,7 +279,12 @@ function resolve(){
     x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1];
   }
 }
-function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100))bullets.push({...s});muzzleFlash=1}
+function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100)){
+  bullets.push({...s});
+  VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
+}
+VFX.emitMuzzleFlash(hx,hy,a,Math.min(1.25,Math.max(.7,w.damage/32)));
+muzzleFlash=1}
 function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
 function special(){if(abilityCd>0)return;abilityCd=L().cd;ability=L().dur;if(sel==="ASSAULT")mobs.forEach(m=>{if(m.team==="enemy")m.cool=Math.max(m.cool,80)});if(sel==="VANGUARD")player.armor=Math.max(player.armor,90);if(sel==="RECON")auto=true;msg=L().ability;msgT=70}
@@ -283,6 +298,7 @@ function update(dt:number){
   ability=Math.max(0,ability-dt);
   abilityCd=Math.max(0,abilityCd-dt);
 
+  VFX.updateVFX(dt);
   for(const e of effects){
     e.y+=e.vy*dt;
     e.life-=dt;
@@ -386,7 +402,15 @@ function update(dt:number){
   }
 
   bullets=bullets.filter(b=>b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80);
-}function updateGrenades(dt:number){for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0)for(const m of mobs)if(m.hp>0){const d=Math.hypot(m.x-g.x,m.y-g.y);if(d<g.radius)damage(m,g.damage*(1-d/g.radius))}}grenades=grenades.filter(g=>g.life>0)}
+}function updateGrenades(dt:number){for(const g of grenades){
+  g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;
+  if(g.life<=0){
+    VFX.emitExplosion(g.x,g.y,g.radius);
+    for(const m of mobs)if(m.hp>0){const d=Math.hypot(m.x-g.x,m.y-g.y);if(d<g.radius)damage(m,g.damage*(1-d/g.radius));
+    }
+  }
+}
+grenades=grenades.filter(g=>g.life>0)}
 function updatePickups(dt:number){for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(player.x-p.x,player.y-p.y)>40)continue;if(p.kind==="medkit"){if(player.medkits>=5)continue;player.medkits++;save.medkits=player.medkits;msg="АПТЕЧКА +1";msgT=60}else if(typeof p.weapon==="number"){if(!save.inventory.includes(p.weapon)){save.inventory.push(p.weapon);msg="ОРУЖИЕ ДОБАВЛЕНО · "+HS_WEAPONS[p.weapon].name}else{player.combat.reserve=Math.min(player.combat.reserve+HS_WEAPONS[p.weapon].magazine*2,HS_WEAPONS[p.weapon].magazine*12);msg="БОЕПРИПАСЫ · "+HS_WEAPONS[p.weapon].name}msgT=80;persist()}pickups.splice(i,1)}if(frame%360===0&&pickups.length<10)spawnPickup()}
 function updateNodes(dt:number){
   const o=obstacles();
@@ -600,6 +624,15 @@ function drawWorld(){
   ctx!.globalAlpha=1;
 
   ctx!.restore();
+
+  VFX.renderVFX(ctx!,{
+    x:viewW*.5,
+    y:cam+viewH*.5,
+    zoom:1,
+    width:viewW,
+    height:viewH
+  });
+
   drawHUD();
 }function drawHUD(){
   rect(0,0,viewW,82,"rgba(5,9,11,.96)");
