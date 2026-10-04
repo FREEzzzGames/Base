@@ -506,13 +506,17 @@ function drawWorld(){
   // portrait. Keep the camera centered on the operator so the FULL platform
   // width is occupied by the gameplay viewport instead of showing only the
   // left slice of the 1000px world.
-  const maxCamX=Math.max(0,W-viewW);
-  const targetCamX=player.x-viewW*.5;
-  const camX=Math.max(0,Math.min(maxCamX,targetCamX));
-  cam=Math.max(0,Math.min(H-viewH,player.y-viewH*.58));
+  // Pull the camera back far enough to keep the FULL 1000px platform width
+  // visible on portrait screens. Vertical framing is calculated in world
+  // coordinates so the player stays in the lower-middle combat area.
+  const worldZoom=Math.min(1,viewW/W);
+  const worldViewH=viewH/worldZoom;
+  const camX=(W-worldViewH*0-W)/2;
+  cam=Math.max(0,Math.min(H-worldViewH,player.y-worldViewH*.58));
   rect(0,0,viewW,viewH,"#05090b");
   ctx!.save();
-  ctx!.translate(-camX,-cam);
+  ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
+  ctx!.scale(worldZoom,worldZoom);
 
   // Minimal industrial texture: broad, quiet bands instead of a dense grid.
   for(let y=0;y<H;y+=240)rect(0,y,W,1,"#10171a");
@@ -622,9 +626,9 @@ function drawWorld(){
   ctx!.restore();
 
   VFX.renderVFX(ctx!,{
-    x:viewW*.5,
-    y:cam+viewH*.5,
-    zoom:1,
+    x:W*.5,
+    y:cam+worldViewH*.5,
+    zoom:worldZoom,
     width:viewW,
     height:viewH
   });
