@@ -20,7 +20,7 @@ interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:numbe
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
-interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];completedTenders?:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
+interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
@@ -165,7 +165,7 @@ let tenderPage=0;
 let arenaWave=0,arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaSpawnTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
 let arenaMission:ArenaMission|null=null;
 let viewWidth=640,viewHeight=448;
-let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],completedTenders:[],arenaMissionIndex:0,storySeen:{},resumeMission:{},resumeFloor:{}};
+let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
@@ -175,7 +175,7 @@ let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},completedTenders:s.completedTenders||[],arenaMissionIndex:typeof s.arenaMissionIndex==="number"?s.arenaMissionIndex:0};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
 function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
@@ -867,21 +867,13 @@ function arenaTaskSetup(){
  arenaTaskProgress=0;arenaTaskTimer=0;arenaWave=0;arenaKills=0;arenaSpawnTimer=0;
  if(!arenaMission){arenaTaskTarget=0;arenaTaskLabel="НЕТ МИССИИ";return;}
  arenaTaskTarget=arenaMission.target;
- arenaTaskLabel=arenaMission.objective==="survive"?"ВЫЖИТЬ · "+arenaMission.target+" СЕК":arenaMission.objective==="reach"?"ДОБРАТЬСЯ ДО ТОЧКИ":arenaMission.objective==="recover"?"ИЗВЛЕЧЬ ЦЕЛЬ":"УНИЧТОЖИТЬ ГРУППУ · "+arenaMission.target;
+ arenaTaskLabel=arenaMission.objective==="survive"?"ВЫЖИТЬ · "+arenaMission.target+" СЕК":arenaMission.objective==="reach"?"ДОБРАТЬСЯ ДО ТОЧКИ":arenaMission.objective==="recover"?"ИЗВЛЕЧЬ ЦЕЛЬ":arenaMission.objective==="defend"?"ЗАЩИТИТЬ ТОЧКУ":"УНИЧТОЖИТЬ ГРУППУ · "+arenaMission.target;
 }
-function startTenderMission(){
- arenaTaskSetup();
- if(!arenaMission){mode="tenders";render();return;}
- mode="play";dialogueOpen=false;spawnFloor();storeSave();render();
-}
+function startTenderMission(){arenaTaskSetup();if(!arenaMission){mode="tenders";render();return;}mode="play";dialogueOpen=false;spawnFloor();storeSave();render();}
 function advanceTenderMission(){
  const id=save.activeTenderId;if(!id||!arenaMission)return;
- const list=arenaMissionsForTender(id);const next=(save.arenaMissionIndex||0)+1;
- if(next>=list.length){
-  const tender=tenderById(id);
-  if(tender){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),id];}
-  save.activeTenderId=undefined;save.arenaMissionIndex=0;arenaMission=null;mode="tenders";storeSave();render();return;
- }
+ const list=arenaMissionsForTender(id),next=(save.arenaMissionIndex||0)+1;
+ if(next>=list.length){const tender=tenderById(id);if(tender){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),id];}save.activeTenderId=undefined;save.arenaMissionIndex=0;arenaMission=null;mode="tenders";storeSave();render();return;}
  save.arenaMissionIndex=next;arenaTaskSetup();spawnFloor();storeSave();render();
 }
 function spawnArenaWave(){
@@ -889,10 +881,7 @@ function spawnArenaWave(){
  const types:EnemyType[]=arenaMission?.enemies?.length?(arenaMission.enemies as EnemyType[]):["guard","rusher","shooter"];
  const count=Math.min(12,3+Math.floor(arenaWave*.75));
  const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360],[340,650],[900,620]];
- for(let i=0;i<count;i++){
-  const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+save.rank*4+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];
-  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
- }
+ for(let i=0;i<count;i++){const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+save.rank*4+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});}
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];
@@ -1013,12 +1002,11 @@ function update(dt:number){
  if(!save.activeTenderId){const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);if(objectiveDone){if(floor<2){floor++;if(selectfunction completeArenaTask(){
  const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
  const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
- say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);
- advanceTenderMission();
+ say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);advanceTenderMission();
 }
 function completeMission(){
  const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
- if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),tender.id];save.activeTenderId=undefined;}
+ if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
  if(!save.completed.includes(m.id))save.completed.push(m.id);
  save.rank=rank();
@@ -1149,22 +1137,10 @@ function drawSelect(){
  });
 }
 function drawArenaBriefing(){
- rect(0,0,viewWidth,viewHeight,"#07090b");
- const t=save.activeTenderId?tenderById(save.activeTenderId):null;
+ rect(0,0,viewWidth,viewHeight,"#07090b");const t=save.activeTenderId?tenderById(save.activeTenderId):null;
  tx("АРЕНА",viewWidth*.07,viewHeight*.07,menuTextSize(.045,28,40),hero().color);
  tx("ОДНА АРЕНА · ПОСЛЕДОВАТЕЛЬНЫЕ МИССИИ",viewWidth*.07,viewHeight*.115,menuTextSize(.014,9,14),"#68777f");
- if(t&&arenaMission){
-  tx(t.code+" · "+t.title,viewWidth*.07,viewHeight*.20,menuTextSize(.026,18,28),"#f0eee7");
-  tx(t.client,viewWidth*.07,viewHeight*.25,menuTextSize(.016,11,16),"#aeb6b8");
-  tx("МИССИЯ "+arenaMission.order+" / 3",viewWidth*.07,viewHeight*.35,menuTextSize(.020,14,21),hero().color);
-  tx(arenaMission.title,viewWidth*.07,viewHeight*.42,menuTextSize(.030,20,30),"#f0eee7");
-  drawWrapped(arenaMission.briefing,viewWidth*.07,viewHeight*.49,Math.max(26,Math.floor(viewWidth/15)),menuTextSize(.021,15,22),menuTextSize(.021,15,22),"#aeb6b8");
-  tx("ЦЕЛЬ · "+arenaTaskLabel,viewWidth*.07,viewHeight*.65,menuTextSize(.018,12,19),hero().color);
-  tx("ПРАВИЛО · "+arenaMission.arenaRule,viewWidth*.07,viewHeight*.71,menuTextSize(.016,11,17),"#8d999d");
- }else{
-  tx("ТЕНДЕР НЕ ПРИНЯТ",viewWidth/2,viewHeight*.40,menuTextSize(.028,19,28),"#aeb6b8","center");
-  tx("Выбери контракт, чтобы открыть арену.",viewWidth/2,viewHeight*.47,menuTextSize(.018,12,18),"#68777f","center");
- }
+ if(t&&arenaMission){tx(t.code+" · "+t.title,viewWidth*.07,viewHeight*.20,menuTextSize(.026,18,28),"#f0eee7");tx(t.client,viewWidth*.07,viewHeight*.25,menuTextSize(.016,11,16),"#aeb6b8");tx("МИССИЯ "+arenaMission.order+" / 3",viewWidth*.07,viewHeight*.35,menuTextSize(.020,14,21),hero().color);tx(arenaMission.title,viewWidth*.07,viewHeight*.42,menuTextSize(.030,20,30),"#f0eee7");drawWrapped(arenaMission.briefing,viewWidth*.07,viewHeight*.49,Math.max(26,Math.floor(viewWidth/15)),menuTextSize(.021,15,22),menuTextSize(.021,15,22),"#aeb6b8");tx("ЦЕЛЬ · "+arenaTaskLabel,viewWidth*.07,viewHeight*.65,menuTextSize(.018,12,19),hero().color);tx("ПРАВИЛО · "+arenaMission.arenaRule,viewWidth*.07,viewHeight*.71,menuTextSize(.016,11,17),"#8d999d");}else{tx("ТЕНДЕР НЕ ПРИНЯТ",viewWidth/2,viewHeight*.40,menuTextSize(.028,19,28),"#aeb6b8","center");tx("Выбери контракт, чтобы открыть арену.",viewWidth/2,viewHeight*.47,menuTextSize(.018,12,18),"#68777f","center");}
 }
 function drawFamily(){
  const h=hero();
@@ -1230,14 +1206,14 @@ function drawTenders(){
  const pageItems=TENDERS.slice(tenderPage*3,tenderPage*3+3);
  const bodyChars=Math.max(31,Math.floor(W/16.2));
  pageItems.forEach((t,i)=>{
-   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=(save.completedTenders||[]).includes(t.id);
+   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
    c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;
    c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;
    c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
 
    tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");
    tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");
-   tx(done?"ЗАКРЫТ":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
+   tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
    tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
 
    const loreSize=menuTextSize(.009,7,10),loreLine=loreSize*1.18;
