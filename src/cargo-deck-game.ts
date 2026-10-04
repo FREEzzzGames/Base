@@ -497,139 +497,180 @@ function drawPlayer(){
  bar(px-32,py-74,64,5,player.hp,player.maxHp,c);bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
+function drawCargoContainer(o:HsObstacle,idx:number){
+  const x=o.x,y=o.y,w=o.w,h=o.h;
+  ctx!.save();
+  // Soft ground shadow.
+  ctx!.globalAlpha=.34;
+  ctx!.fillStyle="#000";
+  ctx!.fillRect(x+5,y+h+5,w-10,5);
+  ctx!.globalAlpha=1;
+
+  // Layered cargo metal.
+  const g=ctx!.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,"#27383e");
+  g.addColorStop(.12,"#1d2a30");
+  g.addColorStop(.82,"#111b20");
+  g.addColorStop(1,"#0a1115");
+  ctx!.fillStyle=g;ctx!.fillRect(x,y,w,h);
+
+  ctx!.strokeStyle="#3b5960";ctx!.lineWidth=1;
+  ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
+
+  // Structural rails.
+  ctx!.strokeStyle="rgba(84,214,216,.22)";
+  ctx!.beginPath();
+  ctx!.moveTo(x+5,y+7);ctx!.lineTo(x+w-5,y+7);
+  ctx!.moveTo(x+5,y+h-6);ctx!.lineTo(x+w-5,y+h-6);
+  ctx!.stroke();
+
+  const sections=Math.max(2,Math.floor(w/58));
+  ctx!.strokeStyle="rgba(8,14,17,.72)";
+  for(let i=1;i<sections;i++){
+    const sx=x+(w/sections)*i;
+    ctx!.beginPath();ctx!.moveTo(sx,y+9);ctx!.lineTo(sx,y+h-9);ctx!.stroke();
+  }
+
+  // Small technical hatch / identification marks.
+  ctx!.fillStyle=idx%3===0?"rgba(84,214,216,.38)":"rgba(255,255,255,.13)";
+  ctx!.fillRect(x+10,y+12,Math.min(24,w-20),2);
+  ctx!.fillStyle="rgba(84,214,216,.12)";
+  ctx!.fillRect(x+10,y+h-14,Math.min(42,w-20),3);
+  ctx!.restore();
+}
+
 function drawWorld(){
-  // The world is 1000px wide while the Telegram game surface is usually
-  // portrait. Keep the camera centered on the operator so the FULL platform
-  // width is occupied by the gameplay viewport instead of showing only the
-  // left slice of the 1000px world.
-  // Pull the camera back far enough to keep the FULL 1000px platform width
-  // visible on portrait screens. Vertical framing is calculated in world
-  // coordinates so the player stays in the lower-middle combat area.
   const worldZoom=Math.min(1,viewW/W);
   const worldViewH=viewH/worldZoom;
   cam=Math.max(0,Math.min(H-worldViewH,player.y-worldViewH*.58));
-  rect(0,0,viewW,viewH,"#05090b");
+  rect(0,0,viewW,viewH,"#04080b");
   ctx!.save();
   ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
   ctx!.scale(worldZoom,worldZoom);
 
-  // Minimal industrial texture: broad, quiet bands instead of a dense grid.
-  for(let y=0;y<H;y+=240)rect(0,y,W,1,"#10171a");
-  for(let x=0;x<W;x+=80)rect(x,0,1,H,"#10181c");
+  // Quiet industrial deck: large panels, almost invisible grid, localized light.
+  rect(0,0,W,H,"#070d11");
+  for(let y=0;y<H;y+=240){
+    ctx!.fillStyle="rgba(24,43,49,.22)";ctx!.fillRect(38,y,W-76,1);
+    ctx!.fillStyle="rgba(0,0,0,.18)";ctx!.fillRect(38,y+1,W-76,54);
+  }
+  for(let x=80;x<W;x+=160){
+    ctx!.fillStyle="rgba(45,75,82,.08)";ctx!.fillRect(x,0,1,H);
+  }
 
+  // Deck edge rails.
+  ctx!.fillStyle="#101b20";ctx!.fillRect(0,0,38,H);ctx!.fillRect(962,0,38,H);
+  ctx!.fillStyle="rgba(84,214,216,.22)";ctx!.fillRect(38,0,2,H);ctx!.fillRect(960,0,2,H);
+
+  // Sparse floor markers keep depth without becoming a grid.
   for(let i=0;i<34;i++){
     const x=(i*173)%W,y=(i*317)%H;
-    ctx!.fillStyle=i%5===0?"#2a4a4e":"#1a2529";
+    ctx!.fillStyle=i%5===0?"rgba(84,214,216,.18)":"rgba(130,155,162,.10)";
     ctx!.fillRect(x,y,1,1);
   }
 
-  rect(0,0,38,H,"#12191d");
-  rect(962,0,38,H,"#12191d");
+  // Cargo cover.
+  for(let oi=0;oi<OBS.length;oi++)drawCargoContainer(OBS[oi],oi);
 
-  // Cargo cover: large quiet shapes, one edge highlight, no mechanical striping.
-  const grads=ensureObsGradients();
-  for(let oi=0;oi<OBS.length;oi++){
-    const o=OBS[oi];
-    ctx!.fillStyle=grads[oi];ctx!.fillRect(o.x,o.y,o.w,o.h);
-    ctx!.strokeStyle="#3e4b50";ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
-    ctx!.fillStyle="#54d6d8";ctx!.globalAlpha=.16;ctx!.fillRect(o.x+8,o.y+7,o.w-16,2);ctx!.globalAlpha=1;
-  }
-
-  // Player CARGO CORE.
-  ctx!.shadowColor="#54d6d8";
-  ctx!.shadowBlur=24;
-  ctx!.fillStyle="#54d6d8";
-  ctx!.beginPath();
-  ctx!.arc(core.x,core.y,31,0,Math.PI*2);
-  ctx!.fill();
+  // Player CARGO CORE: compact energy reactor.
+  ctx!.save();
+  ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
+  ctx!.beginPath();ctx!.arc(core.x,core.y,55+Math.sin(frame*.06)*3,0,Math.PI*2);ctx!.fill();
+  ctx!.globalAlpha=.8;ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=2;
+  ctx!.beginPath();ctx!.arc(core.x,core.y,37,0,Math.PI*2);ctx!.stroke();
+  ctx!.globalAlpha=1;ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=22;
+  ctx!.fillStyle="#54d6d8";ctx!.beginPath();ctx!.arc(core.x,core.y,22,0,Math.PI*2);ctx!.fill();
   ctx!.shadowBlur=0;
+  ctx!.fillStyle="#eaffff";ctx!.beginPath();ctx!.arc(core.x,core.y,7,0,Math.PI*2);ctx!.fill();
+  ctx!.restore();
 
-  // Towers.
+  // Towers: industrial energy pylons, replacing the old debug squares visually.
   for(const n of nodes){
     if(n.hp<=0)continue;
     const c=n.team==="enemy"?"#ff557d":"#54d6d8";
-    ctx!.strokeStyle=c;
-    ctx!.fillStyle="#141b1e";
-    ctx!.fillRect(n.x-34,n.y-44,68,72);
-    ctx!.strokeRect(n.x-34,n.y-44,68,72);
-    ctx!.fillStyle=c;
-    ctx!.fillRect(n.x-5,n.y-58,10,14);
-    bar(n.x-34,n.y-70,68,5,n.hp,n.maxHp,c);
+    ctx!.save();
+    ctx!.globalAlpha=.12;ctx!.fillStyle=c;
+    ctx!.beginPath();ctx!.arc(n.x,n.y-8,49+Math.sin(frame*.05+n.x)*2,0,Math.PI*2);ctx!.fill();
+    ctx!.globalAlpha=.72;ctx!.strokeStyle=c;ctx!.lineWidth=1.5;
+    ctx!.beginPath();ctx!.arc(n.x,n.y+16,34,0,Math.PI*2);ctx!.stroke();
+    ctx!.globalAlpha=1;
+    const tg=ctx!.createLinearGradient(n.x-30,n.y-44,n.x+30,n.y+28);
+    tg.addColorStop(0,"#273239");tg.addColorStop(.55,"#151e23");tg.addColorStop(1,"#080e12");
+    ctx!.fillStyle=tg;ctx!.fillRect(n.x-30,n.y-38,60,66);
+    ctx!.strokeStyle=c;ctx!.strokeRect(n.x-30.5,n.y-38.5,61,67);
+    ctx!.fillStyle="#0a1115";ctx!.fillRect(n.x-20,n.y-29,40,42);
+    ctx!.fillStyle=c;ctx!.globalAlpha=.22;ctx!.fillRect(n.x-16,n.y-25,32,34);ctx!.globalAlpha=1;
+    ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=12;
+    ctx!.fillRect(n.x-4,n.y-53,8,16);ctx!.shadowBlur=0;
+    bar(n.x-30,n.y-67,60,4,n.hp,n.maxHp,c);
+    ctx!.restore();
   }
 
   // Pickup beacons.
   for(const p of pickups){
     const c=p.kind==="medkit"?"#ff5b55":L().color;
-    ctx!.fillStyle=c;
-    ctx!.shadowColor=c;
-    ctx!.shadowBlur=14;
-    ctx!.beginPath();
-    ctx!.arc(p.x,p.y,10,0,Math.PI*2);
-    ctx!.fill();
-    ctx!.shadowBlur=0;
-    ctx!.fillStyle="#081013";
-    ctx!.fillRect(p.x-4,p.y-1,8,2);
+    const pulse=1+Math.sin(frame*.12+p.x)*.08;
+    ctx!.save();ctx!.globalAlpha=.18;ctx!.fillStyle=c;
+    ctx!.beginPath();ctx!.arc(p.x,p.y,20*pulse,0,Math.PI*2);ctx!.fill();
+    ctx!.globalAlpha=1;ctx!.shadowColor=c;ctx!.shadowBlur=14;
+    ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(p.x,p.y,8,0,Math.PI*2);ctx!.fill();
+    ctx!.shadowBlur=0;ctx!.fillStyle="#081013";ctx!.fillRect(p.x-4,p.y-1,8,2);
     if(p.kind==="medkit")ctx!.fillRect(p.x-1,p.y-4,2,8);
+    ctx!.restore();
   }
 
-  // WISPS: simple floating energy entities. Type is communicated only by color.
+  // Wisps: retain the current color language, add a restrained energy tail.
   for(const m of mobs){
     const colorId=m.type==="brawler"?0:m.type==="shooter"?1:2;
     const c=colorId===0?"#ff557d":colorId===1?"#ffb04f":"#cf7cff";
     const bob=Math.sin(frame*.09+m.x*.01)*3;
     const pulse=.82+Math.sin(frame*.12+m.y*.007)*.10;
-    VFX.renderWisp(ctx!,m.x,m.y-18+bob,34*pulse,colorId,frame*.08+m.x*.02);
-    // Small dark core keeps the wisp readable without adding a body model.
-    ctx!.fillStyle="#0a1013";ctx!.globalAlpha=.72;
-    ctx!.beginPath();ctx!.arc(m.x,m.y-18+bob,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+    const wy=m.y-18+bob;
+    ctx!.save();
+    ctx!.globalAlpha=.16;
+    ctx!.fillStyle=c;
+    ctx!.beginPath();ctx!.ellipse(m.x,m.y+10,13,28,0,0,Math.PI*2);ctx!.fill();
+    ctx!.globalAlpha=1;
+    VFX.renderWisp(ctx!,m.x,wy,34*pulse,colorId,frame*.08+m.x*.02);
+    ctx!.fillStyle="#071014";ctx!.globalAlpha=.68;
+    ctx!.beginPath();ctx!.arc(m.x,wy,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
     if(m.type==="sniper"&&m.think>0){
-      ctx!.globalAlpha=.22+Math.sin(frame*.16)*.10;
-      ctx!.strokeStyle="#cf7cff";ctx!.lineWidth=1;
-      ctx!.beginPath();ctx!.arc(m.x,m.y-18+bob,38+Math.max(0,m.think)*.15,0,Math.PI*2);ctx!.stroke();
-      ctx!.globalAlpha=1;
+      ctx!.globalAlpha=.22+Math.sin(frame*.16)*.10;ctx!.strokeStyle="#cf7cff";ctx!.lineWidth=1;
+      ctx!.beginPath();ctx!.arc(m.x,wy,38+Math.max(0,m.think)*.15,0,Math.PI*2);ctx!.stroke();ctx!.globalAlpha=1;
     }
-    // Compact health indicator only; no labels or humanoid geometry.
     bar(m.x-18,m.y-55+bob,36,3,m.hp,m.maxHp,c);
+    ctx!.restore();
   }
 
   drawPlayer();
 
-  // Projectiles.
+  // Projectiles: bright core + short energy tail.
   for(const b of bullets){
-    ctx!.strokeStyle=b.from==="player"?L().color:"#ff557d";
-    ctx!.lineWidth=2;
-    ctx!.beginPath();
-    ctx!.moveTo(b.x,b.y);
-    ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);
-    ctx!.stroke();
+    const c=b.from==="player"?L().color:"#ff557d";
+    ctx!.save();ctx!.strokeStyle=c;ctx!.lineWidth=3;ctx!.globalAlpha=.28;
+    ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*4,b.y-b.vy*4);ctx!.stroke();
+    ctx!.globalAlpha=1;ctx!.lineWidth=1.5;
+    ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);ctx!.stroke();
+    ctx!.restore();
   }
 
   for(const g of grenades){
-    ctx!.fillStyle="#d9b86c";
-    ctx!.beginPath();
-    ctx!.arc(g.x,g.y,6,0,Math.PI*2);
-    ctx!.fill();
+    ctx!.save();ctx!.fillStyle="#d9b86c";ctx!.shadowColor="#d9b86c";ctx!.shadowBlur=8;
+    ctx!.beginPath();ctx!.arc(g.x,g.y,6,0,Math.PI*2);ctx!.fill();ctx!.restore();
   }
 
-  // Floating combat text.
   for(const e of effects){
-    ctx!.globalAlpha=Math.min(1,e.life/18);
-    txt(e.text,e.x,e.y,9,e.color,"center");
+    ctx!.globalAlpha=Math.min(1,e.life/18);txt(e.text,e.x,e.y,9,e.color,"center");
   }
   ctx!.globalAlpha=1;
-
   ctx!.restore();
 
   VFX.renderVFX(ctx!,{
-    x:W*.5,
-    y:cam+worldViewH*.5,
-    zoom:worldZoom,
-    width:viewW,
-    height:viewH
+    x:W*.5,y:cam+worldViewH*.5,zoom:worldZoom,width:viewW,height:viewH
   });
-
   drawHUD();
-}function drawHUD(){
+}
+function drawHUD(){
   rect(0,0,viewW,82,"rgba(5,9,11,.96)");
 
   txt("CARGO DECK",16,14,13,"#f0eee7");
