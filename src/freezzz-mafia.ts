@@ -349,10 +349,15 @@ const ARENA_CARGO:{x:number;y:number;w:number;h:number}[]=[
  {x:105,y:1680,w:165,h:82},{x:730,y:1680,w:165,h:82},
  {x:120,y:2100,w:170,h:86},{x:710,y:2100,w:170,h:86}
 ];
+let arenaObstacleCache:{x:number;y:number;w:number;h:number}[]|null=null;
+let arenaObstacleCacheFrame=-1;
 function arenaObstacles(){
+ if(arenaObstacleCache&&arenaObstacleCacheFrame===frame)return arenaObstacleCache;
  const out=ARENA_CARGO.map(o=>({...o}));
  for(const t of siegeTowers)if(t.hp>0)out.push({x:t.x-34,y:t.y-48,w:68,h:62});
  for(const b of siegeBases)if(b.hp>0)out.push({x:b.x-108,y:b.y-48,w:216,h:92});
+ arenaObstacleCache=out;
+ arenaObstacleCacheFrame=frame;
  return out;
 }
 function topDownObstacles(){
@@ -1662,9 +1667,14 @@ function updateSiege(dt:number){
   }
 
   // 4. Все вражеские мобы уничтожены: штурм ближайшей живой башни.
-  const enemyTowers=siegeTowers.filter(t=>t.team!==m.team&&t.hp>0);
-  if(enemyTowers.length){
-   const tower=enemyTowers.sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+  let tower:SiegeTower|undefined;
+  let towerDist=Infinity;
+  for(const candidate of siegeTowers){
+   if(candidate.team===m.team||candidate.hp<=0)continue;
+   const d2=(candidate.x-m.x)*(candidate.x-m.x)+(candidate.y-m.y)*(candidate.y-m.y);
+   if(d2<towerDist){tower=candidate;towerDist=d2;}
+  }
+  if(tower){
    m.targetX=tower.x;m.targetY=tower.y;m.animState="run";
    const d=Math.hypot(tower.x-m.x,tower.y-m.y);
    if(d>m.attackRange)siegeMoveTo(m,tower.x,tower.y,dt,18);
