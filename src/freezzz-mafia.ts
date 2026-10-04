@@ -1211,7 +1211,7 @@ function updateArenaPickups(dt:number){
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
  // Spawn the hero first, then instantiate the exact same encounter tick for both factions.
- player={x:500,y:2385,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
+ player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
  arenaMission=ALIEN_ARENA_MISSION;arenaTaskSetup();resetArenaPickups();initSiege();
 }
 function fire(){
