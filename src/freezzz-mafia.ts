@@ -45,14 +45,15 @@ function say(text:string,kind:"player"|"enemy",x:number,y:number){
 }
 function drawSpeech(){
  if(!speech||speech.timer<=0)return;
- const fs=Math.max(11,Math.min(15,viewWidth*.027));
- ctx!.save();ctx!.font="700 "+fs+"px \"Nothing Font\",monospace";ctx!.textAlign="center";ctx!.textBaseline="middle";
- const width=Math.min(viewWidth*.58,Math.max(80,ctx!.measureText(speech.text).width+22));
- const bx=clamp(speech.x-width/2,6,viewWidth-width-6),by=clamp(speech.y-fs*3,8,viewHeight-fs*3-8);
- ctx!.fillStyle="rgba(5,10,12,.88)";ctx!.strokeStyle=speech.kind==="player"?hero().color:"#d86c35";ctx!.lineWidth=2;
- ctx!.beginPath();ctx!.roundRect(bx,by,width,fs*1.9,5);ctx!.fill();ctx!.stroke();
- ctx!.fillStyle="#f0eee7";ctx!.fillText(speech.text,bx+width/2,by+fs*.95);ctx!.restore();
- speech.timer--;
+ const fs=Math.max(12,Math.min(17,viewWidth*.032));
+ ctx!.save();ctx!.font="700 "+fs+"px \"Nothing Font\",monospace";
+ const width=Math.min(viewWidth*.82,Math.max(150,ctx!.measureText(speech.text).width+34));
+ const bx=(viewWidth-width)/2,by=88;
+ ctx!.textAlign="center";ctx!.textBaseline="middle";
+ ctx!.fillStyle="rgba(4,9,12,.94)";ctx!.strokeStyle=speech.kind==="player"?hero().color:"#ff9a52";ctx!.lineWidth=2;
+ ctx!.beginPath();ctx!.rect(bx,by,width,fs*2.0);ctx!.fill();ctx!.stroke();
+ ctx!.fillStyle="#f5f7f6";ctx!.fillText(speech.text,viewWidth/2,by+fs);
+ ctx!.restore();speech.timer--;
 }
 
 const W=640,H=448;
@@ -276,15 +277,13 @@ function getTestLayout():TestFloorLayout{
 }
 
 function drawHudOverlay(m:Mission){
- rect(8,8,viewWidth-16,40,"rgba(4,8,11,.96)");
- const fs=Math.max(9,Math.min(15,viewWidth*.017));
- // Keep every field inside its own column; never allow the title to collide with COMBAT.
- tx("CARGO DECK",18,15,fs,hero().color);
- tx("COMBAT",viewWidth*.42,15,fs,"#f0eee7","center");
- tx("HP "+Math.max(0,Math.round(player.hp)),viewWidth*.72,15,fs*.72,"#d5d8d7","center");
- tx("MAG "+player.combat.ammo+"/"+player.combat.reserve,viewWidth-18,15,fs*.72,hero().color,"right");
- tx("WAVE "+siegeWave,18,62,fs*.78,"#d9b86c");
- tx(arenaTaskLabel+" · "+arenaTaskProgress+"/"+arenaTaskTarget,18,79,fs*.70,hero().color);
+ rect(8,8,viewWidth-16,58,"rgba(3,8,11,.97)");
+ const fs=Math.max(11,Math.min(18,viewWidth*.021));const hp=Math.max(0,Math.round(player.hp)),max=Math.max(1,Math.round(player.maxHp));
+ const hpColor=hp/max<=.3?"#ff5b55":hp/max<=.55?"#ffd36b":"#f0f5f3";
+ tx("CARGO",16,17,fs*.82,hero().color);tx("COMBAT",viewWidth*.38,17,fs*.82,"#f0eee7","center");
+ tx("HP "+hp+"/"+max,viewWidth*.66,17,fs*.92,hpColor,"center");tx("MAG "+player.combat.ammo+"/"+player.combat.reserve,viewWidth-16,17,fs*.82,hero().color,"right");
+ rect(16,29,viewWidth*.30,7,"rgba(255,255,255,.10)");rect(16,29,viewWidth*.30*clamp(hp/max,0,1),7,hpColor);
+ tx("WAVE "+siegeWave,16,48,fs*.78,"#ffe08a");tx(arenaTaskLabel+" · "+arenaTaskProgress+"/"+arenaTaskTarget,viewWidth-16,48,fs*.70,hero().color,"right");
 }
 function portraitScale(){return Math.max(.85,Math.min(2.15,Math.min(viewWidth/360,viewHeight/780)));}
 function topDownMap(){
@@ -795,7 +794,14 @@ function drawWorld(m:Mission){
  grenades.forEach(g=>{ellipse(g.x,g.y,Math.max(5,g.radius*(1-g.life/70)),Math.max(5,g.radius*(1-g.life/70)),"rgba(207,110,53,.10)");ellipse(g.x,g.y,6,6,"#6e6f62");});
  bullets.forEach(b=>{line(b.x-b.vx*1.8,b.y-b.vy*1.8,b.x,b.y,b.from==="player"?hero().color:"#d86c35",Math.max(1,1.2));rect(b.x-2,b.y-2,4,4,b.from==="player"?hero().color:"#d86c35");});
  ctx.restore();drawHudOverlay(m);drawSpeech();
- if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
+ if(damagePulse>0||criticalPulse>0){
+  const p=Math.max(damagePulse,criticalPulse*(.55+.45*Math.sin(frame*.18)*.5));
+  const g=ctx!.createRadialGradient(viewWidth/2,viewHeight/2,Math.min(viewWidth,viewHeight)*.28,viewWidth/2,viewHeight/2,Math.max(viewWidth,viewHeight)*.72);
+  g.addColorStop(0,"rgba(255,40,40,0)");g.addColorStop(.72,"rgba(255,45,45,"+(p*.10)+")");g.addColorStop(1,"rgba(255,25,25,"+(p*.48)+")");
+  ctx!.fillStyle=g;ctx!.fillRect(0,0,viewWidth,viewHeight);damagePulse=Math.max(0,damagePulse-.045);
+  if(player.hp/player.maxHp>.32)criticalPulse=Math.max(0,criticalPulse-.035);
+ }
+ if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.12,flash)+")");flash-=.02;}
 }
 function drawArenaBackground(){
  if(!ctx)return;
@@ -874,7 +880,8 @@ function spawnSiegeWave(){
  });
 }
 function drawSiegeTower(t:SiegeTower){
- const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#e05b78";
+ const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#ff557d";
+ if(alive){ctx!.save();ctx!.globalAlpha=.20;ctx!.shadowColor=teamColor;ctx!.shadowBlur=20;ellipse(t.x,t.y-28,40,52,teamColor);ctx!.restore();}
  ellipse(t.x,t.y+8,43,13,"rgba(0,0,0,.35)");rect(t.x-30,t.y-52,60,58,alive?"#3b4b50":"#252b2e");
  poly([t.x-30,t.y-52,t.x-18,t.y-76,t.x+18,t.y-76,t.x+30,t.y-52],alive?"#536a70":"#343b3e");
  rect(t.x-20,t.y-68,40,9,teamColor);ellipse(t.x,t.y-32,13,13,alive?"#8ce9ec":"#444b4d");if(alive)ellipse(t.x,t.y-32,6,6,teamColor);
@@ -882,7 +889,8 @@ function drawSiegeTower(t:SiegeTower){
  tx("NODE "+String(t.lane+1),t.x,t.y+17,11,alive?teamColor:"#697174","center");
 }
 function drawSiegeBase(b:SiegeBase){
- const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#e05b78";
+ const alive=b.hp>0,teamColor=b.team==="player"?hero().color:"#ff557d";
+ if(alive){ctx!.save();ctx!.globalAlpha=.16;ctx!.shadowColor=teamColor;ctx!.shadowBlur=24;ellipse(b.x,b.y-28,118,58,teamColor);ctx!.restore();}
  rect(b.x-116,b.y-38,232,76,alive?"#202e33":"#20282b");rect(b.x-96,b.y-62,192,20,teamColor);
  poly([b.x-58,b.y-38,b.x-30,b.y-78,b.x+30,b.y-78,b.x+58,b.y-38],alive?"#536b70":"#373e40");
  ellipse(b.x,b.y-38,19,19,alive?"#8ce9ec":"#454c4d");if(alive)ellipse(b.x,b.y-38,9,9,teamColor);
@@ -1012,13 +1020,16 @@ function drawAlienCombatant(m:SiegeMob){
  if(m.type==="brawler"){kind=(m.role%2===0)?"heavy":"rusher";scale=kind==="heavy"?1.18:1.02;weapon=false;}
  else if(m.type==="shooter"){kind=(m.role%2===0)?"guard":"suppressor";scale=kind==="guard"?1.02:1.08;weapon=true;}
  ctx.save();
- ctx.globalAlpha=enemy?1:.58;
+ ctx.globalAlpha=enemy?1:.58;ctx.shadowColor=accent;ctx.shadowBlur=18;
+ ellipse(m.x,m.y-25*(scale*visualScale),31*(scale*visualScale),49*(scale*visualScale),accent);
+ ctx.shadowBlur=0;
  drawRobotMob(m.x,m.y,kind,scale*visualScale,accent,m.animState,m.anim,m.hp,m.maxHp,weapon,m.hitFlash);
  ctx.restore();
 }
 
 function drawArenaPickup(p:ArenaPickup){
  const pulse=1+Math.sin(frame*.08+p.x)*.08;
+ ctx!.save();ctx!.globalAlpha=.22;ctx!.shadowColor=p.kind==="medkit"?"#ff5b55":hero().color;ctx!.shadowBlur=18;ellipse(p.x,p.y,26*pulse,26*pulse,p.kind==="medkit"?"#ff5b55":hero().color);ctx!.restore();
  if(p.kind==="medkit"){
   rect(p.x-13*pulse,p.y-13*pulse,26*pulse,26*pulse,"#e8ece7");
   rect(p.x-5,p.y-11,10,22,"#d24d47");rect(p.x-11,p.y-5,22,10,"#d24d47");
@@ -1157,6 +1168,7 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
 }
 function drawPlayer(){
  const x=player.x,y=player.y,sc=Math.max(.68,Math.min(.84,viewWidth/1050));
+ if(ctx){ctx.save();ctx.globalAlpha=.22;ctx.shadowColor=hero().color;ctx.shadowBlur=18;ellipse(x,y-28*sc,34*sc,56*sc,hero().color);ctx.restore();}
  drawAlienHero(selected||"antonio",x,y,frame,sc,false);
  const handX=x+player.facing*31*sc;
  const handY=y-43*sc;
@@ -1289,13 +1301,21 @@ function useAbility(){
    player.armor=Math.max(player.armor,player.maxHp*.35);
  }
 }
+function playDamageCue(critical=false){
+ if(typeof window==="undefined")return;
+ try{
+  const AC=window.AudioContext||((window as any).webkitAudioContext);if(!AC)return;
+  const ac=new AC(),o=ac.createOscillator(),g=ac.createGain();
+  o.type="sawtooth";o.frequency.setValueAtTime(critical?145:210,ac.currentTime);
+  o.frequency.exponentialRampToValueAtTime(critical?72:115,ac.currentTime+.12);
+  g.gain.setValueAtTime(critical?.065:.035,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.14);
+  o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.15);setTimeout(()=>ac.close().catch(()=>{}),220);
+ }catch{}
+}
 function hurt(amount:number){
- const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
- if(player.hp<=0){
-  player.hp=player.maxHp;player.armor=save.armor*5;
-  // Respawn is an explicit full encounter reset: hero and mobs never appear on different lifecycles.
-  spawnFloor();
- }
+ const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp=Math.max(0,player.hp-(amount-blocked));
+ damagePulse=Math.min(1,damagePulse+.72);const critical=player.hp<=player.maxHp*.3;criticalPulse=critical?1:Math.max(criticalPulse,.35);flash=.22;playDamageCue(critical);
+ if(player.hp<=0){player.hp=player.maxHp;player.armor=save.armor*5;damagePulse=1;criticalPulse=0;spawnFloor();}
 }
 
 function update(dt:number){
@@ -1303,6 +1323,7 @@ function update(dt:number){
  speechCooldown=Math.max(0,speechCooldown-dt);
  if(speech)speech.timer-=dt;
  if(mode!=="play")return;
+ const hpRatio=player.hp/Math.max(1,player.maxHp);if(hpRatio<=.30)criticalPulse=Math.min(1,criticalPulse+.035);else criticalPulse=Math.max(0,criticalPulse-.06);
 
  if(arenaMission){
   arenaTaskTimer+=dt;arenaSpawnTimer+=dt;updateSiege(dt);
