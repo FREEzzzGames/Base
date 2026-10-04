@@ -1187,9 +1187,19 @@ const ALIEN_ARENA_MISSION:ArenaMission={
  objective:"clear",target:8,reward:0,enemies:["brawler","shooter","sniper"],arenaRule:"CARGO DECK"
 };
 function arenaTaskSetup(){
- arenaMission=ALIEN_ARENA_MISSION;
+ const tenderId=save.activeTenderId;
+ const missions=tenderId?arenaMissionsForTender(tenderId):[];
+ arenaMission=missions[save.arenaMissionIndex||0]||ALIEN_ARENA_MISSION;
  arenaTaskProgress=0;arenaTaskTimer=0;arenaWave=0;arenaKills=0;arenaSpawnTimer=0;
- arenaTaskTarget=arenaMission.target;arenaTaskLabel="УНИЧТОЖИТЬ ВРАГОВ · "+arenaMission.target;
+ arenaTaskTarget=arenaMission.target;
+ const labels:Record<ArenaMission["objective"],string>={
+  clear:"УНИЧТОЖИТЬ ВРАГОВ",
+  survive:"ВЫЖИТЬ",
+  reach:"ДОБРАТЬСЯ ДО ВЫХОДА",
+  recover:"ЗАБРАТЬ ЦЕЛЬ",
+  defend:"ЗАЩИТИТЬ CARGO CORE"
+ };
+ arenaTaskLabel=labels[arenaMission.objective]+" · "+arenaMission.target;
 }
 function startTenderMission(){beginSelected();}
 function advanceTenderMission(){
@@ -1252,7 +1262,8 @@ function spawnFloor(){
  // Spawn the hero first, then instantiate the exact same encounter tick for both factions.
  save.weaponInventory=Array.from(new Set([0,...(save.weaponInventory||[]),save.weapon])).slice(0,8);
 player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,medkits:Math.max(0,Math.min(5,save.medkits||0)),combat:createCombatState(HS_WEAPONS[save.weapon])};
- arenaMission=ALIEN_ARENA_MISSION;arenaTaskSetup();resetArenaPickups();initSiege();
+ if(!arenaMission)arenaTaskSetup();
+ resetArenaPickups();initSiege();
 }
 function fire(){
  if(mode!=="play")return;
@@ -1667,8 +1678,11 @@ function updateSiege(dt:number){
   if(hostile&&Math.hypot(hostile.x-t.x,hostile.y-t.y)<360){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
   if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
  }
- if(arenaTaskTarget>0&&arenaTaskProgress>=arenaTaskTarget){
-  siegeMessage="ЗАДАЧА ВЫПОЛНЕНА · ВРАГИ УНИЧТОЖЕНЫ";
+ const taskObjective=arenaMission?.objective||"clear";
+ const surviveDone=(taskObjective==="survive"||taskObjective==="defend")&&arenaTaskTimer>=arenaTaskTarget*60;
+ const clearDone=taskObjective==="clear"&&arenaTaskProgress>=arenaTaskTarget;
+ if(clearDone||surviveDone){
+  siegeMessage=taskObjective==="clear"?"ЗАДАЧА ВЫПОЛНЕНА · ВРАГИ УНИЧТОЖЕНЫ":"ЗАДАЧА ВЫПОЛНЕНА · ПОЗИЦИЯ УДЕРЖАНА";
   completeArenaTask();return;
  }
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
