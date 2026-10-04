@@ -1400,6 +1400,45 @@ function exitToPortal(){
  mode="select";dialogueOpen=false;
  window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}));
 }
+function bindTenderCanvasHit(){
+ if(!canvas||mode!=="tenders")return;
+ const handler=(e:PointerEvent)=>{
+  e.preventDefault();
+  const r=canvas!.getBoundingClientRect();
+  const x=e.clientX-r.left,y=e.clientY-r.top;
+  const W=viewWidth,H=viewHeight;
+  const top=H*.12,bottom=H*.90,gap=H*.018,cardH=(bottom-top-gap*2)/3;
+  if(y>=top&&y<bottom){
+   const index=Math.floor((y-top)/(cardH+gap));
+   const inside=(y-top)-index*(cardH+gap);
+   if(index>=0&&index<3&&inside>=0&&inside<=cardH){
+    const t=TENDERS[tenderPage*3+index];
+    if(t&&!(save.completedTenders||[]).includes(t.id)){
+     save.activeTenderId=t.id;
+     save.arenaMissionIndex=0;
+     const mi=allMissions.findIndex(m=>m.id===t.linkedMission);
+     if(mi>=0){
+      missionIndex=mi;
+      if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;
+     }
+     save.hero=selected;
+     arenaTaskSetup();
+     mode="arena";
+     storeSave();
+     render();
+     return;
+    }
+   }
+  }
+  const bh=Math.min(38,H*.052),by=H-bh-H*.025;
+  if(y>=by&&y<=by+bh){
+   if(x<=W*.22&&tenderPage>0){tenderPage--;render();return;}
+   if(x>=W*.38&&x<=W*.62){mode="select";render();return;}
+   if(x>=W*.75&&tenderPage<Math.ceil(TENDERS.length/3)-1){tenderPage++;render();return;}
+  }
+ };
+ canvas.addEventListener("pointerup",handler);
+}
 function bindButtons(){
  if(canvas&&mode==="weaponMenu"){
    const hit=(e:PointerEvent)=>{
@@ -1518,7 +1557,7 @@ function render(){
   }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
- bindButtons();renderCanvas();
+ bindButtons();bindTenderCanvasHit();renderCanvas();
 }
 function updateCombatButtonLabels(){
  if(!root||mode!=="play")return;
