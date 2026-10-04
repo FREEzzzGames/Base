@@ -878,9 +878,11 @@ function drawSiegeStructures(){siegeTowers.forEach(drawSiegeTower);siegeBases.fo
 function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,state:string,anim:number,hp:number,maxHp:number,weapon:boolean,hitFlash=0){
  if(!ctx)return;
  const moving=state==="run"||state==="strafe"||state==="retreat";
+ const attacking=state==="attack";
+ const hitState=state==="hit";
  const walk=moving?Math.sin(anim)*4:0;
- const bob=moving?Math.abs(Math.sin(anim))*.9:0;
- const hit=hitFlash>0;
+ const bob=moving?Math.abs(Math.sin(anim))*.9:(attacking?Math.sin(anim*1.7)*1.2:0);
+ const hit=hitFlash>0||hitState;
  const body="#394247",dark="#1a2225",mid="#566268",metal="#7f8d91",light="#b6c0c0";
  ctx.save();
  ctx.translate(x,y+bob);
@@ -972,6 +974,7 @@ function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,s
    const len=kind==="sniper"?42:31;
    line(wx,wy,wx+len,wy-3,metal,4);rect(wx+len-4,wy-6,9,7,mid);
    rect(wx+6,wy-2,13,3,accent);ellipse(wx+len+1,wy-3,3,3,accent);
+   if(attacking){line(wx+len+2,wy-3,wx+len+10,wy-3,accent,2);}
  }
  ctx.restore();
  const hpW=36*scale;
@@ -981,11 +984,14 @@ function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,s
 
 function drawAlienCombatant(m:SiegeMob){
  if(!ctx)return;
- const accent=m.team==="player"
-   ? (m.type==="brawler"?"#54f2ee":m.type==="shooter"?"#5fe8ff":"#8eabff")
-   : (m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff");
- const kind=m.type==="brawler"?"heavy":m.type==="shooter"?"shooter":"sniper";
- drawRobotMob(m.x,m.y,kind,m.type==="brawler"?1.22:m.type==="shooter"?.94:.76,accent,m.animState,m.anim,m.hp,m.maxHp,m.type!=="brawler",m.hitFlash);
+ const enemy=m.team==="enemy";
+ const accent=enemy
+   ? (m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff")
+   : (m.type==="brawler"?"#54f2ee":m.type==="shooter"?"#5fe8ff":"#8eabff");
+ let kind="sniper",scale=.82,weapon=true;
+ if(m.type==="brawler"){kind=(m.role%2===0)?"heavy":"rusher";scale=kind==="heavy"?1.18:1.02;weapon=false;}
+ else if(m.type==="shooter"){kind=(m.role%2===0)?"guard":"suppressor";scale=kind==="guard"?1.02:1.08;weapon=true;}
+ drawRobotMob(m.x,m.y,kind,scale,accent,m.animState,m.anim,m.hp,m.maxHp,weapon,m.hitFlash);
 }
 
 function drawArenaPickup(p:ArenaPickup){
@@ -1250,7 +1256,7 @@ function update(dt:number){
  if(arenaMission){
   arenaTaskTimer+=dt;arenaSpawnTimer+=dt;updateSiege(dt);
   if(siegeOver)return;
-  if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();
+  // CARGO DECK uses the siege runtime exclusively; no legacy wave spawner here.
   const [exitX,exitY]=topDownExit(),scale=portraitScale();
   const reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<55*scale;
   const done=false;
@@ -1290,6 +1296,11 @@ function update(dt:number){
     }
    }
    if(Math.hypot(player.x-g.x,player.y-g.y)<g.radius)hurt(24);
+   for(const m of siegeMobs){
+    if(m.team!=="enemy"||m.hp<=0)continue;
+    const md=Math.hypot(m.x-g.x,m.y-g.y);
+    if(md<g.radius){m.hp=Math.max(0,m.hp-g.damage*(1-md/g.radius));m.hitFlash=1;m.animState="hit";}
+   }
    g.life=0;
   }
  }
@@ -1444,7 +1455,10 @@ function updateSiege(dt:number){
  const liveMobs=siegeMobs.filter(o=>o.hp>0);
  for(let i=siegeMobs.length-1;i>=0;i--){
   const m=siegeMobs[i];
-  if(m.hp<=0){siegeMobs.splice(i,1);continue;}
+  if(m.hp<=0){
+   if(m.team==="enemy"){arenaKills++;arenaTaskProgress=Math.min(arenaTaskTarget,arenaTaskProgress+1);}
+   siegeMobs.splice(i,1);continue;
+  }
   m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.pathTimer-=dt;m.spawnGrace=Math.max(0,m.spawnGrace-dt);
   m.hitFlash=Math.max(0,m.hitFlash-dt*.09);m.attackFx=Math.max(0,m.attackFx-dt*.09);m.anim+=dt*m.animSpeed;
   const hpRatio=m.hp/m.maxHp;
@@ -1561,6 +1575,10 @@ function updateSiege(dt:number){
   const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.hp>0).sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
   if(hostile&&Math.hypot(hostile.x-t.x,hostile.y-t.y)<360){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
   if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
+ }
+ if(arenaTaskTarget>0&&arenaTaskProgress>=arenaTaskTarget){
+  siegeMessage="ЗАДАЧА ВЫПОЛНЕНА · ВРАГИ УНИЧТОЖЕНЫ";
+  completeArenaTask();return;
  }
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
  if(enemyBase.hp<=0){siegeOver=true;siegeMessage="ПОБЕДА · ВРАЖЕСКАЯ БАЗА РАЗРУШЕНА";completeArenaTask();return;}
