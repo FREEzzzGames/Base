@@ -38,8 +38,10 @@ function spawnWave(){
   waveState="fighting";
   waveStart=frame;
 
-  // Небольшая, но постоянно растущая волна: игрок реально видит врагов,
-  // а мобильное устройство не получает пачку из 18 AI за один тик.
+  // Spawn zone is deliberately inside the player's initial camera:
+  // y=1820..1900 is below the 1680 cargo row and above the 1935 row.
+  // This prevents side-lane spawns from materialising inside containers
+  // or outside the visible combat area.
   const total=Math.min(12,5+Math.floor(wave*.7));
   const b=Math.max(2,Math.round(total*.42));
   const s=Math.max(1,Math.round(total*.34));
@@ -51,23 +53,36 @@ function spawnWave(){
     const baseHp=type==="brawler"?125:type==="shooter"?98:88;
     const scale=Math.min(2.35,1+(wave-1)*.10);
     const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
-    const spawnX=lanes[lane]+(Math.random()-.5)*70;
-    const spawnY=1420+Math.random()*260;
 
-    const p=move(spawnX,spawnY,0,0,18);
+    let sx=lanes[lane],sy=1820+Math.random()*80;
+    let found=false;
+    for(let tries=0;tries<18;tries++){
+      const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*56;
+      const y=1820+Math.random()*80;
+      if(!obstacles().some(o=>hitCircle(x,y,18,o))&&Math.hypot(x-player.x,y-player.y)>340){
+        sx=x;sy=y;found=true;break;
+      }
+    }
+    if(!found){
+      // Deterministic safe fallbacks for the three lanes.
+      const fallback=[[250,1850],[500,1850],[750,1850]] as const;
+      const q=fallback[lane];
+      sx=q[0];sy=q[1];
+    }
+
     mobs.push({
-      x:p[0],y:p[1],team:"enemy",type,
+      x:sx,y:sy,team:"enemy",type,
       hp:baseHp*scale,maxHp:baseHp*scale,
       speed,damage:type==="brawler"?24:type==="shooter"?15:28,
       range:type==="brawler"?42:type==="shooter"?210:430,
-      cool:30+Math.random()*30,think:0,strafe:i%2?-1:1,
-      stuck:0,lastX:p[0],lastY:p[1],state:"inbound",hit:0
+      cool:30+Math.random()*30,think:type==="sniper"?18:0,strafe:i%2?-1:1,
+      stuck:0,lastX:sx,lastY:sy,state:"inbound",hit:0
     });
   }
 
   msg="WAVE "+String(wave).padStart(2,"0")+" · "+total+" HOSTILES";
   msgT=110;
-  effects.push({x:500,y:1390,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
+  effects.push({x:500,y:1780,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
 }function hurt(a:number){
   const block=Math.min(player.armor,a*.5);
   player.armor-=block;
@@ -133,17 +148,39 @@ function updateMob(m:Mob,dt:number){
       else if(d>48)stepMob(m,playerAttack.x,playerAttack.y,dt);
       return;
     }
+
     const preferred=m.type==="sniper"?360:165;
-    if(m.cool<=0){
-      m.cool=m.type==="sniper"?72:30;
-      const w=HS_WEAPONS[m.type==="sniper"?5:1];
+
+    if(m.type==="sniper"){
+      // Real telegraph: sniper aims first, then fires. The timer is also
+      // rendered as a ring, so the player gets a readable reaction window.
+      if(m.think>0){
+        m.think=Math.max(0,m.think-dt);
+        m.state="telegraph";
+        if(d<preferred*.82)stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.35);
+        if(m.think<=0){
+          const a=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
+          const w=HS_WEAPONS[5];
+          for(const sh of spawnShots(m.x,m.y,a,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
+          m.cool=78;
+        }
+      }else if(m.cool<=0){
+        m.think=32;
+        m.state="telegraph";
+      }
+    }else if(m.cool<=0){
+      m.cool=30;
+      const w=HS_WEAPONS[1];
       const a=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
       for(const sh of spawnShots(m.x,m.y,a,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
     }
-    if(d>preferred)stepMob(m,playerAttack.x,playerAttack.y,dt);
-    else{
-      m.strafe=m.strafe||1;
-      stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
+
+    if(m.think<=0||m.type!=="sniper"){
+      if(d>preferred)stepMob(m,playerAttack.x,playerAttack.y,dt);
+      else{
+        m.strafe=m.strafe||1;
+        stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
+      }
     }
     return;
   }
