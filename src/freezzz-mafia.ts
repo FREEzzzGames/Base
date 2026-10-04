@@ -10,7 +10,7 @@ import { HS_WEAPONS, createCombatState, consumeShot, startReload, stepWeapon, sp
 type FamilyId="valenti"|"moretti"|"rossi"|"bellini";
 type HeroId="antonio"|"massimo"|"salvatore"|"giuseppe";
 type EnemyType="brawler"|"shooter"|"heavy"|"rusher"|"guard"|"sniper"|"suppressor"|"flanker";
-type Mode="select"|"arena"|"levels"|"family"|"briefing"|"play"|"shop"|"weaponMenu"|"tenders"|"result";
+type Mode="select"|"arena"|"family"|"briefing"|"play"|"shop"|"weaponMenu"|"tenders"|"result";
 type Objective="reach"|"find"|"clear"|"escort"|"defend"|"recover"|"escape"|"survive";
 
 interface Hero{ id:HeroId; name:string; family:FamilyId; color:string; face:string; ability:string; abilityDesc:string; bio:string; }
@@ -163,8 +163,9 @@ let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let tenderPage=0;
 let arenaWave=0,arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaSpawnTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
+let arenaMission:ArenaMission|null=null;
 let viewWidth=640,viewHeight=448;
-let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],completedTenders:[],storySeen:{},resumeMission:{},resumeFloor:{}};
+let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],completedTenders:[],arenaMissionIndex:0,storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
@@ -174,7 +175,7 @@ let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},completedTenders:s.completedTenders||[]};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},completedTenders:s.completedTenders||[],arenaMissionIndex:typeof s.arenaMissionIndex==="number"?s.arenaMissionIndex:0};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
 function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
@@ -860,24 +861,42 @@ function drawPlayer(){
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
 }
 function arenaTaskSetup(){
- const t=save.activeTenderId?tenderById(save.activeTenderId):null; const m=t?allMissions.find(m=>m.id===t.linkedMission)||currentMission():currentMission();
- arenaTaskProgress=0;arenaTaskTimer=0;arenaTaskTarget=Math.min(12,5+arenaWave+Math.floor((t?.spec.damage||60)/35));
- arenaTaskLabel=m.objective==="survive"?"ВЫЖИТЬ · 25 СЕК":m.objective==="reach"?"ДОБРАТЬСЯ ДО ТОЧКИ":"УНИЧТОЖИТЬ ГРУППУ";
+ const t=save.activeTenderId?tenderById(save.activeTenderId):null;
+ const list=t?arenaMissionsForTender(t.id):[];
+ arenaMission=list[Math.max(0,Math.min(list.length-1,save.arenaMissionIndex||0))]||null;
+ arenaTaskProgress=0;arenaTaskTimer=0;arenaWave=0;arenaKills=0;arenaSpawnTimer=0;
+ if(!arenaMission){arenaTaskTarget=0;arenaTaskLabel="НЕТ МИССИИ";return;}
+ arenaTaskTarget=arenaMission.target;
+ arenaTaskLabel=arenaMission.objective==="survive"?"ВЫЖИТЬ · "+arenaMission.target+" СЕК":arenaMission.objective==="reach"?"ДОБРАТЬСЯ ДО ТОЧКИ":arenaMission.objective==="recover"?"ИЗВЛЕЧЬ ЦЕЛЬ":"УНИЧТОЖИТЬ ГРУППУ · "+arenaMission.target;
+}
+function startTenderMission(){
+ arenaTaskSetup();
+ if(!arenaMission){mode="tenders";render();return;}
+ mode="play";dialogueOpen=false;spawnFloor();storeSave();render();
+}
+function advanceTenderMission(){
+ const id=save.activeTenderId;if(!id||!arenaMission)return;
+ const list=arenaMissionsForTender(id);const next=(save.arenaMissionIndex||0)+1;
+ if(next>=list.length){
+  const tender=tenderById(id);
+  if(tender){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),id];}
+  save.activeTenderId=undefined;save.arenaMissionIndex=0;arenaMission=null;mode="tenders";storeSave();render();return;
+ }
+ save.arenaMissionIndex=next;arenaTaskSetup();spawnFloor();storeSave();render();
 }
 function spawnArenaWave(){
- arenaWave++;arenaSpawnTimer=0;const t=save.activeTenderId?tenderById(save.activeTenderId):null;const m=t?allMissions.find(m=>m.id===t.linkedMission)||currentMission():currentMission();
- const types:EnemyType[]=(m.enemies.length?m.enemies:["guard","rusher","shooter"]) as EnemyType[],count=Math.min(10,3+Math.floor(arenaWave*.75));const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360],[340,650],[900,620]];
- for(let i=0;i<count;i++){const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+save.rank*4+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});}
+ arenaWave++;arenaSpawnTimer=0;
+ const types:EnemyType[]=arenaMission?.enemies?.length?(arenaMission.enemies as EnemyType[]):["guard","rusher","shooter"];
+ const count=Math.min(12,3+Math.floor(arenaWave*.75));
+ const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360],[340,650],[900,620]];
+ for(let i=0;i<count;i++){
+  const type=types[(i+arenaWave)%types.length],hp=42+(i%3)*16+save.rank*4+arenaWave*3,[x,y]=spots[(i+arenaWave*2)%spots.length];
+  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
+ }
 }
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];
- if(save.activeTenderId){arenaTaskSetup();spawnArenaWave();}
- const types=currentMission().enemies;
- const spots=[[450,410],[500,560],[820,300],[1040,410],[520,760],[1010,720],[250,420],[1180,360]];
- for(let i=0;i<Math.min(spots.length,2+floor+2);i++){
-  const type=types[i%types.length],hp=38+(i%3)*16+(save.rank*4),[x,y]=spots[i];
-  enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
- }
+ if(save.activeTenderId&&arenaMission)spawnArenaWave();
  player={x:420,y:400,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
 }
 function fire(){
@@ -922,7 +941,7 @@ function hurt(amount:number){
 
 function update(dt:number){
  frame++;speechCooldown=Math.max(0,speechCooldown-dt);if(speech)speech.timer-=dt;
- if(mode==="play"&&save.activeTenderId){arenaTaskTimer+=dt;arenaSpawnTimer+=dt;if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();const exitForArena=topDownExit();const reachedArenaExit=Math.hypot(player.x-exitForArena[0],player.y-exitForArena[1])<55*portraitScale();if(arenaTaskLabel.startsWith("ВЫЖИТЬ")&&arenaTaskTimer>=1500){completeArenaTask();}else if(arenaTaskLabel.startsWith("ДОБРАТЬСЯ")&&reachedArenaExit){completeArenaTask();}else if(arenaTaskLabel.startsWith("УНИЧТОЖИТЬ")&&arenaTaskProgress>=arenaTaskTarget){completeArenaTask();}}
+ if(mode==="play"&&save.activeTenderId&&arenaMission){arenaTaskTimer+=dt;arenaSpawnTimer+=dt;if(enemies.length===0&&arenaSpawnTimer>70)spawnArenaWave();const exitForArena=topDownExit();const reachedArenaExit=Math.hypot(player.x-exitForArena[0],player.y-exitForArena[1])<55*portraitScale();const done=(arenaMission.objective==="survive"&&arenaTaskTimer>=arenaMission.target*60)||(arenaMission.objective==="reach"&&reachedArenaExit)||(arenaMission.objective==="recover"&&arenaTaskProgress>=1)||(arenaMission.objective==="defend"&&arenaTaskProgress>=arenaMission.target)||(arenaMission.objective==="clear"&&arenaTaskProgress>=arenaMission.target);if(done)completeArenaTask();}
  if(mode==="play"&&frame%420===0){const lines=heroLines[selected||"antonio"];say(lines[Math.floor(Math.random()*lines.length)],"player",player.x,player.y-45);}
  const weapon=HS_WEAPONS[save.weapon];
  stepWeapon(player.combat,weapon,dt);
@@ -991,9 +1010,12 @@ function update(dt:number){
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
  const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
- if(!save.activeTenderId){const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);if(objectiveDone){if(floor<2){floor++;if(selected){save.resumeFloor={...(save.resumeFloor||{}),[selected]:floor};storeSave();}spawnFloor();}else completeMission();}}
+ if(!save.activeTenderId){const objectiveDone=m.objective==="reach"?reachedExit:objectiveProgress>=1||(m.objective==="survive"&&floorTimer>900);if(objectiveDone){if(floor<2){floor++;if(selectfunction completeArenaTask(){
+ const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
+ const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
+ say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);
+ advanceTenderMission();
 }
-function completeArenaTask(){const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t)return;const payout=Math.max(50,Math.floor(t.reward/8));save.money+=payout;save.xp+=Math.floor(payout*.18);arenaTaskProgress=0;arenaTaskTimer=0;arenaTaskTarget=Math.min(14,arenaTaskTarget+1);say("ЗАДАЧА ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);spawnArenaWave();storeSave();}
 function completeMission(){
  const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
  if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),tender.id];save.activeTenderId=undefined;}
