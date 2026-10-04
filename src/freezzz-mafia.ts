@@ -800,20 +800,6 @@ function spawnSiegeWave(){
   });
  }
 }
-function spawnSiegeWave(){
- if(siegeOver)return;
- siegeWave++;siegeWaveTimer=0;
- const lanes=[250,500,750];
- const count=Math.min(6,2+Math.floor(siegeWave/2));
- for(let lane=0;lane<3;lane++){
-  for(let i=0;i<count;i++){
-   const type:EnemyType=i%5===0?"heavy":i%3===0?"shooter":"rusher";
-   const hp=70+siegeWave*9+(type==="heavy"?80:0),damage=type==="heavy"?24:type==="shooter"?13:18;
-   siegeMobs.push({x:lanes[lane]+(i%2?18:-18),y:250+i*24,team:"enemy",lane,hp,maxHp:hp,speed:type==="rusher"?1.55:1.15,damage,cool:20+i*8,type,attackRange:type==="shooter"?150:42});
-   siegeMobs.push({x:lanes[lane]+(i%2?-18:18),y:1260-i*24,team:"player",lane,hp,maxHp:hp,speed:type==="rusher"?1.55:1.15,damage,cool:20+i*8,type,attackRange:type==="shooter"?150:42});
-  }
- }
-}
 function drawSiegeStructures(){
  siegeTowers.forEach(t=>{
   const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#d85b52";
