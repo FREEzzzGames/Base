@@ -20,7 +20,7 @@ interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:numbe
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
-interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
+interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];completedTenders?:string[];storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
@@ -164,7 +164,7 @@ let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
 let tenderPage=0;
 let arenaWave=0,arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaSpawnTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
 let viewWidth=640,viewHeight=448;
-let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
+let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],completedTenders:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[];
 let floor=0,floorTimer=0,objectiveProgress=0,flash=0;
@@ -174,7 +174,7 @@ let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},completedTenders:s.completedTenders||[]};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
 function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
@@ -996,7 +996,7 @@ function update(dt:number){
 function completeArenaTask(){const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t)return;const payout=Math.max(50,Math.floor(t.reward/8));save.money+=payout;save.xp+=Math.floor(payout*.18);arenaTaskProgress=0;arenaTaskTimer=0;arenaTaskTarget=Math.min(14,arenaTaskTarget+1);say("ЗАДАЧА ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);spawnArenaWave();storeSave();}
 function completeMission(){
  const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
- if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
+ if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.completedTenders=[...(save.completedTenders||[]),tender.id];save.activeTenderId=undefined;}
  mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
  if(!save.completed.includes(m.id))save.completed.push(m.id);
  save.rank=rank();
@@ -1194,14 +1194,14 @@ function drawTenders(){
  const pageItems=TENDERS.slice(tenderPage*3,tenderPage*3+3);
  const bodyChars=Math.max(31,Math.floor(W/16.2));
  pageItems.forEach((t,i)=>{
-   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
+   const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=(save.completedTenders||[]).includes(t.id);
    c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;
    c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;
    c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
 
    tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");
    tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");
-   tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
+   tx(done?"ЗАКРЫТ":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
    tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
 
    const loreSize=menuTextSize(.009,7,10),loreLine=loreSize*1.18;
@@ -1334,7 +1334,7 @@ function bindButtons(){
    if(a==="tenders"){tenderPage=0;mode="tenders";render();}
    if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
    if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
-   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!save.completed.includes(t.linkedMission)){save.activeTenderId=t.id;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaWave=0;arenaKills=0;arenaTaskSetup();mode="play";spawnFloor();storeSave();render();}}
+   if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!(save.completedTenders||[]).includes(t.id)){save.activeTenderId=t.id;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaWave=0;arenaKills=0;arenaTaskSetup();mode="play";spawnFloor();storeSave();render();}}
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
