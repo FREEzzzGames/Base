@@ -466,13 +466,12 @@ function drawPlayer(){
  ctx!.shadowColor=c;ctx!.shadowBlur=player.hit>0?28:14;
  ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-20,26,38,0,0,Math.PI*2);ctx!.fill();
  ctx!.shadowBlur=0;
- // Tactical vest.
- ctx!.fillStyle="#2b373b";ctx!.fillRect(px-18,py-40,36,32);
- ctx!.strokeStyle=c;ctx!.lineWidth=1.5;ctx!.strokeRect(px-18,py-40,36,32);
- ctx!.fillStyle="#0d1417";ctx!.fillRect(px-11,py-35,22,5);ctx!.fillRect(px-13,py-24,26,5);
- // Head / helmet.
- ctx!.fillStyle="#10171a";ctx!.beginPath();ctx!.arc(px,py-52,13,0,Math.PI*2);ctx!.fill();
- ctx!.fillStyle=c;ctx!.fillRect(px-10,py-55,20,4);ctx!.fillStyle="#d6e0e2";ctx!.fillRect(px+4,py-53,6,2);
+ // Single clean operator silhouette.
+ ctx!.fillStyle="#202b2f";ctx!.fillRect(px-15,py-36,30,28);
+ ctx!.strokeStyle=c;ctx!.lineWidth=1;ctx!.strokeRect(px-15,py-36,30,28);
+ // Minimal operator marker.
+ ctx!.fillStyle="#10171a";ctx!.beginPath();ctx!.arc(px,py-46,10,0,Math.PI*2);ctx!.fill();
+ ctx!.fillStyle=c;ctx!.fillRect(px-8,py-49,16,3);
  // Arms follow the weapon line.
  const a=aim,side=player.facing||1;
  const hx=px+Math.cos(a)*14,hy=py-27+Math.sin(a)*14;
@@ -515,24 +514,26 @@ function drawWorld(){
   ctx!.save();
   ctx!.translate(-camX,-cam);
 
-  for(let y=0;y<H;y+=80)rect(0,y,W,1,"#172126");
+  // Minimal industrial texture: broad, quiet bands instead of a dense grid.
+  for(let y=0;y<H;y+=240)rect(0,y,W,1,"#10171a");
   for(let x=0;x<W;x+=80)rect(x,0,1,H,"#10181c");
 
-  for(let i=0;i<90;i++){
+  for(let i=0;i<34;i++){
     const x=(i*173)%W,y=(i*317)%H;
-    ctx!.fillStyle=i%3?"#26333a":"#54d6d8";
+    ctx!.fillStyle=i%5===0?"#2a4a4e":"#1a2529";
     ctx!.fillRect(x,y,1,1);
   }
 
   rect(0,0,38,H,"#12191d");
   rect(962,0,38,H,"#12191d");
 
-  // CARGO containers / cover.
-  const grads=ensureObsGradients();for(let oi=0;oi<OBS.length;oi++){const o=OBS[oi];ctx!.fillStyle=grads[oi];
-    ctx!.fillRect(o.x,o.y,o.w,o.h);
-    ctx!.strokeStyle="#68747a";
-    ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
-    for(let x=o.x+14;x<o.x+o.w;x+=28)rect(x,o.y+7,2,o.h-14,"#111719");
+  // Cargo cover: large quiet shapes, one edge highlight, no mechanical striping.
+  const grads=ensureObsGradients();
+  for(let oi=0;oi<OBS.length;oi++){
+    const o=OBS[oi];
+    ctx!.fillStyle=grads[oi];ctx!.fillRect(o.x,o.y,o.w,o.h);
+    ctx!.strokeStyle="#3e4b50";ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
+    ctx!.fillStyle="#54d6d8";ctx!.globalAlpha=.16;ctx!.fillRect(o.x+8,o.y+7,o.w-16,2);ctx!.globalAlpha=1;
   }
 
   // Player CARGO CORE.
@@ -572,35 +573,24 @@ function drawWorld(){
     if(p.kind==="medkit")ctx!.fillRect(p.x-1,p.y-4,2,8);
   }
 
-  // Enemy telegraph / state markers.
+  // WISPS: simple floating energy entities. Type is communicated only by color.
   for(const m of mobs){
-    const c=m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff";
-    const sc=m.type==="brawler"?1.12:m.type==="sniper"?.82:1;
-
+    const colorId=m.type==="brawler"?0:m.type==="shooter"?1:2;
+    const c=colorId===0?"#ff557d":colorId===1?"#ffb04f":"#cf7cff";
+    const bob=Math.sin(frame*.09+m.x*.01)*3;
+    const pulse=.82+Math.sin(frame*.12+m.y*.007)*.10;
+    VFX.renderWisp(ctx!,m.x,m.y-18+bob,34*pulse,colorId,frame*.08+m.x*.02);
+    // Small dark core keeps the wisp readable without adding a body model.
+    ctx!.fillStyle="#0a1013";ctx!.globalAlpha=.72;
+    ctx!.beginPath();ctx!.arc(m.x,m.y-18+bob,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
     if(m.type==="sniper"&&m.think>0){
-      ctx!.globalAlpha=.35+Math.sin(frame*.18)*.15;
-      ctx!.strokeStyle="#cf7cff";
-      ctx!.lineWidth=2;
-      ctx!.beginPath();
-      ctx!.arc(m.x,m.y-18,42+Math.max(0,m.think)*.18,0,Math.PI*2);
-      ctx!.stroke();
+      ctx!.globalAlpha=.22+Math.sin(frame*.16)*.10;
+      ctx!.strokeStyle="#cf7cff";ctx!.lineWidth=1;
+      ctx!.beginPath();ctx!.arc(m.x,m.y-18+bob,38+Math.max(0,m.think)*.15,0,Math.PI*2);ctx!.stroke();
       ctx!.globalAlpha=1;
     }
-
-    ctx!.fillStyle=c;
-    ctx!.shadowColor=c;
-    ctx!.shadowBlur=m.hit>0?20:10;
-    ctx!.beginPath();
-    ctx!.ellipse(m.x,m.y-18,25*sc,39*sc,0,0,Math.PI*2);
-    ctx!.fill();
-    ctx!.shadowBlur=0;
-
-    ctx!.fillStyle="#20292d";
-    ctx!.fillRect(m.x-18*sc,m.y-36*sc,36*sc,34*sc);
-    bar(m.x-24,m.y-62,48,4,m.hp,m.maxHp,c);
-
-    const label=m.type==="brawler"?"B":m.type==="shooter"?"S":"N";
-    txt(label,m.x,m.y-18,10,"#f0eee7","center");
+    // Compact health indicator only; no labels or humanoid geometry.
+    bar(m.x-18,m.y-55+bob,36,3,m.hp,m.maxHp,c);
   }
 
   drawPlayer();
