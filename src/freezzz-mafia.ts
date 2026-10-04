@@ -1360,10 +1360,10 @@ function render(){
    ui.innerHTML='<div class="mafia-levels-panel">'+cards+'</div><div class="mafia-levels-bottom"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="cheat">ЧИТ: ВСЁ</button></div>';
  }else if(mode==="play"){
    ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="shop">МАГАЗИН</button><button data-action="menu">МЕНЮ</button></div>';
- }else if(mode==="weaponMenu"){
-   const cards=weapons.map((w,i)=>{const owned=save.weapon>=i,active=save.weapon===i;return '<button data-action="select-weapon" data-weapon="'+i+'" '+(owned?"":"disabled")+' style="opacity:'+(owned?"1":".42")+';border:1px solid '+(active?hero().color:"#394348")+';background:'+(active?"#172025":"#0a0f12")+';color:#f0eee7;padding:12px;text-align:left;margin:4px;min-height:58px"><b>'+weaponRu(w.name)+'</b><br><small>'+(active?"ВЫБРАНО":owned?"ВЫБРАТЬ":"ЗАКРЫТО · $"+w.cost)+'</small></button>';}).join("");
-   ui.innerHTML='<div style="position:absolute;left:7%;right:7%;top:16%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;z-index:20">'+cards+'</div><button data-action="weapon-back" style="position:absolute;left:30%;right:30%;bottom:5%;min-height:46px;background:#090d0f;color:#f0eee7;border:1px solid #667176;z-index:20">НАЗАД</button>';
- }else{
+  }else if(mode==="weaponMenu"){
+    // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
+    ui.innerHTML="";
+}else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
  bindButtons();renderCanvas();
