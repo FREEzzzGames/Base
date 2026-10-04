@@ -1164,7 +1164,7 @@ function drawWeaponMenu(){
    rect(x,y,4,cardH,active?hero().color:owned?"#56636a":"#252b2e");
    tx(String(i+1).padStart(2,"0"),x+16,y+22,menuTextSize(.016,11,16),active?hero().color:"#687377");
    tx(weaponRu(w.name),x+54,y+22,menuTextSize(.021,14,20),"#f0eee7");
-   tx("УРОН "+w.damage+" · МАГ "+w.magazine+" · ТЕМП "+Math.round(1000/w.fireInterval)+"/с",x+54,y+45,menuTextSize(.013,9,13),"#9da6a8");
+   tx("УРОН "+w.damage+" · МАГ "+w.mag+" · ТЕМП "+Math.round(w.rate*60)+"/мин",x+54,y+45,menuTextSize(.013,9,13),"#9da6a8");
    tx(owned?(active?"ВЫБРАНО":"ВЫБРАТЬ") :"ЗАКРЫТО · $"+w.cost,x+54,y+66,menuTextSize(.014,10,15),owned?hero().color:"#7a8386");
  });
  tx("НАЖМИТЕ НАЗАД ДЛЯ ВОЗВРАТА В ИГРУ",viewWidth/2,viewHeight*.92,menuTextSize(.015,10,15),"#687377","center");
