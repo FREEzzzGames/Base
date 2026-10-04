@@ -26,7 +26,26 @@ const COLORS=[
 ];
 const FLASH_SIZE=64;
 const flashSprites:HTMLCanvasElement[]=[];
+const WISP_SIZE=96;
+const wispSprites:HTMLCanvasElement[]=[];
+function buildWispSprites():void{
+  const palette=["#ff557d","#ffb04f","#cf7cff","#54d6d8"];
+  for(const c of palette){
+    const cv=document.createElement("canvas");cv.width=cv.height=WISP_SIZE;
+    const g2=cv.getContext("2d")!;const m=WISP_SIZE*.5;
+    const grad=g2.createRadialGradient(m,m,2,m,m,m);
+    grad.addColorStop(0,"rgba(255,255,255,.98)");
+    grad.addColorStop(.10,"rgba(255,255,255,.92)");
+    grad.addColorStop(.24,c);
+    grad.addColorStop(.52,c+"88");
+    grad.addColorStop(.78,c+"22");
+    grad.addColorStop(1,"rgba(0,0,0,0)");
+    g2.fillStyle=grad;g2.fillRect(0,0,WISP_SIZE,WISP_SIZE);
+    wispSprites.push(cv);
+  }
+}
 function buildFlashSprites():void{for(let c=0;c<COLORS.length;c++){const cv=document.createElement("canvas");cv.width=cv.height=FLASH_SIZE;const g2=cv.getContext("2d")!;const cx=FLASH_SIZE*.5;const grad=g2.createRadialGradient(cx,cx,0,cx,cx,cx);grad.addColorStop(0,"#ffffff");grad.addColorStop(.35,COLORS[c]);grad.addColorStop(1,"rgba(0,0,0,0)");g2.fillStyle=grad;g2.fillRect(0,0,FLASH_SIZE,FLASH_SIZE);flashSprites.push(cv)}}
+buildWispSprites();
 buildFlashSprites();
 
 const x=new Float32Array(CAP),y=new Float32Array(CAP);
@@ -161,6 +180,13 @@ export function updateVFX(dtFrames:number){
     if(sv!==0)size[i]+=sv*dt;
     i++;
   }
+}
+
+export function renderWisp(ctx:CanvasRenderingContext2D,x0:number,y0:number,size0:number,colorIdx:number,phase:number=0):void{
+  const paletteIndex=Math.max(0,Math.min(3,colorIdx|0));
+  const pulse=.92+Math.sin(phase)*.08;
+  const s=size0*pulse;
+  ctx.drawImage(wispSprites[paletteIndex],x0-s,y0-s,s*2,s*2);
 }
 
 export interface VFXCamera{x:number;y:number;zoom:number;width:number;height:number}
