@@ -19,7 +19,7 @@ interface Mission{ id:string; number:number; hero:HeroId|"shared"; title:string;
 interface Enemy{type:EnemyType;x:number;y:number;hp:number;maxHp:number;vx:number;vy:number;cool:number;shootCool:number;dir:number;falling?:boolean;ai:HsAi;coverX?:number;coverY?:number}
 interface SiegeTower{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number;lane:number;cool:number}
 interface SiegeBase{x:number;y:number;team:"player"|"enemy";hp:number;maxHp:number}
-interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number}
+interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number;maxHp:number;speed:number;damage:number;cool:number;attackRange:number;type:"brawler"|"shooter"|"sniper";targetX:number;targetY:number;strafe:number;think:number;morale:number;role:number;retreating:boolean;burst:number;burstCool:number;assist:number}
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
@@ -794,7 +794,7 @@ function spawnSiegeWave(){
    const range=type==="brawler"?42:type==="shooter"?210:430;
    const x=lanes[lane]+(i%3-1)*22;
    const enemyY=250+i*30,playerY=ARENA_H-250-i*30;
-   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8};
+   const common={lane,hp,maxHp:hp,speed,damage,cool:25+i*7,type,attackRange:range,targetX:x,targetY:0,strafe:i%2?1:-1,think:i*8,morale:100,role:i<3?0:i<5?1:2,retreating:false,burst:0,burstCool:20+i*5,assist:0};
    siegeMobs.push({x,y:enemyY,team:"enemy",...common});
    siegeMobs.push({x,y:playerY,team:"player",...common});
   });
@@ -1183,204 +1183,137 @@ function siegeClosestEnemyMob(m:SiegeMob){
  return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0)
   .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
 }
+function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean){
+ return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0&&predicate(o))
+  .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+}
+function siegeHasCover(m:SiegeMob,targetX:number,targetY:number){
+ const obs=arenaObstacles();
+ return obs.some(o=>circleRectHit(m.x,m.y,24,o))||!lineOfSight(m.x,m.y,targetX,targetY,obs);
+}
+function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
+ const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
+ const direct=moveTopDown(m.x,m.y,nx*step,ny*step,r);
+ if(Math.hypot(direct[0]-m.x,direct[1]-m.y)>0.1){m.x=direct[0];m.y=direct[1];return;}
+ const sideA=moveTopDown(m.x,m.y,-ny*step*1.9,nx*step*1.9,r);
+ const sideB=moveTopDown(m.x,m.y,ny*step*1.9,-nx*step*1.9,r);
+ const da=Math.hypot(sideA[0]-m.targetX,sideA[1]-m.targetY);
+ const db=Math.hypot(sideB[0]-m.targetX,sideB[1]-m.targetY);
+ const q=da<=db?sideA:sideB;m.x=q[0];m.y=q[1];
+}
 function updateSiege(dt:number){
  if(siegeOver)return;
  siegeWaveTimer+=dt;
  if(siegeWaveTimer>900&&siegeMobs.length===0)spawnSiegeWave();
+
+ const enemyMobs=siegeMobs.filter(o=>o.team==="enemy"&&o.hp>0);
  for(let i=siegeMobs.length-1;i>=0;i--){
-  const m=siegeMobs[i];if(m.hp<=0){siegeMobs.splice(i,1);continue;}
-  m.cool-=dt;m.think-=dt;
-  const enemyMob=siegeClosestEnemyMob(m);
+  const m=siegeMobs[i];
+  if(m.hp<=0){siegeMobs.splice(i,1);continue;}
+  m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;
+  const allies=siegeMobs.filter(o=>o.team===m.team&&o.hp>0);
+  const enemyMob=siegeNearest(m,o=>o.lane===m.lane);
+  const anyEnemy=siegeNearest(m,()=>true);
   const enemyTower=siegeTowers.find(t=>t.team!==m.team&&t.lane===m.lane&&t.hp>0);
   const enemyBase=siegeBases.find(b=>b.team!==m.team)!;
-  if(enemyMob){
-   const d=Math.hypot(enemyMob.x-m.x,enemyMob.y-m.y)||1;m.targetX=enemyMob.x;m.targetY=enemyMob.y;
+  const hpRatio=m.hp/m.maxHp;
+
+  // Мораль: раненые стрелки отходят, а окружённые бойцы становятся агрессивнее.
+  const nearbyAllies=allies.filter(a=>Math.hypot(a.x-m.x,a.y-m.y)<180).length;
+  const nearbyEnemies=siegeMobs.filter(a=>a.team!==m.team&&a.hp>0&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
+  m.morale=clamp(65+nearbyAllies*12-nearbyEnemies*10,15,130);
+  m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);
+  if(m.retreating){
+   const homeY=m.team==="enemy"?230:ARENA_H-230;
+   m.targetX=m.x;m.targetY=homeY;
+   siegeStep(m,m.x-500,m.y-homeY,dt,18);
+   if(hpRatio<.2&&m.cool<=0){m.cool=75;m.hp=Math.min(m.maxHp,m.hp+2);}
+   continue;
+  }
+
+  // Приоритеты: сначала опасный вражеский стрелок, затем ближайший боец.
+  const priority=siegeNearest(m,o=>o.lane===m.lane&&o.type==="sniper")||siegeNearest(m,o=>o.lane===m.lane&&o.type==="shooter")||enemyMob||anyEnemy;
+  if(priority){
+   const d=Math.hypot(priority.x-m.x,priority.y-m.y)||1;
+   m.targetX=priority.x;m.targetY=priority.y;
+
    if(m.type==="brawler"){
-    if(d>m.attackRange)siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt,18);
-    else if(m.cool<=0){m.cool=48;enemyMob.hp=Math.max(0,enemyMob.hp-m.damage);}
+    if(d>m.attackRange)siegeStep(m,priority.x-m.x,priority.y-m.y,dt*(m.morale>100?1.12:1),18);
+    else if(m.cool<=0){m.cool=44;m.burst=2;priority.hp=Math.max(0,priority.hp-m.damage*(m.morale>105?1.15:1));}
    }else{
-    const preferred=m.type==="sniper"?330:155;
-    if(d>preferred+35)siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt,18);
-    else if(d<preferred-45)siegeStep(m,m.x-enemyMob.x,m.y-enemyMob.y,dt,18);
+    const preferred=m.type==="sniper"?360:165;
+    const blocked=siegeHasCover(m,priority.x,priority.y);
+    if(blocked)siegeStep(m,priority.x-m.x,priority.y-m.y,dt*.8,18);
+    else if(d>preferred+45)siegeStep(m,priority.x-m.x,priority.y-m.y,dt,18);
+    else if(d<preferred-60)siegeStep(m,m.x-priority.x,m.y-priority.y,dt,18);
     else{
-     const sx=-(enemyMob.y-m.y)/(d||1)*m.strafe,sy=(enemyMob.x-m.x)/(d||1)*m.strafe;
-     siegeStep(m,sx,sy,dt*.65,18);
-     if(m.cool<=0){m.cool=m.type==="sniper"?105:32;enemyMob.hp=Math.max(0,enemyMob.hp-(m.type==="sniper"?m.damage*1.55:m.damage*.72));}
+     // Стрейф и короткие остановки делают стрелков менее предсказуемыми.
+     if(m.think<=0){m.think=45+Math.random()*55;m.strafe=Math.random()<.5?-1:1;}
+     siegeStep(m,-(priority.y-m.y)*m.strafe,(priority.x-m.x)*m.strafe,dt*.7,18);
+     if(m.cool<=0&&m.burstCool<=0){
+      m.burstCool=m.type==="sniper"?115:42;
+      const hit=m.type==="sniper"?m.damage*1.7:m.damage*.8;
+      priority.hp=Math.max(0,priority.hp-hit);
+      // Автоматчик способен дать короткую очередь.
+      if(m.type==="shooter"&&m.burst<2)m.burst++;
+      else m.burst=0;
+     }
     }
    }
-   if(m.type!=="brawler"&&!lineOfSight(m.x,m.y,enemyMob.x,enemyMob.y,arenaObstacles()))siegeStep(m,enemyMob.x-m.x,enemyMob.y-m.y,dt*.45,18);
   }else if(enemyTower){
-   const d=Math.hypot(enemyTower.x-m.x,enemyTower.y-m.y)||1;m.targetX=enemyTower.x;m.targetY=enemyTower.y;
+   // Башни только после уничтожения всей волны.
+   const d=Math.hypot(enemyTower.x-m.x,enemyTower.y-m.y)||1;
+   m.targetX=enemyTower.x;m.targetY=enemyTower.y;
    if(d>m.attackRange)siegeStep(m,enemyTower.x-m.x,enemyTower.y-m.y,dt,18);
-   else if(m.cool<=0){m.cool=m.type==="brawler"?52:m.type==="shooter"?38:90;enemyTower.hp=Math.max(0,enemyTower.hp-m.damage);}
+   else if(m.cool<=0){m.cool=m.type==="brawler"?48:m.type==="shooter"?36:82;enemyTower.hp=Math.max(0,enemyTower.hp-m.damage);}
   }else if(siegeTowers.filter(t=>t.team!==m.team&&t.hp>0).length===0){
-   const d=Math.hypot(enemyBase.x-m.x,enemyBase.y-m.y)||1;m.targetX=enemyBase.x;m.targetY=enemyBase.y;
+   const d=Math.hypot(enemyBase.x-m.x,enemyBase.y-m.y)||1;
+   m.targetX=enemyBase.x;m.targetY=enemyBase.y;
    if(d>m.attackRange)siegeStep(m,enemyBase.x-m.x,enemyBase.y-m.y,dt,18);
-   else if(m.cool<=0){m.cool=55;enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);}
+   else if(m.cool<=0){m.cool=52;enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);}
+  }
+
+  // Игрок вызывает реакцию: ближайшие мобы могут временно переключиться на него,
+  // но не бросают линию полностью, если в ней ещё есть вражеские мобы.
+  if(m.team==="enemy"&&Math.hypot(player.x-m.x,player.y-m.y)<240&&enemyMobs.length===0){
+   const d=Math.hypot(player.x-m.x,player.y-m.y)||1;
+   if(m.type==="brawler"&&d>45)siegeStep(m,player.x-m.x,player.y-m.y,dt,18);
+   else if(m.type!=="brawler"&&d<m.attackRange&&m.burstCool<=0){m.burstCool=m.type==="sniper"?110:45;hurt(m.type==="sniper"?12:6);}
   }
  }
+
+ // Огонь игрока: мобы имеют шанс пережить первый контакт за счёт манёвра.
  for(const b of bullets){
   if(b.from!=="player"||b.life<=0)continue;
   for(let i=siegeMobs.length-1;i>=0;i--){
-   const m=siegeMobs[i];
-   if(m.team==="enemy"&&m.hp>0&&Math.hypot(b.x-m.x,b.y-m.y)<28){m.hp=Math.max(0,m.hp-b.damage);b.life=0;break;}
+   const m=siegeMobs[i];if(m.team!=="enemy"||m.hp<=0)continue;
+   if(Math.hypot(b.x-m.x,b.y-m.y)<28){
+    if(m.type!=="brawler"&&Math.random()<.18){
+     m.think=0;m.strafe=-m.strafe;
+     siegeStep(m,-b.vy,b.vx,1,18);
+    }else m.hp=Math.max(0,m.hp-b.damage);
+    b.life=0;break;
+   }
   }
   if(b.life<=0)continue;
+  const enemyMobsRemain=siegeMobs.some(m=>m.team==="enemy"&&m.hp>0);
   for(const t of siegeTowers){
-   const enemyMobsRemain=siegeMobs.some(m=>m.team==="enemy"&&m.hp>0);
    if(t.hp>0&&!enemyMobsRemain&&Math.hypot(b.x-t.x,b.y-t.y)<48){t.hp=Math.max(0,t.hp-b.damage);b.life=0;break;}
   }
   if(b.life>0){
-   const enemyBase=siegeBases.find(x=>x.team==="enemy")!,allTowersDown=siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0;
-   if(enemyBase.hp>0&&allTowersDown&&Math.hypot(b.x-enemyBase.x,b.y-enemyBase.y)<115){enemyBase.hp=Math.max(0,enemyBase.hp-b.damage);b.life=0;}
+   const base=siegeBases.find(x=>x.team==="enemy")!;
+   if(base.hp>0&&siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0&&Math.hypot(b.x-base.x,b.y-base.y)<115){base.hp=Math.max(0,base.hp-b.damage);b.life=0;}
   }
  }
  for(const t of siegeTowers){
   if(t.hp<=0)continue;t.cool-=dt;if(t.cool>0)continue;
-  const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.lane===t.lane&&m.hp>0).sort((a,b)=>Math.abs(a.y-t.y)-Math.abs(b.y-t.y))[0];
+  const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.hp>0).sort((a,b)=>Math.abs(a.y-t.y)-Math.abs(b.y-t.y))[0];
   if(hostile&&Math.abs(hostile.y-t.y)<330){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
   if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
  }
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
  if(enemyBase.hp<=0){siegeOver=true;siegeMessage="ПОБЕДА · ВРАЖЕСКАЯ БАЗА РАЗРУШЕНА";completeArenaTask();return;}
  if(playerBase.hp<=0){siegeOver=true;siegeMessage="ПОРАЖЕНИЕ · ВАША БАЗА РАЗРУШЕНА";mode="result";dialogueOpen=false;render();}
-}
-function completeArenaTask(){
- const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
- const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
- say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);advanceTenderMission();
-}
-function completeMission(){
- const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
- if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
- mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
- if(!save.completed.includes(m.id))save.completed.push(m.id);
- save.rank=rank();
- const h=selected;
- if(h){const next=missionIndexForHero(h);setResumeMission(next,0);}
- dialogueIndex=0;dialogueOpen=true;storeSave();render();
-}
-function nextMission(){
- const h=selected!;missionIndex=missionIndexForHero(h);
- if(missionIndex<0)missionIndex=0;
- setResumeMission(missionIndex,0);
- mode="briefing";dialogueIndex=0;dialogueOpen=true;
-}
-function beginSelected(){
- const h=selected;if(!h)return;
- save.hero=h;save.rank=rank();missionIndex=missionIndexForHero(h);
- if(storySeen(h)){
-   floor=Math.max(0,Math.min(2,save.resumeFloor?.[h]??0));
-   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();
- }else{
-   mode="family";dialogueIndex=0;dialogueOpen=false;
- }
- storeSave();
-}
-function advanceDialogue(){
- const m=currentMission();
- if(mode==="shop"){mode="play";dialogueOpen=false;return;}
- if(mode==="arena"){startTenderMission();return;}
- if(mode==="family"){
-   if(selected)markStorySeen(selected);
-   floor=Math.max(0,Math.min(2,save.resumeFloor?.[selected!]??0));
-   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();return;
- }
- if(mode==="result"){
-   dialogueOpen=false;
-   if(m.number===1){
-     mode="select";selected=null;save.hero=null;storeSave();
-   }else{
-     nextMission();
-   }
-   return;
- }
- if(!dialogueOpen){dialogueOpen=true;dialogueIndex=0;return;}
- dialogueIndex++;
- if(dialogueIndex>=m.dialogue.length){dialogueOpen=false;if(mode==="briefing"){mode="play";floor=0;spawnFloor();}else if(mode==="play"){}}
-}
-function missionForHero():Mission{const m=currentMission();return m;}
-function startMissionById(id:string){
- const i=allMissions.findIndex(m=>m.id===id);if(i<0)return;
- missionIndex=i;const m=allMissions[i];
- if(m.hero!=="shared")selected=m.hero;
- save.hero=selected;
- save.storySeen=save.storySeen||{};
- if(selected)save.storySeen[selected]=true;
- floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
- spawnFloor();saveResumeState();storeSave();render();
-}
-function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
-function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.weapon=weapons.length-1;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="arena";dialogueOpen=false;render();}
-
-function renderCanvas(){
- if(!ctx)return;
- resizeCanvas();
- const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
- ctx.setTransform(dpr,0,0,dpr,0,0);
- ctx.clearRect(0,0,viewWidth,viewHeight);
- ctx.imageSmoothingEnabled=false;
- const m=currentMission();
- if(mode==="play"){
-   // Игровой мир уже полностью рассчитывается в реальных portrait-координатах
-   // текущего viewport. Старый масштаб 640x448 здесь больше не применяется.
-   drawWorld(m);return;
- }
- if(mode==="select"){drawSelect();return;}
- if(mode==="arena"){drawArenaBriefing();return;}
- if(mode==="family"){drawFamily();return;}
- if(mode==="briefing"){drawBriefing();return;}
- if(mode==="shop"){drawShop();return;}
- if(mode==="tenders"){drawTenders();return;}
-  if(mode==="weaponMenu"){drawWeaponMenu();return;}
- if(mode==="result"){drawResult();return;}
-}
-function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
-function menuTextSize(base:number,min:number,max:number){return Math.max(min,Math.min(max,viewWidth*base));}
-function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:number,size:number,color:string,align:CanvasTextAlign="left"){
- const words=text.split(/\s+/);let line="";let row=0;
- for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars){tx(line,x,y+row*lineHeight,size,color,align);line=word;row++;}else line=next;}
- if(line)tx(line,x,y+row*lineHeight,size,color,align);
- return row+1;
-}
-function drawSelect(){
- const c=ctx;if(!c)return;
- const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
- const padX=viewWidth*.06,gapX=viewWidth*.04;
- const top=viewHeight*.17,gridH=viewHeight*.55,gapY=viewHeight*.018;
- const cardW=(viewWidth-padX*2-gapX)/2;
- const cardH=(gridH-gapY)/2;
- tx("ЧЕТЫРЕ СЫРА, МАЦЕРАРИЙ",viewWidth/2,viewHeight*.045,menuTextSize(.038,24,36),"#f0eee7","center");
- tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
- ids.forEach((id,i)=>{
-   const h=heroes[id],col=i%2,row=Math.floor(i/2);
-   const x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
-   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
-   rect(x,y,cardW,4,a?h.color:"#263137");
-
-   // Карточка имеет жёсткие независимые зоны: заголовок → имя → персонаж → описание → способность.
-   tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
-   tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
-
-   // Полная фигура живёт в собственной зоне: голова не режется клипом, ноги не уходят в описание.
-   const avatarTop=y+cardH*.25;
-   const avatarBottom=y+cardH*.76;
-   const avatarZoneH=avatarBottom-avatarTop;
-   const artScale=Math.max(.90,Math.min(1.08,cardW/270));
-   const spin=performance.now()/1000*.42+i*.8;
-   const spinX=.72+.28*Math.abs(Math.cos(spin));
-   c.save();
-   c.beginPath();
-   c.rect(x+8,avatarTop,cardW-16,avatarZoneH);
-   c.clip();
-   c.translate(x+cardW/2,avatarBottom);
-   c.scale(spinX,1);
-   drawMafiaMember({face:h.face,tie:h.color,suit:"#20262b"},0,0,frame+i*4,artScale);
-   c.restore();
-
-   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.011,8,13),h.color,"center");
-   tx(h.ability,x+cardW/2,y+cardH*.92,menuTextSize(.010,8,12),"#aab1b4","center");
- });
 }
 function drawArenaBriefing(){
  rect(0,0,viewWidth,viewHeight,"#07090b");const t=save.activeTenderId?tenderById(save.activeTenderId):null;
