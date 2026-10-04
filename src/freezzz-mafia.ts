@@ -1347,7 +1347,11 @@ function update(dt:number){
  stepWeapon(player.combat,weapon,dt);
  player.ammo=player.combat.ammo;
  player.cool=player.combat.fireTimer;
+ const abilityWasActive=player.ability>0;
  player.ability=Math.max(0,player.ability-dt);
+ if(abilityWasActive&&player.ability===0){
+  for(const m of siegeMobs)if(m.team==="enemy"&&m.hp>0)m.speed=m.type==="brawler"?1.38:m.type==="shooter"?1.05:.78;
+ }
  player.weaponSwap=Math.max(0,player.weaponSwap-dt);
 
  const scale=Math.max(.78,Math.min(1.35,Math.min(viewWidth/430,viewHeight/820))),speed=3.2*scale;
