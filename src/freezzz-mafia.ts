@@ -1046,7 +1046,6 @@ function renderCanvas(){
  if(mode==="family"){drawFamily();return;}
  if(mode==="briefing"){drawBriefing();return;}
  if(mode==="shop"){drawShop();return;}
- if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
  if(mode==="tenders"){drawTenders();return;}
   if(mode==="weaponMenu"){drawWeaponMenu();return;}
  if(mode==="result"){drawResult();return;}
@@ -1221,6 +1220,7 @@ function handleKey(e:KeyboardEvent){
    return;
  }
  if(mode==="shop"){if(e.key>="1"&&e.key<="6")buyOrSelectWeapon(Number(e.key)-1);if(e.key==="Escape")mode="briefing";return;}
+ if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
  if(mode==="weaponMenu"){
    if(e.key>="1"&&e.key<="6"){const n=Number(e.key)-1;if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(e.key==="Escape"){mode="play";render();}
