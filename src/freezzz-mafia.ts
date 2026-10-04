@@ -341,7 +341,7 @@ function topDownMap(){
  return {w,h,roads,buildings,river:{x:0,y:0,w:0,h:0},bridge:{x:0,y:0,w:0,h:0}};
 }
 function topDownExit(){return mode==="play"&&arenaMission?[ARENA_W/2,90]:[1365,455];}
-const ARENA_W=1000,ARENA_H=1500;
+const ARENA_W=1000,ARENA_H=2600;
 const ARENA_CARGO:{x:number;y:number;w:number;h:number}[]=[
  {x:112,y:390,w:170,h:86},{x:720,y:390,w:170,h:86},
  {x:110,y:790,w:150,h:74},{x:740,y:790,w:150,h:74},
@@ -776,9 +776,10 @@ function drawTopDownBackground(){
 }
 function drawWorld(m:Mission){
  if(!ctx)return;
+ // Portrait combat camera: keep the whole active squad around the hero.
  const scale=Math.max(.62,Math.min(1.08,Math.min(viewWidth/420,viewHeight/780)));
- const camX=clamp(player.x-viewWidth/(2*scale),0,ARENA_W-viewWidth/scale);
- const camY=clamp(player.y-viewHeight/(2*scale),0,ARENA_H-viewHeight/scale);
+ const camX=clamp(player.x-viewWidth/(2*scale),0,Math.max(0,ARENA_W-viewWidth/scale));
+ const camY=clamp(player.y-viewHeight/(2*scale),0,Math.max(0,ARENA_H-viewHeight/scale));
  ctx.save();ctx.scale(scale,scale);ctx.translate(-camX,-camY);
  drawArenaBackground();
  // Top-down painter's order: entities are sorted by their physical Y anchor,
