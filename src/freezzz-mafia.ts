@@ -1207,13 +1207,32 @@ function siegeClosestEnemyMob(m:SiegeMob){
  return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0)
   .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
 }
-function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean){
- return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0&&predicate(o))
+function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean,visibleOnly=false){
+ const obs=arenaObstacles();
+ return siegeMobs
+  .filter(o=>o.team!==m.team&&o.hp>0&&predicate(o))
+  .filter(o=>!visibleOnly||lineOfSight(m.x,m.y,o.x,o.y,obs))
   .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
 }
 function siegeHasCover(m:SiegeMob,targetX:number,targetY:number){
  const obs=arenaObstacles();
  return obs.some(o=>circleRectHit(m.x,m.y,24,o))||!lineOfSight(m.x,m.y,targetX,targetY,obs);
+}
+function siegeCoverPoint(m:SiegeMob,targetX:number,targetY:number){
+ const obs=arenaObstacles();
+ let best:[number,number]|null=null,bestScore=Infinity;
+ for(const o of obs){
+  const cx=o.x+o.w/2,cy=o.y+o.h/2;
+  const d=Math.hypot(cx-m.x,cy-m.y);
+  if(d>260)continue;
+  const vx=targetX-cx,vy=targetY-cy,len=Math.hypot(vx,vy)||1;
+  const px=cx-(vx/len)*34,py=cy-(vy/len)*34;
+  if(px<35||px>ARENA_W-35||py<140||py>ARENA_H-140)continue;
+  if(circleRectHit(px,py,20,o))continue;
+  const score=d+Math.hypot(px-m.x,py-m.y)*.35;
+  if(score<bestScore){bestScore=score;best=[px,py];}
+ }
+ return best;
 }
 function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
  const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
@@ -1230,91 +1249,133 @@ function updateSiege(dt:number){
  siegeWaveTimer+=dt;
  if(siegeWaveTimer>900&&siegeMobs.length===0)spawnSiegeWave();
 
- const enemyMobs=siegeMobs.filter(o=>o.team==="enemy"&&o.hp>0);
+ const obs=arenaObstacles();
+ const liveMobs=siegeMobs.filter(o=>o.hp>0);
  for(let i=siegeMobs.length-1;i>=0;i--){
   const m=siegeMobs[i];
   if(m.hp<=0){siegeMobs.splice(i,1);continue;}
   m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;
-  const allies=siegeMobs.filter(o=>o.team===m.team&&o.hp>0);
-  const enemyMob=siegeNearest(m,o=>o.lane===m.lane);
-  const anyEnemy=siegeNearest(m,()=>true);
-  const enemyTower=siegeTowers.find(t=>t.team!==m.team&&t.lane===m.lane&&t.hp>0);
-  const enemyBase=siegeBases.find(b=>b.team!==m.team)!;
-  const hpRatio=m.hp/m.maxHp;
+  m.hitFlash=Math.max(0,m.hitFlash-dt*.09);
+  m.attackFx=Math.max(0,m.attackFx-dt*.09);
+  m.anim+=dt*m.animSpeed;
 
-  // Мораль: раненые стрелки отходят, а окружённые бойцы становятся агрессивнее.
-  const nearbyAllies=allies.filter(a=>Math.hypot(a.x-m.x,a.y-m.y)<180).length;
-  const nearbyEnemies=siegeMobs.filter(a=>a.team!==m.team&&a.hp>0&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
+  const hpRatio=m.hp/m.maxHp;
+  const nearbyAllies=liveMobs.filter(a=>a!==m&&a.team===m.team&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
+  const nearbyEnemies=liveMobs.filter(a=>a.team!==m.team&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
   m.morale=clamp(65+nearbyAllies*12-nearbyEnemies*10,15,130);
-  m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);\n  m.animState=m.retreating?"retreat":"idle";
+  m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);
+
+  // Главный принцип: мобильный бой идёт против ближайшего живого противника.
+  // Линия не ограничивает поиск: моб может перейти на любую часть карты.
+  const nearestInRange=siegeNearest(m,()=>true,true);
+  const nearestVisible=siegeNearest(m,()=>true,true);
+  const nearestAny=siegeNearest(m,()=>true,false);
+
   if(m.retreating){
+   m.animState="retreat";
    const homeY=m.team==="enemy"?230:ARENA_H-230;
    m.targetX=m.x;m.targetY=homeY;
-   siegeStep(m,m.x-500,m.y-homeY,dt,18);
-   if(hpRatio<.2&&m.cool<=0){m.cool=75;m.hp=Math.min(m.maxHp,m.hp+2);}\n   m.animState="retreat";
+   siegeStep(m,m.x-500,m.y-homeY,dt*1.15,18);
+   if(hpRatio<.2&&m.cool<=0){m.cool=75;m.hp=Math.min(m.maxHp,m.hp+2);}
    continue;
   }
 
-  // Приоритеты: сначала опасный вражеский стрелок, затем ближайший боец.
-  const priority=siegeNearest(m,o=>o.lane===m.lane&&o.type==="sniper")||siegeNearest(m,o=>o.lane===m.lane&&o.type==="shooter")||enemyMob||anyEnemy;
-  if(priority){
-   const d=Math.hypot(priority.x-m.x,priority.y-m.y)||1;
-   m.targetX=priority.x;m.targetY=priority.y;
-
+  // 1. Если противник уже в радиусе атаки — атакуем именно ближайшего.
+  if(nearestInRange){
+   const d=Math.hypot(nearestInRange.x-m.x,nearestInRange.y-m.y);
+   m.targetX=nearestInRange.x;m.targetY=nearestInRange.y;
+   m.animState="attack";
    if(m.type==="brawler"){
-    if(d>m.attackRange)siegeStep(m,priority.x-m.x,priority.y-m.y,dt*(m.morale>100?1.12:1),18);
-    else if(m.cool<=0){m.cool=44;m.burst=2;m.animState="attack";m.attackFx=1;priority.hp=Math.max(0,priority.hp-m.damage*(m.morale>105?1.15:1));}
-   }else{
-    const preferred=m.type==="sniper"?360:165;
-    const blocked=siegeHasCover(m,priority.x,priority.y);
-    if(blocked){m.animState="run";siegeStep(m,priority.x-m.x,priority.y-m.y,dt*.8,18);
-    else if(d>preferred+45){m.animState="run";siegeStep(m,priority.x-m.x,priority.y-m.y,dt,18);
-    else if(d<preferred-60){m.animState="retreat";siegeStep(m,m.x-priority.x,m.y-priority.y,dt,18);
-    else{
-     // Стрейф и короткие остановки делают стрелков менее предсказуемыми.
-     if(m.think<=0){m.think=45+Math.random()*55;m.strafe=Math.random()<.5?-1:1;}
-     siegeStep(m,-(priority.y-m.y)*m.strafe,(priority.x-m.x)*m.strafe,dt*.7,18);
-     if(m.cool<=0&&m.burstCool<=0){
-      m.burstCool=m.type==="sniper"?115:42;
-      const hit=m.type==="sniper"?m.damage*1.7:m.damage*.8;
-      priority.hp=Math.max(0,priority.hp-hit);
-      // Автоматчик способен дать короткую очередь.
-      if(m.type==="shooter"&&m.burst<2)m.burst++;
-      else m.burst=0;
-     }
+    if(m.cool<=0){
+     m.cool=44;m.burst=2;m.attackFx=1;
+     nearestInRange.hp=Math.max(0,nearestInRange.hp-m.damage*(m.morale>105?1.15:1));
     }
+   }else if(m.cool<=0&&m.burstCool<=0){
+    m.cool=m.type==="sniper"?72:30;
+    m.burstCool=m.type==="sniper"?115:42;
+    m.attackFx=1;
+    const hit=m.type==="sniper"?m.damage*1.7:m.damage*.8;
+    nearestInRange.hp=Math.max(0,nearestInRange.hp-hit);
+    if(m.type==="shooter"&&m.burst<2)m.burst++;else m.burst=0;
    }
-  }else if(enemyTower){\n   m.animState="run";
-   // Башни только после уничтожения всей волны.
-   const d=Math.hypot(enemyTower.x-m.x,enemyTower.y-m.y)||1;
-   m.targetX=enemyTower.x;m.targetY=enemyTower.y;
-   if(d>m.attackRange)siegeStep(m,enemyTower.x-m.x,enemyTower.y-m.y,dt,18);
-   else if(m.cool<=0){m.cool=m.type==="brawler"?48:m.type==="shooter"?36:82;enemyTower.hp=Math.max(0,enemyTower.hp-m.damage);}
-  }else if(siegeTowers.filter(t=>t.team!==m.team&&t.hp>0).length===0){
-   const d=Math.hypot(enemyBase.x-m.x,enemyBase.y-m.y)||1;
-   m.targetX=enemyBase.x;m.targetY=enemyBase.y;
-   if(d>m.attackRange)siegeStep(m,enemyBase.x-m.x,enemyBase.y-m.y,dt,18);
-   else if(m.cool<=0){m.cool=52;enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);}
+   // Стрелки остаются в рабочей дистанции, но продолжают искать лучший угол.
+   if(m.type!=="brawler"){
+    const preferred=m.type==="sniper"?360:165;
+    if(d<preferred-55){m.animState="retreat";siegeStep(m,m.x-nearestInRange.x,m.y-nearestInRange.y,dt,18);}
+    else if(m.think<=0){m.think=45+Math.random()*55;m.strafe=Math.random()<.5?-1:1;}
+   }
+   continue;
   }
 
-  // Игрок вызывает реакцию: ближайшие мобы могут временно переключиться на него,
-  // но не бросают линию полностью, если в ней ещё есть вражеские мобы.
-  if(m.team==="enemy"&&Math.hypot(player.x-m.x,player.y-m.y)<240&&enemyMobs.length===0){
-   const d=Math.hypot(player.x-m.x,player.y-m.y)||1;
-   if(m.type==="brawler"&&d>45)siegeStep(m,player.x-m.x,player.y-m.y,dt,18);
-   else if(m.type!=="brawler"&&d<m.attackRange&&m.burstCool<=0){m.burstCool=m.type==="sniper"?110:45;hurt(m.type==="sniper"?12:6);}
+  // 2. Враг виден, но ещё далеко — преследуем его через всю карту.
+  if(nearestVisible){
+   m.targetX=nearestVisible.x;m.targetY=nearestVisible.y;
+   const d=Math.hypot(nearestVisible.x-m.x,nearestVisible.y-m.y);
+   if(m.type==="brawler"||d>(m.type==="sniper"?360:165)){
+    m.animState="run";
+    siegeStep(m,nearestVisible.x-m.x,nearestVisible.y-m.y,dt*(m.morale>100?1.12:1),18);
+   }else{
+    m.animState="strafe";
+    if(m.think<=0){m.think=45+Math.random()*55;m.strafe=Math.random()<.5?-1:1;}
+    siegeStep(m,-(nearestVisible.y-m.y)*m.strafe,(nearestVisible.x-m.x)*m.strafe,dt*.7,18);
+   }
+   continue;
+  }
+
+  // 3. Никого не видно: идём к последнему известному месту и ищем вокруг препятствий.
+  if(nearestAny){
+   m.targetX=nearestAny.x;m.targetY=nearestAny.y;
+   const cover=siegeCoverPoint(m,nearestAny.x,nearestAny.y);
+   const searchX=cover?cover[0]:nearestAny.x;
+   const searchY=cover?cover[1]:nearestAny.y;
+   m.animState="run";
+   siegeStep(m,searchX-m.x,searchY-m.y,dt,18);
+   if(m.think<=0){
+    m.think=35+Math.random()*50;
+    m.strafe=Math.random()<.5?-1:1;
+   }
+   continue;
+  }
+
+  // 4. Все вражеские мобы уничтожены — только теперь штурм башен.
+  const enemyTowers=siegeTowers.filter(t=>t.team!==m.team&&t.hp>0);
+  if(enemyTowers.length){
+   const tower=enemyTowers.sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+   m.targetX=tower.x;m.targetY=tower.y;
+   m.animState="run";
+   const d=Math.hypot(tower.x-m.x,tower.y-m.y);
+   if(d>m.attackRange)siegeStep(m,tower.x-m.x,tower.y-m.y,dt,18);
+   else if(m.cool<=0){
+    m.cool=m.type==="brawler"?48:m.type==="shooter"?36:82;
+    m.attackFx=1;
+    tower.hp=Math.max(0,tower.hp-m.damage);
+   }
+   continue;
+  }
+
+  // 5. Все башни уничтожены — штурм базы.
+  const enemyBase=siegeBases.find(b=>b.team!==m.team)!;
+  m.targetX=enemyBase.x;m.targetY=enemyBase.y;
+  m.animState="run";
+  const bd=Math.hypot(enemyBase.x-m.x,enemyBase.y-m.y);
+  if(bd>m.attackRange)siegeStep(m,enemyBase.x-m.x,enemyBase.y-m.y,dt,18);
+  else if(m.cool<=0){
+   m.cool=52;m.attackFx=1;
+   enemyBase.hp=Math.max(0,enemyBase.hp-m.damage);
   }
  }
 
- // Огонь игрока: мобы имеют шанс пережить первый контакт за счёт манёвра.
+ // Попадание игрока: моб реагирует, получает hit-анимацию и пытается сменить позицию.
  for(const b of bullets){
   if(b.from!=="player"||b.life<=0)continue;
   for(let i=siegeMobs.length-1;i>=0;i--){
-   const m=siegeMobs[i];if(m.team!=="enemy"||m.hp<=0)continue;
+   const m=siegeMobs[i];
+   if(m.team!=="enemy"||m.hp<=0)continue;
    if(Math.hypot(b.x-m.x,b.y-m.y)<28){
+    m.hitFlash=1;m.animState="hit";
     if(m.type!=="brawler"&&Math.random()<.18){
      m.think=0;m.strafe=-m.strafe;
-     siegeStep(m,-b.vy,b.vx,1,18);
+     siegeStep(m,-b.vy,b.vx,1.4,18);
     }else m.hp=Math.max(0,m.hp-b.damage);
     b.life=0;break;
    }
@@ -1326,15 +1387,25 @@ function updateSiege(dt:number){
   }
   if(b.life>0){
    const base=siegeBases.find(x=>x.team==="enemy")!;
-   if(base.hp>0&&siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0&&Math.hypot(b.x-base.x,b.y-base.y)<115){base.hp=Math.max(0,base.hp-b.damage);b.life=0;}
+   if(base.hp>0&&siegeTowers.filter(t=>t.team==="enemy"&&t.hp>0).length===0&&Math.hypot(b.x-base.x,b.y-base.y)<115){
+    base.hp=Math.max(0,base.hp-b.damage);b.life=0;
+   }
   }
  }
+
+ // Башни тоже выбирают ближайшую живую цель.
  for(const t of siegeTowers){
-  if(t.hp<=0)continue;t.cool-=dt;if(t.cool>0)continue;
-  const hostile=siegeMobs.filter(m=>m.team!==t.team&&m.hp>0).sort((a,b)=>Math.abs(a.y-t.y)-Math.abs(b.y-t.y))[0];
-  if(hostile&&Math.abs(hostile.y-t.y)<330){t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;}
+  if(t.hp<=0)continue;
+  t.cool-=dt;if(t.cool>0)continue;
+  const hostile=siegeMobs
+   .filter(m=>m.team!==t.team&&m.hp>0)
+   .sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
+  if(hostile&&Math.hypot(hostile.x-t.x,hostile.y-t.y)<360){
+   t.cool=42;hostile.hp=Math.max(0,hostile.hp-(t.team==="enemy"?34:38));continue;
+  }
   if(t.team==="enemy"&&Math.hypot(player.x-t.x,player.y-t.y)<330){t.cool=55;hurt(8);}
  }
+
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
  if(enemyBase.hp<=0){siegeOver=true;siegeMessage="ПОБЕДА · ВРАЖЕСКАЯ БАЗА РАЗРУШЕНА";completeArenaTask();return;}
  if(playerBase.hp<=0){siegeOver=true;siegeMessage="ПОРАЖЕНИЕ · ВАША БАЗА РАЗРУШЕНА";mode="result";dialogueOpen=false;render();}
