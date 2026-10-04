@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 512 256">
+<defs>
+ <pattern id="p" width="512" height="256" patternUnits="userSpaceOnUse" patternTransform="rotate(-25)">
+  <rect width="512" height="256" fill="#111214"/>
+  <rect x="-80" y="0" width="90" height="340" fill="#e39a09"/>
+  <rect x="90" y="0" width="90" height="340" fill="#e39a09"/>
+  <rect x="260" y="0" width="90" height="340" fill="#e39a09"/>
+  <rect x="430" y="0" width="90" height="340" fill="#e39a09"/>
+  <path d="M0 4L512 4M0 252L512 252" stroke="#f5bd25" stroke-opacity=".18" stroke-width="5"/>
+  <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="8"/><feColorMatrix values=".55 0 0 0 .05 0 .55 0 0 .05 0 0 .55 0 .05 0 0 0 .35 0"/></filter>
+  <rect width="512" height="256" filter="url(#rough)" opacity=".75" style="mix-blend-mode:multiply"/>
+ </pattern>
+ <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".08"/><stop offset=".55" stop-color="#000" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>
+</defs>
+<rect width="512" height="256" fill="url(#p)"/>
+<rect width="512" height="256" fill="url(#shade)"/>
+<rect x="2" y="2" width="508" height="252" fill="none" stroke="#07090a" stroke-width="4"/>
+</svg>
