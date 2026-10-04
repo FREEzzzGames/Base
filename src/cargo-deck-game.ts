@@ -748,6 +748,7 @@ function bindUI(){
   }
 
   if(combat){
+    const DOUBLE_MS=230;
     const stop=(e:PointerEvent)=>{
       if(e.pointerId!==combatTouchId)return;
       combatTouchId=null;fireHeld=false;
@@ -760,43 +761,49 @@ function bindUI(){
       combatStartY=combatLastY=e.clientY;
       combatMoved=false;
       combat.setPointerCapture(e.pointerId);
-      if(combatTapTimer)window.clearTimeout(combatTapTimer);
+
+      if(combatTapPending){
+        combatTapPending=false;
+        if(combatTapTimer)window.clearTimeout(combatTapTimer);
+        combatTapTimer=0;
+        startReload(player.combat,weapon());
+        return;
+      }
+
       combatTapPending=true;
       combatTapTimer=window.setTimeout(()=>{
-        if(combatTapPending&&!combatMoved){
-          fireHeld=true;
-          fire(true);
-          combatTapPending=false;
-        }
         combatTapTimer=0;
-      },230);
+        if(!combatTapPending)return;
+        combatTapPending=false;
+        fireHeld=true;
+        fire(true);
+      },DOUBLE_MS);
     });
     combat.addEventListener("pointermove",e=>{
       if(e.pointerId!==combatTouchId)return;
       const dx=e.clientX-combatStartX,dy=e.clientY-combatStartY;
       combatLastX=e.clientX;combatLastY=e.clientY;
       if(Math.hypot(dx,dy)>10){
-        combatMoved=true;combatTapPending=false;
+        combatMoved=true;
+        combatTapPending=false;
+        if(combatTapTimer)window.clearTimeout(combatTapTimer);
+        combatTapTimer=0;
         aim=Math.atan2(dy,dx);
         if(Math.abs(dx)>5)player.facing=dx<0?-1:1;
         fireHeld=true;
+        fire(true);
       }
     });
     combat.addEventListener("pointerup",e=>{
       if(e.pointerId!==combatTouchId)return;
-      const moved=combatMoved;
-      combatTapPending=false;
-      if(!moved){
-        if(combatTapTimer)window.clearTimeout(combatTapTimer);
-        combatTapTimer=window.setTimeout(()=>{
-          if(combatTapPending===false){
-            // A second tap inside the double-tap window reloads instead of firing.
-          }
-        },0);
-      }
       stop(e);
     });
-    combat.addEventListener("pointercancel",stop);
+    combat.addEventListener("pointercancel",e=>{
+      if(e.pointerId!==combatTouchId)return;
+      if(combatTapTimer)window.clearTimeout(combatTapTimer);
+      combatTapTimer=0;combatTapPending=false;
+      stop(e);
+    });
   }
 
   if(mode==="weapon"){
