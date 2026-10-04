@@ -5902,6 +5902,21 @@ html.visual-comfort-enabled video{
  .portal-game-fullscreen .mafia-controls button{font-size:11px!important}
 }
 
+/* CARGO DECK — exact 3px safety frame inside the maximum Telegram Mini App surface. */
+.portal-game-fullscreen .freezzz-mafia-frame.cargo-deck-frame{
+  position:absolute!important;
+  left:3px!important;
+  top:3px!important;
+  right:3px!important;
+  bottom:3px!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:none!important;
+  min-height:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+
 /* Portrait-first Mini App presentation — tuned for 694x1320 class devices */
 .portal-game-fullscreen .freezzz-mafia-frame{width:100vw!important;height:100dvh!important;min-height:0!important;max-width:none!important;background:#07090b!important}
 .portal-game-fullscreen .freezzz-mafia-canvas{width:100%!important;height:100%!important;image-rendering:pixelated!important;display:block!important}
