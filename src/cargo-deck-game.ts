@@ -33,13 +33,16 @@ let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,m
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
+let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
+function ensureObsGradients():CanvasGradient[]{if(obsGradients&&obsGradCtx===ctx)return obsGradients;obsGradCtx=ctx;obsGradients=OBS.map(o=>{const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);g.addColorStop(0,"#3b464b");g.addColorStop(.55,"#242d31");g.addColorStop(1,"#171d20");return g});return obsGradients}
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch{}}
 function L(){return LOAD[sel]}function weapon(){return HS_WEAPONS[player?.weapon??save.weapon]||HS_WEAPONS[0]}
+function anyHit(obs:HsObstacle[],x:number,y:number,r:number):boolean{for(let i=0;i<obs.length;i++){const o=obs[i];const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;if(dx*dx+dy*dy<r*r)return true}return false}
 function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;return dx*dx+dy*dy<r*r}
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
-function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!o.some(a=>hitCircle(nx,y,r,a)))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(Math.max(r,Math.min(W-r,x+sx*m)),y,r,a)))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!o.some(a=>hitCircle(x,ny,r,a)))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(x,Math.max(180,Math.min(H-r,y+sy*m)),r,a)))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
+function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(Math.max(r,Math.min(W-r,x+sx*m)),y,r,a)))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(x,Math.max(180,Math.min(H-r,y+sy*m)),r,a)))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=a+Math.random()*(b-a);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,a+60]as const}
 function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:500,y:2250,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
 function init(){mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:500,y:250,hp:2600,maxHp:2600};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:350,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:2280,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
@@ -197,7 +200,7 @@ function updateMob(m:Mob,dt:number){
           const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
           const w=HS_WEAPONS[5];
           for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-            bullets.push({...sh});
+            bullets.push(sh);
             VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.075,VFX.VFX_COLORS.PURPLE,1.5,.55);
           }
           m.cool=78;
@@ -217,7 +220,7 @@ function updateMob(m:Mob,dt:number){
         const w=HS_WEAPONS[1];
         const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
         for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-        bullets.push({...sh});
+        bullets.push(sh);
         VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.07,VFX.VFX_COLORS.CYAN,1.25,.5);
       }
       }
@@ -303,7 +306,7 @@ function update(dt:number){
     e.y+=e.vy*dt;
     e.life-=dt;
   }
-  effects=effects.filter(e=>e.life>0);
+  let ei=0;while(ei<effects.length){if(effects[ei].life<=0){effects[ei]=effects[effects.length-1];effects.pop();continue}ei++}
 
   const w=weapon(),l=L();
   stepWeapon(player.combat,w,dt);
@@ -401,7 +404,7 @@ function update(dt:number){
     }
   }
 
-  bullets=bullets.filter(b=>b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80);
+  let bi=0;while(bi<bullets.length){const b=bullets[bi];if(b.life<=0||b.x<-80||b.x>W+80||b.y<-80||b.y>H+80){bullets[bi]=bullets[bullets.length-1];bullets.pop();continue}bi++}
 }function updateGrenades(dt:number){for(const g of grenades){
   g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;
   if(g.life<=0){
@@ -517,12 +520,7 @@ function drawWorld(){
   rect(962,0,38,H,"#12191d");
 
   // CARGO containers / cover.
-  for(const o of OBS){
-    const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);
-    g.addColorStop(0,"#3b464b");
-    g.addColorStop(.55,"#242d31");
-    g.addColorStop(1,"#171d20");
-    ctx!.fillStyle=g;
+  const grads=ensureObsGradients();for(let oi=0;oi<OBS.length;oi++){const o=OBS[oi];ctx!.fillStyle=grads[oi];
     ctx!.fillRect(o.x,o.y,o.w,o.h);
     ctx!.strokeStyle="#68747a";
     ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
@@ -667,7 +665,7 @@ function drawWorld(){
   }
 }function renderCanvas(){if(!ctx)return;resize();ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
 function renderUI(){if(!ui)return;if(mode==="play")ui.innerHTML='<div class="cargo-move"><span></span></div><div class="cargo-actions"><button data-cargo="weapon">ОРУЖИЕ</button><button data-cargo="fire">ОГОНЬ</button><button data-cargo="reload">ПЕРЕЗАРЯДКА</button><button data-cargo="auto">АВТО</button><button data-cargo="medkit">HP · '+player.medkits+'</button><button data-cargo="grenade">G</button><button data-cargo="ability">СПЕЦ</button></div><div class="cargo-aim"><span></span></div><div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';bindUI()}
-function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
+function render(){obsGradients=null;if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
 function bindUI(){ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{const a=b.dataset.cargo;if(a==="start")start();else if(a==="weapon"){mode="weapon";render()}else if(a==="fire"){fireHeld=true;fire(true)}else if(a==="reload"){startReload(player.combat,weapon())}else if(a==="auto"){auto=!auto;msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60}else if(a==="medkit")medkit();else if(a==="grenade")grenade();else if(a==="ability")special();else if(a==="menu")exit();else if(a==="retry")start()});const f=ui?.querySelector<HTMLElement>('[data-cargo="fire"]');if(f){const stop=()=>fireHeld=false;f.addEventListener("pointerdown",e=>{e.preventDefault();fireHeld=true;fire(true)});f.addEventListener("pointerup",stop);f.addEventListener("pointercancel",stop);f.addEventListener("pointerleave",stop)}const mv=ui?.querySelector<HTMLElement>(".cargo-move");if(mv){const upd=(e:PointerEvent)=>{const r=mv.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width*.42),dy=(e.clientY-r.top-r.height/2)/(r.height*.42);moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));const s=mv.querySelector("span")as HTMLElement|null;if(s)s.style.transform=`translate(${Math.max(-32,Math.min(32,dx*32))}px,${Math.max(-32,Math.min(32,dy*32))}px)`};const stop=(e:PointerEvent)=>{if(e.pointerId===moveId){moveId=null;moveX=moveY=0}};mv.addEventListener("pointerdown",e=>{e.preventDefault();moveId=e.pointerId;mv.setPointerCapture(e.pointerId);upd(e)});mv.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});mv.addEventListener("pointerup",stop);mv.addEventListener("pointercancel",stop)}const as=ui?.querySelector<HTMLElement>(".cargo-aim");if(as){const set=(e:PointerEvent)=>{const r=as.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;if(Math.hypot(dx,dy)>8){aim=Math.atan2(dy,dx);if(Math.abs(dx)>5)player.facing=dx<0?-1:1}};as.addEventListener("pointerdown",e=>{e.preventDefault();aimId=e.pointerId;as.setPointerCapture(e.pointerId);set(e)});as.addEventListener("pointermove",e=>{if(e.pointerId===aimId)set(e)});const stop=(e:PointerEvent)=>{if(e.pointerId===aimId)aimId=null};as.addEventListener("pointerup",stop);as.addEventListener("pointercancel",stop)}if(mode==="weapon"){const h=ui?.querySelector(".cargo-weapon-hit");h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})}}
 function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveY=-1;if(e.key==="s"||e.key==="ArrowDown")moveY=1;if(e.key==="a"||e.key==="ArrowLeft")moveX=-1;if(e.key==="d"||e.key==="ArrowRight")moveX=1;if(e.key===" ")fire(true);if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
