@@ -15,3 +15,34 @@ export const TENDERS:Tender[]=[
 ];
 export function tenderById(id:string){return TENDERS.find(t=>t.id===id)||null;}
 export function difficultyRu(d:TenderDifficulty){return ({EASY:"НИЗКИЙ",MEDIUM:"СРЕДНИЙ",HARD:"ВЫСОКИЙ",ELITE:"ЭЛИТНЫЙ"} as Record<TenderDifficulty,string>)[d];}
+
+export interface ArenaMission{ id:string; tenderId:string; order:number; title:string; briefing:string; objective:"clear"|"survive"|"reach"|"recover"|"defend"; target:number; reward:number; enemies:Array<"guard"|"brawler"|"heavy"|"rusher"|"shooter"|"sniper"|"suppressor"|"flanker">; arenaRule:string; }
+
+// Одна арена. Каждый тендер проходит через последовательность отдельных боевых задач.
+export const ARENA_MISSIONS:ArenaMission[]=[
+{id:"R17-01",tenderId:"storm_rust",order:1,title:"КОНТАКТ НА ПЕРИМЕТРЕ",briefing:"Чужая группа вошла в сектор поставки. Периметр нужно очистить.",objective:"clear",target:8,reward:420,enemies:["guard","shooter","rusher"],arenaRule:"ПЕРИМЕТР"},
+{id:"R17-02",tenderId:"storm_rust",order:2,title:"УЗЕЛ СВЯЗИ",briefing:"Связь группы подавлена. Удерживай узел, пока канал не восстановится.",objective:"survive",target:30,reward:520,enemies:["shooter","suppressor","flanker"],arenaRule:"УДЕРЖАНИЕ"},
+{id:"R17-03",tenderId:"storm_rust",order:3,title:"ПОСЛЕДНИЙ ГРУЗ",briefing:"Последняя партия должна пройти через квартал. Не дай противнику сорвать маршрут.",objective:"defend",target:12,reward:720,enemies:["heavy","rusher","shooter","flanker"],arenaRule:"КОНВОЙ"},
+{id:"N04-01",tenderId:"nightglass",order:1,title:"ТИХИЙ ПАТРУЛЬ",briefing:"Патрульная группа потеряла контроль над двором.",objective:"clear",target:7,reward:360,enemies:["guard","flanker","rusher"],arenaRule:"ДВОР"},
+{id:"N04-02",tenderId:"nightglass",order:2,title:"СЛЕПОЙ УГОЛ",briefing:"Противник использует обходы. Удерживай позицию и переживи засаду.",objective:"survive",target:35,reward:480,enemies:["flanker","shooter","sniper"],arenaRule:"ЗАСАДА"},
+{id:"N04-03",tenderId:"nightglass",order:3,title:"НОЧНОЙ ВЫХОД",briefing:"Найди выход из сектора, пока группа прикрытия держит противника.",objective:"reach",target:1,reward:620,enemies:["rusher","shooter","heavy"],arenaRule:"ПРОРЫВ"},
+{id:"B21-01",tenderId:"blackwaterline",order:1,title:"ПРОПАВШАЯ ПАРТИЯ",briefing:"След груза обнаружен на улице. Верни контроль над зоной.",objective:"clear",target:9,reward:340,enemies:["rusher","guard","shooter"],arenaRule:"ПЕРЕХВАТ"},
+{id:"B21-02",tenderId:"blackwaterline",order:2,title:"КОНТЕЙНЕРНЫЙ ДВОР",briefing:"Противник закрепился между контейнерами. Волны будут усиливаться.",objective:"survive",target:40,reward:460,enemies:["rusher","flanker","suppressor"],arenaRule:"КОНТЕЙНЕРЫ"},
+{id:"B21-03",tenderId:"blackwaterline",order:3,title:"ПОСЛЕДНИЙ МАРШРУТ",briefing:"Пройди через сектор до контрольной точки.",objective:"reach",target:1,reward:600,enemies:["shooter","sniper","rusher","heavy"],arenaRule:"МАРШРУТ"},
+{id:"I31-01",tenderId:"ironroute",order:1,title:"ЖЕЛЕЗНАЯ ЛИНИЯ",briefing:"Маршрут перекрыт. Уничтожь блокирующую группу.",objective:"clear",target:10,reward:520,enemies:["heavy","guard","rusher"],arenaRule:"БЛОКАДА"},
+{id:"I31-02",tenderId:"ironroute",order:2,title:"ГРЯЗНЫЙ УЧАСТОК",briefing:"Противник атакует с нескольких направлений.",objective:"survive",target:45,reward:650,enemies:["heavy","suppressor","flanker","shooter"],arenaRule:"ИЗНОС"},
+{id:"I31-03",tenderId:"ironroute",order:3,title:"СОПРОВОЖДЕНИЕ",briefing:"Удерживай контрольный коридор до завершения прохода.",objective:"defend",target:15,reward:900,enemies:["heavy","rusher","sniper","suppressor"],arenaRule:"КОЛОННА"},
+{id:"S09-01",tenderId:"silent_district",order:1,title:"СЛЕПОЕ НАБЛЮДЕНИЕ",briefing:"Найди наблюдателей, не дав им окружить сектор.",objective:"clear",target:6,reward:300,enemies:["flanker","guard","sniper"],arenaRule:"НАБЛЮДЕНИЕ"},
+{id:"S09-02",tenderId:"silent_district",order:2,title:"ТИХИЙ ДВОР",briefing:"Переживи короткую, но плотную атаку.",objective:"survive",target:25,reward:380,enemies:["flanker","rusher","shooter"],arenaRule:"СКРЫТНОСТЬ"},
+{id:"S09-03",tenderId:"silent_district",order:3,title:"ЭКСТРАКЦИЯ",briefing:"Доберись до точки выхода.",objective:"reach",target:1,reward:500,enemies:["sniper","flanker","rusher"],arenaRule:"ЭВАКУАЦИЯ"},
+{id:"G44-01",tenderId:"old_guard",order:1,title:"СМЕНА",briefing:"Старая охрана потеряла участок. Верни его.",objective:"clear",target:7,reward:260,enemies:["guard","brawler","rusher"],arenaRule:"СМЕНА"},
+{id:"G44-02",tenderId:"old_guard",order:2,title:"ЗАПЕРТАЯ ДВЕРЬ",briefing:"Группа давит на вход. Удерживай позицию.",objective:"defend",target:10,reward:340,enemies:["guard","shooter","heavy"],arenaRule:"ВОРОТА"},
+{id:"G44-03",tenderId:"old_guard",order:3,title:"ПОСЛЕДНИЙ ПОСТ",briefing:"Заверши зачистку участка.",objective:"clear",target:12,reward:520,enemies:["heavy","shooter","rusher","guard"],arenaRule:"ЗАЧИСТКА"},
+{id:"A77-01",tenderId:"redarchive",order:1,title:"АРХИВНАЯ ОХРАНА",briefing:"Архив заблокирован вооружённой группой.",objective:"clear",target:10,reward:600,enemies:["guard","shooter","heavy"],arenaRule:"АРХИВ"},
+{id:"A77-02",tenderId:"redarchive",order:2,title:"КОНТРНАБЛЮДЕНИЕ",briefing:"Снайперы и обходчики перекрывают сектор.",objective:"survive",target:50,reward:760,enemies:["sniper","flanker","suppressor","heavy"],arenaRule:"КОНТРНАБЛЮДЕНИЕ"},
+{id:"A77-03",tenderId:"redarchive",order:3,title:"КРАСНЫЙ ФАЙЛ",briefing:"Забери файл и выйди из сектора.",objective:"recover",target:1,reward:1100,enemies:["sniper","heavy","shooter","flanker"],arenaRule:"ИЗВЛЕЧЕНИЕ"},
+{id:"F13-01",tenderId:"fourfamilies",order:1,title:"ЧЕТЫРЕ СЕКТОРА",briefing:"Все четыре стороны прислали свои группы. Удержи арену.",objective:"clear",target:14,reward:800,enemies:["guard","rusher","shooter","flanker"],arenaRule:"ЧЕТЫРЕ СЕКТОРА"},
+{id:"F13-02",tenderId:"fourfamilies",order:2,title:"РАЗРЫВ",briefing:"Союз трещит. Тяжёлые группы атакуют по очереди.",objective:"survive",target:60,reward:1100,enemies:["heavy","suppressor","sniper","rusher"],arenaRule:"РАЗРЫВ"},
+{id:"F13-03",tenderId:"fourfamilies",order:3,title:"ПОСЛЕДНЯЯ ПЕЧАТЬ",briefing:"Последний узел должен быть удержан до конца операции.",objective:"defend",target:20,reward:1600,enemies:["heavy","suppressor","sniper","flanker","shooter"],arenaRule:"ФИНАЛ"}
+];
+export function arenaMissionsForTender(id:string){return ARENA_MISSIONS.filter(m=>m.tenderId===id).sort((a,b)=>a.order-b.order);}
