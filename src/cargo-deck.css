@@ -392,3 +392,58 @@
 .cargo-deck-ui .cargo-inventory{
   width:var(--small-size)!important;
 }
+
+/* ARENA SELECT — two direct-deploy map cards. No PLAY/START button. */
+.cargo-deck-ui .cargo-arena-hitboxes{
+  position:absolute!important;
+  left:18px!important;
+  right:18px!important;
+  top:86px!important;
+  height:260px!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:18px!important;
+  pointer-events:auto!important;
+  z-index:30!important;
+}
+.cargo-deck-ui .cargo-arena-hitboxes button{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:0!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  color:transparent!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  touch-action:manipulation!important;
+}
+.cargo-deck-ui .cargo-loadout-operators{
+  position:absolute!important;
+  left:18px!important;
+  right:18px!important;
+  top:390px!important;
+  height:86px!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+  pointer-events:auto!important;
+  z-index:30!important;
+}
+.cargo-deck-ui .cargo-loadout-operators button{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:0!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  color:transparent!important;
+  border-radius:0!important;
+  touch-action:manipulation!important;
+}
+@media(max-width:520px){
+  .cargo-deck-ui .cargo-arena-hitboxes{left:10px!important;right:10px!important;gap:8px!important}
+  .cargo-deck-ui .cargo-loadout-operators{left:10px!important;right:10px!important;gap:6px!important}
+}
