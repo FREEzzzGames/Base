@@ -949,9 +949,9 @@ function updateArenaPickups(dt:number){
  arenaPickups=arenaPickups.filter(p=>p.life>0);
 }
 function spawnFloor(){
- floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];
- if(save.activeTenderId&&arenaMission)spawnArenaWave();
- player={x:420,y:400,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
+ floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
+ player={x:ARENA_W/2,y:ARENA_H-150,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
+ if(save.activeTenderId&&arenaMission){resetArenaPickups();spawnArenaWave();}else arenaPickups=[];
 }
 function fire(){
  if(mode!=="play")return;
