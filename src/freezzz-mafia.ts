@@ -161,6 +161,7 @@ const weapons=HS_WEAPONS.map(w=>({name:w.name,damage:w.damage,rate:w.fireInterva
 let root:HTMLElement|null=null, canvas:HTMLCanvasElement|null=null, ctx:CanvasRenderingContext2D|null=null;
 let mode:Mode="select", selected:HeroId|null=null, missionIndex=0, dialogueIndex=0, dialogueOpen=false;
 let frame=0,last=0,raf=0,keys=new Set<string>(),cleanup:()=>void=()=>{};
+let tenderPage=0;
 let viewWidth=640,viewHeight=448;
 let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],storySeen:{},resumeMission:{},resumeFloor:{}};
 let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
@@ -1046,7 +1047,8 @@ function renderCanvas(){
  if(mode==="briefing"){drawBriefing();return;}
  if(mode==="shop"){drawShop();return;}
  if(mode==="tenders"){if(e.key==="Escape"){mode="play";render();}return;}
- if(mode==="weaponMenu"){drawWeaponMenu();return;}
+ if(mode==="tenders"){drawTenders();return;}
+  if(mode==="weaponMenu"){drawWeaponMenu();return;}
  if(mode==="result"){drawResult();return;}
 }
 function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
@@ -1158,13 +1160,26 @@ function drawShop(){
 function drawTenders(){
  const c=ctx!;c.save();const W=viewWidth,H=viewHeight;c.fillStyle="#070a0c";c.fillRect(0,0,W,H);
  const g=c.createRadialGradient(W*.18,H*.12,0,W*.18,H*.12,W*.55);g.addColorStop(0,"rgba(216,108,53,.18)");g.addColorStop(1,"rgba(7,10,12,0)");c.fillStyle=g;c.fillRect(0,0,W,H);
- tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.07,H*.055,menuTextSize(.032,21,30),"#d86c35");tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.07,H*.092,menuTextSize(.015,10,15),"#68777f");
- tx("АКТИВНЫЙ: "+(save.activeTenderId?(tenderById(save.activeTenderId)?.title||"—"):"НЕТ"),W*.93,H*.055,menuTextSize(.013,9,13),hero().color,"right");
- const top=H*.115,bottom=H*.90,gap=10,cardH=Math.min(154,(bottom-top-gap*2)/3),left=W*.055,cardW=W*.89;
- TENDERS.forEach((t,i)=>{const y=top+i*(cardH+gap);if(y>bottom+cardH)return;const active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
- c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.35)";c.shadowBlur=active?12:6;c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
- tx(t.code,left+16,y+24,menuTextSize(.012,8,12),active?hero().color:"#6d797e");tx(t.title,left+16,y+48,menuTextSize(.020,13,19),"#f0eee7","left");tx(t.client,left+16,y+69,menuTextSize(.012,8,12),"#aeb6b8","left");tx(t.weaponType+" · "+t.caliber,left+16,y+91,menuTextSize(.013,9,13),"#d9b86c","left");tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+16,y+112,menuTextSize(.010,7,10),"#7f8b90","left");tx("НАГРАДА $"+t.reward+" · АВАНС $"+t.advance+" · ШТРАФ $"+t.penalty,left+16,y+131,menuTextSize(.010,7,10),"#aeb6b8","left");tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-16,y+25,menuTextSize(.012,8,12),done?"#68777f":active?hero().color:"#d86c35","right");});
- tx("ТАП ПО КАРТОЧКЕ · СРОК / РИСК / ТРЕБОВАНИЯ",W/2,H*.94,menuTextSize(.011,8,11),"#59656b","center");c.restore();
+ tx("ЗАКРЫТЫЙ ТЕНДЕР",W*.06,H*.055,menuTextSize(.032,21,30),"#d86c35");tx("ОРУЖИЕ · ЭКИПИРОВКА · КОНТРАКТЫ",W*.06,H*.09,menuTextSize(.014,9,14),"#68777f");
+ tx((tenderPage+1)+"/"+Math.ceil(TENDERS.length/3),W*.94,H*.055,menuTextSize(.016,11,15),hero().color,"right");
+ const top=H*.12,bottom=H*.90,gap=H*.018,cardH=(bottom-top-gap*2)/3,left=W*.045,cardW=W*.91;
+ const pageItems=TENDERS.slice(tenderPage*3,tenderPage*3+3);
+ pageItems.forEach((t,i)=>{const y=top+i*(cardH+gap),active=save.activeTenderId===t.id,done=save.completed.includes(t.linkedMission);
+ c.save();c.fillStyle=active?"#172024":"#0c1114";c.strokeStyle=active?hero().color:"#334047";c.lineWidth=active?2:1;c.shadowColor=active?"rgba(84,214,216,.18)":"rgba(0,0,0,.4)";c.shadowBlur=active?12:6;c.beginPath();c.roundRect(left,y,cardW,cardH,7);c.fill();c.stroke();c.restore();
+ tx(t.code,left+12,y+20,menuTextSize(.010,7,10),active?hero().color:"#68777f");tx(t.title,left+48,y+20,menuTextSize(.015,10,14),"#f0eee7","left");tx(t.client,left+48,y+38,menuTextSize(.009,7,10),"#9fa9ad","left");
+ drawWrapped(t.lore,left+12,y+56,Math.max(28,Math.floor(W/18)),menuTextSize(.009,7,10),menuTextSize(.010,7,11),"#aeb6b8","left");
+ tx(t.weaponType+" · "+t.caliber,left+12,y+82,menuTextSize(.010,7,10),"#d9b86c","left");
+ tx("У "+t.spec.damage+"  ТОЧ "+t.spec.accuracy+"  МОБ "+t.spec.mobility+"  НАД "+t.spec.reliability,left+12,y+100,menuTextSize(.009,7,10),"#7f8b90","left");
+ tx("ТРЕБ.: "+t.requirements.join(" · "),left+12,y+117,menuTextSize(.0085,6,9),"#8d999d","left");
+ tx("$"+t.reward+" НАГРАДА · $"+t.advance+" АВАНС · $"+t.penalty+" ШТРАФ · "+t.durationHours+"Ч",left+12,y+134,menuTextSize(.009,7,10),"#c6a86d","left");
+ drawWrapped("РИСК: "+t.risk,left+12,y+151,Math.max(30,Math.floor(W/19)),menuTextSize(.0085,6,9),menuTextSize(.009,7,10),"#9a6c55","left");
+ tx(done?"ВЫПОЛНЕН":active?"КОНТРАКТ ПРИНЯТ":"ПРИНЯТЬ",left+cardW-12,y+20,menuTextSize(.010,7,10),done?"#68777f":active?hero().color:"#d86c35","right");
+ });
+ const bh=Math.min(38,H*.052),by=H-bh-H*.025;
+ tx("‹",W*.08,by+bh*.68,menuTextSize(.028,18,26),tenderPage>0?"#d86c35":"#394248","center");
+ tx("›",W*.92,by+bh*.68,menuTextSize(.028,18,26),tenderPage<Math.ceil(TENDERS.length/3)-1?"#d86c35":"#394248","center");
+ tx("НАЗАД",W/2,by+bh*.68,menuTextSize(.014,9,13),"#aeb6b8","center");
+ c.restore();
 }
 function drawWeaponMenu(){
  const c=ctx!;c.save();const W=viewWidth,H=viewHeight;
@@ -1266,7 +1281,9 @@ function bindButtons(){
    if(a==="advance"){advanceDialogue();render();}
    if(a==="shop"){mode="shop";render();}
    if(a==="weapon-menu"){mode="weaponMenu";render();}
-   if(a==="tenders"){mode="tenders";render();}
+   if(a==="tenders"){tenderPage=0;mode="tenders";render();}
+   if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
+   if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
    if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!save.completed.includes(t.linkedMission)){save.activeTenderId=t.id;storeSave();render();}}
    if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
@@ -1349,7 +1366,7 @@ function render(){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
   }else if(mode==="tenders"){
-    ui.innerHTML=TENDERS.map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:5.5%;right:5.5%;top:${11.5+i*17.0}%;height:15%;opacity:.001;border:0;background:transparent"></button>`).join("")+`<button data-action="menu" style="position:absolute;bottom:2%;left:30%;right:30%;height:7%;opacity:.03">НАЗАД</button>`;
+    ui.innerHTML=TENDERS.slice(tenderPage*3,tenderPage*3+3).map((t,i)=>`<button class="mafia-tender-hit" data-action="tender" data-tender="${t.id}" style="position:absolute;left:4.5%;right:4.5%;top:${12+i*26.0}%;height:22%;opacity:.001;border:0;background:transparent"></button>`).join("")+`<button data-action="tender-prev" style="position:absolute;left:0;bottom:2%;width:20%;height:7%;opacity:.02">‹</button><button data-action="menu" style="position:absolute;left:40%;bottom:2%;width:20%;height:7%;opacity:.02">НАЗАД</button><button data-action="tender-next" style="position:absolute;right:0;bottom:2%;width:20%;height:7%;opacity:.02">›</button>`;
   }else{
    ui.innerHTML='<div class="mafia-action"><button data-action="menu">ГЛАВНОЕ МЕНЮ</button><button data-action="advance">'+(dialogueOpen?"ПРОДОЛЖИТЬ":mode==="shop"?"НАЗАД":"НАЧАТЬ / ПРОДОЛЖИТЬ")+'</button></div>';
  }
