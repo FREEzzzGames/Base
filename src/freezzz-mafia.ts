@@ -325,17 +325,13 @@ function topDownMap(){
  return {w,h,roads,buildings,river:{x:0,y:0,w:0,h:0},bridge:{x:0,y:0,w:0,h:0}};
 }
 function topDownExit(){return mode==="play"&&arenaMission?[ARENA_W/2,90]:[1365,455];}
-const ARENA_W=1000,ARENA_H=2700;
-function arenaObstacles(){
- const core=[
-  {x:70,y:520,w:250,h:70},{x:680,y:520,w:250,h:70},
-  {x:70,y:770,w:170,h:170},{x:380,y:710,w:240,h:80},{x:760,y:770,w:170,h:170},
-  {x:120,y:1090,w:260,h:75},{x:620,y:1090,w:260,h:75},
-  {x:310,y:1350,w:380,h:85}
- ];
- const mirrored=core.map(o=>({x:o.x,y:ARENA_H-(o.y+o.h),w:o.w,h:o.h}));
- return [...core,...mirrored];
-}
+const ARENA_W=1000,ARENA_H=1500;
+function arenaObstacles(){return [
+ {x:70,y:220,w:250,h:70},{x:680,y:220,w:250,h:70},
+ {x:70,y:470,w:170,h:170},{x:380,y:410,w:240,h:80},{x:760,y:470,w:170,h:170},
+ {x:120,y:790,w:260,h:75},{x:620,y:790,w:260,h:75},
+ {x:310,y:1050,w:380,h:85},{x:55,y:1210,w:180,h:90},{x:765,y:1210,w:180,h:90}
+];}
 function topDownObstacles(){
  const m=topDownMap(),out:{x:number;y:number;w:number;h:number}[]=[];
  for(const b of m.buildings)out.push({x:b.x,y:b.y,w:b.w,h:b.h});
@@ -752,32 +748,29 @@ function drawWorld(m:Mission){
  if(flash>0){rect(0,0,viewWidth,viewHeight,"rgba(255,255,255,"+Math.min(.18,flash)+")");flash-=.02;}
 }
 function drawArenaBackground(){
- const mid=ARENA_H/2;
  rect(0,0,ARENA_W,ARENA_H,"#30383b");
  rect(0,0,ARENA_W,210,"#26363a");rect(0,ARENA_H-210,ARENA_W,210,"#34443b");
  for(let y=210;y<ARENA_H-210;y+=70)rect(0,y,ARENA_W,2,"rgba(210,210,190,.08)");
  for(let x=0;x<ARENA_W;x+=80)line(x,210,x,ARENA_H-210,"rgba(0,0,0,.10)",1);
  const lanes=[250,500,750];
- lanes.forEach(x=>{rect(x-54,210,108,ARENA_H-420,"rgba(18,25,27,.18)");line(x,210,x,ARENA_H-210,"rgba(225,220,198,.12)",2);});
+ lanes.forEach(x=>{rect(x-54,210,108,1110,"rgba(18,25,27,.18)");line(x,210,x,1320,"rgba(225,220,198,.12)",2);});
  for(const o of arenaObstacles()){rect(o.x+5,o.y+7,o.w,o.h,"rgba(0,0,0,.25)");rect(o.x,o.y,o.w,o.h,"#56605e");rect(o.x+8,o.y+8,o.w-16,Math.min(12,o.h-16),"#707875");}
- rect(70,mid-34,860,68,"rgba(25,31,32,.62)");line(70,mid,930,mid,"#8b918d",2);
- tx("ЦЕНТРАЛЬНЫЙ РУБЕЖ",ARENA_W/2,mid-8,15,"#aeb6b8","center");
  rect(70,48,860,118,"#20292c");rect(95,68,810,78,"#2d383a");
  rect(95,68,270,78,hero().color);rect(635,68,270,78,"#9b403d");
  tx("БАЗА ИГРОКА",230,108,18,"#071011","center");tx("ВРАЖЕСКАЯ БАЗА",770,108,18,"#f0eee7","center");
  rect(0,190,ARENA_W,20,"#596463");rect(0,ARENA_H-230,ARENA_W,20,"#68736b");
- line(30,210,970,210,"#d7d2bc",3);line(30,ARENA_H-210,970,ARENA_H-210,"#d7d2bc",3);
- tx("ТРИ ЛИНИИ · 3+2+1 МОБОВ · СНАЧАЛА ФРОНТ",ARENA_W/2,245,18,"#aeb6b8","center");
+ line(30,210,970,210,"#d7d2bc",3);line(30,1320,970,1320,"#d7d2bc",3);
+ tx("ТРИ ЛИНИИ · ВОЛНЫ МОБОВ",ARENA_W/2,245,18,"#aeb6b8","center");
 }
 function initSiege(){
  siegeTowers=[];siegeBases=[];siegeMobs=[];siegeWave=0;siegeWaveTimer=0;siegeOver=false;siegeMessage="";
- const lanes=[250,500,750],enemyTowerY=420,playerTowerY=ARENA_H-420;
+ const lanes=[250,500,750];
  lanes.forEach((x,lane)=>{
-  siegeTowers.push({x,y:enemyTowerY,team:"enemy",lane,hp:900,maxHp:900,cool:0});
-  siegeTowers.push({x,y:playerTowerY,team:"player",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:310,team:"enemy",lane,hp:900,maxHp:900,cool:0});
+  siegeTowers.push({x,y:1180,team:"player",lane,hp:900,maxHp:900,cool:0});
  });
  siegeBases.push({x:500,y:105,team:"enemy",hp:2600,maxHp:2600});
- siegeBases.push({x:500,y:ARENA_H-105,team:"player",hp:2600,maxHp:2600});
+ siegeBases.push({x:500,y:1395,team:"player",hp:2600,maxHp:2600});
  spawnSiegeWave();
 }
 function spawnSiegeWave(){
@@ -820,7 +813,8 @@ function spawnSiegeWave(){
    siegeMobs.push({x:sx,y:sy,team,...common});
   }
  });
-}function drawSiegeStructures(){
+}
+function drawSiegeStructures(){
  siegeTowers.forEach(t=>{
   const alive=t.hp>0,teamColor=t.team==="player"?hero().color:"#d85b52";
   rect(t.x-34,t.y-20,68,40,"rgba(0,0,0,.32)");
@@ -1213,20 +1207,6 @@ function update(dt:number){
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
 }
-function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
- const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
- const direct=moveTopDown(m.x,m.y,nx*step,ny*step,r);
- if(Math.hypot(direct[0]-m.x,direct[1]-m.y)>0.1){m.x=direct[0];m.y=direct[1];return;}
- const sideA=moveTopDown(m.x,m.y,-ny*step*1.7,nx*step*1.7,r);
- const sideB=moveTopDown(m.x,m.y,ny*step*1.7,-nx*step*1.7,r);
- const da=Math.hypot(sideA[0]-m.targetX,sideA[1]-m.targetY);
- const db=Math.hypot(sideB[0]-m.targetX,sideB[1]-m.targetY);
- const q=da<=db?sideA:sideB;m.x=q[0];m.y=q[1];
-}
-function siegeClosestEnemyMob(m:SiegeMob){
- return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0)
-  .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
-}
 function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean,visibleOnly=false){
  const obs=arenaObstacles();
  return siegeMobs
@@ -1429,6 +1409,143 @@ function updateSiege(dt:number){
  const enemyBase=siegeBases.find(b=>b.team==="enemy")!,playerBase=siegeBases.find(b=>b.team==="player")!;
  if(enemyBase.hp<=0){siegeOver=true;siegeMessage="ПОБЕДА · ВРАЖЕСКАЯ БАЗА РАЗРУШЕНА";completeArenaTask();return;}
  if(playerBase.hp<=0){siegeOver=true;siegeMessage="ПОРАЖЕНИЕ · ВАША БАЗА РАЗРУШЕНА";mode="result";dialogueOpen=false;render();}
+}
+function completeArenaTask(){
+ const t=save.activeTenderId?tenderById(save.activeTenderId):null;if(!t||!arenaMission)return;
+ const payout=Math.max(50,arenaMission.reward);save.money+=payout;save.xp+=Math.floor(payout*.18);
+ say("МИССИЯ ВЫПОЛНЕНА +$"+payout,"player",player.x,player.y-55);advanceTenderMission();
+}
+function completeMission(){
+ const tender=save.activeTenderId?tenderById(save.activeTenderId):null;
+ if(tender&&tender.linkedMission===currentMission().id){save.money+=tender.reward;save.xp+=Math.floor(tender.reward*.18);save.activeTenderId=undefined;}
+ mode="result";const m=currentMission();save.money+=m.reward;save.xp+=m.xp;
+ if(!save.completed.includes(m.id))save.completed.push(m.id);
+ save.rank=rank();
+ const h=selected;
+ if(h){const next=missionIndexForHero(h);setResumeMission(next,0);}
+ dialogueIndex=0;dialogueOpen=true;storeSave();render();
+}
+function nextMission(){
+ const h=selected!;missionIndex=missionIndexForHero(h);
+ if(missionIndex<0)missionIndex=0;
+ setResumeMission(missionIndex,0);
+ mode="briefing";dialogueIndex=0;dialogueOpen=true;
+}
+function beginSelected(){
+ const h=selected;if(!h)return;
+ save.hero=h;save.rank=rank();missionIndex=missionIndexForHero(h);
+ if(storySeen(h)){
+   floor=Math.max(0,Math.min(2,save.resumeFloor?.[h]??0));
+   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();
+ }else{
+   mode="family";dialogueIndex=0;dialogueOpen=false;
+ }
+ storeSave();
+}
+function advanceDialogue(){
+ const m=currentMission();
+ if(mode==="shop"){mode="play";dialogueOpen=false;return;}
+ if(mode==="arena"){startTenderMission();return;}
+ if(mode==="family"){
+   if(selected)markStorySeen(selected);
+   floor=Math.max(0,Math.min(2,save.resumeFloor?.[selected!]??0));
+   mode="play";dialogueOpen=false;spawnFloor();saveResumeState();return;
+ }
+ if(mode==="result"){
+   dialogueOpen=false;
+   if(m.number===1){
+     mode="select";selected=null;save.hero=null;storeSave();
+   }else{
+     nextMission();
+   }
+   return;
+ }
+ if(!dialogueOpen){dialogueOpen=true;dialogueIndex=0;return;}
+ dialogueIndex++;
+ if(dialogueIndex>=m.dialogue.length){dialogueOpen=false;if(mode==="briefing"){mode="play";floor=0;spawnFloor();}else if(mode==="play"){}}
+}
+function missionForHero():Mission{const m=currentMission();return m;}
+function startMissionById(id:string){
+ const i=allMissions.findIndex(m=>m.id===id);if(i<0)return;
+ missionIndex=i;const m=allMissions[i];
+ if(m.hero!=="shared")selected=m.hero;
+ save.hero=selected;
+ save.storySeen=save.storySeen||{};
+ if(selected)save.storySeen[selected]=true;
+ floor=0;dialogueIndex=0;dialogueOpen=false;mode="play";
+ spawnFloor();saveResumeState();storeSave();render();
+}
+function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
+function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.weapon=weapons.length-1;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="arena";dialogueOpen=false;render();}
+
+function renderCanvas(){
+ if(!ctx)return;
+ resizeCanvas();
+ const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,viewWidth,viewHeight);
+ ctx.imageSmoothingEnabled=false;
+ const m=currentMission();
+ if(mode==="play"){
+   // Игровой мир уже полностью рассчитывается в реальных portrait-координатах
+   // текущего viewport. Старый масштаб 640x448 здесь больше не применяется.
+   drawWorld(m);return;
+ }
+ if(mode==="select"){drawSelect();return;}
+ if(mode==="arena"){drawArenaBriefing();return;}
+ if(mode==="family"){drawFamily();return;}
+ if(mode==="briefing"){drawBriefing();return;}
+ if(mode==="shop"){drawShop();return;}
+ if(mode==="tenders"){drawTenders();return;}
+  if(mode==="weaponMenu"){drawWeaponMenu();return;}
+ if(mode==="result"){drawResult();return;}
+}
+function panel(x:number,y:number,w:number,h:number){rect(x,y,w,h,"rgba(8,11,13,.94)");rect(x,y,w,2,hero().color);rect(x,y+h-2,w,2,"#252e33");}
+function menuTextSize(base:number,min:number,max:number){return Math.max(min,Math.min(max,viewWidth*base));}
+function drawWrapped(text:string,x:number,y:number,maxChars:number,lineHeight:number,size:number,color:string,align:CanvasTextAlign="left"){
+ const words=text.split(/\s+/);let line="";let row=0;
+ for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars){tx(line,x,y+row*lineHeight,size,color,align);line=word;row++;}else line=next;}
+ if(line)tx(line,x,y+row*lineHeight,size,color,align);
+ return row+1;
+}
+function drawSelect(){
+ const c=ctx;if(!c)return;
+ const ids:HeroId[]=["antonio","massimo","salvatore","giuseppe"];
+ const padX=viewWidth*.06,gapX=viewWidth*.04;
+ const top=viewHeight*.17,gridH=viewHeight*.55,gapY=viewHeight*.018;
+ const cardW=(viewWidth-padX*2-gapX)/2;
+ const cardH=(gridH-gapY)/2;
+ tx("ЧЕТЫРЕ СЫРА, МАЦЕРАРИЙ",viewWidth/2,viewHeight*.045,menuTextSize(.038,24,36),"#f0eee7","center");
+ tx("ВЫБЕРИТЕ ПЕРСОНАЖА",viewWidth/2,viewHeight*.105,menuTextSize(.022,15,20),"#8e999d","center");
+ ids.forEach((id,i)=>{
+   const h=heroes[id],col=i%2,row=Math.floor(i/2);
+   const x=padX+col*(cardW+gapX),y=top+row*(cardH+gapY),a=id===selected;
+   rect(x,y,cardW,cardH,a?"#151d21":"#0b1013");
+   rect(x,y,cardW,4,a?h.color:"#263137");
+
+   // Карточка имеет жёсткие независимые зоны: заголовок → имя → персонаж → описание → способность.
+   tx(h.family.toUpperCase(),x+cardW/2,y+18,menuTextSize(.014,11,16),a?"#f0eee7":"#aeb5b7","center");
+   tx(h.name,x+cardW/2,y+44,menuTextSize(.018,13,20),h.color,"center");
+
+   // Полная фигура живёт в собственной зоне: голова не режется клипом, ноги не уходят в описание.
+   const avatarTop=y+cardH*.25;
+   const avatarBottom=y+cardH*.76;
+   const avatarZoneH=avatarBottom-avatarTop;
+   const artScale=Math.max(.90,Math.min(1.08,cardW/270));
+   const spin=performance.now()/1000*.42+i*.8;
+   const spinX=.72+.28*Math.abs(Math.cos(spin));
+   c.save();
+   c.beginPath();
+   c.rect(x+8,avatarTop,cardW-16,avatarZoneH);
+   c.clip();
+   c.translate(x+cardW/2,avatarBottom);
+   c.scale(spinX,1);
+   drawMafiaMember({face:h.face,tie:h.color,suit:"#20262b"},0,0,frame+i*4,artScale);
+   c.restore();
+
+   tx(familyText[h.family].desc,x+cardW/2,y+cardH*.84,menuTextSize(.011,8,13),h.color,"center");
+   tx(h.ability,x+cardW/2,y+cardH*.92,menuTextSize(.010,8,12),"#aab1b4","center");
+ });
 }
 function drawArenaBriefing(){
  rect(0,0,viewWidth,viewHeight,"#07090b");const t=save.activeTenderId?tenderById(save.activeTenderId):null;
