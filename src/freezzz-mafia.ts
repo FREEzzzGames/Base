@@ -1557,8 +1557,3 @@ function spawnArenaWave(){
   enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
  }
 }
-function hurt(amount:number){
- const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
- if(player.hp<=0){player.hp=player.maxHp;player.armor=save.armor*5;spawnFloor();}
-}
-
