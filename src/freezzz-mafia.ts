@@ -1370,9 +1370,7 @@ function render(){
 }
 function updateCombatButtonLabels(){
  if(!root||mode!=="play")return;
- const swap=root.querySelector<HTMLElement>('[data-action="swap"]');
  const special=root.querySelector<HTMLElement>('[data-action="special"]');
- if(swap)swap.textContent=player.weaponSwap>0?"СМЕНА "+(player.weaponSwap/60).toFixed(1):"СМЕНА";
  if(special)special.textContent=player.ability>0?"СПЕЦ "+(player.ability/60).toFixed(1):"СПЕЦ";
 }
 function loop(t:number){const dt=Math.min(2,(t-last)/16.67||1);last=t;if(mode==="play"){update(dt);updateCombatButtonLabels();}renderCanvas();raf=requestAnimationFrame(loop);}
