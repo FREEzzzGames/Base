@@ -19,11 +19,11 @@ const OBS:HsObstacle[]=[
 {x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
 {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
 const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
-  // Three deterministic corridors. Every waypoint stays at least 18px
-  // from the current container edges, so the 36px mob diameter has clearance.
-  [{x:300,y:450},{x:300,y:650},{x:300,y:845},{x:300,y:1045},{x:300,y:1240},{x:300,y:1450},{x:300,y:1645},{x:300,y:1865},{x:300,y:2080},{x:300,y:2200},{x:320,y:2250}],
+  // Deterministic corridors with 18px collision radius clearance.
+  // Lanes shift only where a container row blocks the nominal x position.
+  [{x:300,y:450},{x:300,y:650},{x:270,y:845},{x:270,y:1045},{x:300,y:1240},{x:300,y:1450},{x:285,y:1645},{x:285,y:1865},{x:305,y:2080},{x:305,y:2200},{x:320,y:2250}],
   [{x:500,y:450},{x:500,y:650},{x:500,y:845},{x:500,y:1045},{x:500,y:1240},{x:500,y:1450},{x:500,y:1645},{x:500,y:1865},{x:500,y:2080},{x:500,y:2200}],
-  [{x:700,y:450},{x:700,y:650},{x:700,y:845},{x:700,y:1045},{x:700,y:1240},{x:700,y:1450},{x:700,y:1645},{x:700,y:1865},{x:700,y:2080},{x:700,y:2200},{x:680,y:2250}]
+  [{x:700,y:450},{x:700,y:650},{x:730,y:845},{x:730,y:1045},{x:700,y:1240},{x:700,y:1450},{x:715,y:1645},{x:715,y:1865},{x:695,y:2080},{x:695,y:2200},{x:680,y:2250}]
 ];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
