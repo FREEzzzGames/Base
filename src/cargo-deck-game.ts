@@ -19,15 +19,11 @@ const OBS:HsObstacle[]=[
 {x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
 {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
 const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
-  // LEFT: move just outside the left container edge, then approach
-  // the left player tower from its open right side.
-  [{x:315,y:2050},{x:315,y:2200},{x:320,y:2250}],
-  // CENTER: leave the narrow central gap before the 2110 container row,
-  // then use the open left corridor so the center tower is not a blocker.
-  [{x:500,y:2070},{x:320,y:2090},{x:320,y:2250}],
-  // RIGHT: stay just inside the right container edge and approach
-  // the right player tower from its open left side.
-  [{x:685,y:2050},{x:685,y:2200},{x:680,y:2250}]
+  // Three deterministic corridors. Every waypoint stays at least 18px
+  // from the current container edges, so the 36px mob diameter has clearance.
+  [{x:300,y:450},{x:300,y:650},{x:300,y:845},{x:300,y:1045},{x:300,y:1240},{x:300,y:1450},{x:300,y:1645},{x:300,y:1865},{x:300,y:2080},{x:300,y:2200},{x:320,y:2250}],
+  [{x:500,y:450},{x:500,y:650},{x:500,y:845},{x:500,y:1045},{x:500,y:1240},{x:500,y:1450},{x:500,y:1645},{x:500,y:1865},{x:500,y:2080},{x:500,y:2200}],
+  [{x:700,y:450},{x:700,y:650},{x:700,y:845},{x:700,y:1045},{x:700,y:1240},{x:700,y:1450},{x:700,y:1645},{x:700,y:1865},{x:700,y:2080},{x:700,y:2200},{x:680,y:2250}]
 ];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
