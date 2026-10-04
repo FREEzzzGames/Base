@@ -511,7 +511,6 @@ function drawWorld(){
   // coordinates so the player stays in the lower-middle combat area.
   const worldZoom=Math.min(1,viewW/W);
   const worldViewH=viewH/worldZoom;
-  const camX=(W-worldViewH*0-W)/2;
   cam=Math.max(0,Math.min(H-worldViewH,player.y-worldViewH*.58));
   rect(0,0,viewW,viewH,"#05090b");
   ctx!.save();
