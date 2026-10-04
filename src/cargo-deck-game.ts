@@ -14,6 +14,36 @@ const cargoContainerUrl=`${import.meta.env.BASE_URL}cargo-container-hazard.svg`;
 cargoContainerImage.src=cargoContainerUrl;
 let cargoFloorPattern:CanvasPattern|null=null;
 let cargoContainerPattern:CanvasPattern|null=null;
+let staticDeckCanvas:HTMLCanvasElement|null=null;
+let staticDeckCtx:CanvasRenderingContext2D|null=null;
+let staticDeckReady=false;
+function buildStaticDeck():void{
+  if(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth||!cargoContainerImage.complete||!cargoContainerImage.naturalWidth)return;
+  if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCanvas.width=W;staticDeckCanvas.height=H;staticDeckCtx=staticDeckCanvas.getContext("2d");}
+  const g=staticDeckCtx;if(!g)return;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
+  const floor=g.createPattern(cargoFloorImage,"repeat");
+  if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
+  for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
+  for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
+  g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
+  g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
+  const cp=g.createPattern(cargoContainerImage,"repeat");
+  for(let oi=0;oi<OBS.length;oi++){
+    const o=OBS[oi],x=o.x,y=o.y,w=o.w,h=o.h,cx=x+w*.5,top=y-10,bottom=y+h+Math.min(82,Math.max(42,h*.75)),spread=Math.max(34,w*.42);
+    g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-spread*.42,top);g.lineTo(cx+spread*.42,top);g.lineTo(cx+spread,bottom);g.lineTo(cx-spread,bottom);g.closePath();
+    const cone=g.createLinearGradient(cx,top,cx,bottom);cone.addColorStop(0,"rgba(255,205,108,.34)");cone.addColorStop(.18,"rgba(255,194,91,.25)");cone.addColorStop(.58,"rgba(255,170,64,.10)");cone.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=cone;g.fill();
+    const pool=g.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);pool.addColorStop(0,"rgba(255,220,145,.28)");pool.addColorStop(.35,"rgba(255,186,82,.13)");pool.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=pool;g.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);g.restore();
+    g.save();g.globalAlpha=.78;g.fillStyle="#000";g.beginPath();g.moveTo(x+4,y+h+4);g.lineTo(x+w-4,y+h+4);g.lineTo(x+w+18,y+h+22);g.lineTo(x-18,y+h+22);g.closePath();g.fill();g.globalAlpha=.9;g.fillRect(x+6,y+h-1,w-12,7);g.restore();
+    g.fillStyle=cp||"#17191a";g.fillRect(x,y,w,h);
+    const shade=g.createLinearGradient(x,y,x,y+h);shade.addColorStop(0,"rgba(255,215,130,.16)");shade.addColorStop(.28,"rgba(255,185,80,.04)");shade.addColorStop(.62,"rgba(0,0,0,.10)");shade.addColorStop(1,"rgba(0,0,0,.48)");g.fillStyle=shade;g.fillRect(x,y,w,h);
+    g.strokeStyle="rgba(255,211,118,.28)";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);g.strokeStyle="rgba(84,214,216,.24)";g.strokeRect(x+2.5,y+2.5,w-5,h-5);g.strokeStyle="rgba(0,0,0,.78)";g.beginPath();g.moveTo(x+w*.5,y+3);g.lineTo(x+w*.5,y+h-3);g.stroke();
+    const sections=Math.max(2,Math.floor(w/58));g.strokeStyle="rgba(8,10,11,.62)";for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;g.beginPath();g.moveTo(sx,y+5);g.lineTo(sx,y+h-5);g.stroke()}
+  }
+  staticDeckReady=true;
+}
+cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
+cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
 const PLAYER_SPAWN={x:500,y:2420} as const;
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
@@ -509,88 +539,6 @@ function drawPlayer(){
  bar(px-32,py-66,64,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
-function drawCargoLight(o:HsObstacle,idx:number){
-  const x=o.x,y=o.y,w=o.w,h=o.h;
-  const cx=x+w*.5;
-  const top=y-10;
-  const spread=Math.max(34,w*.42);
-  const bottom=y+h+Math.min(82,Math.max(42,h*.75));
-
-  ctx!.save();
-  ctx!.globalCompositeOperation="screen";
-  ctx!.beginPath();
-  ctx!.moveTo(cx-spread*.42,top);
-  ctx!.lineTo(cx+spread*.42,top);
-  ctx!.lineTo(cx+spread,bottom);
-  ctx!.lineTo(cx-spread,bottom);
-  ctx!.closePath();
-  const g=ctx!.createLinearGradient(cx,top,cx,bottom);
-  g.addColorStop(0,"rgba(255,205,108,.34)");
-  g.addColorStop(.18,"rgba(255,194,91,.25)");
-  g.addColorStop(.58,"rgba(255,170,64,.10)");
-  g.addColorStop(1,"rgba(255,150,45,0)");
-  ctx!.fillStyle=g;ctx!.fill();
-
-  // Concentrated warm pool directly under the invisible lamp.
-  const rg=ctx!.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);
-  rg.addColorStop(0,"rgba(255,220,145,.28)");
-  rg.addColorStop(.35,"rgba(255,186,82,.13)");
-  rg.addColorStop(1,"rgba(255,150,45,0)");
-  ctx!.fillStyle=rg;
-  ctx!.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);
-  ctx!.restore();
-}
-
-function drawCargoContainer(o:HsObstacle,idx:number){
-  const x=o.x,y=o.y,w=o.w,h=o.h;
-  ctx!.save();
-
-  // Deep contact shadow and the broad shadow cast away from the overhead light.
-  ctx!.globalAlpha=.72;
-  ctx!.fillStyle="#000";
-  ctx!.filter="blur(5px)";
-  ctx!.beginPath();
-  ctx!.moveTo(x+4,y+h+4);ctx!.lineTo(x+w-4,y+h+4);
-  ctx!.lineTo(x+w+18,y+h+22);ctx!.lineTo(x-18,y+h+22);ctx!.closePath();ctx!.fill();
-  ctx!.filter="none";
-  ctx!.globalAlpha=.9;
-  ctx!.fillStyle="rgba(0,0,0,.9)";
-  ctx!.fillRect(x+6,y+h-1,w-12,7);
-  ctx!.globalAlpha=1;
-
-  if(!cargoContainerPattern&&cargoContainerImage.complete&&cargoContainerImage.naturalWidth){
-    cargoContainerPattern=ctx!.createPattern(cargoContainerImage,"repeat");
-  }
-  if(cargoContainerPattern){
-    ctx!.fillStyle=cargoContainerPattern;ctx!.fillRect(x,y,w,h);
-  }else{
-    ctx!.fillStyle="#17191a";ctx!.fillRect(x,y,w,h);
-  }
-
-  // Reference-style top/side shading: warm on the upper face, dark on the lower edge.
-  const shade=ctx!.createLinearGradient(x,y,x,y+h);
-  shade.addColorStop(0,"rgba(255,215,130,.16)");
-  shade.addColorStop(.28,"rgba(255,185,80,.04)");
-  shade.addColorStop(.62,"rgba(0,0,0,.10)");
-  shade.addColorStop(1,"rgba(0,0,0,.48)");
-  ctx!.fillStyle=shade;ctx!.fillRect(x,y,w,h);
-
-  ctx!.strokeStyle="rgba(255,211,118,.28)";ctx!.lineWidth=1;
-  ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
-  ctx!.strokeStyle="rgba(84,214,216,.24)";
-  ctx!.strokeRect(x+2.5,y+2.5,w-5,h-5);
-  ctx!.strokeStyle="rgba(0,0,0,.78)";
-  ctx!.beginPath();ctx!.moveTo(x+w*.5,y+3);ctx!.lineTo(x+w*.5,y+h-3);ctx!.stroke();
-
-  const sections=Math.max(2,Math.floor(w/58));
-  ctx!.strokeStyle="rgba(8,10,11,.62)";
-  for(let i=1;i<sections;i++){
-    const sx=x+(w/sections)*i;
-    ctx!.beginPath();ctx!.moveTo(sx,y+5);ctx!.lineTo(sx,y+h-5);ctx!.stroke();
-  }
-  ctx!.restore();
-}
-
 function drawWorld(){
   const worldZoom=Math.min(1,viewW/W);
   const worldViewH=viewH/worldZoom;
@@ -599,51 +547,9 @@ function drawWorld(){
   ctx!.save();
   ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
   ctx!.scale(worldZoom,worldZoom);
-
-  // Full-platform industrial floor texture, based on the supplied diamond-plate reference.
-  if(!cargoFloorPattern&&cargoFloorImage.complete&&cargoFloorImage.naturalWidth){
-    cargoFloorPattern=ctx!.createPattern(cargoFloorImage,"repeat");
-  }
-  if(cargoFloorPattern){
-    ctx!.save();
-    ctx!.globalAlpha=.72;
-    ctx!.fillStyle=cargoFloorPattern;
-    ctx!.fillRect(0,0,W,H);
-    ctx!.restore();
-  }else{
-    rect(0,0,W,H,"#070d11");
-  }
-  for(let y=0;y<H;y+=240){
-    ctx!.fillStyle="rgba(24,43,49,.22)";ctx!.fillRect(38,y,W-76,1);
-    ctx!.fillStyle="rgba(0,0,0,.18)";ctx!.fillRect(38,y+1,W-76,54);
-  }
-  for(let x=80;x<W;x+=160){
-    ctx!.fillStyle="rgba(45,75,82,.08)";ctx!.fillRect(x,0,1,H);
-  }
-
-  // Deck edge rails.
-  ctx!.fillStyle="#101b20";ctx!.fillRect(0,0,38,H);ctx!.fillRect(962,0,38,H);
-  ctx!.fillStyle="rgba(84,214,216,.22)";ctx!.fillRect(38,0,2,H);ctx!.fillRect(960,0,2,H);
-
-  // Sparse floor markers keep depth without becoming a grid.
-  for(let i=0;i<34;i++){
-    const x=(i*173)%W,y=(i*317)%H;
-    ctx!.fillStyle=i%5===0?"rgba(84,214,216,.18)":"rgba(130,155,162,.10)";
-    ctx!.fillRect(x,y,1,1);
-  }
-
-  // Reference lighting pass: the deck stays 60% darker, while invisible overhead lamps create warm triangular pools.
-  ctx!.save();
-  ctx!.fillStyle="rgba(0,0,0,.60)";
-  ctx!.fillRect(0,0,W,H);
-  ctx!.restore();
-
-  // Ambient overhead light cones are behind the containers, so the containers occlude them naturally.
-  for(let oi=0;oi<OBS.length;oi++)drawCargoLight(OBS[oi],oi);
-
-  // Cargo cover.
-  for(let oi=0;oi<OBS.length;oi++)drawCargoContainer(OBS[oi],oi);
-
+  if(!staticDeckReady)buildStaticDeck();
+  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
+  else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();
   ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
