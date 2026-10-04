@@ -1194,13 +1194,13 @@ function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
  const q=da<=db?sideA:sideB;m.x=q[0];m.y=q[1];
 }
 function siegeClosestEnemyMob(m:SiegeMob){
- return siegeMobs.filter(o=>o.team!==m.team&&o.lane===m.lane&&o.hp>0)
+ return siegeMobs.filter(o=>o.team!==m.team&&o.hp>0)
   .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
 }
 function updateSiege(dt:number){
  if(siegeOver)return;
  siegeWaveTimer+=dt;
- if(siegeWaveTimer>900)spawnSiegeWave();
+ if(siegeWaveTimer>900&&siegeMobs.length===0)spawnSiegeWave();
  for(let i=siegeMobs.length-1;i>=0;i--){
   const m=siegeMobs[i];if(m.hp<=0){siegeMobs.splice(i,1);continue;}
   m.cool-=dt;m.think-=dt;
