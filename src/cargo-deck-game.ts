@@ -514,19 +514,14 @@ function drawCargoContainer(o:HsObstacle,idx:number){
   ctx!.save();
   ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.fillRect(x+5,y+h+5,w-10,6);ctx!.globalAlpha=1;
 
-  if(!cargoContainerPattern&&cargoContainerImage.complete&&cargoContainerImage.naturalWidth){
-    cargoContainerPattern=ctx!.createPattern(cargoContainerImage,"repeat");
-  }
   if(cargoContainerPattern){
     ctx!.fillStyle=cargoContainerPattern;ctx!.fillRect(x,y,w,h);
   }else{
-    const g=ctx!.createLinearGradient(x,y,x,y+h);
-    g.addColorStop(0,"#31383b");g.addColorStop(.5,"#171b1e");g.addColorStop(1,"#090c0e");
-    ctx!.fillStyle=g;ctx!.fillRect(x,y,w,h);
+    ctx!.fillStyle="#17191a";ctx!.fillRect(x,y,w,h);
   }
 
-  // Dark cargo face and restrained cyan edge keep the hazard texture readable.
-  ctx!.fillStyle="rgba(5,8,10,.48)";ctx!.fillRect(x,y,w,h);
+  // Keep the reference hazard texture clearly visible; depth comes from the edge and seams.
+  ctx!.fillStyle="rgba(5,8,10,.14)";ctx!.fillRect(x,y,w,h);
   ctx!.strokeStyle="rgba(84,214,216,.34)";ctx!.lineWidth=1;
   ctx!.strokeRect(x+.5,y+.5,w-1,h-1);
   ctx!.strokeStyle="rgba(0,0,0,.72)";
