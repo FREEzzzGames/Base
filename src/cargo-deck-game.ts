@@ -10,7 +10,7 @@ const cargoFloorImage=new Image();
 const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
 cargoFloorImage.src=cargoFloorUrl;
 const cargoContainerImage=new Image();
-const cargoContainerUrl=new URL("../cargo-container-hazard.svg",import.meta.url).href;
+const cargoContainerUrl=`${import.meta.env.BASE_URL}cargo-container-hazard.svg`;
 cargoContainerImage.src=cargoContainerUrl;
 let cargoFloorPattern:CanvasPattern|null=null;
 let cargoContainerPattern:CanvasPattern|null=null;
@@ -514,6 +514,9 @@ function drawCargoContainer(o:HsObstacle,idx:number){
   ctx!.save();
   ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.fillRect(x+5,y+h+5,w-10,6);ctx!.globalAlpha=1;
 
+  if(!cargoContainerPattern&&cargoContainerImage.complete&&cargoContainerImage.naturalWidth){
+    cargoContainerPattern=ctx!.createPattern(cargoContainerImage,"repeat");
+  }
   if(cargoContainerPattern){
     ctx!.fillStyle=cargoContainerPattern;ctx!.fillRect(x,y,w,h);
   }else{
