@@ -1210,6 +1210,35 @@ function exitToPortal(){
  window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}));
 }
 function bindButtons(){
+ if(canvas&&mode==="weaponMenu"){
+   const hit=(e:PointerEvent)=>{
+     e.preventDefault();
+     const r=canvas!.getBoundingClientRect();
+     const x=e.clientX-r.left,y=e.clientY-r.top;
+     const W=viewWidth,H=viewHeight,margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);
+     const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;
+     if(y>=bottomY){
+       if(x>=W*.08&&x<=W*.42){mode="play";render();return;}
+       if(x>=W*.53&&x<=W*.92){mode="play";render();return;}
+     }
+     const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);
+     const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;
+     const gap=H*.010,cardH=Math.min(78,H*.090),left=margin,cardW=W-margin*2;
+     if(x>=left&&x<=left+cardW&&y>=listTop&&y<listBottom){
+       const n=Math.floor((y-listTop)/(cardH+gap));
+       const inside=(y-listTop)-n*(cardH+gap);
+       if(n>=0&&n<weapons.length&&inside<=cardH){
+         if(save.weapon>=n){
+           save.weapon=n;storeSave();
+           player.combat=createCombatState(HS_WEAPONS[n]);
+           player.ammo=HS_WEAPONS[n].magazine;
+           mode="play";render();
+         }
+       }
+     }
+   };
+   canvas.addEventListener("pointerup",hit);
+ }
  root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;render();});
  root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{
    const a=el.dataset.action;
