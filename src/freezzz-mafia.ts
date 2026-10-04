@@ -756,7 +756,7 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
  const skin=skins[kind]||skins[0];
  const lengths=[32,38,42,49,55,61];
  const length=lengths[kind]||36;
- const h=Math.max(5,Math.round((kind===4?9:kind===3?8:6)*sc));
+ const h=Math.max(5,Math.round((kind===4?9:kind>=5?7:kind===3?8:6)*sc));
  ctx.save();
  ctx.translate(handX,handY);
  ctx.rotate(angle);
@@ -812,16 +812,31 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
    poly([4,h/2-1,13,h/2-1,11,h/2+13,3,h/2+10],skin.grip);
    for(let k=0;k<4;k++)line(13+k*4,-h/2+2,13+k*4,h/2-2,"rgba(210,170,115,.28)",1);
    rect(4,0,11,2,skin.accent);
- }else{
-   // Classic carbine: stock, receiver, long barrel and front sight.
+ }else if(kind===5){
+   // Classic carbine.
    poly([0,-h/2,15,-h/2,20,0,15,h/2,0,h/2-1],skin.metal);
-   rect(17,-h/2+1,length-20,h-2,skin.body);
-   rect(length-6,-2,8,4,skin.metal);
-   poly([7,h/2-1,18,h/2-1,15,h/2+13,4,h/2+9],skin.grip);
-   rect(23,h/2-1,10,3,skin.grip);
-   rect(length-1,-h/2-5,3,7,skin.metal);
-   line(19,0,length-5,0,"#c1c5c3",1);
-   rect(6,-h/2+1,11,2,skin.accent);
+   rect(17,-h/2+1,length-20,h-2,skin.body);rect(length-6,-2,8,4,skin.metal);
+   poly([7,h/2-1,18,h/2-1,15,h/2+13,4,h/2+9],skin.grip);rect(23,h/2-1,10,3,skin.grip);
+   rect(length-1,-h/2-5,3,7,skin.metal);line(19,0,length-5,0,"#c1c5c3",1);rect(6,-h/2+1,11,2,skin.accent);
+ }else if(kind===6){
+   // Assault rifle: extended receiver, magazine, handguard and muzzle device.
+   poly([0,-h/2,18,-h/2,22,h/2,0,h/2-1],skin.metal);
+   rect(20,-h/2+1,length-30,h-2,skin.body);rect(28,-h/2-2,length-34,2,skin.metal);
+   poly([27,h/2-1,36,h/2-1,33,h/2+12,25,h/2+10],skin.grip);
+   poly([38,h/2-1,48,h/2-1,45,h/2+10,36,h/2+8],skin.grip);
+   rect(length-8,-2,10,4,skin.metal);rect(length-3,-h/2-4,4,8,skin.metal);rect(23,-h/2+1,12,2,skin.accent);
+ }else if(kind===7){
+   // Compact carbine: short receiver, folding-style stock silhouette and compact magazine.
+   poly([0,-h/2,13,-h/2,18,0,13,h/2,0,h/2-1],skin.metal);
+   rect(17,-h/2+1,length-25,h-2,skin.body);rect(length-8,-2,9,4,skin.metal);
+   poly([18,h/2-1,27,h/2-1,24,h/2+11,16,h/2+9],skin.grip);
+   poly([3,-h/2,12,-h/2,7,-h/2-7,-2,-h/2-5],skin.body);rect(20,-h/2+1,12,2,skin.accent);
+ }else{
+   // Marksman carbine: long precision-oriented silhouette with stock, receiver and barrel.
+   poly([0,-h/2,19,-h/2,23,0,18,h/2,0,h/2-1],skin.grip);
+   rect(21,-h/2+1,length-32,h-2,skin.body);rect(30,-h/2-2,length-35,2,skin.metal);
+   poly([13,h/2-1,25,h/2-1,21,h/2+12,11,h/2+10],skin.grip);
+   rect(length-10,-2,12,4,skin.metal);rect(31,-h/2+2,18,2,skin.accent);rect(length-2,-h/2-5,3,8,skin.metal);
  }
 
  // Small highlights separate metal from paint and keep each weapon readable at phone scale.
@@ -1026,7 +1041,7 @@ function startMissionById(id:string){
  spawnFloor();saveResumeState();storeSave();render();
 }
 function returnToMainMenu(){touch={left:false,right:false,jump:false,ability:false};movePointerId=null;moveX=0;moveY=0;aimActive=false;aimPointerId=null;mode="select";dialogueOpen=false;render();}
-function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="levels";dialogueOpen=false;render();}
+function activateCheatAll(){save.completed=allMissions.map(m=>m.id);save.money=999999;save.weapon=weapons.length-1;save.xp=999999;save.rank=rankNames.length-1;save.storySeen={antonio:true,massimo:true,salvatore:true,giuseppe:true};storeSave();mode="levels";dialogueOpen=false;render();}
 
 function renderCanvas(){
  if(!ctx)return;
