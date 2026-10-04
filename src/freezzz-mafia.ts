@@ -1446,17 +1446,27 @@ function resolveSiegeMobCollisions(){
 }
 function siegeNearest(m:SiegeMob,predicate:(o:SiegeMob)=>boolean,visibleOnly=false){
  const obs=arenaObstacles();
- return siegeMobs
-  .filter(o=>o.team!==m.team&&o.hp>0&&predicate(o))
-  .filter(o=>!visibleOnly||lineOfSight(m.x,m.y,o.x,o.y,obs))
-  .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+ let best:SiegeMob|undefined,bestD=Infinity;
+ for(const o of siegeMobs){
+  if(o.team===m.team||o.hp<=0||!predicate(o))continue;
+  const dx=o.x-m.x,dy=o.y-m.y,d2=dx*dx+dy*dy;
+  if(d2>=bestD)continue;
+  if(visibleOnly&&!lineOfSight(m.x,m.y,o.x,o.y,obs))continue;
+  best=o;bestD=d2;
+ }
+ return best;
 }
 function siegeAttackable(m:SiegeMob){
  const obs=arenaObstacles();
- return siegeMobs
-  .filter(o=>o.team!==m.team&&o.hp>0)
-  .filter(o=>Math.hypot(o.x-m.x,o.y-m.y)<=m.attackRange&&lineOfSight(m.x,m.y,o.x,o.y,obs))
-  .sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+ let best:SiegeMob|undefined,bestD=Infinity,maxD2=m.attackRange*m.attackRange;
+ for(const o of siegeMobs){
+  if(o.team===m.team||o.hp<=0)continue;
+  const dx=o.x-m.x,dy=o.y-m.y,d2=dx*dx+dy*dy;
+  if(d2>maxD2||d2>=bestD)continue;
+  if(!lineOfSight(m.x,m.y,o.x,o.y,obs))continue;
+  best=o;bestD=d2;
+ }
+ return best;
 }
 function siegeGridBlocked(gx:number,gy:number,cell:number){
  const x=gx*cell+cell*.5,y=gy*cell+cell*.5;
@@ -1498,16 +1508,12 @@ function siegeBuildPath(m:SiegeMob,targetX:number,targetY:number){
  return true;
 }
 function siegeMoveTo(m:SiegeMob,x:number,y:number,dt:number,r=18){
- if(m.pathTimer<=0||m.pathIndex>=m.path.length||Math.hypot(x-m.targetX,y-m.targetY)>75){
-  m.targetX=x;m.targetY=y;siegeBuildPath(m,x,y);
- }
- const p=m.path[m.pathIndex];
- if(p){
-  if(Math.hypot(p[0]-m.x,p[1]-m.y)<28)m.pathIndex++;
-  const q=m.path[m.pathIndex]||[x,y];
-  siegeStep(m,q[0]-m.x,q[1]-m.y,dt,r);
- }else siegeStep(m,x-m.x,y-m.y,dt,r);
- m.pathTimer-=dt;
+ // CARGO DECK uses direct steering plus collision sliding. The previous per-mob
+ // A* search rebuilt a ~20x52 grid repeatedly and caused frame-time spikes
+ // once the first siege wave became active on mobile devices.
+ m.targetX=x;m.targetY=y;
+ siegeStep(m,x-m.x,y-m.y,dt,r);
+ m.pathTimer=18;
 }
 function siegeStep(m:SiegeMob,dx:number,dy:number,dt:number,r:number){
  const len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,step=m.speed*dt;
@@ -1534,8 +1540,13 @@ function updateSiege(dt:number){
   m.cool-=dt;m.think-=dt;m.burstCool-=dt;m.assist-=dt;m.pathTimer-=dt;m.spawnGrace=Math.max(0,m.spawnGrace-dt);
   m.hitFlash=Math.max(0,m.hitFlash-dt*.09);m.attackFx=Math.max(0,m.attackFx-dt*.09);m.anim+=dt*m.animSpeed;
   const hpRatio=m.hp/m.maxHp;
-  const nearbyAllies=liveMobs.filter(a=>a!==m&&a.team===m.team&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
-  const nearbyEnemies=liveMobs.filter(a=>a.team!==m.team&&Math.hypot(a.x-m.x,a.y-m.y)<180).length;
+  let nearbyAllies=0,nearbyEnemies=0;
+  for(const a of liveMobs){
+   if(a===m)continue;
+   const dx=a.x-m.x,dy=a.y-m.y;
+   if(dx*dx+dy*dy>=32400)continue;
+   if(a.team===m.team)nearbyAllies++;else nearbyEnemies++;
+  }
   m.morale=clamp(65+nearbyAllies*12-nearbyEnemies*10,15,130);
   m.retreating=(hpRatio<.28&&m.type!=="brawler")||(hpRatio<.18&&nearbyEnemies>2);
 
