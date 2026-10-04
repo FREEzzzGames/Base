@@ -18,7 +18,7 @@ const OBS:HsObstacle[]=[
 {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
-let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],wave=0,kills=0,time=0,waveWait=0,msg="",msgT=0,won=false,resultReason="";
+let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
@@ -30,11 +30,68 @@ function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!o.some(a=>hitCircle(nx,y,r,a)))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(Math.max(r,Math.min(W-r,x+sx*m)),y,r,a)))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!o.some(a=>hitCircle(x,ny,r,a)))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(x,Math.max(180,Math.min(H-r,y+sy*m)),r,a)))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=a+Math.random()*(b-a);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,a+60]as const}
 function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:500,y:2250,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
-function init(){mobs=[];bullets=[];grenades=[];pickups=[];nodes=[];core={x:500,y:250,hp:2600,maxHp:2600};wave=kills=0;time=waveWait=0;msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:350,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:2280,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
+function init(){mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:500,y:250,hp:2600,maxHp:2600};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:350,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:2280,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
-function spawnWave(){wave++;waveWait=0;const count=Math.min(18,5+wave*2),b=Math.max(1,Math.round(count*.45)),s=Math.max(1,Math.round(count*.35));for(let i=0;i<count;i++){const type:MobType=i<b?"brawler":i<b+s?"shooter":"sniper",[x,y]=freePoint(600,900,18),scale=Math.min(2.4,1+(wave-1)*.11);mobs.push({x,y,team:"enemy",type,hp:(type==="brawler"?125:type==="shooter"?98:88)*scale,maxHp:(type==="brawler"?125:type==="shooter"?98:88)*scale,speed:(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.22,(wave-1)*.012)),damage:type==="brawler"?24:type==="shooter"?15:28,range:type==="brawler"?42:type==="shooter"?210:430,cool:30+Math.random()*30,think:0,strafe:i%2?-1:1,stuck:0,lastX:x,lastY:y,state:"run",hit:0})}msg="WAVE "+String(wave).padStart(2,"0")+" · НАПАДЕНИЕ";msgT=120}
-function hurt(a:number){const block=Math.min(player.armor,a*.5);player.armor-=block;player.hp=Math.max(0,player.hp-(a-block));player.hit=1;player.damagePulse=1;if(player.hp<=0)finish(false,"CARGO CORE LOST · ОПЕРАТОР ПОГИБ")}
-function damage(m:Mob,a:number){if(m.hp<=0)return;m.hp=Math.max(0,m.hp-a);m.hit=1;m.state="hit";if(m.hp===0&&m.team==="enemy")kills++}
+function spawnWave(){
+  wave++;
+  waveWait=0;
+  waveState="fighting";
+  waveStart=frame;
+
+  // Небольшая, но постоянно растущая волна: игрок реально видит врагов,
+  // а мобильное устройство не получает пачку из 18 AI за один тик.
+  const total=Math.min(12,5+Math.floor(wave*.7));
+  const b=Math.max(2,Math.round(total*.42));
+  const s=Math.max(1,Math.round(total*.34));
+  const lanes=[250,500,750];
+
+  for(let i=0;i<total;i++){
+    const type:MobType=i<b?"brawler":i<b+s?"shooter":"sniper";
+    const lane=i%3;
+    const baseHp=type==="brawler"?125:type==="shooter"?98:88;
+    const scale=Math.min(2.35,1+(wave-1)*.10);
+    const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
+    const spawnX=lanes[lane]+(Math.random()-.5)*70;
+    const spawnY=1420+Math.random()*260;
+
+    const p=move(spawnX,spawnY,0,0,18);
+    mobs.push({
+      x:p[0],y:p[1],team:"enemy",type,
+      hp:baseHp*scale,maxHp:baseHp*scale,
+      speed,damage:type==="brawler"?24:type==="shooter"?15:28,
+      range:type==="brawler"?42:type==="shooter"?210:430,
+      cool:30+Math.random()*30,think:0,strafe:i%2?-1:1,
+      stuck:0,lastX:p[0],lastY:p[1],state:"inbound",hit:0
+    });
+  }
+
+  msg="WAVE "+String(wave).padStart(2,"0")+" · "+total+" HOSTILES";
+  msgT=110;
+  effects.push({x:500,y:1390,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
+}function hurt(a:number){
+  const block=Math.min(player.armor,a*.5);
+  player.armor-=block;
+  player.hp=Math.max(0,player.hp-(a-block));
+  player.hit=1;
+  player.damagePulse=1;
+  floatText(player.x,player.y-88,"-"+Math.max(1,Math.round(a-block)),"#ff557d");
+  if(player.hp<=0)finish(false,"ОПЕРАТОР ПОГИБ · CARGO CORE НЕ ПОВРЕЖДЁН");
+}
+function floatText(x:number,y:number,text:string,color:string){
+  effects.push({x,y,text,color,life:42,vy:-.45});
+}
+function damage(m:Mob,a:number){
+  if(m.hp<=0)return;
+  m.hp=Math.max(0,m.hp-a);
+  m.hit=1;
+  m.state="hit";
+  floatText(m.x,m.y-70,"-"+Math.max(1,Math.round(a)),m.type==="brawler"?"#ff557d":"#f0eee7");
+  if(m.hp===0&&m.team==="enemy"){
+    kills++;
+    floatText(m.x,m.y-95,"DOWN","#54d6d8");
+    if(Math.random()<.22)pickups.push({x:m.x,y:m.y,kind:Math.random()<.65?"medkit":"weapon",weapon:Math.floor(Math.random()*HS_WEAPONS.length),life:99999});
+  }
+}
 function enemyTarget(x:number,y:number,r:number){
   let best:Mob|undefined,bd=r*r,o=obstacles();
   for(const m of mobs){
@@ -132,12 +189,156 @@ function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.c
 function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
 function special(){if(abilityCd>0)return;abilityCd=L().cd;ability=L().dur;if(sel==="ASSAULT")mobs.forEach(m=>{if(m.team==="enemy")m.cool=Math.max(m.cool,80)});if(sel==="VANGUARD")player.armor=Math.max(player.armor,90);if(sel==="RECON")auto=true;msg=L().ability;msgT=70}
-function update(dt:number){frame++;time+=dt/60;msgT=Math.max(0,msgT-dt);muzzleFlash=Math.max(0,muzzleFlash-dt*.12);player.hit=Math.max(0,player.hit-dt*.1);player.damagePulse=Math.max(0,player.damagePulse-dt*.07);ability=Math.max(0,ability-dt);abilityCd=Math.max(0,abilityCd-dt);const w=weapon(),l=L();stepWeapon(player.combat,w,dt);if(moveX||moveY){const n=Math.hypot(moveX,moveY)||1,q=move(player.x,player.y,moveX/n*l.speed*(ability&&sel==="ASSAULT"?1.25:1)*dt/1,moveY/n*l.speed*(ability&&sel==="ASSAULT"?1.25:1)*dt/1,18);player.x=q[0];player.y=q[1]}if(auto)fire(false);else if(fireHeld)fire(true);for(const m of mobs)updateMob(m,dt);updateBullets(dt);updateGrenades(dt);updatePickups(dt);updateNodes(dt);mobs=mobs.filter(m=>m.hp>0);resolve();if(!mobs.length){waveWait+=dt;if(waveWait>120)spawnWave()}if(core.hp<=0)finish(false,"CARGO CORE DESTROYED");if(wave>=12&&kills>=40)finish(true,"CARGO DECK SECURED");save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist()}
-function updateBullets(dt:number){const o=obstacles();for(const b of bullets){const r=traceShot(b,dt,o);if(r.blocked){b.life=0;continue}if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20){b.life=0;hurt(Math.max(3,b.damage*.38));continue}if(b.from==="player")for(let i=0;i<mobs.length;i++){const m=mobs[i];if(m.team!=="enemy"||m.hp<=0||b.hitIds.has(i))continue;if(Math.hypot(b.x-m.x,b.y-m.y)<25){b.hitIds.add(i);damage(m,b.damage);b.damage*=.62;b.penetration-=.12;if(b.penetration<=0)b.life=0;break}}}bullets=bullets.filter(b=>b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80)}
-function updateGrenades(dt:number){for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0)for(const m of mobs)if(m.hp>0){const d=Math.hypot(m.x-g.x,m.y-g.y);if(d<g.radius)damage(m,g.damage*(1-d/g.radius))}}grenades=grenades.filter(g=>g.life>0)}
+function update(dt:number){
+  frame++;
+  time+=dt/60;
+  msgT=Math.max(0,msgT-dt);
+  muzzleFlash=Math.max(0,muzzleFlash-dt*.12);
+  player.hit=Math.max(0,player.hit-dt*.1);
+  player.damagePulse=Math.max(0,player.damagePulse-dt*.07);
+  ability=Math.max(0,ability-dt);
+  abilityCd=Math.max(0,abilityCd-dt);
+
+  for(const e of effects){
+    e.y+=e.vy*dt;
+    e.life-=dt;
+  }
+  effects=effects.filter(e=>e.life>0);
+
+  const w=weapon(),l=L();
+  stepWeapon(player.combat,w,dt);
+
+  if(moveX||moveY){
+    const n=Math.hypot(moveX,moveY)||1;
+    const speed=l.speed*(ability&&sel==="ASSAULT"?1.25:1);
+    const q=move(player.x,player.y,moveX/n*speed*dt,moveY/n*speed*dt,18);
+    player.x=q[0];player.y=q[1];
+  }
+
+  if(auto)fire(false);
+  else if(fireHeld)fire(true);
+
+  for(const m of mobs)updateMob(m,dt);
+  updateBullets(dt);
+  updateGrenades(dt);
+  updatePickups(dt);
+  updateNodes(dt);
+
+  mobs=mobs.filter(m=>m.hp>0);
+  resolve();
+
+  // Волна заканчивается только после уничтожения всех противников.
+  // После короткого окна отдыха появляется следующая волна.
+  if(waveState==="fighting"&&mobs.length===0){
+    waveState="clear";
+    waveWait=0;
+    msg="ЗОНА ЧИСТА · ПЕРЕГРУППИРОВКА";
+    msgT=100;
+  }
+
+  if(waveState==="clear"){
+    waveWait+=dt;
+
+    if(wave>=12){
+      finish(true,"CARGO DECK SECURED · ALL WAVES CLEARED");
+      return;
+    }
+
+    if(waveWait>150)spawnWave();
+  }
+
+  if(core.hp<=0){
+    finish(false,"CARGO CORE DESTROYED");
+    return;
+  }
+
+  save.bestWave=Math.max(save.bestWave,wave);
+  save.bestKills=Math.max(save.bestKills,kills);
+  save.bestTime=Math.max(save.bestTime,time);
+  persist();
+}function updateBullets(dt:number){
+  const o=obstacles();
+
+  for(const b of bullets){
+    const r=traceShot(b,dt,o);
+
+    // Попадание игрока по вражеской башне: башня остаётся физическим
+    // препятствием, но получает урон в момент контакта с пулей.
+    if(b.from==="player"){
+      for(const n of nodes){
+        if(n.team!=="enemy"||n.hp<=0)continue;
+        if(Math.hypot(b.x-n.x,b.y-n.y)<50){
+          n.hp=Math.max(0,n.hp-b.damage);
+          floatText(n.x,n.y-70,"-"+Math.round(b.damage),"#ff557d");
+          b.life=0;
+          break;
+        }
+      }
+    }
+
+    if(b.life<=0)continue;
+    if(r.blocked){b.life=0;continue}
+
+    if(b.from==="enemy"&&Math.hypot(b.x-player.x,b.y-player.y)<20){
+      b.life=0;
+      hurt(Math.max(3,b.damage*.38));
+      continue;
+    }
+
+    if(b.from==="player"){
+      for(let i=0;i<mobs.length;i++){
+        const m=mobs[i];
+        if(m.hp<=0||b.hitIds.has(i))continue;
+        if(Math.hypot(b.x-m.x,b.y-m.y)<25){
+          b.hitIds.add(i);
+          damage(m,b.damage);
+          b.damage*=.62;
+          b.penetration-=.12;
+          if(b.penetration<=0)b.life=0;
+          break;
+        }
+      }
+    }
+  }
+
+  bullets=bullets.filter(b=>b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80);
+}function updateGrenades(dt:number){for(const g of grenades){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;if(g.life<=0)for(const m of mobs)if(m.hp>0){const d=Math.hypot(m.x-g.x,m.y-g.y);if(d<g.radius)damage(m,g.damage*(1-d/g.radius))}}grenades=grenades.filter(g=>g.life>0)}
 function updatePickups(dt:number){for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(player.x-p.x,player.y-p.y)>40)continue;if(p.kind==="medkit"){if(player.medkits>=5)continue;player.medkits++;save.medkits=player.medkits;msg="АПТЕЧКА +1";msgT=60}else if(typeof p.weapon==="number"){if(!save.inventory.includes(p.weapon)){save.inventory.push(p.weapon);msg="ОРУЖИЕ ДОБАВЛЕНО · "+HS_WEAPONS[p.weapon].name}else{player.combat.reserve=Math.min(player.combat.reserve+HS_WEAPONS[p.weapon].magazine*2,HS_WEAPONS[p.weapon].magazine*12);msg="БОЕПРИПАСЫ · "+HS_WEAPONS[p.weapon].name}msgT=80;persist()}pickups.splice(i,1)}if(frame%360===0&&pickups.length<10)spawnPickup()}
-function updateNodes(dt:number){const o=obstacles();for(const n of nodes){if(n.hp<=0)continue;n.cool-=dt;if(n.cool>0)continue;let t:Mob|undefined,bd=360*360;for(const m of mobs){if(m.team===n.team||m.hp<=0)continue;const dx=m.x-n.x,dy=m.y-n.y,d=dx*dx+dy*dy;if(d<bd&&lineOfSight(n.x,n.y,m.x,m.y,o)){bd=d;t=m}}if(t){n.cool=54;damage(t,n.team==="player"?7:6)}}}
-function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
+function updateNodes(dt:number){
+  const o=obstacles();
+
+  for(const n of nodes){
+    if(n.hp<=0)continue;
+    n.cool-=dt;
+    if(n.cool>0)continue;
+
+    if(n.team==="player"){
+      let target:Mob|undefined;
+      let best=420*420;
+
+      for(const m of mobs){
+        if(m.hp<=0)continue;
+        const dx=m.x-n.x,dy=m.y-n.y,d=dx*dx+dy*dy;
+        if(d<best&&lineOfSight(n.x,n.y,m.x,m.y,o)){
+          best=d;
+          target=m;
+        }
+      }
+
+      if(target){
+        n.cool=54;
+        damage(target,7);
+      }
+    }else{
+      const d=Math.hypot(player.x-n.x,player.y-n.y);
+      if(d<440&&lineOfSight(n.x,n.y,player.x,player.y,o)){
+        n.cool=60;
+        hurt(7);
+        floatText(player.x,player.y-105,"TOWER","#ffb04f");
+      }
+    }
+  }
+}function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
 function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}function sy(y:number){return y-cam}
 function drawLoadout(){rect(0,0,viewW,viewH,"#070b0e");txt("FREEzzyPortal",viewW/2,48,24,"#f0eee7","center");txt("CARGO DECK",viewW/2,82,13,"#54d6d8","center");(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{const y=135+i*145,l=LOAD[id],a=id===sel;rect(26,y,viewW-52,116,"#11191d");ctx!.strokeStyle=a?l.color:"#3b474b";ctx!.lineWidth=a?2:1;ctx!.strokeRect(26,y,viewW-52,116);ctx!.fillStyle=l.color;ctx!.shadowColor=l.color;ctx!.shadowBlur=15;ctx!.beginPath();ctx!.ellipse(72,y+56,22,34,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;txt(l.name,110,y+25,18,l.color);txt(l.ability,110,y+51,11,"#f0eee7");txt("HP "+l.hp+" · ARMOR "+l.armor+" · SPEED "+l.speed.toFixed(2),110,y+75,10,"#8e9b9f");txt(a?"SELECTED":"TAP TO SELECT",viewW-38,y+96,9,a?l.color:"#7b888c","right")});txt("OPEN WEAPONS "+save.inventory.length+"/"+HS_WEAPONS.length,viewW/2,595,11,"#aeb8ba","center");txt("BEST WAVE "+save.bestWave+" · BEST KILLS "+save.bestKills,viewW/2,620,10,"#66757a","center")}
@@ -189,9 +390,165 @@ function drawPlayer(){
  bar(px-30,py-70,60,5,player.hp,player.maxHp,c);bar(px-30,py-62,60,3,player.armor,90,"#9aa9b0");
  ctx!.restore();
 }
-function drawWorld(){cam=Math.max(0,Math.min(H-viewH,player.y-viewH*.58));rect(0,0,viewW,viewH,"#05090b");ctx!.save();ctx!.translate(0,-cam);for(let y=0;y<H;y+=80)rect(0,y,W,1,"#172126");for(let x=0;x<W;x+=80)rect(x,0,1,H,"#10181c");for(let i=0;i<90;i++){const x=(i*173)%W,y=(i*317)%H;ctx!.fillStyle=i%3?"#26333a":"#54d6d8";ctx!.fillRect(x,y,1,1)}rect(0,0,38,H,"#12191d");rect(962,0,38,H,"#12191d");for(const o of OBS){const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);g.addColorStop(0,"#3b464b");g.addColorStop(.55,"#242d31");g.addColorStop(1,"#171d20");ctx!.fillStyle=g;ctx!.fillRect(o.x,o.y,o.w,o.h);ctx!.strokeStyle="#68747a";ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);for(let x=o.x+14;x<o.x+o.w;x+=28)rect(x,o.y+7,2,o.h-14,"#111719")}ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=24;ctx!.fillStyle="#54d6d8";ctx!.beginPath();ctx!.arc(core.x,core.y,31,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;for(const n of nodes)if(n.hp>0){const c=n.team==="enemy"?"#ff557d":"#54d6d8";ctx!.strokeStyle=c;ctx!.fillStyle="#141b1e";ctx!.fillRect(n.x-34,n.y-44,68,72);ctx!.strokeRect(n.x-34,n.y-44,68,72);bar(n.x-34,n.y-58,68,5,n.hp,n.maxHp,c)}for(const p of pickups){ctx!.fillStyle=p.kind==="medkit"?"#ff5b55":L().color;ctx!.shadowColor=ctx!.fillStyle;ctx!.shadowBlur=14;ctx!.beginPath();ctx!.arc(p.x,p.y,10,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0}for(const m of mobs){const c=m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff";ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=m.hit>0?20:10;const sc=m.type==="brawler"?1.12:m.type==="sniper"?.82:1;ctx!.beginPath();ctx!.ellipse(m.x,m.y-18,25*sc,39*sc,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;ctx!.fillStyle="#20292d";ctx!.fillRect(m.x-18*sc,m.y-36*sc,36*sc,34*sc);bar(m.x-24,m.y-62,48,4,m.hp,m.maxHp,c)}drawPlayer();for(const b of bullets){ctx!.strokeStyle=b.from==="player"?L().color:"#ff557d";ctx!.lineWidth=2;ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);ctx!.stroke()}for(const g of grenades){ctx!.fillStyle="#d9b86c";ctx!.beginPath();ctx!.arc(g.x,g.y,6,0,Math.PI*2);ctx!.fill()}ctx!.restore();drawHUD()}
-function drawHUD(){rect(0,0,viewW,76,"rgba(5,9,11,.94)");txt("CARGO DECK",16,16,14,"#f0eee7");txt("WAVE "+String(wave).padStart(2,"0")+" · KILLS "+kills,16,39,11,L().color);bar(108,29,92,7,player.hp,player.maxHp,L().color);bar(108,42,92,4,player.armor,90,"#9aa9b0");txt(L().name,viewW-14,15,9,L().color,"right");txt(weapon().name,viewW-14,34,10,"#f0eee7","right");txt(player.combat.ammo+" / "+player.combat.reserve,viewW-14,53,10,"#d9b86c","right");bar(viewW/2-70,64,140,5,core.hp,core.maxHp,"#54d6d8");if(msgT){rect(viewW/2-150,84,300,30,"rgba(5,9,11,.88)");ctx!.strokeStyle=L().color;ctx!.strokeRect(viewW/2-150,84,300,30);txt(msg,viewW/2,99,10,"#f0eee7","center")}if(player.damagePulse){ctx!.fillStyle="rgba(255,40,50,"+player.damagePulse*.18+")";ctx!.fillRect(0,0,viewW,viewH)}}
-function renderCanvas(){if(!ctx)return;resize();ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
+function drawWorld(){
+  cam=Math.max(0,Math.min(H-viewH,player.y-viewH*.58));
+  rect(0,0,viewW,viewH,"#05090b");
+  ctx!.save();
+  ctx!.translate(0,-cam);
+
+  for(let y=0;y<H;y+=80)rect(0,y,W,1,"#172126");
+  for(let x=0;x<W;x+=80)rect(x,0,1,H,"#10181c");
+
+  for(let i=0;i<90;i++){
+    const x=(i*173)%W,y=(i*317)%H;
+    ctx!.fillStyle=i%3?"#26333a":"#54d6d8";
+    ctx!.fillRect(x,y,1,1);
+  }
+
+  rect(0,0,38,H,"#12191d");
+  rect(962,0,38,H,"#12191d");
+
+  // CARGO containers / cover.
+  for(const o of OBS){
+    const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);
+    g.addColorStop(0,"#3b464b");
+    g.addColorStop(.55,"#242d31");
+    g.addColorStop(1,"#171d20");
+    ctx!.fillStyle=g;
+    ctx!.fillRect(o.x,o.y,o.w,o.h);
+    ctx!.strokeStyle="#68747a";
+    ctx!.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
+    for(let x=o.x+14;x<o.x+o.w;x+=28)rect(x,o.y+7,2,o.h-14,"#111719");
+  }
+
+  // Player CARGO CORE.
+  ctx!.shadowColor="#54d6d8";
+  ctx!.shadowBlur=24;
+  ctx!.fillStyle="#54d6d8";
+  ctx!.beginPath();
+  ctx!.arc(core.x,core.y,31,0,Math.PI*2);
+  ctx!.fill();
+  ctx!.shadowBlur=0;
+
+  // Towers.
+  for(const n of nodes){
+    if(n.hp<=0)continue;
+    const c=n.team==="enemy"?"#ff557d":"#54d6d8";
+    ctx!.strokeStyle=c;
+    ctx!.fillStyle="#141b1e";
+    ctx!.fillRect(n.x-34,n.y-44,68,72);
+    ctx!.strokeRect(n.x-34,n.y-44,68,72);
+    ctx!.fillStyle=c;
+    ctx!.fillRect(n.x-5,n.y-58,10,14);
+    bar(n.x-34,n.y-70,68,5,n.hp,n.maxHp,c);
+  }
+
+  // Pickup beacons.
+  for(const p of pickups){
+    const c=p.kind==="medkit"?"#ff5b55":L().color;
+    ctx!.fillStyle=c;
+    ctx!.shadowColor=c;
+    ctx!.shadowBlur=14;
+    ctx!.beginPath();
+    ctx!.arc(p.x,p.y,10,0,Math.PI*2);
+    ctx!.fill();
+    ctx!.shadowBlur=0;
+    ctx!.fillStyle="#081013";
+    ctx!.fillRect(p.x-4,p.y-1,8,2);
+    if(p.kind==="medkit")ctx!.fillRect(p.x-1,p.y-4,2,8);
+  }
+
+  // Enemy telegraph / state markers.
+  for(const m of mobs){
+    const c=m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff";
+    const sc=m.type==="brawler"?1.12:m.type==="sniper"?.82:1;
+
+    if(m.type==="sniper"&&m.think>0){
+      ctx!.globalAlpha=.35+Math.sin(frame*.18)*.15;
+      ctx!.strokeStyle="#cf7cff";
+      ctx!.lineWidth=2;
+      ctx!.beginPath();
+      ctx!.arc(m.x,m.y-18,42+Math.max(0,m.think)*.18,0,Math.PI*2);
+      ctx!.stroke();
+      ctx!.globalAlpha=1;
+    }
+
+    ctx!.fillStyle=c;
+    ctx!.shadowColor=c;
+    ctx!.shadowBlur=m.hit>0?20:10;
+    ctx!.beginPath();
+    ctx!.ellipse(m.x,m.y-18,25*sc,39*sc,0,0,Math.PI*2);
+    ctx!.fill();
+    ctx!.shadowBlur=0;
+
+    ctx!.fillStyle="#20292d";
+    ctx!.fillRect(m.x-18*sc,m.y-36*sc,36*sc,34*sc);
+    bar(m.x-24,m.y-62,48,4,m.hp,m.maxHp,c);
+
+    const label=m.type==="brawler"?"B":m.type==="shooter"?"S":"N";
+    txt(label,m.x,m.y-18,10,"#f0eee7","center");
+  }
+
+  drawPlayer();
+
+  // Projectiles.
+  for(const b of bullets){
+    ctx!.strokeStyle=b.from==="player"?L().color:"#ff557d";
+    ctx!.lineWidth=2;
+    ctx!.beginPath();
+    ctx!.moveTo(b.x,b.y);
+    ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);
+    ctx!.stroke();
+  }
+
+  for(const g of grenades){
+    ctx!.fillStyle="#d9b86c";
+    ctx!.beginPath();
+    ctx!.arc(g.x,g.y,6,0,Math.PI*2);
+    ctx!.fill();
+  }
+
+  // Floating combat text.
+  for(const e of effects){
+    ctx!.globalAlpha=Math.min(1,e.life/18);
+    txt(e.text,e.x,e.y,9,e.color,"center");
+  }
+  ctx!.globalAlpha=1;
+
+  ctx!.restore();
+  drawHUD();
+}function drawHUD(){
+  rect(0,0,viewW,82,"rgba(5,9,11,.96)");
+
+  txt("CARGO DECK",16,14,13,"#f0eee7");
+  txt(
+    "WAVE "+String(wave).padStart(2,"0")+
+    " · HOSTILES "+mobs.length+
+    " · KILLS "+kills,
+    16,35,9,L().color
+  );
+
+  bar(16,52,90,6,player.hp,player.maxHp,L().color);
+  bar(112,52,60,6,player.armor,90,"#9aa9b0");
+
+  txt(L().name,viewW-14,13,9,L().color,"right");
+  txt(weapon().name,viewW-14,32,9,"#f0eee7","right");
+  txt(player.combat.ammo+" / "+player.combat.reserve,viewW-14,50,10,"#d9b86c","right");
+
+  bar(viewW/2-80,65,160,5,core.hp,core.maxHp,"#54d6d8");
+
+  if(msgT){
+    rect(viewW/2-160,88,320,30,"rgba(5,9,11,.9)");
+    ctx!.strokeStyle=L().color;
+    ctx!.strokeRect(viewW/2-160,88,320,30);
+    txt(msg,viewW/2,103,9,"#f0eee7","center");
+  }
+
+  if(player.damagePulse){
+    ctx!.fillStyle="rgba(255,40,50,"+player.damagePulse*.18+")";
+    ctx!.fillRect(0,0,viewW,viewH);
+  }
+}function renderCanvas(){if(!ctx)return;resize();ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
 function renderUI(){if(!ui)return;if(mode==="play")ui.innerHTML='<div class="cargo-move"><span></span></div><div class="cargo-actions"><button data-cargo="weapon">ОРУЖИЕ</button><button data-cargo="fire">ОГОНЬ</button><button data-cargo="reload">ПЕРЕЗАРЯДКА</button><button data-cargo="auto">АВТО</button><button data-cargo="medkit">HP · '+player.medkits+'</button><button data-cargo="grenade">G</button><button data-cargo="ability">СПЕЦ</button></div><div class="cargo-aim"><span></span></div><div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';bindUI()}
 function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
