@@ -167,8 +167,14 @@ function updateMob(m:Mob,dt:number){
   // This keeps the three attack groups separated and makes container
   // crossings deterministic instead of relying on random local steering.
   const laneActive=laneAdvance(m,dt);
-  const playerAttack=playerTarget(m.x,m.y,m.range);
-  const playerSight=playerTarget(m.x,m.y,760);
+
+  // Enemies outside the current combat viewport may advance, but they
+  // cannot damage/fire at the player until they are actually visible.
+  // This prevents "invisible sniper" shots entering from behind the HUD.
+  const combatCam=Math.max(0,Math.min(H-viewH,player.y-viewH*.58));
+  const visible=m.x>-20&&m.x<viewW+20&&m.y>combatCam-20&&m.y<combatCam+viewH+20;
+  const playerAttack=visible?playerTarget(m.x,m.y,m.range):null;
+  const playerSight=visible?playerTarget(m.x,m.y,760):null;
 
   if(playerAttack){
     const d=Math.hypot(playerAttack.x-m.x,playerAttack.y-m.y);
@@ -252,7 +258,17 @@ function updateMob(m:Mob,dt:number){
     m.x=q[0];m.y=q[1];m.stuck=0;
   }
 }
-function resolve(){const a=mobs.filter(m=>m.hp>0);for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const x=a[i],y=a[j],dx=y.x-x.x,dy=y.y-x.y,d=Math.hypot(dx,dy)||.01;if(d>=30)continue;const p=(30-d)*.5,nx=dx/d,ny=dy/d,A=move(x.x,x.y,-nx*p,-ny*p,18),B=move(y.x,y.y,nx*p,ny*p,18);x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1]}}
+function resolve(){
+  const a=mobs.filter(m=>m.hp>0);
+  for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){
+    const x=a[i],y=a[j],dx=y.x-x.x,dy=y.y-x.y,d=Math.hypot(dx,dy)||.01;
+    if(d>=48)continue;
+    const p=(48-d)*.5,nx=dx/d,ny=dy/d;
+    const A=move(x.x,x.y,-nx*p,-ny*p,18);
+    const B=move(y.x,y.y,nx*p,ny*p,18);
+    x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1];
+  }
+}
 function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100))bullets.push({...s});muzzleFlash=1}
 function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
