@@ -662,10 +662,75 @@ function drawWorld(){
     ctx!.fillRect(0,0,viewW,viewH);
   }
 }function renderCanvas(){if(!ctx)return;resize();ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
-function renderUI(){if(!ui)return;if(mode==="play")ui.innerHTML='<div class="cargo-move"><span></span></div><div class="cargo-actions"><button data-cargo="weapon">ОРУЖИЕ</button><button data-cargo="fire">ОГОНЬ</button><button data-cargo="reload">ПЕРЕЗАРЯДКА</button><button data-cargo="auto">АВТО</button><button data-cargo="medkit">HP · '+player.medkits+'</button><button data-cargo="grenade">G</button><button data-cargo="ability">СПЕЦ</button></div><div class="cargo-aim"><span></span></div><div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';bindUI()}
+function renderUI(){
+  if(!ui)return;
+  if(mode==="play"){
+    const weaponIcon='<svg viewBox="0 0 64 32" aria-hidden="true"><path d="M4 13h23l5-5h9l2 5h17v6H43l-3 7h-7l-2-7H4zM17 19h7l-2 8h-6z" fill="currentColor"/><path d="M45 9h7v5h-7z" fill="currentColor"/></svg>';
+    const inventory=save.inventory.map(id=>{
+      const w=HS_WEAPONS[id],active=id===player.weapon;
+      return '<button class="cargo-inventory-item'+(active?' active':'')+'" data-cargo-weapon="'+id+'" aria-label="Переключить '+w.name+'"><span class="cargo-inventory-icon">'+weaponIcon+'</span><span class="cargo-inventory-name">'+w.name+'</span><span class="cargo-inventory-ammo">'+(active?player.combat.ammo+" / "+player.combat.reserve:"")+'</span></button>';
+    }).join("");
+    const med=player.medkits>0?'<button class="cargo-inventory-item cargo-medkit" data-cargo="medkit" aria-label="Использовать аптечку"><span class="cargo-med-icon">+</span><span class="cargo-inventory-name">MEDKIT</span><span class="cargo-inventory-ammo">x'+player.medkits+'</span></button>':"";
+    ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div>'+inventory+med+'</div>'+
+      '<div class="cargo-move"><span></span></div>'+
+      '<div class="cargo-aim"><span class="cargo-aim-core"></span><button class="cargo-fire" data-cargo="fire" aria-label="Огонь">🔥</button></div>'+
+      '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автострельба">AUTO</button>'+
+      '<button class="cargo-grenade" data-cargo="grenade" aria-label="Граната">G</button>'+
+      '<button class="cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Спецвозможность">✦</button>'+
+      '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
+  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';
+  else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
+  else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
+  bindUI()
+}
 function render(){obsGradients=null;if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
-function bindUI(){ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{const a=b.dataset.cargo;if(a==="start")start();else if(a==="weapon"){mode="weapon";render()}else if(a==="fire"){fireHeld=true;fire(true)}else if(a==="reload"){startReload(player.combat,weapon())}else if(a==="auto"){auto=!auto;msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60}else if(a==="medkit")medkit();else if(a==="grenade")grenade();else if(a==="ability")special();else if(a==="menu")exit();else if(a==="retry")start()});const f=ui?.querySelector<HTMLElement>('[data-cargo="fire"]');if(f){const stop=()=>fireHeld=false;f.addEventListener("pointerdown",e=>{e.preventDefault();fireHeld=true;fire(true)});f.addEventListener("pointerup",stop);f.addEventListener("pointercancel",stop);f.addEventListener("pointerleave",stop)}const mv=ui?.querySelector<HTMLElement>(".cargo-move");if(mv){const upd=(e:PointerEvent)=>{const r=mv.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width*.42),dy=(e.clientY-r.top-r.height/2)/(r.height*.42);moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));const s=mv.querySelector("span")as HTMLElement|null;if(s)s.style.transform=`translate(${Math.max(-32,Math.min(32,dx*32))}px,${Math.max(-32,Math.min(32,dy*32))}px)`};const stop=(e:PointerEvent)=>{if(e.pointerId===moveId){moveId=null;moveX=moveY=0}};mv.addEventListener("pointerdown",e=>{e.preventDefault();moveId=e.pointerId;mv.setPointerCapture(e.pointerId);upd(e)});mv.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});mv.addEventListener("pointerup",stop);mv.addEventListener("pointercancel",stop)}const as=ui?.querySelector<HTMLElement>(".cargo-aim");if(as){const set=(e:PointerEvent)=>{const r=as.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;if(Math.hypot(dx,dy)>8){aim=Math.atan2(dy,dx);if(Math.abs(dx)>5)player.facing=dx<0?-1:1}};as.addEventListener("pointerdown",e=>{e.preventDefault();aimId=e.pointerId;as.setPointerCapture(e.pointerId);set(e)});as.addEventListener("pointermove",e=>{if(e.pointerId===aimId)set(e)});const stop=(e:PointerEvent)=>{if(e.pointerId===aimId)aimId=null};as.addEventListener("pointerup",stop);as.addEventListener("pointercancel",stop)}if(mode==="weapon"){const h=ui?.querySelector(".cargo-weapon-hit");h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})}}
+function bindUI(){
+  ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});
+  ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{
+    const a=b.dataset.cargo;
+    if(a==="start")start();
+    else if(a==="weapon"){mode="weapon";render()}
+    else if(a==="fire"){fireHeld=true;fire(true)}
+    else if(a==="reload"){startReload(player.combat,weapon())}
+    else if(a==="auto"){auto=!auto;b.classList.toggle("active",auto);msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60}
+    else if(a==="medkit"){medkit();renderUI()}
+    else if(a==="grenade")grenade();
+    else if(a==="ability")special();
+    else if(a==="menu")exit();
+    else if(a==="retry")start()
+  });
+  ui?.querySelectorAll<HTMLElement>("[data-cargo-weapon]").forEach(b=>b.onclick=()=>{
+    const n=Number(b.dataset.cargoWeapon);
+    if(Number.isFinite(n))chooseWeapon(n)
+  });
+  const f=ui?.querySelector<HTMLElement>('[data-cargo="fire"]');
+  if(f){
+    const stop=()=>fireHeld=false;
+    f.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();fireHeld=true;fire(true)});
+    f.addEventListener("pointerup",stop);f.addEventListener("pointercancel",stop);f.addEventListener("pointerleave",stop)
+  }
+  const mv=ui?.querySelector<HTMLElement>(".cargo-move");
+  if(mv){
+    const upd=(e:PointerEvent)=>{const r=mv.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width*.42),dy=(e.clientY-r.top-r.height/2)/(r.height*.42);moveX=Math.max(-1,Math.min(1,dx));moveY=Math.max(-1,Math.min(1,dy));const s=mv.querySelector("span")as HTMLElement|null;if(s)s.style.transform=`translate(${Math.max(-32,Math.min(32,dx*32))}px,${Math.max(-32,Math.min(32,dy*32))}px)`};
+    const stop=(e:PointerEvent)=>{if(e.pointerId===moveId){moveId=null;moveX=moveY=0}};
+    mv.addEventListener("pointerdown",e=>{e.preventDefault();moveId=e.pointerId;mv.setPointerCapture(e.pointerId);upd(e)});
+    mv.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});
+    mv.addEventListener("pointerup",stop);mv.addEventListener("pointercancel",stop)
+  }
+  const as=ui?.querySelector<HTMLElement>(".cargo-aim");
+  if(as){
+    const set=(e:PointerEvent)=>{const r=as.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;if(Math.hypot(dx,dy)>8){aim=Math.atan2(dy,dx);if(Math.abs(dx)>5)player.facing=dx<0?-1:1}};
+    as.addEventListener("pointerdown",e=>{e.preventDefault();aimId=e.pointerId;as.setPointerCapture(e.pointerId);set(e)});
+    as.addEventListener("pointermove",e=>{if(e.pointerId===aimId)set(e)});
+    const stop=(e:PointerEvent)=>{if(e.pointerId===aimId)aimId=null};
+    as.addEventListener("pointerup",stop);as.addEventListener("pointercancel",stop)
+  }
+  if(mode==="weapon"){
+    const h=ui?.querySelector(".cargo-weapon-hit");
+    h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
+  }
+}
 function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveY=-1;if(e.key==="s"||e.key==="ArrowDown")moveY=1;if(e.key==="a"||e.key==="ArrowLeft")moveX=-1;if(e.key==="d"||e.key==="ArrowRight")moveX=1;if(e.key===" ")fire(true);if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
 function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveX=0}
 function loop(t:number){
