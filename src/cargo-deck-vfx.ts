@@ -24,6 +24,10 @@ const COLORS=[
   "#00FF66",
   "#5b6468"
 ];
+const FLASH_SIZE=64;
+const flashSprites:HTMLCanvasElement[]=[];
+function buildFlashSprites():void{for(let c=0;c<COLORS.length;c++){const cv=document.createElement("canvas");cv.width=cv.height=FLASH_SIZE;const g2=cv.getContext("2d")!;const cx=FLASH_SIZE*.5;const grad=g2.createRadialGradient(cx,cx,0,cx,cx,cx);grad.addColorStop(0,"#ffffff");grad.addColorStop(.35,COLORS[c]);grad.addColorStop(1,"rgba(0,0,0,0)");g2.fillStyle=grad;g2.fillRect(0,0,FLASH_SIZE,FLASH_SIZE);flashSprites.push(cv)}}
+buildFlashSprites();
 
 const x=new Float32Array(CAP),y=new Float32Array(CAP);
 const px=new Float32Array(CAP),py=new Float32Array(CAP);
@@ -169,19 +173,13 @@ export function renderVFX(ctx:CanvasRenderingContext2D,camera:VFXCamera){
     const a=Math.max(0,Math.min(1,(life[i]/maxLife[i])*alpha[i]));
     if(a<=.01)continue;
     const sx=(x[i]-camera.x)*z+cw,sy=(y[i]-camera.y)*z+ch,s=size[i]*z;
+    if(sx < -s || sx > camera.width+s || sy < -s || sy > camera.height+s)continue;
     ctx.globalAlpha=a;
     const ci=color[i],t=type[i];
     if(t===PType.Particle){
       ctx.fillStyle=COLORS[ci];
       ctx.fillRect(sx-s*.5,sy-s*.5,s,s);
-    }else if(t===PType.Flash){
-      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(1,s));
-      g.addColorStop(0,"#ffffff");
-      g.addColorStop(.35,COLORS[ci]);
-      g.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=g;
-      ctx.beginPath();ctx.arc(sx,sy,s,0,TAU);ctx.fill();
-    }else if(t===PType.Ring){
+    }else if(t===PType.Flash){const d2=s+s;ctx.drawImage(flashSprites[ci],sx-s,sy-s,d2,d2);}else if(t===PType.Ring){
       ctx.strokeStyle=COLORS[ci];
       ctx.lineWidth=Math.max(.75,width[i]*z);
       ctx.beginPath();ctx.arc(sx,sy,s,0,TAU);ctx.stroke();
