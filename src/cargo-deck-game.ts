@@ -1,6 +1,6 @@
 import{HS_WEAPONS,createCombatState,consumeShot,startReload,stepWeapon,spawnShots,traceShot,lineOfSight,recoilAngle,grenade as makeGrenade,type HsCombatState,type HsObstacle}from"./freezzz-combat-core";
 type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type MobType="brawler"|"shooter"|"sniper";type LoadoutId="ASSAULT"|"VANGUARD"|"RECON";
-interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number}
+interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
@@ -16,6 +16,11 @@ const OBS:HsObstacle[]=[
 {x:86,y:1510,w:170,h:82},{x:744,y:1510,w:170,h:82},{x:310,y:1680,w:150,h:72},{x:540,y:1680,w:150,h:72},
 {x:112,y:1935,w:175,h:86},{x:713,y:1935,w:175,h:86},{x:350,y:2110,w:120,h:70},{x:530,y:2110,w:120,h:70},
 {x:170,y:2300,w:145,h:76},{x:685,y:2300,w:145,h:76}];
+const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
+  [{x:250,y:1900},{x:300,y:2025},{x:300,y:2250}],
+  [{x:500,y:1900},{x:690,y:2025},{x:690,y:2250}],
+  [{x:750,y:1900},{x:700,y:2025},{x:700,y:2250}]
+];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
@@ -76,7 +81,7 @@ function spawnWave(){
       speed,damage:type==="brawler"?24:type==="shooter"?15:28,
       range:type==="brawler"?42:type==="shooter"?210:430,
       cool:30+Math.random()*30,think:type==="sniper"?18:0,strafe:i%2?-1:1,
-      stuck:0,lastX:sx,lastY:sy,state:"inbound",hit:0
+      stuck:0,lastX:sx,lastY:sy,state:"inbound",hit:0,lane,waypoint:0
     });
   }
 
@@ -133,95 +138,115 @@ function nearestPlayerNode(x:number,y:number){
   return best;
 }
 function stepMob(m:Mob,tx:number,ty:number,dt:number){const dx=tx-m.x,dy=ty-m.y,len=Math.hypot(dx,dy)||1,nx=dx/len,ny=dy/len,st=Math.max(.7,m.speed*dt),sx=m.x,sy=m.y,q=move(sx,sy,nx*st,ny*st,18);if(Math.hypot(q[0]-sx,q[1]-sy)>.1){m.x=q[0];m.y=q[1];return}let bx=sx,by=sy,best=Infinity,moved=0;for(const r of[st*2,st*3.5,st*5.5])for(const a of[0,.45,-.45,.9,-.9,1.35,-1.35,Math.PI]){const c=Math.cos(a),s=Math.sin(a),p=move(sx,sy,(nx*c-ny*s)*r,(ny*c+nx*s)*r,18),md=Math.hypot(p[0]-sx,p[1]-sy),score=Math.hypot(p[0]-tx,p[1]-ty)-md*.25;if(md>.1&&score<best){best=score;bx=p[0];by=p[1];moved=md}}if(moved){m.x=bx;m.y=by;return}const b=move(sx,sy,-nx*st*2.4,-ny*st*2.4,18);if(Math.hypot(b[0]-sx,b[1]-sy)>.1){m.x=b[0];m.y=b[1]}}
+function laneAdvance(m:Mob,dt:number){
+  const route=LANE_ROUTES[m.lane]||LANE_ROUTES[1];
+  if(m.waypoint>=route.length)return false;
+  const g=route[m.waypoint];
+  const d=Math.hypot(g.x-m.x,g.y-m.y);
+  if(d<26){
+    m.waypoint++;
+    if(m.waypoint>=route.length)return false;
+  }
+  const q=route[Math.min(m.waypoint,route.length-1)];
+  stepMob(m,q.x,q.y,dt);
+  m.state="lane-"+String(m.lane+1);
+  return true;
+}
 function updateMob(m:Mob,dt:number){
   if(m.hp<=0)return;
   m.cool-=dt;
   m.hit=Math.max(0,m.hit-dt*.1);
+
+  // Every enemy owns a lane and follows explicit CARGO-DECK waypoints.
+  // This keeps the three attack groups separated and makes container
+  // crossings deterministic instead of relying on random local steering.
+  const laneActive=laneAdvance(m,dt);
   const playerAttack=playerTarget(m.x,m.y,m.range);
   const playerSight=playerTarget(m.x,m.y,760);
 
   if(playerAttack){
-    m.state="attack";
     const d=Math.hypot(playerAttack.x-m.x,playerAttack.y-m.y);
     if(m.type==="brawler"){
+      m.state="attack";
       if(m.cool<=0&&d<55){m.cool=44;hurt(m.damage)}
-      else if(d>48)stepMob(m,playerAttack.x,playerAttack.y,dt);
-      return;
-    }
-
-    const preferred=m.type==="sniper"?360:165;
-
-    if(m.type==="sniper"){
-      // Real telegraph: sniper aims first, then fires. The timer is also
-      // rendered as a ring, so the player gets a readable reaction window.
+      else if(!laneActive&&d>48)stepMob(m,playerAttack.x,playerAttack.y,dt);
+    }else if(m.type==="sniper"){
       if(m.think>0){
         m.think=Math.max(0,m.think-dt);
         m.state="telegraph";
-        if(d<preferred*.82)stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.35);
+        if(d<360*.82&&!laneActive){
+          stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.35);
+        }
         if(m.think<=0){
-          const a=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
+          const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
           const w=HS_WEAPONS[5];
-          for(const sh of spawnShots(m.x,m.y,a,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
+          for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
           m.cool=78;
         }
       }else if(m.cool<=0){
         m.think=32;
         m.state="telegraph";
       }
-    }else if(m.cool<=0){
-      m.cool=30;
-      const w=HS_WEAPONS[1];
-      const a=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
-      for(const sh of spawnShots(m.x,m.y,a,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
-    }
-
-    if(m.think<=0||m.type!=="sniper"){
-      if(d>preferred)stepMob(m,playerAttack.x,playerAttack.y,dt);
-      else{
-        m.strafe=m.strafe||1;
-        stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
+      if(!laneActive&&m.think<=0){
+        if(d>360)stepMob(m,playerAttack.x,playerAttack.y,dt);
+        else stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
+      }
+    }else{
+      m.state="attack";
+      if(m.cool<=0){
+        m.cool=30;
+        const w=HS_WEAPONS[1];
+        const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
+        for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x)))bullets.push({...sh});
+      }
+      if(!laneActive){
+        if(d>165)stepMob(m,playerAttack.x,playerAttack.y,dt);
+        else stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
       }
     }
-    return;
-  }
-
-  if(playerSight){
+  }else if(playerSight){
+    // Sight never overrides the lane route. Once the route is complete,
+    // normal combat pursuit takes over.
     m.state="chase";
-    stepMob(m,playerSight.x,playerSight.y,dt);
-    return;
-  }
-
-  const n=nearestPlayerNode(m.x,m.y);
-  if(n){
-    const d=Math.hypot(n.x-m.x,n.y-m.y);
-    if(d>m.range){
-      m.state="advance-node";
-      stepMob(m,n.x,n.y,dt);
-    }else if(m.cool<=0){
-      m.state="attack-node";
-      m.cool=48;
-      n.hp=Math.max(0,n.hp-m.damage);
-    }
+    if(!laneActive)stepMob(m,playerSight.x,playerSight.y,dt);
   }else{
-    const d=Math.hypot(core.x-m.x,core.y-m.y);
-    if(d>115){
-      m.state="advance-core";
-      stepMob(m,core.x,core.y,dt);
-    }else if(m.cool<=0){
-      m.state="attack-core";
-      m.cool=48;
-      core.hp=Math.max(0,core.hp-m.damage);
+    const n=nearestPlayerNode(m.x,m.y);
+    if(n){
+      const d=Math.hypot(n.x-m.x,n.y-m.y);
+      if(d>m.range){
+        m.state="advance-node";
+        if(!laneActive)stepMob(m,n.x,n.y,dt);
+      }else if(m.cool<=0){
+        m.state="attack-node";
+        m.cool=48;
+        n.hp=Math.max(0,n.hp-m.damage);
+      }
+    }else{
+      const d=Math.hypot(core.x-m.x,core.y-m.y);
+      if(d>115){
+        m.state="advance-core";
+        if(!laneActive)stepMob(m,core.x,core.y,dt);
+      }else if(m.cool<=0){
+        m.state="attack-core";
+        m.cool=48;
+        core.hp=Math.max(0,core.hp-m.damage);
+      }
     }
   }
 
+  // Stuck detection now runs even when the mob is attacking/chasing.
   const md=Math.hypot(m.x-m.lastX,m.y-m.lastY);
   m.stuck=md<.15?m.stuck+dt:Math.max(0,m.stuck-dt*2);
   m.lastX=m.x;m.lastY=m.y;
-  if(m.stuck>45){
-    const q=move(m.x,m.y,(Math.random()-.5)*100,(Math.random()-.5)*100,18);
+  if(m.stuck>30){
+    const route=LANE_ROUTES[m.lane]||LANE_ROUTES[1];
+    const g=route[Math.min(m.waypoint,route.length-1)]||{x:500,y:2200};
+    const side=m.strafe||1;
+    const q=move(m.x,m.y,side*42,(g.y>=m.y?24:-24),18);
     m.x=q[0];m.y=q[1];m.stuck=0;
   }
-}function resolve(){const a=mobs.filter(m=>m.hp>0);for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const x=a[i],y=a[j],dx=y.x-x.x,dy=y.y-x.y,d=Math.hypot(dx,dy)||.01;if(d>=30)continue;const p=(30-d)*.5,nx=dx/d,ny=dy/d,A=move(x.x,x.y,-nx*p,-ny*p,18),B=move(y.x,y.y,nx*p,ny*p,18);x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1]}}
+}
+function resolve(){const a=mobs.filter(m=>m.hp>0);for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const x=a[i],y=a[j],dx=y.x-x.x,dy=y.y-x.y,d=Math.hypot(dx,dy)||.01;if(d>=30)continue;const p=(30-d)*.5,nx=dx/d,ny=dy/d,A=move(x.x,x.y,-nx*p,-ny*p,18),B=move(y.x,y.y,nx*p,ny*p,18);x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1]}}
 function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100))bullets.push({...s});muzzleFlash=1}
 function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
