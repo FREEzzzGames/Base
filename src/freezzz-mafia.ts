@@ -1152,80 +1152,19 @@ function drawShop(){
  weapons.forEach((w,i)=>{const y=viewHeight*(.18+i*.075);const owned=save.weapon>=i;tx(String(i+1),viewWidth*.07,y,menuTextSize(.02,14,20),"#59656b");tx(weaponRu(w.name),viewWidth*.13,y,menuTextSize(.023,16,24),"#f0eee7");tx("$"+w.cost,viewWidth*.58,y,menuTextSize(.021,15,22),"#d9b86c");tx(owned?"ЕСТЬ":"КУПИТЬ",viewWidth*.78,y,menuTextSize(.021,15,22),owned?hero().color:"#aab1b4");});
 }
 function drawWeaponMenu(){
- const c=ctx!;
- c.save();
- const bg=c.createLinearGradient(0,0,viewWidth,viewHeight);
- bg.addColorStop(0,"#eef3f6");bg.addColorStop(.45,"#dce5ea");bg.addColorStop(1,"#f4f6f7");
- c.fillStyle=bg;c.fillRect(0,0,viewWidth,viewHeight);
-
- // Soft glass atmosphere.
- c.globalAlpha=.22;
- c.fillStyle=hero().color;c.beginPath();c.arc(viewWidth*.12,viewHeight*.18,viewWidth*.22,0,Math.PI*2);c.fill();
- c.fillStyle="#d86c35";c.beginPath();c.arc(viewWidth*.9,viewHeight*.76,viewWidth*.24,0,Math.PI*2);c.fill();
- c.globalAlpha=1;
-
- const glass=(x:number,y:number,w:number,h:number,active=false)=>{
-   c.save();
-   c.shadowColor=active?"rgba(40,180,190,.35)":"rgba(50,70,80,.18)";
-   c.shadowBlur=active?18:14;c.shadowOffsetY=8;
-   const g=c.createLinearGradient(x,y,x,y+h);
-   g.addColorStop(0,active?"rgba(255,255,255,.78)":"rgba(255,255,255,.68)");
-   g.addColorStop(.5,"rgba(245,250,252,.42)");
-   g.addColorStop(1,active?"rgba(207,239,241,.58)":"rgba(218,228,233,.42)");
-   c.fillStyle=g;c.beginPath();c.roundRect(x,y,w,h,Math.min(24,h*.42));c.fill();
-   c.shadowBlur=0;c.shadowOffsetY=0;
-   c.strokeStyle=active?"rgba(62,205,211,.92)":"rgba(255,255,255,.9)";c.lineWidth=1.5;c.stroke();
-   c.fillStyle="rgba(255,255,255,.5)";c.beginPath();c.roundRect(x+3,y+3,w-6,Math.max(5,h*.13),Math.min(10,h*.08));c.fill();
-   c.restore();
- };
- const pill=(x:number,y:number,w:number,h:number,label:string,accent:string,active=false)=>{
-   glass(x,y,w,h,active);
-   c.save();c.shadowColor=active?"rgba(50,200,205,.45)":"rgba(70,90,100,.15)";c.shadowBlur=8;
-   const g=c.createLinearGradient(x,y,x+w,y+h);
-   g.addColorStop(0,active?"#57d9d8":"#ffffff");g.addColorStop(1,active?"#2aaeb7":"#dfe8ec");
-   c.fillStyle=g;c.beginPath();c.roundRect(x+7,y+7,w-14,h-14,Math.min(18,h*.35));c.fill();
-   c.strokeStyle="rgba(255,255,255,.8)";c.stroke();c.restore();
-   tx(label,x+w/2,y+h*.58,menuTextSize(.018,12,18),active?"#173b40":"#26363f","center");
-   if(active){c.fillStyle=accent;c.beginPath();c.arc(x+w-20,y+h/2,5,0,Math.PI*2);c.fill();}
- };
- 
- // Header mirrors the reference: compact glass controls above a clean search/status field.
- const topY=viewHeight*.045, topH=Math.min(56,viewHeight*.07);
- pill(viewWidth*.07,topY,viewWidth*.36,topH,"ВЫБОР ОРУЖИЯ",hero().color,true);
- pill(viewWidth*.47,topY,viewWidth*.25,topH,"АРСЕНАЛ","#9f83d6",false);
- pill(viewWidth*.75,topY,viewWidth*.18,topH,"×","#d86c35",false);
-
- const searchY=topY+topH+viewHeight*.025;
- glass(viewWidth*.07,searchY,viewWidth*.86,Math.min(54,viewHeight*.065),false);
- tx("⌕",viewWidth*.105,searchY+34,menuTextSize(.032,22,30),"#52646e","center");
- tx("Выберите оружие",viewWidth*.15,searchY+34,menuTextSize(.019,13,19),"#53636d","left");
- tx("6",viewWidth*.88,searchY+34,menuTextSize(.017,12,18),"#77858c","center");
-
- const startY=searchY+Math.min(54,viewHeight*.065)+viewHeight*.025;
- const gap=viewWidth*.035,left=viewWidth*.07;
- const cols=viewWidth>620?2:1;
- const cardW=(viewWidth-left*2-gap*(cols-1))/cols;
- const cardH=Math.min(102,viewHeight*.105);
-
- weapons.forEach((w,i)=>{
-   const col=i%cols,row=Math.floor(i/cols),x=left+col*(cardW+gap),y=startY+row*(cardH+viewHeight*.018);
-   const owned=save.weapon>=i,active=save.weapon===i;
-   glass(x,y,cardW,cardH,active);
-
-   // Small weapon preview gives every card a concrete visual identity.
-   c.save();c.globalAlpha=owned?1:.32;
-   drawWeaponSprite(i, x+cardW*.30, y+cardH*.54, 0, Math.min(.58,cardW/700));
-   c.restore();
-
-   tx(String(i+1).padStart(2,"0"),x+cardW*.55,y+cardH*.27,menuTextSize(.014,10,15),active?hero().color:"#66747c","left");
-   tx(weaponRu(w.name),x+cardW*.55,y+cardH*.48,menuTextSize(.021,14,20),"#1f3038","left");
-   tx("УРОН "+w.damage+"  ·  МАГ "+w.mag+"  ·  "+Math.round(w.rate*60)+"/МИН",x+cardW*.55,y+cardH*.69,menuTextSize(.011,8,12),"#65747b","left");
-   pill(x+cardW*.55,y+cardH*.76,cardW*.36,Math.min(24,cardH*.22),owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",hero().color,active);
- });
-
- const bottomY=viewHeight*.92;
- pill(viewWidth*.08,bottomY,viewWidth*.34,Math.min(48,viewHeight*.06),"НАЗАД","#d86c35",false);
- pill(viewWidth*.53,bottomY,viewWidth*.39,Math.min(48,viewHeight*.06),"В БОЙ","#54d6d8",true);
+ const c=ctx!;c.save();const W=viewWidth,H=viewHeight;
+ const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#eef5f7");bg.addColorStop(.52,"#e2eaee");bg.addColorStop(1,"#f5f7f8");c.fillStyle=bg;c.fillRect(0,0,W,H);
+ c.globalAlpha=.15;c.fillStyle=hero().color;c.beginPath();c.arc(W*.08,H*.17,W*.20,0,Math.PI*2);c.fill();c.fillStyle="#e07b42";c.beginPath();c.arc(W*.94,H*.72,W*.18,0,Math.PI*2);c.fill();c.globalAlpha=1;
+ const glass=(x:number,y:number,w:number,h:number,active=false)=>{c.save();c.shadowColor=active?"rgba(37,196,204,.28)":"rgba(42,61,72,.12)";c.shadowBlur=active?12:9;c.shadowOffsetY=5;const g=c.createLinearGradient(x,y,x,y+h);g.addColorStop(0,"rgba(255,255,255,.76)");g.addColorStop(.5,"rgba(248,252,253,.54)");g.addColorStop(1,active?"rgba(209,241,243,.58)":"rgba(222,232,237,.50)");c.fillStyle=g;c.beginPath();c.roundRect(x,y,w,h,Math.min(22,h*.34));c.fill();c.shadowBlur=0;c.shadowOffsetY=0;c.strokeStyle=active?"rgba(45,204,210,.88)":"rgba(255,255,255,.92)";c.lineWidth=1.4;c.stroke();c.fillStyle="rgba(255,255,255,.38)";c.beginPath();c.roundRect(x+3,y+3,w-6,Math.max(5,h*.12),Math.min(9,h*.07));c.fill();c.restore();};
+ const button=(x:number,y:number,w:number,h:number,label:string,active=false)=>{glass(x,y,w,h,active);const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,active?"#56d8d8":"rgba(255,255,255,.82)");g.addColorStop(1,active?"#2cb6bd":"rgba(222,231,235,.72)");c.fillStyle=g;c.beginPath();c.roundRect(x+7,y+7,w-14,h-14,Math.min(17,h*.34));c.fill();c.strokeStyle="rgba(255,255,255,.72)";c.stroke();tx(label,x+w/2,y+h*.60,menuTextSize(.017,11,17),active?"#153b40":"#263740","center");if(active){c.fillStyle="#e69a45";c.beginPath();c.arc(x+w-19,y+h/2,5,0,Math.PI*2);c.fill();}};
+ const margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);button(margin,top,W*.37,headerH,"ВЫБОР ОРУЖИЯ",true);button(W*.47,top,W*.25,headerH,"АРСЕНАЛ");button(W*.76,top,W*.17,headerH,"×");
+ const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);glass(margin,searchY,W*.86,searchH);tx("⌕",margin+W*.035,searchY+searchH*.65,menuTextSize(.028,19,25),"#5b6d77","center");tx("Выберите оружие",margin+W*.095,searchY+searchH*.65,menuTextSize(.018,12,17),"#52636c","left");tx("6",W-margin-W*.035,searchY+searchH*.65,menuTextSize(.016,11,15),"#77858c","center");
+ const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;button(W*.08,bottomY,W*.34,bottomH,"НАЗАД");button(W*.53,bottomY,W*.39,bottomH,"В БОЙ",true);
+ const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;const gap=H*.010,cardH=Math.min(78,H*.090),left=margin,cardW=W-margin*2;
+ c.save();c.beginPath();c.rect(0,listTop,W,listBottom-listTop);c.clip();
+ weapons.forEach((w,i)=>{const y=listTop+i*(cardH+gap),owned=save.weapon>=i,active=save.weapon===i;glass(left,y,cardW,cardH,active);c.save();c.globalAlpha=owned?1:.30;drawWeaponSprite(i,left+cardW*.25,y+cardH*.50,0,Math.min(.54,cardW/740));c.restore();tx(String(i+1).padStart(2,"0"),left+cardW*.43,y+cardH*.24,menuTextSize(.012,8,12),active?hero().color:"#68777f","left");tx(weaponRu(w.name),left+cardW*.43,y+cardH*.47,menuTextSize(.018,12,17),"#20323a","left");tx("УРОН "+w.damage+" · МАГ "+w.mag+" · "+Math.round(w.rate*60)+"/МИН",left+cardW*.43,y+cardH*.68,menuTextSize(.009,7,10),"#64737a","left");const bw=cardW*.27,bh=Math.min(21,cardH*.24),bx=left+cardW*.69,by=y+cardH*.64;button(bx,by,bw,bh,owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",active);});
+ c.restore();
+ const contentH=weapons.length*(cardH+gap)-gap,viewport=listBottom-listTop;if(contentH>viewport){const trackH=viewport*.72,trackY=listTop+(viewport-trackH)/2,thumbH=Math.max(22,trackH*viewport/contentH);c.fillStyle="rgba(255,255,255,.45)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,trackH,4);c.fill();c.fillStyle="rgba(65,180,188,.72)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,thumbH,4);c.fill();}
  c.restore();
 }
 function drawResult(){
