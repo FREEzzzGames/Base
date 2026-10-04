@@ -314,7 +314,7 @@ function topDownMap(){
  ];
  return {w,h,roads,buildings,river:{x:0,y:0,w:0,h:0},bridge:{x:0,y:0,w:0,h:0}};
 }
-function topDownExit(){return [1365,455];}
+function topDownExit(){return mode==="play"&&arenaMission?[ARENA_W/2,90]:[1365,455];}
 const ARENA_W=1000,ARENA_H=1500;
 function arenaObstacles(){return [
  {x:70,y:220,w:250,h:70},{x:680,y:220,w:250,h:70},
@@ -1029,7 +1029,7 @@ function update(dt:number){
    }
   }
  }
- bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<topDownMap().w+30&&b.y>-30&&b.y<topDownMap().h+30);
+ bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<(mode==="play"&&arenaMission?ARENA_W:topDownMap().w)+30&&b.y>-30&&b.y<(mode==="play"&&arenaMission?ARENA_H:topDownMap().h)+30);
  for(let i=0;i<enemies.length;i++){
   const e=enemies[i];
   if(e.falling){e.vy+=.5*scale*dt;e.y+=e.vy*dt;continue;}
@@ -1061,7 +1061,7 @@ function update(dt:number){
   }
   if(dist<30*scale&&e.cool<=0){e.cool=55;hurt(e.type==="heavy"?16:8);say(enemyLines[Math.floor(Math.random()*enemyLines.length)],"enemy",e.x,e.y-35);}
  }
- enemies=enemies.filter(e=>!e.falling||e.y<topDownMap().h+80);
+ enemies=enemies.filter(e=>!e.falling||e.y<(mode==="play"&&arenaMission?ARENA_H:topDownMap().h)+80);
  if(enemies.length===0)objectiveProgress=1;
  floorTimer+=dt;
  const [exitX,exitY]=topDownExit(),m=currentMission(),reachedExit=Math.hypot(player.x-exitX,player.y-exitY)<42*scale;
@@ -1400,7 +1400,7 @@ function bindButtons(){
  root?.querySelectorAll<HTMLElement>("[data-hero]").forEach(el=>el.onclick=()=>{selected=el.dataset.hero as HeroId;render();});
  root?.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.onclick=()=>{
    const a=el.dataset.action;
-   if(a==="play"&&selected){beginSelected();render();}
+   if(a==="play"&&selected){mode="tenders";tenderPage=0;render();}
    if(a==="exit")exitToPortal();
    if(a==="menu"){returnToMainMenu();}
    if(a==="advance"){advanceDialogue();render();}
