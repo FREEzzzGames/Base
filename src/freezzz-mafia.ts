@@ -23,8 +23,8 @@ interface SiegeMob{x:number;y:number;team:"player"|"enemy";lane:number;hp:number
 interface Bullet{x:number;y:number;vx:number;vy:number;from:"player"|"enemy";life:number;damage:number;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}
 interface GrenadeFx{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}
 interface ArenaPickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;amount:number;life:number}
-interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;combat:HsCombatState}
-interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;activeTenderId?:string;completed:string[];completedTenders?:string[];arenaMissionIndex?:number;storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
+interface Player{x:number;y:number;vx:number;vy:number;hp:number;maxHp:number;armor:number;ammo:number;grounded:boolean;cool:number;ability:number;weaponSwap:number;facing:number;medkits:number;combat:HsCombatState}
+interface Save{hero:HeroId|null;rank:number;xp:number;money:number;weapon:number;armor:number;weaponInventory:number[];medkits:number;activeTenderId?:string;completed:string[];completedTenders?:string[];arenaMissionIndex?:number;storySeen?:Partial<Record<HeroId,boolean>>;resumeMission?:Partial<Record<HeroId,string>>;resumeFloor?:Partial<Record<HeroId,number>>}
 
 interface SpeechState{text:string;timer:number;x:number;y:number;kind:"player"|"enemy"}
 let speech:SpeechState|null=null;
@@ -169,8 +169,8 @@ let tenderPage=0;
 let arenaWave=0,arenaKills=0,arenaTaskTarget=6,arenaTaskProgress=0,arenaTaskTimer=0,arenaSpawnTimer=0,arenaTaskLabel="УНИЧТОЖИТЬ ГРУППУ";
 let arenaMission:ArenaMission|null=null;
 let viewWidth=640,viewHeight=448;
-let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,completed:[],completedTenders:[],arenaMissionIndex:0,storySeen:{},resumeMission:{},resumeFloor:{}};
-let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[0])};
+let save:Save={hero:null,rank:0,xp:0,money:0,weapon:0,armor:0,weaponInventory:[0],medkits:0,completed:[],completedTenders:[],arenaMissionIndex:0,storySeen:{},resumeMission:{},resumeFloor:{}};
+let player:Player={x:80,y:360,vx:0,vy:0,hp:100,maxHp:100,armor:0,ammo:12,grounded:false,cool:0,ability:0,weaponSwap:0,facing:1,medkits:0,combat:createCombatState(HS_WEAPONS[0])};
 let enemies:Enemy[]=[],bullets:Bullet[]=[],grenades:GrenadeFx[]=[],arenaPickups:ArenaPickup[]=[];
 let arenaPickupTimer=0;
 let siegeTowers:SiegeTower[]=[];
@@ -187,7 +187,7 @@ let moveX=0,moveY=0;
 let aimAngle=-Math.PI/4,aimActive=false,aimPointerId:number|null=null;
 const completedKey="freezzz:mafia-save:v2";
 
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,completedTenders:s.completedTenders||[],arenaMissionIndex:typeof s.arenaMissionIndex==="number"?s.arenaMissionIndex:0,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{}};}catch{}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(completedKey)||"");if(s&&typeof s==="object")save={...save,...s,activeTenderId:s.activeTenderId||undefined,completedTenders:s.completedTenders||[],arenaMissionIndex:typeof s.arenaMissionIndex==="number"?s.arenaMissionIndex:0,storySeen:s.storySeen||{},resumeMission:s.resumeMission||{},resumeFloor:s.resumeFloor||{},weaponInventory:Array.isArray(s.weaponInventory)&&s.weaponInventory.length?s.weaponInventory:[0],medkits:Math.max(0,Math.min(5,Number(s.medkits)||0))};}catch{}}
 function storeSave(){try{localStorage.setItem(completedKey,JSON.stringify(save));}catch{}}
 function storySeen(h:HeroId){return save.storySeen?.[h]===true;}
 function markStorySeen(h:HeroId){save.storySeen={...(save.storySeen||{}),[h]:true};storeSave();}
@@ -228,10 +228,17 @@ function drawAlienHero(id:HeroId,cx:number,ground:number,frame:number,scale=1,me
  }[id];
  const s=scale*cfg.size,step=Math.sin(frame*.18)*2.2;
  ctx.save();ctx.translate(Math.round(cx),Math.round(ground));ctx.scale(s,s);
- ellipse(0,2,27,7,"rgba(0,0,0,.55)");
- // Distinct alien silhouettes: torso, four-jointed limbs, neck ring and luminous visor.
- limb(-8,-8,-11+step,-31,7,"#162327");limb(8,-8,11-step,-31,7,"#162327");
- limb(-17,-39,-29,-19,8,cfg.body);limb(17,-39,29,-19,8,cfg.body);
+ ellipse(0,2,30,8,"rgba(0,0,0,.55)");
+ // Anatomical rig: feet -> shins -> knees -> thighs -> pelvis -> torso -> shoulders -> forearms -> hands.
+ limb(-7,-7,-10+step,-24,6,"#162327");limb(7,-7,10-step,-24,6,"#162327");
+ ellipse(-10+step,-25,5,5,"#66757a");ellipse(10-step,-25,5,5,"#66757a");
+ limb(-10,-28,-13,-48,7,cfg.body);limb(10,-28,13,-48,7,cfg.body);
+ ellipse(-13,-49,6,6,"#8a9698");ellipse(13,-49,6,6,"#8a9698");
+ poly([-18,-48,-14,-57,-6,-61,0,-58,6,-61,14,-57,18,-48,12,-13,0,-7,-12,-13],cfg.body);
+ ellipse(0,-12,9,5,cfg.accent);
+ limb(-17,-45,-30,-29,6,cfg.body);limb(17,-45,30,-29,6,cfg.body);
+ ellipse(-31,-28,5,5,cfg.skin);ellipse(31,-28,5,5,cfg.skin);
+ line(-33,-27,-37,-22,cfg.crest,3);line(33,-27,37,-22,cfg.crest,3);
  poly([-18,-33,-14,-51,-6,-57,0,-54,6,-57,14,-51,18,-33,12,-10,0,-5,-12,-10],cfg.body);
  rect(-20,-39,40,5,"#11191c");rect(-16,-43,32,4,cfg.accent);
  ellipse(0,-63,12,15,cfg.skin);poly([-12,-66,-7,-75,0,-79,7,-75,12,-66,9,-58,-9,-58],cfg.body);
@@ -966,8 +973,12 @@ function drawRobotMob(x:number,y:number,kind:string,scale:number,accent:string,s
    line(-2,-37,-6,-45,light,2);ellipse(-6,-48,2.5,2.5,accent);
  }else{
    // Default shooter / brawler: modular humanoid robot.
-   limb(-9,-7,-15+walk,-32,6,dark);limb(9,-7,15-walk,-32,6,dark);
-   rect(-15,-39,30,30,body);rect(-11,-34,22,20,mid);
+   limb(-8,-6,-13+walk,-25,5,dark);limb(8,-6,13-walk,-25,5,dark);
+   ellipse(-13+walk,-26,5,5,metal);ellipse(13-walk,-26,5,5,metal);
+   limb(-13,-28,-16+walk,-43,7,body);limb(13,-28,16-walk,-43,7,body);
+   ellipse(-16+walk,-44,5,5,light);ellipse(16-walk,-44,5,5,light);
+   poly([-16,-43,-11,-50,-5,-54,0,-51,5,-54,11,-50,16,-43,12,-10,0,-6,-12,-10],body);
+   ellipse(0,-11,8,4,accent);
    rect(-8,-29,16,8,dark);ellipse(0,-25,4,4,accent);
    rect(-10,-56,20,17,metal);rect(-7,-52,14,9,dark);
    ellipse(-5,-48,3,3,accent);ellipse(5,-48,3,3,accent);
@@ -1146,13 +1157,13 @@ function drawWeaponSprite(kind:number,handX:number,handY:number,angle:number,sc:
 function drawPlayer(){
  const x=player.x,y=player.y,sc=Math.max(.68,Math.min(.84,viewWidth/1050));
  drawAlienHero(selected||"antonio",x,y,frame,sc,false);
- const handX=x+player.facing*29*sc;
- const handY=y-44*sc;
+ const handX=x+player.facing*31*sc;
+ const handY=y-43*sc;
  const angle=aimAngle;
  const kick=Math.min(3.2,player.combat.recoil*.22);
  const wx=handX-Math.cos(angle)*kick,wy=handY-Math.sin(angle)*kick;
  drawWeaponSprite(save.weapon,wx,wy,angle,sc);
- const w=HS_WEAPONS[save.weapon],len=[32,38,42,49,55,61,66,58,78][save.weapon]||36;
+ const w=HS_WEAPONS[save.weapon],len=([32,38,42,49,55,61,66,58,78][save.weapon]||36)*sc;
  const muzzleX=wx+Math.cos(angle)*len,muzzleY=wy+Math.sin(angle)*len;
  drawWeaponEffects(ctx!,muzzleX,muzzleY,angle,sc,save.weapon,player.combat.fireTimer>w.fireInterval-4,hero().color);
  if(player.ability>0)tx(hero().ability,x,y-104*sc,Math.max(11,7*sc),hero().color,"center");
@@ -1198,12 +1209,27 @@ function updateArenaPickups(dt:number){
   const p=arenaPickups[i];
   if(Math.hypot(player.x-p.x,player.y-p.y)>38)continue;
   if(p.kind==="medkit"){
-   if(player.hp>=player.maxHp)continue;
-   player.hp=Math.min(player.maxHp,player.hp+p.amount);arenaPickups.splice(i,1);say("+АПТЕЧКА","player",player.x,player.y-48);
+   if(player.medkits>=5)continue;
+   player.medkits=Math.min(5,player.medkits+1);
+   save.medkits=player.medkits;
+   arenaPickups.splice(i,1);
+   say("+АПТЕЧКА · "+player.medkits,"player",player.x,player.y-48);
+   storeSave();
   }else{
    if(typeof p.weapon!=="number")continue;
-   save.weapon=p.weapon;player.combat=createCombatState(HS_WEAPONS[p.weapon]);player.ammo=player.combat.ammo;
-   arenaPickups.splice(i,1);say("ОРУЖИЕ · "+HS_WEAPONS[p.weapon].name,"player",player.x,player.y-48);storeSave();
+   const id=p.weapon;
+   if(!save.weaponInventory.includes(id)){
+    save.weaponInventory=[...save.weaponInventory,id].slice(0,8);
+    arenaPickups.splice(i,1);
+    say("ОРУЖИЕ В АРСЕНАЛ · "+HS_WEAPONS[id].name,"player",player.x,player.y-48);
+    storeSave();
+   }else{
+    // Duplicate pickup becomes reserve ammunition instead of changing the equipped weapon.
+    player.combat.reserve=Math.min(player.combat.reserve+HS_WEAPONS[id].magazine*2,HS_WEAPONS[id].magazine*12);
+    player.ammo=player.combat.ammo;
+    arenaPickups.splice(i,1);
+    say("БОЕПРИПАСЫ · "+HS_WEAPONS[id].name,"player",player.x,player.y-48);
+   }
   }
  }
  arenaPickups=arenaPickups.filter(p=>p.life>0);
@@ -1211,7 +1237,8 @@ function updateArenaPickups(dt:number){
 function spawnFloor(){
  floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
  // Spawn the hero first, then instantiate the exact same encounter tick for both factions.
- player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
+ save.weaponInventory=Array.from(new Set([0,...(save.weaponInventory||[]),save.weapon])).slice(0,8);
+player={x:500,y:2180,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,medkits:Math.max(0,Math.min(5,save.medkits||0)),combat:createCombatState(HS_WEAPONS[save.weapon])};
  arenaMission=ALIEN_ARENA_MISSION;arenaTaskSetup();resetArenaPickups();initSiege();
 }
 function fire(){
@@ -1228,11 +1255,23 @@ function fire(){
 }
 function switchWeapon(){
  if(mode!=="play"||player.weaponSwap>0)return;
- save.weapon=(save.weapon+1)%weapons.length;
- player.combat=createCombatState(HS_WEAPONS[save.weapon]);
+ const owned=save.weaponInventory?.filter(n=>n>=0&&n<HS_WEAPONS.length)||[0];
+ if(owned.length<2)return;
+ const at=Math.max(0,owned.indexOf(save.weapon));
+ const next=owned[(at+1)%owned.length];
+ save.weapon=next;
+ player.combat=createCombatState(HS_WEAPONS[next]);
  player.ammo=player.combat.ammo;
  player.weaponSwap=90;
  storeSave();
+}
+function useMedkit(){
+ if(mode!=="play"||player.medkits<=0||player.hp>=player.maxHp)return;
+ player.medkits--;
+ player.hp=Math.min(player.maxHp,player.hp+40);
+ save.medkits=player.medkits;
+ storeSave();
+ say("АПТЕЧКА · +40 HP","player",player.x,player.y-48);
 }
 function useAbility(){
  if(mode!=="play"||player.ability>0)return;
@@ -1824,11 +1863,11 @@ function drawWeaponMenu(){
  const glass=(x:number,y:number,w:number,h:number,active=false)=>{c.save();c.shadowColor=active?"rgba(37,196,204,.28)":"rgba(42,61,72,.12)";c.shadowBlur=active?12:9;c.shadowOffsetY=5;const g=c.createLinearGradient(x,y,x,y+h);g.addColorStop(0,"rgba(255,255,255,.76)");g.addColorStop(.5,"rgba(248,252,253,.54)");g.addColorStop(1,active?"rgba(209,241,243,.58)":"rgba(222,232,237,.50)");c.fillStyle=g;c.beginPath();c.roundRect(x,y,w,h,Math.min(22,h*.34));c.fill();c.shadowBlur=0;c.shadowOffsetY=0;c.strokeStyle=active?"rgba(45,204,210,.88)":"rgba(255,255,255,.92)";c.lineWidth=1.4;c.stroke();c.fillStyle="rgba(255,255,255,.38)";c.beginPath();c.roundRect(x+3,y+3,w-6,Math.max(5,h*.12),Math.min(9,h*.07));c.fill();c.restore();};
  const button=(x:number,y:number,w:number,h:number,label:string,active=false)=>{glass(x,y,w,h,active);const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,active?"#56d8d8":"rgba(255,255,255,.82)");g.addColorStop(1,active?"#2cb6bd":"rgba(222,231,235,.72)");c.fillStyle=g;c.beginPath();c.roundRect(x+7,y+7,w-14,h-14,Math.min(17,h*.34));c.fill();c.strokeStyle="rgba(255,255,255,.72)";c.stroke();tx(label,x+w/2,y+h*.60,menuTextSize(.017,11,17),active?"#153b40":"#263740","center");if(active){c.fillStyle="#e69a45";c.beginPath();c.arc(x+w-19,y+h/2,5,0,Math.PI*2);c.fill();}};
  const margin=W*.07,top=H*.035,headerH=Math.min(48,H*.055);tx("АРСЕНАЛ",margin,top+headerH*.68,menuTextSize(.032,21,30),hero().color,"left");button(W*.76,top,W*.17,headerH,"×");
- const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);glass(margin,searchY,W*.86,searchH);tx("⌕",margin+W*.035,searchY+searchH*.65,menuTextSize(.028,19,25),"#5b6d77","center");tx("Выберите оружие",margin+W*.095,searchY+searchH*.65,menuTextSize(.018,12,17),"#52636c","left");tx(String(weapons.length),W-margin-W*.035,searchY+searchH*.65,menuTextSize(.016,11,15),"#77858c","center");
+ const searchY=top+headerH+H*.018,searchH=Math.min(46,H*.055);glass(margin,searchY,W*.86,searchH);tx("⌕",margin+W*.035,searchY+searchH*.65,menuTextSize(.028,19,25),"#5b6d77","center");tx("СОБРАНО "+(save.weaponInventory?.length||0)+"/"+Math.min(8,weapons.length),margin+W*.095,searchY+searchH*.65,menuTextSize(.018,12,17),"#52636c","left");tx("HP ×"+player.medkits,W-margin-W*.035,searchY+searchH*.65,menuTextSize(.016,11,15),"#77858c","center");
  const bottomH=Math.min(52,H*.064),bottomY=H-bottomH-H*.025;button(W*.08,bottomY,W*.34,bottomH,"НАЗАД");button(W*.53,bottomY,W*.39,bottomH,"В БОЙ",true);
  const listTop=searchY+searchH+H*.018,listBottom=bottomY-H*.015;const gap=H*.007,cardH=Math.min(64,H*.075),left=margin,cardW=W-margin*2;
  c.save();c.beginPath();c.rect(0,listTop,W,listBottom-listTop);c.clip();
- weapons.forEach((w,i)=>{const y=listTop+i*(cardH+gap),owned=save.weapon>=i,active=save.weapon===i;glass(left,y,cardW,cardH,active);c.save();c.globalAlpha=owned?1:.30;drawWeaponSprite(i,left+cardW*.25,y+cardH*.50,0,Math.min(.54,cardW/740));c.restore();tx(String(i+1).padStart(2,"0"),left+cardW*.43,y+cardH*.24,menuTextSize(.012,8,12),active?hero().color:"#68777f","left");tx(weaponRu(w.name),left+cardW*.43,y+cardH*.47,menuTextSize(.018,12,17),"#20323a","left");tx("УРОН "+w.damage+" · МАГ "+w.mag+" · "+Math.round(w.rate*60)+"/МИН",left+cardW*.43,y+cardH*.68,menuTextSize(.009,7,10),"#64737a","left");const bw=cardW*.27,bh=Math.min(21,cardH*.24),bx=left+cardW*.69,by=y+cardH*.64;button(bx,by,bw,bh,owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",active);});
+ weapons.forEach((w,i)=>{const y=listTop+i*(cardH+gap),owned=save.weaponInventory.includes(i),active=save.weapon===i;glass(left,y,cardW,cardH,active);c.save();c.globalAlpha=owned?1:.30;drawWeaponSprite(i,left+cardW*.25,y+cardH*.50,0,Math.min(.54,cardW/740));c.restore();tx(String(i+1).padStart(2,"0"),left+cardW*.43,y+cardH*.24,menuTextSize(.012,8,12),active?hero().color:"#68777f","left");tx(weaponRu(w.name),left+cardW*.43,y+cardH*.47,menuTextSize(.018,12,17),"#20323a","left");tx("УРОН "+w.damage+" · МАГ "+w.mag+" · "+Math.round(w.rate*60)+"/МИН",left+cardW*.43,y+cardH*.68,menuTextSize(.009,7,10),"#64737a","left");const bw=cardW*.27,bh=Math.min(21,cardH*.24),bx=left+cardW*.69,by=y+cardH*.64;button(bx,by,bw,bh,owned?(active?"ВЫБРАНО":"ВЫБРАТЬ"):"ЗАКРЫТО",active);});
  c.restore();
  const contentH=weapons.length*(cardH+gap)-gap,viewport=listBottom-listTop;if(contentH>viewport){const trackH=viewport*.72,trackY=listTop+(viewport-trackH)/2,thumbH=Math.max(22,trackH*viewport/contentH);c.fillStyle="rgba(255,255,255,.45)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,trackH,4);c.fill();c.fillStyle="rgba(65,180,188,.72)";c.beginPath();c.roundRect(W*.955,trackY,W*.012,thumbH,4);c.fill();}
  c.restore();
@@ -1936,7 +1975,7 @@ function bindButtons(){
        const n=Math.floor((y-listTop)/(cardH+gap));
        const inside=(y-listTop)-n*(cardH+gap);
        if(n>=0&&n<weapons.length&&inside<=cardH){
-         if(save.weapon>=n){
+         if(save.weaponInventory.includes(n)){
            save.weapon=n;storeSave();
            player.combat=createCombatState(HS_WEAPONS[n]);
            player.ammo=HS_WEAPONS[n].magazine;
@@ -1962,9 +2001,10 @@ function bindButtons(){
    if(a==="tender-next"){tenderPage=Math.min(Math.ceil(TENDERS.length/3)-1,tenderPage+1);render();}
    if(a==="tender-prev"){tenderPage=Math.max(0,tenderPage-1);render();}
    if(a==="tender"){const id=el.dataset.tender||"";const t=tenderById(id);if(t&&!(save.completedTenders||[]).includes(t.id)){save.activeTenderId=t.id;save.arenaMissionIndex=0;const mi=allMissions.findIndex(m=>m.id===t.linkedMission);if(mi>=0){missionIndex=mi;if(allMissions[mi].hero!=="shared")selected=allMissions[mi].hero;}save.hero=selected;arenaTaskSetup();mode="arena";storeSave();render();}}
-   if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weapon>=n){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=HS_WEAPONS[n].magazine;mode="play";render();}}
+   if(a==="select-weapon"){const n=Number(el.dataset.weapon);if(save.weaponInventory.includes(n)){save.weapon=n;storeSave();player.combat=createCombatState(HS_WEAPONS[n]);player.ammo=player.combat.ammo;mode="play";render();}}
    if(a==="weapon-back"){mode="play";render();}
    if(a==="swap")switchWeapon();
+   if(a==="medkit")useMedkit();
    if(a==="special")useAbility();
  });
  root?.querySelectorAll<HTMLElement>("[data-touch]").forEach(el=>{const k=el.dataset.touch as keyof typeof touch;const on=(v:boolean)=>{touch[k]=v;};el.addEventListener("pointerdown",e=>{e.preventDefault();on(true)});["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,()=>on(false)));});
@@ -2026,7 +2066,7 @@ function render(){
  }else if(mode==="arena"){
    ui.innerHTML=save.activeTenderId?'<div class="mafia-action"><button data-action="advance">НАЧАТЬ МИССИЮ</button><button data-action="tenders">ТЕНДЕРЫ</button></div>':'<div class="mafia-action"><button data-action="tenders">ВЫБРАТЬ ТЕНДЕР</button><button data-action="menu">ГЛАВНОЕ МЕНЮ</button></div>';
  }else if(mode==="play"){
-   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="menu">МЕНЮ</button></div>';
+   ui.innerHTML='<div class="mafia-touch-move" aria-label="Сенсор движения"><span class="mafia-touch-stick"></span></div><div class="mafia-combat-buttons"><button data-action="weapon-menu">ОРУЖИЕ</button><button data-action="medkit">АПТЕЧКА · '+player.medkits+'</button><button data-action="special">СПЕЦ</button></div><div class="mafia-aim-sensor" aria-label="Сенсор стрельбы"><span class="mafia-aim-ring"></span><span class="mafia-aim-dot"></span></div><div class="mafia-game-menu"><button data-action="menu">МЕНЮ</button></div>';
   }else if(mode==="weaponMenu"){
     // Weapon menu is rendered entirely on canvas; no legacy DOM overlay.
     ui.innerHTML="";
