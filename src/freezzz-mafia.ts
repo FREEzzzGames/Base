@@ -1557,47 +1557,6 @@ function spawnArenaWave(){
   enemies.push({type,x,y,hp,maxHp:hp,vx:0,vy:0,cool:30+i*9,shootCool:70+i*13,dir:i%2?1:-1,ai:{state:"idle",alert:0,think:i*2,strafe:i%2?1:-1,lastSeenX:x,lastSeenY:y}});
  }
 }
-function spawnFloor(){
- floorTimer=0;objectiveProgress=0;bullets=[];grenades=[];enemies=[];arenaWave=0;arenaKills=0;arenaTaskTimer=0;arenaSpawnTimer=0;
- if(save.activeTenderId&&arenaMission){player.x=ARENA_W/2;player.y=ARENA_H-150;resetArenaPickups();spawnArenaWave();}
- else arenaPickups=[];
- player={x:ARENA_W/2,y:ARENA_H-150,vx:0,vy:0,hp:100+save.armor*5,maxHp:100+save.armor*5,armor:save.armor*5,ammo:HS_WEAPONS[save.weapon].magazine,grounded:true,cool:0,ability:0,weaponSwap:0,facing:1,combat:createCombatState(HS_WEAPONS[save.weapon])};
-}
-function fire(){
- if(mode!=="play")return;
- const w=HS_WEAPONS[save.weapon];
- if(player.combat.reloadTimer>0)return;
- if(!consumeShot(player.combat,w))return;
- player.ammo=player.combat.ammo;
- const scale=portraitScale();
- const handX=player.x+player.facing*29*scale;
- const handY=player.y-44*scale;
- const angle=recoilAngle(aimAngle,player.combat);
- for(const shot of spawnShots(handX,handY,angle,w,"player",player.combat.shotCounter*100))bullets.push({...shot});
-}
-function switchWeapon(){
- if(mode!=="play"||player.weaponSwap>0)return;
- save.weapon=(save.weapon+1)%weapons.length;
- player.combat=createCombatState(HS_WEAPONS[save.weapon]);
- player.ammo=player.combat.ammo;
- player.weaponSwap=90;
- storeSave();
-}
-function useAbility(){
- if(mode!=="play"||player.ability>0)return;
- player.ability=300;
- const h=hero().id;
- if(h==="antonio"){
-   enemies.forEach(e=>{e.cool=Math.max(e.cool,110);e.shootCool=Math.max(e.shootCool,110);});
- }else if(h==="massimo"){
-   player.vx=player.facing*10;
-   player.vy=-6.5*portraitScale();
- }else if(h==="salvatore"){
-   enemies.forEach(e=>{e.vx*=.15;e.shootCool=Math.max(e.shootCool,150);});
- }else if(h==="giuseppe"){
-   player.armor=Math.max(player.armor,player.maxHp*.35);
- }
-}
 function hurt(amount:number){
  const blocked=Math.min(player.armor,amount*.5);player.armor-=blocked;player.hp-=amount-blocked;flash=.15;
  if(player.hp<=0){player.hp=player.maxHp;player.armor=save.armor*5;spawnFloor();}
