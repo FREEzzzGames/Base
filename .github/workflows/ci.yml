@@ -196,3 +196,29 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages
+
+      - name: Verify published build
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_url="${{ steps.deployment.outputs.page_url }}"
+          base_url="${base_url%/}"
+          expected="${GITHUB_SHA}"
+          published=""
+          for attempt in $(seq 1 12); do
+            published="$(curl -fsSL --connect-timeout 10 --max-time 20 \
+              "${base_url}/version.json?verify=${expected}" 2>/dev/null || true)"
+            if [ -n "${published}" ]; then
+              build="$(node -e 'const fs=require("fs"); const s=fs.readFileSync(0,"utf8"); try { const j=JSON.parse(s); process.stdout.write(j.build || ""); } catch { process.stdout.write(""); }' <<<"${published}")"
+              if [ "${build}" = "${expected}" ]; then
+                echo "PUBLISHED_BUILD_OK: ${build}"
+                exit 0
+              fi
+              echo "Published build is "${build:-<missing>}" ; expected ${expected}; retrying (${attempt}/12)."
+            else
+              echo "version.json not reachable yet; retrying (${attempt}/12)."
+            fi
+            sleep 5
+          done
+          echo "Published Pages build did not match GITHUB_SHA=${expected}."
+          exit 1
