@@ -419,7 +419,7 @@ function update(dt:number){
   }
 }
 grenades=grenades.filter(g=>g.life>0)}
-function updatePickups(dt:number){for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(player.x-p.x,player.y-p.y)>40)continue;if(p.kind==="medkit"){if(player.medkits>=5)continue;player.medkits++;save.medkits=player.medkits;msg="АПТЕЧКА +1";msgT=60}else if(typeof p.weapon==="number"){if(!save.inventory.includes(p.weapon)){save.inventory.push(p.weapon);msg="ОРУЖИЕ ДОБАВЛЕНО · "+HS_WEAPONS[p.weapon].name}else{player.combat.reserve=Math.min(player.combat.reserve+HS_WEAPONS[p.weapon].magazine*2,HS_WEAPONS[p.weapon].magazine*12);msg="БОЕПРИПАСЫ · "+HS_WEAPONS[p.weapon].name}msgT=80;persist()}pickups.splice(i,1)}if(frame%360===0&&pickups.length<10)spawnPickup()}
+function updatePickups(dt:number){for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(player.x-p.x,player.y-p.y)>40)continue;if(p.kind==="medkit"){if(player.medkits>=5)continue;player.medkits++;save.medkits=player.medkits;msg="АПТЕЧКА +1";msgT=60}else if(typeof p.weapon==="number"){if(!save.inventory.includes(p.weapon)){save.inventory.push(p.weapon);msg="ОРУЖИЕ ДОБАВЛЕНО · "+HS_WEAPONS[p.weapon].name}else{player.combat.reserve=Number.POSITIVE_INFINITY;msg="БОЕПРИПАСЫ · "+HS_WEAPONS[p.weapon].name}msgT=80;persist()}pickups.splice(i,1)}if(frame%360===0&&pickups.length<10)spawnPickup()}
 function updateNodes(dt:number){
   const o=obstacles();
 
@@ -696,7 +696,7 @@ function drawHUD(){
 
   txt(L().name,viewW-14,13,9,L().color,"right");
   txt(weapon().name,viewW-14,32,9,"#f0eee7","right");
-  txt(player.combat.ammo+" / "+player.combat.reserve,viewW-14,50,10,"#d9b86c","right");
+  txt(player.combat.ammo+" / ∞",viewW-14,50,10,"#d9b86c","right");
 
   bar(viewW/2-80,65,160,5,core.hp,core.maxHp,"#54d6d8");
 
@@ -718,7 +718,7 @@ function renderUI(){
     const weaponIcon='<svg viewBox="0 0 64 32" aria-hidden="true"><path d="M4 13h23l5-5h9l2 5h17v6H43l-3 7h-7l-2-7H4zM17 19h7l-2 8h-6z" fill="currentColor"/><path d="M45 9h7v5h-7z" fill="currentColor"/></svg>';
     const inventory=save.inventory.map(id=>{
       const w=HS_WEAPONS[id],active=id===player.weapon;
-      return '<button class="cargo-inventory-item'+(active?' active':'')+'" data-cargo-weapon="'+id+'" aria-label="Переключить '+w.name+'"><span class="cargo-inventory-icon">'+weaponIcon+'</span><span class="cargo-inventory-name">'+w.name+'</span><span class="cargo-inventory-ammo">'+(active?player.combat.ammo+" / "+player.combat.reserve:"")+'</span></button>';
+      return '<button class="cargo-inventory-item'+(active?' active':'')+'" data-cargo-weapon="'+id+'" aria-label="Переключить '+w.name+'"><span class="cargo-inventory-icon">'+weaponIcon+'</span><span class="cargo-inventory-name">'+w.name+'</span><span class="cargo-inventory-ammo">'+(active?player.combat.ammo+" / ∞":"")+'</span></button>';
     }).join("");
     const med=player.medkits>0?'<button class="cargo-inventory-item cargo-medkit" data-cargo="medkit" aria-label="Использовать аптечку"><span class="cargo-med-icon">+</span><span class="cargo-inventory-name">MEDKIT</span><span class="cargo-inventory-ammo">x'+player.medkits+'</span></button>':"";
     ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div><div class="cargo-inventory-list">'+inventory+'</div>'+med+'</div>'+
