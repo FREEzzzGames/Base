@@ -1046,136 +1046,114 @@ function drawIndustrialLighting():void{
   for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
   if(player)shadow(player.x,player.y+25,19,8,.42);
 }
+function isoProject(x:number,y:number,ox:number,oy:number,z:number){
+  const c=.8660254038,si=.5;
+  return {x:ox+(x-y)*c*z,y:oy+(x+y)*si*z};
+}
+function drawIsoArchitecture(ox:number,oy:number,z:number):void{
+  if(!ctx)return;
+  const face=(p:{x:number;y:number},h:number)=>({x:p.x,y:p.y+h*z});
+  for(let i=0;i<OBS.length;i++){
+    const o=OBS[i];
+    const h=arenaId==="school"?Math.min(92,34+o.h*.32):Math.min(88,38+o.h*.26);
+    const p1=isoProject(o.x,o.y,ox,oy,z),p2=isoProject(o.x+o.w,o.y,ox,oy,z),p3=isoProject(o.x+o.w,o.y+o.h,ox,oy,z),p4=isoProject(o.x,o.y+o.h,ox,oy,z);
+    const q1=face(p1,h),q2=face(p2,h),q3=face(p3,h),q4=face(p4,h);
+    ctx.save();
+    ctx.globalAlpha=.30;ctx.fillStyle="#000";
+    ctx.beginPath();ctx.moveTo(p4.x+8*z,p4.y+12*z);ctx.lineTo(p3.x+10*z,p3.y+12*z);ctx.lineTo(q3.x+10*z,q3.y+12*z);ctx.lineTo(q4.x+8*z,q4.y+12*z);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=1;
+    const shade=i%3===0?"#384047":i%3===1?"#465057":"#30383d";
+    ctx.fillStyle=shade;ctx.strokeStyle="#11181c";ctx.lineWidth=Math.max(1,1.4*z);
+    ctx.beginPath();ctx.moveTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q2.x,q2.y);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle="#263137";
+    ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q1.x,q1.y);ctx.closePath();ctx.fill();ctx.stroke();
+    const top=i%4===0?"#727875":i%4===1?"#646c70":i%4===2?"#7b7f79":"#5c666b";
+    ctx.fillStyle=top;
+    ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(p4.x,p4.y);ctx.closePath();ctx.fill();ctx.stroke();
+    // Structural bands and rooftop details keep the old footprint but give it volume.
+    ctx.strokeStyle="rgba(221,212,184,.20)";ctx.lineWidth=Math.max(1,z);
+    const mid1={x:(p1.x+p2.x)*.5,y:(p1.y+p2.y)*.5},mid2={x:(p4.x+p3.x)*.5,y:(p4.y+p3.y)*.5};
+    ctx.beginPath();ctx.moveTo(mid1.x,mid1.y);ctx.lineTo(mid2.x,mid2.y);ctx.stroke();
+    if(o.w>110&&o.h>60){
+      ctx.fillStyle="rgba(20,28,31,.72)";ctx.beginPath();ctx.ellipse((p1.x+p3.x)*.5,(p1.y+p3.y)*.5,Math.max(5,8*z),Math.max(3,4*z),0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(84,214,216,.32)";ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
 function drawWorld(){
-  // Restored vertical combat view: fixed world orientation, smooth follow camera.
-  const worldZoom=Math.min(1,viewW/W);
-  const worldViewH=viewH/worldZoom;
-  cam=Math.max(0,Math.min(H-worldViewH,camY-worldViewH*.58));
-  rect(0,0,viewW,viewH,"#04080b");
+  // Portrait isometric combat view. Gameplay coordinates remain unchanged; only the renderer is projected.
+  const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
+  const targetX=player?.x??W*.5,targetY=player?.y??H*.5;
+  const c=.8660254038,si=.5;
+  const projX=(targetX-targetY)*c,projY=(targetX+targetY)*si;
+  const ox=viewW*.5-projX*isoZoom;
+  const oy=Math.min(viewH*.62,viewH*.56)-projY*isoZoom;
+  rect(0,0,viewW,viewH,"#0a0f12");
+
+  // Floor and architectural layer use the same fixed isometric camera.
   ctx!.save();
-  ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
-  ctx!.scale(worldZoom,worldZoom);
+  ctx!.translate(ox,oy);
+  ctx!.scale(isoZoom,isoZoom);
+  ctx!.transform(c,si,-c,si,0,0);
   if(!staticDeckReady)buildStaticDeck();
-  if(staticDeckCanvas){ctx!.drawImage(staticDeckCanvas,0,0);drawIndustrialLighting();}
-  else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
-  // Player CARGO CORE: compact energy reactor.
+  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
+  ctx!.restore();
+
+  // Add real depth to every existing obstacle without changing its collision footprint.
+  drawIsoArchitecture(ox,oy,isoZoom);
+
   ctx!.save();
-  ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
+  ctx!.translate(ox,oy);
+  ctx!.scale(isoZoom,isoZoom);
+  ctx!.transform(c,si,-c,si,0,0);
+  drawIndustrialLighting();
+
+  // Player CARGO CORE: compact energy reactor.
+  ctx!.save();ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
   ctx!.beginPath();ctx!.arc(core.x,core.y,55+Math.sin(frame*.06)*3,0,Math.PI*2);ctx!.fill();
   ctx!.globalAlpha=.8;ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=2;
   ctx!.beginPath();ctx!.arc(core.x,core.y,37,0,Math.PI*2);ctx!.stroke();
-  ctx!.globalAlpha=1;ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=22;
-  ctx!.fillStyle="#54d6d8";ctx!.beginPath();ctx!.arc(core.x,core.y,22,0,Math.PI*2);ctx!.fill();
-  ctx!.shadowBlur=0;
-  ctx!.fillStyle="#eaffff";ctx!.beginPath();ctx!.arc(core.x,core.y,7,0,Math.PI*2);ctx!.fill();
-  ctx!.restore();
+  ctx!.globalAlpha=1;ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=22;ctx!.fillStyle="#54d6d8";
+  ctx!.beginPath();ctx!.arc(core.x,core.y,22,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
+  ctx!.fillStyle="#eaffff";ctx!.beginPath();ctx!.arc(core.x,core.y,7,0,Math.PI*2);ctx!.fill();ctx!.restore();
 
-  // Towers: industrial energy pylons, replacing the old debug squares visually.
   for(const n of nodes){
     if(n.hp<=0)continue;
     const c=n.team==="enemy"?"#ff557d":"#54d6d8";
-    ctx!.save();
-    ctx!.globalAlpha=.12;ctx!.fillStyle=c;
-    ctx!.beginPath();ctx!.arc(n.x,n.y-8,49+Math.sin(frame*.05+n.x)*2,0,Math.PI*2);ctx!.fill();
-    ctx!.globalAlpha=.72;ctx!.strokeStyle=c;ctx!.lineWidth=1.5;
-    ctx!.beginPath();ctx!.arc(n.x,n.y+16,34,0,Math.PI*2);ctx!.stroke();
-    ctx!.globalAlpha=1;
-    const tg=ctx!.createLinearGradient(n.x-30,n.y-44,n.x+30,n.y+28);
-    tg.addColorStop(0,"#273239");tg.addColorStop(.55,"#151e23");tg.addColorStop(1,"#080e12");
-    ctx!.fillStyle=tg;ctx!.fillRect(n.x-30,n.y-38,60,66);
-    ctx!.strokeStyle=c;ctx!.strokeRect(n.x-30.5,n.y-38.5,61,67);
-    ctx!.fillStyle="#0a1115";ctx!.fillRect(n.x-20,n.y-29,40,42);
-    ctx!.fillStyle=c;ctx!.globalAlpha=.22;ctx!.fillRect(n.x-16,n.y-25,32,34);ctx!.globalAlpha=1;
-    ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=12;
-    ctx!.fillRect(n.x-4,n.y-53,8,16);ctx!.shadowBlur=0;
-    bar(n.x-30,n.y-67,60,4,n.hp,n.maxHp,c);
-    ctx!.restore();
+    ctx!.save();ctx!.globalAlpha=.12;ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(n.x,n.y-8,49+Math.sin(frame*.05+n.x)*2,0,Math.PI*2);ctx!.fill();
+    ctx!.globalAlpha=.72;ctx!.strokeStyle=c;ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.arc(n.x,n.y+16,34,0,Math.PI*2);ctx!.stroke();ctx!.globalAlpha=1;
+    const tg=ctx!.createLinearGradient(n.x-30,n.y-44,n.x+30,n.y+28);tg.addColorStop(0,"#273239");tg.addColorStop(.55,"#151e23");tg.addColorStop(1,"#080e12");
+    ctx!.fillStyle=tg;ctx!.fillRect(n.x-30,n.y-38,60,66);ctx!.strokeStyle=c;ctx!.strokeRect(n.x-30.5,n.y-38.5,61,67);
+    ctx!.fillStyle="#0a1115";ctx!.fillRect(n.x-20,n.y-29,40,42);ctx!.fillStyle=c;ctx!.globalAlpha=.22;ctx!.fillRect(n.x-16,n.y-25,32,34);ctx!.globalAlpha=1;
+    ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=12;ctx!.fillRect(n.x-4,n.y-53,8,16);ctx!.shadowBlur=0;bar(n.x-30,n.y-67,60,4,n.hp,n.maxHp,c);ctx!.restore();
   }
 
-  // Pickup beacons.
   for(const p of pickups){
-    const c=p.kind==="medkit"?"#ff5b55":L().color;
-    const pulse=1+Math.sin(frame*.12+p.x)*.08;
-    ctx!.save();ctx!.globalAlpha=.18;ctx!.fillStyle=c;
-    ctx!.beginPath();ctx!.arc(p.x,p.y,20*pulse,0,Math.PI*2);ctx!.fill();
-    ctx!.globalAlpha=1;ctx!.shadowColor=c;ctx!.shadowBlur=14;
-    ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(p.x,p.y,8,0,Math.PI*2);ctx!.fill();
-    ctx!.shadowBlur=0;ctx!.fillStyle="#081013";ctx!.fillRect(p.x-4,p.y-1,8,2);
-    if(p.kind==="medkit")ctx!.fillRect(p.x-1,p.y-4,2,8);
-    ctx!.restore();
+    const c=p.kind==="medkit"?"#ff5b55":L().color,pulse=1+Math.sin(frame*.12+p.x)*.08;
+    ctx!.save();ctx!.globalAlpha=.18;ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(p.x,p.y,20*pulse,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;ctx!.shadowColor=c;ctx!.shadowBlur=14;ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(p.x,p.y,8,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;ctx!.fillStyle="#081013";ctx!.fillRect(p.x-4,p.y-1,8,2);if(p.kind==="medkit")ctx!.fillRect(p.x-1,p.y-4,2,8);ctx!.restore();
   }
 
-  // Wisps: retain the current color language, add a restrained energy tail.
   for(const m of mobs){
-    const colorId=m.type==="brawler"?0:m.type==="shooter"?1:2;
-    const c=colorId===0?"#ff557d":colorId===1?"#ffb04f":"#cf7cff";
-    const bob=Math.sin(frame*.09+m.x*.01)*3;
-    const pulse=.82+Math.sin(frame*.12+m.y*.007)*.10;
-    const wy=m.y-18+bob;
-    ctx!.save();
-    ctx!.globalAlpha=.16;
-    ctx!.fillStyle=c;
-    ctx!.beginPath();ctx!.ellipse(m.x,m.y+10,13,28,0,0,Math.PI*2);ctx!.fill();
-    ctx!.globalAlpha=1;
-    VFX.renderWisp(ctx!,m.x,wy,34*pulse,colorId,frame*.08+m.x*.02);
-
-    // Distinct readable silhouettes layered over the energy core.
+    const colorId=m.type==="brawler"?0:m.type==="shooter"?1:2,c=colorId===0?"#ff557d":colorId===1?"#ffb04f":"#cf7cff",bob=Math.sin(frame*.09+m.x*.01)*3,pulse=.82+Math.sin(frame*.12+m.y*.007)*.10,wy=m.y-18+bob;
+    ctx!.save();ctx!.globalAlpha=.16;ctx!.fillStyle=c;ctx!.beginPath();ctx!.ellipse(m.x,m.y+10,13,28,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;VFX.renderWisp(ctx!,m.x,wy,34*pulse,colorId,frame*.08+m.x*.02);
     ctx!.globalAlpha=.72;ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.fillStyle="#091217";
-    if(m.type==="brawler"){
-      ctx!.beginPath();ctx!.moveTo(m.x-12,wy-3);ctx!.lineTo(m.x-23,wy+10);ctx!.lineTo(m.x-15,wy+14);
-      ctx!.moveTo(m.x+12,wy-3);ctx!.lineTo(m.x+23,wy+10);ctx!.lineTo(m.x+15,wy+14);ctx!.stroke();
-      ctx!.beginPath();ctx!.moveTo(m.x-8,wy+5);ctx!.lineTo(m.x-13,wy+24);ctx!.lineTo(m.x-5,wy+27);
-      ctx!.moveTo(m.x+8,wy+5);ctx!.lineTo(m.x+13,wy+24);ctx!.lineTo(m.x+5,wy+27);ctx!.stroke();
-    }else if(m.type==="shooter"){
-      ctx!.beginPath();ctx!.moveTo(m.x-15,wy+2);ctx!.lineTo(m.x-10,wy+17);ctx!.lineTo(m.x+10,wy+17);ctx!.lineTo(m.x+15,wy+2);ctx!.stroke();
-      ctx!.fillStyle="#111b20";ctx!.fillRect(m.x+7,wy-2,18,4);ctx!.strokeRect(m.x+7,wy-2,18,4);
-    }else{
-      ctx!.beginPath();ctx!.moveTo(m.x,wy-25);ctx!.lineTo(m.x-18,wy+17);ctx!.lineTo(m.x,wy+10);ctx!.lineTo(m.x+18,wy+17);ctx!.closePath();ctx!.stroke();
-      ctx!.fillStyle="#111b20";ctx!.fillRect(m.x-24,wy+17,48,4);ctx!.strokeRect(m.x-24,wy+17,48,4);
-    }
-    ctx!.globalAlpha=1;
-    ctx!.fillStyle="#071014";ctx!.globalAlpha=.68;
-    ctx!.beginPath();ctx!.arc(m.x,wy,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
-    if(m.type==="sniper"&&m.think>0){
-      ctx!.globalAlpha=.22+Math.sin(frame*.16)*.10;ctx!.strokeStyle="#cf7cff";ctx!.lineWidth=1;
-      ctx!.beginPath();ctx!.arc(m.x,wy,38+Math.max(0,m.think)*.15,0,Math.PI*2);ctx!.stroke();ctx!.globalAlpha=1;
-    }
-    bar(m.x-18,m.y-55+bob,36,3,m.hp,m.maxHp,c);
-    ctx!.restore();
+    if(m.type==="brawler"){ctx!.beginPath();ctx!.moveTo(m.x-12,wy-3);ctx!.lineTo(m.x-23,wy+10);ctx!.lineTo(m.x-15,wy+14);ctx!.moveTo(m.x+12,wy-3);ctx!.lineTo(m.x+23,wy+10);ctx!.lineTo(m.x+15,wy+14);ctx!.stroke();ctx!.beginPath();ctx!.moveTo(m.x-8,wy+5);ctx!.lineTo(m.x-13,wy+24);ctx!.lineTo(m.x-5,wy+27);ctx!.moveTo(m.x+8,wy+5);ctx!.lineTo(m.x+13,wy+24);ctx!.lineTo(m.x+5,wy+27);ctx!.stroke();}
+    else if(m.type==="shooter"){ctx!.beginPath();ctx!.moveTo(m.x-15,wy+2);ctx!.lineTo(m.x-10,wy+17);ctx!.lineTo(m.x+10,wy+17);ctx!.lineTo(m.x+15,wy+2);ctx!.stroke();ctx!.fillStyle="#111b20";ctx!.fillRect(m.x+7,wy-2,18,4);ctx!.strokeRect(m.x+7,wy-2,18,4);}
+    else{ctx!.beginPath();ctx!.moveTo(m.x,wy-25);ctx!.lineTo(m.x-18,wy+17);ctx!.lineTo(m.x,wy+10);ctx!.lineTo(m.x+18,wy+17);ctx!.closePath();ctx!.stroke();ctx!.fillStyle="#111b20";ctx!.fillRect(m.x-24,wy+17,48,4);ctx!.strokeRect(m.x-24,wy+17,48,4);}
+    ctx!.globalAlpha=1;ctx!.fillStyle="#071014";ctx!.globalAlpha=.68;ctx!.beginPath();ctx!.arc(m.x,wy,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+    if(m.type==="sniper"&&m.think>0){ctx!.globalAlpha=.22+Math.sin(frame*.16)*.10;ctx!.strokeStyle="#cf7cff";ctx!.lineWidth=1;ctx!.beginPath();ctx!.arc(m.x,wy,38+Math.max(0,m.think)*.15,0,Math.PI*2);ctx!.stroke();ctx!.globalAlpha=1;}
+    bar(m.x-18,m.y-55+bob,36,3,m.hp,m.maxHp,c);ctx!.restore();
   }
 
-  if(validAttackTarget(attackTarget)){
-    const tx=attackTarget.x,ty=attackTarget.y-18;
-    ctx!.save();ctx!.globalAlpha=.78;ctx!.strokeStyle=L().color;ctx!.lineWidth=1.5;
-    ctx!.beginPath();ctx!.arc(tx,ty,22+Math.sin(frame*.12)*2,0,Math.PI*2);ctx!.stroke();
-    ctx!.restore();
-  }
+  if(validAttackTarget(attackTarget)){const tx=attackTarget.x,ty=attackTarget.y-18;ctx!.save();ctx!.globalAlpha=.78;ctx!.strokeStyle=L().color;ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.arc(tx,ty,22+Math.sin(frame*.12)*2,0,Math.PI*2);ctx!.stroke();ctx!.restore();}
   drawPlayer();
+  for(const b of bullets){const c=b.from==="player"?L().color:"#ff557d";ctx!.save();ctx!.strokeStyle=c;ctx!.lineWidth=3;ctx!.globalAlpha=.28;ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*4,b.y-b.vy*4);ctx!.stroke();ctx!.globalAlpha=1;ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);ctx!.stroke();ctx!.restore();}
+  for(const g of grenades){ctx!.save();ctx!.fillStyle="#d9b86c";ctx!.shadowColor="#d9b86c";ctx!.shadowBlur=8;ctx!.beginPath();ctx!.arc(g.x,g.y,6,0,Math.PI*2);ctx!.fill();ctx!.restore();}
+  for(const e of effects){ctx!.globalAlpha=Math.min(1,e.life/18);txt(e.text,e.x,e.y,9,e.color,"center");}
+  ctx!.globalAlpha=1;ctx!.restore();
 
-  // Projectiles: bright core + short energy tail.
-  for(const b of bullets){
-    const c=b.from==="player"?L().color:"#ff557d";
-    ctx!.save();ctx!.strokeStyle=c;ctx!.lineWidth=3;ctx!.globalAlpha=.28;
-    ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*4,b.y-b.vy*4);ctx!.stroke();
-    ctx!.globalAlpha=1;ctx!.lineWidth=1.5;
-    ctx!.beginPath();ctx!.moveTo(b.x,b.y);ctx!.lineTo(b.x-b.vx*2,b.y-b.vy*2);ctx!.stroke();
-    ctx!.restore();
-  }
-
-  for(const g of grenades){
-    ctx!.save();ctx!.fillStyle="#d9b86c";ctx!.shadowColor="#d9b86c";ctx!.shadowBlur=8;
-    ctx!.beginPath();ctx!.arc(g.x,g.y,6,0,Math.PI*2);ctx!.fill();ctx!.restore();
-  }
-
-  for(const e of effects){
-    ctx!.globalAlpha=Math.min(1,e.life/18);txt(e.text,e.x,e.y,9,e.color,"center");
-  }
-  ctx!.globalAlpha=1;
-  ctx!.restore();
-
-  VFX.renderVFX(ctx!,{
-    x:W*.5,y:cam+worldViewH*.5,zoom:worldZoom,width:viewW,height:viewH
-  });
+  VFX.renderVFX(ctx!,{x:viewW*.5,y:viewH*.54,zoom:isoZoom,width:viewW,height:viewH});
   drawHUD();
 }
 function drawHUD(){
