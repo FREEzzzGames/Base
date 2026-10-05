@@ -253,7 +253,7 @@ function buildStaticDeck():void{
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,auto=true,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+let frame=0,last=0,raf=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,auto=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
 // Camera is intentionally locked to the reference vertical/isometric orientation.
 // The previous 360° rotation experiment is removed: gameplay direction stays stable.
 let cameraYaw=0;
@@ -538,7 +538,7 @@ function selectAttackTarget(x:number,y:number):void{
   for(const m of mobs){
     if(m.hp<=0||m.team!=="enemy")continue;
     const d=Math.hypot(m.x-x,m.y-y);
-    if(d<bestD&&d<=90){best=m;bestD=d}
+    if(d<bestD&&d<=120){best=m;bestD=d}
   }
   attackTarget=best||enemyTarget(player.x,player.y,weapon().range);
 }
@@ -566,7 +566,7 @@ function fire():void{
   const target=currentAttackTarget();
   if(!target||player.combat.fireTimer>0)return;
   player.attackState="windup";
-  player.attackTimer=Math.min(6,Math.max(3,Math.round(weapon().fireInterval*.35)));
+  player.attackTimer=Math.min(5,Math.max(2,Math.round(weapon().fireInterval*.28)));
 }
 function stepPlayerAttack(dt:number):void{
   if(player.attackState==="ready")return;
@@ -1437,7 +1437,7 @@ function drawWorld(){
   const centerX=viewW*.5;
   // The player is the visual anchor; look-ahead is expressed by targetX/Y,
   // not by moving the player toward the lower edge of the viewport.
-  const centerY=viewH*.54;
+  const centerY=viewH*.50;
   const c=.8660254038,si=.5,co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
   drawSpaceBackdrop();
@@ -1455,7 +1455,7 @@ function drawWorld(){
 
   MAP_STRUCTURES.forEach((o,i)=>{
     depthItems.push({
-      depth:isoArchitectureDepth(o,centerX,centerY,isoZoom,targetX,targetY,cameraYaw),
+      depth:isoArchitectureDepth(o,centerX,centerY,isoZoom,targetX,targetY,cameraYaw)+(o.level>0?-5000:0),
       order:i,
       draw:()=>drawIsoArchitectureItem(o,i,centerX,centerY,isoZoom,targetX,targetY,cameraYaw)
     });
@@ -1555,11 +1555,11 @@ function renderUI(){
     ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div><div class="cargo-inventory-list">'+inventory+'</div>'+med+'</div>'+
       '<div class="cargo-touch-zone" aria-hidden="true"></div>'+
       '<div class="cargo-combat-zone" aria-label="Выбор цели"></div>'+
-      '<div class="cargo-combat-radial" aria-label="Управление огнём">'+
-        '<button class="cargo-radial-button cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автоатака"><span class="cargo-radial-icon">⟳</span><span class="cargo-radial-label">AUTO</span></button>'+
-        '<button class="cargo-radial-button cargo-grenade" data-cargo="grenade" aria-label="Граната"><span class="cargo-radial-icon">◈</span><span class="cargo-radial-label">G</span></button>'+
-        '<button class="cargo-radial-button cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Умение"><span class="cargo-radial-icon">✦</span><span class="cargo-radial-label">SKILL</span></button>'+
-        '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">✦</span><span class="cargo-fire-label">FIRE</span></button>'+
+      '<div class="cargo-combat-radial" aria-label="Боевые действия">'+
+        '<button class="cargo-combat-small cargo-ult'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="ULT"><span class="cargo-combat-icon">✦</span><span class="cargo-combat-caption">ULT</span></button>'+
+        '<button class="cargo-combat-small cargo-skill" data-cargo="grenade" aria-label="SKILL"><span class="cargo-combat-icon">◈</span><span class="cargo-combat-caption">SKILL</span></button>'+
+        '<button class="cargo-combat-small cargo-tower" data-cargo="tower" aria-label="Башня"><span class="cargo-combat-icon">⌖</span><span class="cargo-combat-caption">TOWER</span></button>'+
+        '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">'+weapon().name.slice(0,1)+'</span><span class="cargo-fire-label">ATTACK</span></button>'+
       '</div>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
   }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
@@ -1577,10 +1577,16 @@ function bindUI(){
     if(a==="start")start();
     else if(a==="weapon"){mode="weapon";render()}
     else if(a==="reload"){startReload(player.combat,weapon())}
-    else if(a==="auto"){auto=!auto;msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60;renderUI()}
+    else if(a==="auto"){auto=!auto;msg=auto?"АВТОАТАКА · ВКЛ":"РУЧНАЯ АТАКА · ВКЛ";msgT=60;renderUI()}
     else if(a==="medkit"){medkit();renderUI()}
     else if(a==="grenade")grenade();
     else if(a==="ability")special();
+    else if(a==="tower"){
+      const target=enemyTarget(player.x,player.y,weapon().range);
+      if(target){attackTarget=target;msg="ЦЕЛЬ ЗАХВАЧЕНА";msgT=45}
+      else {msg="НЕТ ЦЕЛИ В РАДИУСЕ";msgT=45}
+      renderUI();
+    }
     else if(a==="menu")exit();
     else if(a==="retry")start()
   });
@@ -1681,9 +1687,9 @@ function updateCamera(dt:number):void{
   if(!player)return;
   const zoom=getCameraZoom();
   const moving=Math.hypot(moveX,moveY)>.04;
-  const lookDistance=arenaId==="cargo"?(moving?150:0):(moving?110:0);
+  const lookDistance=arenaId==="cargo"?(moving?90:0):(moving?70:0);
   const desired=clampCameraTarget(player.x+moveX*lookDistance,player.y+moveY*lookDistance);
-  const ease=1-Math.exp(-dt*.10);
+  const ease=1-Math.exp(-dt*.18);
   cameraState.targetX=desired.x;cameraState.targetY=desired.y;cameraState.zoom=zoom;
   cameraState.x+=(desired.x-cameraState.x)*ease;
   cameraState.y+=(desired.y-cameraState.y)*ease;
