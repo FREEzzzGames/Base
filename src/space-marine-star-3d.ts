@@ -27,83 +27,53 @@ const shade=(l:number,m=0)=>{const base=m===2?0xd18a24:m===3?0x6f7675:m===4?0x7d
 import {HumanJointRig} from "./cargo-deck-biomech";
 export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:true,rig:"procedural-human-joint-limits"} as const;
 const rig=new HumanJointRig();
-// Model presentation transform: the source mesh is stored upside-down; flip it onto its feet.
-const MODEL_HEIGHT=21.2;
+// Stable presentation rig. The source 3MF already uses Z as the vertical axis;
+// the previous build inverted Z and put the head toward the floor.
+// First milestone: preserve the authored mesh and place both feet on the ground.
+// Joint deformation is deliberately disabled until the upright base pose is verified.
 const MODEL_SCALE=1.5;
+const MODEL_FOOT_Z=0.08;
 const MX=new Float32Array(VCOUNT),MY=new Float32Array(VCOUNT),MZ=new Float32Array(VCOUNT);
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
-function poseVertex(i:number,walk:number,aim:number,recoil:number):void{
-  // The source mesh is upside-down. Rotate it 180° around X, rather than mirroring Z.
-  let x=V[i*3]*.01,y=-V[i*3+1]*.01;
-  const rawZ=V[i*3+2]*.01+18;
-  let z=MODEL_HEIGHT-rawZ;
-  const zn=z/21.2,side=x>=0?1:-1,ax=Math.abs(x);
-  const limbWeight=Math.max(0,Math.min(1,(ax-.065)/.13));
-  const upperWeight=Math.max(0,Math.min(1,(ax-.075)/.12));
-  if(zn<.48 && limbWeight>0){
-    const hip=side>0?rig.pose.hipR:rig.pose.hipL;
-    const knee=side>0?rig.pose.kneeR:rig.pose.kneeL;
-    const a=(hip+walk*.22*side)*limbWeight;
-    const px=side*.075,pz=.30;
-    const dx=x-px,dz=z-pz;
-    const rx=px+dx*Math.cos(a)-dz*Math.sin(a);
-    const rz=pz+dx*Math.sin(a)+dz*Math.cos(a);
-    x=x+(rx-x)*limbWeight;z=z+(rz-z)*limbWeight;
-    z-=knee*.035*Math.max(0,Math.min(1,(.48-zn)/.22))*limbWeight;
-  }else if(zn<.72){
-    const spine=rig.pose.spine;
-    const w=Math.max(0,Math.min(1,(.72-zn)/.30));
-    x+=Math.sin(spine)*.08*w;
-    y+=Math.cos(spine)*.035*w;
-  }else if(upperWeight>0){
-    const shoulder=side>0?rig.pose.shoulderR:rig.pose.shoulderL;
-    const elbow=side>0?rig.pose.elbowR:rig.pose.elbowL;
-    const a=(shoulder+aim*.12+walk*.14*side)*upperWeight;
-    const px=side*.15,pz=.76;
-    const dx=x-px,dz=z-pz;
-    const rx=px+dx*Math.cos(a)-dz*Math.sin(a);
-    const rz=pz+dx*Math.sin(a)+dz*Math.cos(a);
-    x=x+(rx-x)*upperWeight;z=z+(rz-z)*upperWeight;
-    z-=elbow*.018*upperWeight;
-  }
-  y+=recoil*.018;
-  MX[i]=x;MY[i]=y;MZ[i]=z;
+function poseVertex(i:number,recoil:number):void{
+  const x=V[i*3]*.01;
+  const y=-V[i*3+1]*.01;
+  const z=V[i*3+2]*.01+MODEL_FOOT_Z;
+  MX[i]=x;MY[i]=y;MZ[i]=z+recoil*.018;
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
-  const ctx=f.ctx,s=Math.max(.04,f.scale)*MODEL_SCALE,c=Math.cos(f.facing),sn=Math.sin(f.facing);
-  const g=Math.sin(f.walkPhase)*Math.max(0,Math.min(1,f.moving));
-  const bob=Math.abs(Math.sin(f.walkPhase))*.5*Math.max(0,Math.min(1,f.moving));
+  const ctx=f.ctx;
+  const s=Math.max(.04,f.scale)*MODEL_SCALE;
+  const c=Math.cos(f.facing),sn=Math.sin(f.facing);
   const r=f.firing>0?Math.min(1,f.firing):0;
-  const aim=f.aiming?-.22:0;
-  rig.solve({
-    hipL:-g*.22,hipR:g*.22,
-    kneeL:Math.max(0,g*.18),kneeR:Math.max(0,-g*.18),
-    ankleL:-g*.08,ankleR:g*.08,
-    shoulderL:g*.12,shoulderR:-g*.12,
-    elbowL:.35+Math.abs(g)*.12,elbowR:.35+Math.abs(g)*.12,
-    spine:aim*.55,neck:aim*.35
-  },1/60);
+
+  // Keep the authored Space Marine mesh rigid and upright.
+  // No guessed vertex-region skinning: that was the source of the broken pose.
   for(let i=0;i<VCOUNT;i++){
-    poseVertex(i,g,aim,r);
-    const x=MX[i]*s,y=MY[i]*s,z=(MZ[i]+bob)*s;
+    poseVertex(i,r);
+    const x=MX[i]*s,y=MY[i]*s,z=MZ[i]*s;
     const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);
     PX[i]=q.x;PY[i]=q.y;
   }
+
   for(let i=0,j=0;i<FCOUNT;i++,j+=3){
     const a=F[j],b=F[j+1],cc=F[j+2];
-    PD[i]=(PY[a]+PY[b]+PY[cc])/3;PO[i]=i;
+    PD[i]=(PY[a]+PY[b]+PY[cc])/3;
+    PO[i]=i;
   }
   for(let i=1;i<FCOUNT;i++){
     const k=PO[i],q=PD[k];let j=i-1;
     while(j>=0&&PD[PO[j]]>q){PO[j+1]=PO[j];j--}
     PO[j+1]=k;
   }
+
   ctx.save();
   for(let i=0;i<FCOUNT;i++){
     const j=PO[i]*3,a=F[j],b=F[j+1],cc=F[j+2];
     const l=Math.max(.35,Math.min(1.08,.70+N[j+2]/127*.26-N[j+1]/127*.10));
-    ctx.fillStyle=shade(l,MAT[PO[i]]);ctx.beginPath();
+    ctx.fillStyle=shade(l,MAT[PO[i]]);
+    ctx.beginPath();
     ctx.moveTo(PX[a],PY[a]);ctx.lineTo(PX[b],PY[b]);ctx.lineTo(PX[cc],PY[cc]);
     ctx.closePath();ctx.fill();
   }
