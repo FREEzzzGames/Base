@@ -128,6 +128,15 @@ function buildStaticDeck():void{
       const shade=g.createLinearGradient(x,y,x,y+h);shade.addColorStop(0,"rgba(255,215,130,.16)");shade.addColorStop(.28,"rgba(255,185,80,.04)");shade.addColorStop(.62,"rgba(0,0,0,.10)");shade.addColorStop(1,"rgba(0,0,0,.48)");g.fillStyle=shade;g.fillRect(x,y,w,h);
       g.strokeStyle="rgba(255,211,118,.28)";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);g.strokeStyle="rgba(84,214,216,.24)";g.strokeRect(x+2.5,y+2.5,w-5,h-5);g.strokeStyle="rgba(0,0,0,.78)";g.beginPath();g.moveTo(x+w*.5,y+3);g.lineTo(x+w*.5,y+h-3);g.stroke();
       const sections=Math.max(2,Math.floor(w/58));g.strokeStyle="rgba(8,10,11,.62)";for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;g.beginPath();g.moveTo(sx,y+5);g.lineTo(sx,y+h-5);g.stroke()}
+      // Bolts, vents and serialized warning plates break the procedural rectangle silhouette.
+      for(const bx of [x+9,x+w-9])for(const by of [y+10,y+h-10]){
+        g.fillStyle="#9a8d72";g.beginPath();g.arc(bx,by,2,0,Math.PI*2);g.fill();
+        g.fillStyle="#202729";g.beginPath();g.arc(bx,by,1,0,Math.PI*2);g.fill();
+      }
+      g.fillStyle="rgba(0,0,0,.42)";g.fillRect(x+w*.14,y+h*.62,w*.72,8);
+      for(let vx=x+w*.18;vx<x+w*.82;vx+=12){g.fillStyle="rgba(122,145,146,.24)";g.fillRect(vx,y+h*.64,6,2);}
+      g.fillStyle="rgba(222,179,87,.62)";g.fillRect(x+w*.08,y+h*.16,Math.min(42,w*.28),10);
+      g.fillStyle="#182124";g.font="700 6px monospace";g.textAlign="left";g.fillText("CARGO // 17",x+w*.10,y+h*.16+7);
     }
   }else{
     // BLOCK 17: top-down abandoned Soviet school / sports wing.
@@ -870,18 +879,49 @@ function drawPlayer(){
   ctx!.fillStyle="#536167";ctx!.fillRect(-20,-61,6,10);ctx!.fillRect(14,-61,6,10);
   ctx!.restore();
 
-  // Weapon: aim is 360 degrees and recoil physically shifts the entire weapon rig.
+  // Weapon: detailed hard-surface sci-fi carbine. The gun remains the primary
+  // hand constraint; only its visual construction is being upgraded here.
   ctx!.save();ctx!.translate(gunBaseX,gunBaseY);ctx!.rotate(aimAngle);
-  ctx!.shadowColor="#000";ctx!.shadowBlur=7;ctx!.fillStyle="#080d10";ctx!.beginPath();ctx!.roundRect(-12,-5,gunLen+18,10,3);ctx!.fill();ctx!.shadowBlur=0;
-  ctx!.fillStyle="#35454a";ctx!.fillRect(-5,-4,Math.max(20,gunLen-18),7);
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=5;ctx!.fillRect(3,-2,Math.max(10,gunLen-27),3);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#11191d";ctx!.fillRect(Math.max(8,gunLen*.38),4,7,13);
-  ctx!.strokeStyle="#6e7b7f";ctx!.lineWidth=1;ctx!.strokeRect(Math.max(8,gunLen*.38),4,7,13);
-  ctx!.fillStyle="#11191d";ctx!.fillRect(-15,-3,8,7);ctx!.fillRect(gunLen-1,-3,17,5);
+  ctx!.shadowColor="#000";ctx!.shadowBlur=9;
+  ctx!.fillStyle="#070b0e";ctx!.beginPath();ctx!.roundRect(-16,-6,gunLen+34,12,3);ctx!.fill();ctx!.shadowBlur=0;
+
+  // Receiver and armored side panels.
+  const receiverW=Math.max(28,gunLen*.56);
+  ctx!.fillStyle="#29363b";ctx!.beginPath();ctx!.roundRect(-5,-5,receiverW,10,2);ctx!.fill();
+  ctx!.strokeStyle="#53656a";ctx!.lineWidth=1;ctx!.strokeRect(-4.5,-4.5,receiverW-1,9);
+  ctx!.fillStyle="#172126";ctx!.fillRect(3,-2,receiverW-12,4);
+  ctx!.fillStyle=c;ctx!.globalAlpha=.85;ctx!.shadowColor=c;ctx!.shadowBlur=6;
+  ctx!.fillRect(7,-1,Math.max(9,receiverW-20),2);ctx!.shadowBlur=0;ctx!.globalAlpha=1;
+
+  // Upper rail, barrel shroud and muzzle.
+  ctx!.fillStyle="#10181c";ctx!.fillRect(0,-8,Math.max(24,gunLen-7),3);
+  ctx!.fillStyle="#4a5a5f";ctx!.fillRect(7,-7,Math.max(18,gunLen-22),2);
+  ctx!.fillStyle="#1b2529";ctx!.fillRect(receiverW-1,-4,Math.max(20,gunLen-receiverW+13),8);
+  ctx!.fillStyle="#59696e";ctx!.fillRect(gunLen+2,-4,8,8);
+  ctx!.fillStyle="#0a1114";ctx!.fillRect(gunLen+8,-5,11,10);
+  ctx!.strokeStyle="#66777c";ctx!.strokeRect(gunLen+8.5,-4.5,10,9);
+
+  // Magazine and forward grip.
+  const magX=Math.max(8,gunLen*.38);
+  ctx!.fillStyle="#10181c";ctx!.beginPath();ctx!.moveTo(magX,3);ctx!.lineTo(magX+10,3);ctx!.lineTo(magX+8,18);ctx!.lineTo(magX-2,18);ctx!.closePath();ctx!.fill();
+  ctx!.strokeStyle="#46565b";ctx!.stroke();
+  ctx!.fillStyle="#26343a";ctx!.fillRect(Math.max(18,gunLen*.62),5,7,12);
+  ctx!.strokeStyle="#617177";ctx!.strokeRect(Math.max(18,gunLen*.62)+.5,5.5,6,11);
+
+  // Stock / rear housing.
+  ctx!.fillStyle="#11191d";ctx!.fillRect(-17,-4,13,8);
+  ctx!.fillStyle="#303d42";ctx!.fillRect(-15,-8,7,3);ctx!.fillRect(-15,5,10,3);
+
+  // Fasteners and warning light.
+  ctx!.fillStyle="#8b999d";
+  for(const sx of [-1,10,21]){ctx!.beginPath();ctx!.arc(sx,-4,1,0,Math.PI*2);ctx!.fill();}
+  ctx!.fillStyle="#d69b3a";ctx!.fillRect(receiverW*.56,-6,5,2);
+
   if(muzzleFlash>0){
     const alpha=Math.min(1,muzzleFlash*1.8);
-    ctx!.globalAlpha=alpha;ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=10;
-    ctx!.beginPath();ctx!.moveTo(gunLen+16,0);ctx!.lineTo(gunLen+29,-6);ctx!.lineTo(gunLen+24,0);ctx!.lineTo(gunLen+29,6);ctx!.closePath();ctx!.fill();ctx!.globalAlpha=1;ctx!.shadowBlur=0;
+    ctx!.globalAlpha=alpha;ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=13;
+    ctx!.beginPath();ctx!.moveTo(gunLen+17,0);ctx!.lineTo(gunLen+31,-7);ctx!.lineTo(gunLen+25,0);ctx!.lineTo(gunLen+31,7);ctx!.closePath();ctx!.fill();
+    ctx!.globalAlpha=1;ctx!.shadowBlur=0;
   }
   ctx!.restore();
 
@@ -966,6 +1006,22 @@ function drawWorld(){
     ctx!.beginPath();ctx!.ellipse(m.x,m.y+10,13,28,0,0,Math.PI*2);ctx!.fill();
     ctx!.globalAlpha=1;
     VFX.renderWisp(ctx!,m.x,wy,34*pulse,colorId,frame*.08+m.x*.02);
+
+    // Distinct readable silhouettes layered over the energy core.
+    ctx!.globalAlpha=.72;ctx!.strokeStyle=c;ctx!.lineWidth=2;ctx!.fillStyle="#091217";
+    if(m.type==="brawler"){
+      ctx!.beginPath();ctx!.moveTo(m.x-12,wy-3);ctx!.lineTo(m.x-23,wy+10);ctx!.lineTo(m.x-15,wy+14);
+      ctx!.moveTo(m.x+12,wy-3);ctx!.lineTo(m.x+23,wy+10);ctx!.lineTo(m.x+15,wy+14);ctx!.stroke();
+      ctx!.beginPath();ctx!.moveTo(m.x-8,wy+5);ctx!.lineTo(m.x-13,wy+24);ctx!.lineTo(m.x-5,wy+27);
+      ctx!.moveTo(m.x+8,wy+5);ctx!.lineTo(m.x+13,wy+24);ctx!.lineTo(m.x+5,wy+27);ctx!.stroke();
+    }else if(m.type==="shooter"){
+      ctx!.beginPath();ctx!.moveTo(m.x-15,wy+2);ctx!.lineTo(m.x-10,wy+17);ctx!.lineTo(m.x+10,wy+17);ctx!.lineTo(m.x+15,wy+2);ctx!.stroke();
+      ctx!.fillStyle="#111b20";ctx!.fillRect(m.x+7,wy-2,18,4);ctx!.strokeRect(m.x+7,wy-2,18,4);
+    }else{
+      ctx!.beginPath();ctx!.moveTo(m.x,wy-25);ctx!.lineTo(m.x-18,wy+17);ctx!.lineTo(m.x,wy+10);ctx!.lineTo(m.x+18,wy+17);ctx!.closePath();ctx!.stroke();
+      ctx!.fillStyle="#111b20";ctx!.fillRect(m.x-24,wy+17,48,4);ctx!.strokeRect(m.x-24,wy+17,48,4);
+    }
+    ctx!.globalAlpha=1;
     ctx!.fillStyle="#071014";ctx!.globalAlpha=.68;
     ctx!.beginPath();ctx!.arc(m.x,wy,5,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
     if(m.type==="sniper"&&m.think>0){
