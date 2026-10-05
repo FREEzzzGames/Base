@@ -1517,10 +1517,13 @@ function renderUI(){
     const med=player.medkits>0?'<button class="cargo-inventory-item cargo-medkit" data-cargo="medkit" aria-label="Использовать аптечку"><span class="cargo-med-icon">+</span><span class="cargo-inventory-name">MEDKIT</span><span class="cargo-inventory-ammo">x'+player.medkits+'</span></button>':"";
     ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div><div class="cargo-inventory-list">'+inventory+'</div>'+med+'</div>'+
       '<div class="cargo-touch-zone" aria-hidden="true"></div>'+
-      '<div class="cargo-combat-zone" aria-hidden="true"></div>'+
-      '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автоатака">AUTO</button>'+
-      '<button class="cargo-grenade" data-cargo="grenade" aria-label="Граната">G</button>'+
-      '<button class="cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Спецвозможность">✦</button>'+
+      '<div class="cargo-combat-zone" aria-label="Выбор цели"></div>'+
+      '<div class="cargo-combat-radial" aria-label="Управление огнём">'+
+        '<button class="cargo-radial-button cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автоатака"><span class="cargo-radial-icon">⟳</span><span class="cargo-radial-label">AUTO</span></button>'+
+        '<button class="cargo-radial-button cargo-grenade" data-cargo="grenade" aria-label="Граната"><span class="cargo-radial-icon">◈</span><span class="cargo-radial-label">G</span></button>'+
+        '<button class="cargo-radial-button cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Умение"><span class="cargo-radial-icon">✦</span><span class="cargo-radial-label">SKILL</span></button>'+
+        '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">✦</span><span class="cargo-fire-label">FIRE</span></button>'+
+      '</div>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
   }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
   else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
@@ -1591,22 +1594,37 @@ function bindUI(){
   }
 
   if(combat){
-    const stop=()=>{combatId=null;fireHeld=false};
+    // Right-side playfield tap selects a target; the primary FIRE button
+    // is the only manual firing control.
     combat.addEventListener("pointerdown",e=>{
       if(e.button!==undefined&&e.button!==0)return;
-      e.preventDefault();combatId=e.pointerId;combat.setPointerCapture(e.pointerId);
-      // Target selection is mapped from the actual game canvas, not the HUD combat zone.
-      // This keeps touch targeting correct after any HUD/layout change.
+      e.preventDefault();
       const rect=canvas!.getBoundingClientRect();
       const sx=e.clientX-(rect.left+rect.width*.5);
       const sy=e.clientY-(rect.top+rect.height*.5);
       const world=screenToWorld(sx,sy);
       selectAttackTarget(world.x,world.y);
+    });
+  }
+
+  const fireButton=ui?.querySelector<HTMLButtonElement>("[data-fire]");
+  if(fireButton){
+    const stopFire=(e:PointerEvent)=>{
+      if(fireButton.hasPointerCapture(e.pointerId))fireButton.releasePointerCapture(e.pointerId);
+      fireHeld=false;
+      fireButton.classList.remove("pressed");
+    };
+    fireButton.addEventListener("pointerdown",e=>{
+      if(e.button!==undefined&&e.button!==0)return;
+      e.preventDefault();
       fireHeld=true;
+      fireButton.classList.add("pressed");
+      fireButton.setPointerCapture(e.pointerId);
       fire();
     });
-    combat.addEventListener("pointerup",e=>{if(e.pointerId===combatId)stop()});
-    combat.addEventListener("pointercancel",e=>{if(e.pointerId===combatId)stop()});
+    fireButton.addEventListener("pointerup",stopFire);
+    fireButton.addEventListener("pointercancel",stopFire);
+    fireButton.addEventListener("lostpointercapture",()=>{fireHeld=false;fireButton.classList.remove("pressed")});
   }
 
   if(mode==="weapon"){
