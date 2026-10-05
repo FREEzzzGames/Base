@@ -653,10 +653,8 @@ function drawPlayer(){
  const movingVisual=Math.min(1,Math.hypot(px-prevX,py-prevY)/4);
  const vx=px-prevX,vy=py-prevY;
  (drawPlayer as any)._px=px;(drawPlayer as any)._py=py;
- const moveAngle=Math.atan2(vy,vx);
  const phase=(frame*.22*(movingVisual>.05?1:0.18))+(movingVisual>.05?Math.atan2(vy,vx)*.18:0);
  const stride=Math.sin(phase)*movingVisual;
- const bob=Math.abs(Math.sin(phase))*2.2*movingVisual;
  const recoil=Math.min(4.5,player.combat.recoil*.28);
  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
  const dirX=Math.cos(a),dirY=Math.sin(a),sideX=-dirY,sideY=dirX;
