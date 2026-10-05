@@ -207,16 +207,22 @@ export function renderWisp(ctx:CanvasRenderingContext2D,x0:number,y0:number,size
   ctx.restore();
 }
 
-export interface VFXCamera{x:number;y:number;zoom:number;width:number;height:number}
+export interface VFXCamera{x:number;y:number;zoom:number;width:number;height:number;targetX:number;targetY:number;yaw:number}
 
 export function renderVFX(ctx:CanvasRenderingContext2D,camera:VFXCamera){
   const cw=camera.width*.5,ch=camera.height*.5,z=camera.zoom;
+  const c=.8660254038,si=.5,co=Math.cos(camera.yaw),sn=Math.sin(camera.yaw);
+  const project=(wx:number,wy:number)=>{
+    const dx=wx-camera.targetX,dy=wy-camera.targetY;
+    const rx=dx*co-dy*sn,ry=dx*sn+dy*co;
+    return {x:(rx-ry)*c*z+cw,y:(rx+ry)*si*z+ch};
+  };
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   for(let i=0;i<activeCount;i++){
     const a=Math.max(0,Math.min(1,(life[i]/maxLife[i])*alpha[i]));
     if(a<=.01)continue;
-    const sx=(x[i]-camera.x)*z+cw,sy=(y[i]-camera.y)*z+ch,s=size[i]*z;
+    const p=project(x[i],y[i]),sx=p.x,sy=p.y,s=size[i]*z;
     if(sx < -s || sx > camera.width+s || sy < -s || sy > camera.height+s)continue;
     ctx.globalAlpha=a;
     const ci=color[i],t=type[i];
@@ -230,7 +236,7 @@ export function renderVFX(ctx:CanvasRenderingContext2D,camera:VFXCamera){
     }else{
       ctx.strokeStyle=COLORS[ci];
       ctx.lineWidth=Math.max(.75,width[i]*z);
-      const psx=(px[i]-camera.x)*z+cw,psy=(py[i]-camera.y)*z+ch;
+      const pp=project(px[i],py[i]),psx=pp.x,psy=pp.y;
       ctx.beginPath();ctx.moveTo(psx,psy);ctx.lineTo(sx,sy);ctx.stroke();
     }
   }
