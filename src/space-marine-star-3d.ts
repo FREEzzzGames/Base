@@ -32,13 +32,13 @@ const rig=new HumanJointRig();
 // First milestone: preserve the authored mesh and place both feet on the ground.
 // Joint deformation is deliberately disabled until the upright base pose is verified.
 const MODEL_SCALE=1.5;
-const MODEL_FOOT_Z=0.08;
+const MODEL_Z_OFFSET=18.08;
 const MX=new Float32Array(VCOUNT),MY=new Float32Array(VCOUNT),MZ=new Float32Array(VCOUNT);
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
 function poseVertex(i:number,recoil:number):void{
   const x=V[i*3]*.01;
   const y=-V[i*3+1]*.01;
-  const z=V[i*3+2]*.01+MODEL_FOOT_Z;
+  const z=V[i*3+2]*.01+MODEL_Z_OFFSET;
   MX[i]=x;MY[i]=y;MZ[i]=z+recoil*.018;
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
