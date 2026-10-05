@@ -1,5 +1,6 @@
 import objText from "./assets/CARGO_DECK_OPERATOR.obj?raw";
 
+const LOOP_ONCE=2200;
 export type SoldierAnimationState="IDLE"|"RUN"|"SIT_DOWN"|"STAND_UP"|"AIM"|"SHOOT";
 export interface SoldierModelAdapter{
   rotation?:{y:number};
@@ -72,7 +73,7 @@ export class SoldierBehaviorController{
     const action=this.actions.SHOOT;
     if(action){
       if(action.reset)action.reset();
-      if(action.setLoop)action.setLoop(2205,1);
+      if(action.setLoop)action.setLoop(LOOP_ONCE,1);
       if(action.play)action.play();
     }
     this.transitionTo("SHOOT",true);
