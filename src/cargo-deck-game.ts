@@ -648,9 +648,9 @@ function drawLoadout(){
 function drawResult(){rect(0,0,viewW,viewH,"#05090b");const c=won?"#54d6d8":"#ff557d";txt("CARGO DECK",viewW/2,90,24,c,"center");txt(won?"CARGO DECK SECURED":(resultReason||"MISSION FAILED"),viewW/2,135,17,"#f0eee7","center");txt("WAVE "+String(wave).padStart(2,"0"),viewW/2,205,15,c,"center");txt("ENEMIES DESTROYED · "+kills,viewW/2,245,12,"#aeb8ba","center");txt("SURVIVAL TIME · "+fmt(time),viewW/2,278,12,"#aeb8ba","center");txt("CORE INTEGRITY · "+Math.round(core.hp/core.maxHp*100)+"%",viewW/2,311,12,"#aeb8ba","center");txt(won?"ARENA SECURED":"RETRY AVAILABLE",viewW/2,390,12,c,"center")}
 function fmt(s:number){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
 function drawPlayer(){
- const c=L().color,px=player.x,py=player.y,a=aim;
- const movingVisual=Math.min(1,Math.hypot(px-(drawPlayer as any)._px??px,py-(drawPlayer as any)._py??py)/4);
+ const c=L().color,px=player.x,py=player.y,a=aim,side=player.facing||1;
  const prevX=(drawPlayer as any)._px??px,prevY=(drawPlayer as any)._py??py;
+ const movingVisual=Math.min(1,Math.hypot(px-prevX,py-prevY)/4);
  const vx=px-prevX,vy=py-prevY;
  (drawPlayer as any)._px=px;(drawPlayer as any)._py=py;
  const moveAngle=Math.atan2(vy,vx);
