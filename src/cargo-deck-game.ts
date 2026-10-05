@@ -1046,32 +1046,39 @@ function isoProject(x:number,y:number,ox:number,oy:number,z:number){
   const c=.8660254038,si=.5;
   return {x:ox+(x-y)*c*z,y:oy+(x+y)*si*z};
 }
-function drawIsoArchitecture(ox:number,oy:number,z:number):void{
+function drawIsoArchitecture(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
-  const face=(p:{x:number;y:number},h:number)=>({x:p.x,y:p.y+h*z});
-  for(let i=0;i<OBS.length;i++){
-    const o=OBS[i];
+  const items=OBS.map((o,i)=>{
+    const p=isoProject(o.x+o.w*.5,o.y+o.h*.5,centerX,centerY,z,targetX,targetY,yaw);
+    return {o,i,depth:p.y};
+  }).sort((a,b)=>a.depth-b.depth);
+  for(const item of items){
+    const {o,i}=item;
     const h=arenaId==="school"?Math.min(92,34+o.h*.32):Math.min(88,38+o.h*.26);
-    const p1=isoProject(o.x,o.y,ox,oy,z),p2=isoProject(o.x+o.w,o.y,ox,oy,z),p3=isoProject(o.x+o.w,o.y+o.h,ox,oy,z),p4=isoProject(o.x,o.y+o.h,ox,oy,z);
-    const q1=face(p1,h),q2=face(p2,h),q3=face(p3,h),q4=face(p4,h);
+    const p1=isoProject(o.x,o.y,centerX,centerY,z,targetX,targetY,yaw);
+    const p2=isoProject(o.x+o.w,o.y,centerX,centerY,z,targetX,targetY,yaw);
+    const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
+    const p4=isoProject(o.x,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
+    // Vertical architecture rises from the playable plane.
+    const q1={x:p1.x,y:p1.y-h*z},q2={x:p2.x,y:p2.y-h*z},q3={x:p3.x,y:p3.y-h*z},q4={x:p4.x,y:p4.y-h*z};
     ctx.save();
-    ctx.globalAlpha=.30;ctx.fillStyle="#000";
-    ctx.beginPath();ctx.moveTo(p4.x+8*z,p4.y+12*z);ctx.lineTo(p3.x+10*z,p3.y+12*z);ctx.lineTo(q3.x+10*z,q3.y+12*z);ctx.lineTo(q4.x+8*z,q4.y+12*z);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=.26;ctx.fillStyle="#000";
+    ctx.beginPath();ctx.moveTo(p1.x+8*z,p1.y+9*z);ctx.lineTo(p2.x+8*z,p2.y+9*z);ctx.lineTo(p3.x+8*z,p3.y+9*z);ctx.lineTo(p4.x+8*z,p4.y+9*z);ctx.closePath();ctx.fill();
     ctx.globalAlpha=1;
     const shade=i%3===0?"#384047":i%3===1?"#465057":"#30383d";
-    ctx.fillStyle=shade;ctx.strokeStyle="#11181c";ctx.lineWidth=Math.max(1,1.4*z);
+    ctx.fillStyle=shade;ctx.strokeStyle="#11181c";ctx.lineWidth=Math.max(1,1.35*z);
     ctx.beginPath();ctx.moveTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q2.x,q2.y);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle="#263137";
     ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q1.x,q1.y);ctx.closePath();ctx.fill();ctx.stroke();
     const top=i%4===0?"#727875":i%4===1?"#646c70":i%4===2?"#7b7f79":"#5c666b";
     ctx.fillStyle=top;
-    ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(p4.x,p4.y);ctx.closePath();ctx.fill();ctx.stroke();
-    // Structural bands and rooftop details keep the old footprint but give it volume.
+    ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q4.x,q4.y);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.strokeStyle="rgba(221,212,184,.20)";ctx.lineWidth=Math.max(1,z);
-    const mid1={x:(p1.x+p2.x)*.5,y:(p1.y+p2.y)*.5},mid2={x:(p4.x+p3.x)*.5,y:(p4.y+p3.y)*.5};
+    const mid1={x:(q1.x+q2.x)*.5,y:(q1.y+q2.y)*.5},mid2={x:(q4.x+q3.x)*.5,y:(q4.y+q3.y)*.5};
     ctx.beginPath();ctx.moveTo(mid1.x,mid1.y);ctx.lineTo(mid2.x,mid2.y);ctx.stroke();
     if(o.w>110&&o.h>60){
-      ctx.fillStyle="rgba(20,28,31,.72)";ctx.beginPath();ctx.ellipse((p1.x+p3.x)*.5,(p1.y+p3.y)*.5,Math.max(5,8*z),Math.max(3,4*z),0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="rgba(20,28,31,.72)";
+      ctx.beginPath();ctx.ellipse((q1.x+q3.x)*.5,(q1.y+q3.y)*.5,Math.max(5,8*z),Math.max(3,4*z),0,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="rgba(84,214,216,.32)";ctx.stroke();
     }
     ctx.restore();
@@ -1085,12 +1092,13 @@ function drawWorld(){
   const centerX=viewW*.5;
   const centerY=Math.min(viewH*.62,viewH*.56);
   const c=.8660254038,si=.5;
+  const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
+  const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
   rect(0,0,viewW,viewH,"#0a0f12");
   ctx!.save();
   ctx!.translate(centerX,centerY);
   ctx!.scale(isoZoom,isoZoom);
-  ctx!.transform(c,si,-c,si,0,0);
-  ctx!.rotate(cameraYaw);
+  ctx!.transform(ia,ic,ib,id,0,0);
   ctx!.translate(-targetX,-targetY);
   if(!staticDeckReady)buildStaticDeck();
   if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
@@ -1098,7 +1106,10 @@ function drawWorld(){
   drawIsoArchitecture(centerX,centerY,isoZoom,targetX,targetY,cameraYaw);
 
   ctx!.save();
-  ctx!.translate(centerX,centerY);\n  ctx!.scale(isoZoom,isoZoom);\n  ctx!.transform(c,si,-c,si,0,0);\n  ctx!.rotate(cameraYaw);\n  ctx!.translate(-targetX,-targetY);\n  drawIndustrialLighting();
+  ctx!.translate(centerX,centerY);
+  ctx!.scale(isoZoom,isoZoom);
+  ctx!.transform(ia,ic,ib,id,0,0);
+  ctx!.translate(-targetX,-targetY);\n  drawIndustrialLighting();
 
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
