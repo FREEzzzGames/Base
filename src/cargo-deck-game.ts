@@ -1042,9 +1042,12 @@ function drawIndustrialLighting():void{
   for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
   if(player)shadow(player.x,player.y+25,19,8,.42);
 }
-function isoProject(x:number,y:number,ox:number,oy:number,z:number){
+function isoProject(x:number,y:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
+  const dx=x-targetX,dy=y-targetY;
+  const co=Math.cos(yaw),sn=Math.sin(yaw);
+  const rx=dx*co-dy*sn,ry=dx*sn+dy*co;
   const c=.8660254038,si=.5;
-  return {x:ox+(x-y)*c*z,y:oy+(x+y)*si*z};
+  return {x:centerX+((rx-ry)*c*z),y:centerY+((rx+ry)*si*z)};
 }
 function drawIsoArchitecture(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
