@@ -163,8 +163,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
-    # A newer main release must be able to take over from a stuck Pages deploy.
-    # The release gate still prevents stale SHAs from reaching production.
+    # Only one Pages deployment may publish at a time; a newer main commit takes over.
     concurrency:
       group: pages-production
       cancel-in-progress: true
@@ -173,26 +172,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Verify release is still current
-        id: release-gate
-        shell: bash
-        run: |
-          set -euo pipefail
-          latest="$(git ls-remote "https://github.com/${{ github.repository }}.git" refs/heads/main | awk '{print $1}')"
-          if [ "$latest" = "${GITHUB_SHA}" ]; then
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
-            echo "Current main is ${GITHUB_SHA}; deploying."
-          else
-            echo "deploy=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping stale release ${GITHUB_SHA}; current main is $latest."
-          fi
-
-      - id: deployment
-        if: steps.release-gate.outputs.deploy == 'true'
+      - name: Deploy current Pages artifact
+        id: deployment
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages
