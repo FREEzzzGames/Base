@@ -12,6 +12,7 @@ ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVER
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
 RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
 type ArenaId="cargo";
+const MODEL_TEST_MODE=true;
 type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower"|"container"|"tank"|"pipe"|"stairs"|"barrier"|"equipment";
 interface MapStructure extends HsObstacle{
   level:number;
@@ -107,7 +108,7 @@ function collisionObstacles():HsObstacle[]{
 }
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=collisionObstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!collisionObstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};soldierController=new SoldierBehaviorController({rotation:{y:player.facing},position:{x:player.x,y:player.y,z:0}});moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
+function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:0,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};soldierController=new SoldierBehaviorController({rotation:{y:player.facing},position:{x:player.x,y:player.y,z:0}});moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
 function init(){
   const A=ARENAS[arenaId];
   W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};
@@ -506,32 +507,29 @@ function update(dt:number){
   else if(fireHeld)fire();
 
   for(const m of mobs)updateMob(m,dt);
-  updateBullets(dt);
-  updateGrenades(dt);
-  updatePickups(dt);
-  updateNodes(dt);
+  if(!MODEL_TEST_MODE){
+    updateBullets(dt);
+    updateGrenades(dt);
+    updatePickups(dt);
+    updateNodes(dt);
+    mobs=mobs.filter(m=>m.hp>0);
+    resolve();
 
-  mobs=mobs.filter(m=>m.hp>0);
-  resolve();
-
-  // Волна заканчивается только после уничтожения всех противников.
-  // После короткого окна отдыха появляется следующая волна.
-  if(waveState==="fighting"&&mobs.length===0){
-    waveState="clear";
-    waveWait=0;
-    msg="ЗОНА ЧИСТА · ПЕРЕГРУППИРОВКА";
-    msgT=100;
-  }
-
-  if(waveState==="clear"){
-    waveWait+=dt;
-
-    if(wave>=12){
-      finish(true,"CARGO DECK SECURED · ALL WAVES CLEARED");
-      return;
+    if(waveState==="fighting"&&mobs.length===0){
+      waveState="clear";
+      waveWait=0;
+      msg="ЗОНА ЧИСТА · ПЕРЕГРУППИРОВКА";
+      msgT=100;
     }
 
-    if(waveWait>150)spawnWave();
+    if(waveState==="clear"){
+      waveWait+=dt;
+      if(wave>=12){
+        finish(true,"CARGO DECK SECURED · ALL WAVES CLEARED");
+        return;
+      }
+      if(waveWait>150)spawnWave();
+    }
   }
 
   if(core.hp<=0){
@@ -639,7 +637,7 @@ function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="lef
 function drawLoadout(){
   rect(0,0,viewW,viewH,"#070b0e");txt("CARGO DECK",viewW/2,42,24,"#f0eee7","center");txt("SINGLE ARENA",viewW/2,68,9,"#54d6d8","center");
   rect(18,92,viewW-36,150,"rgba(12,22,27,.88)");ctx!.strokeStyle="#54d6d8";ctx!.strokeRect(18.5,92.5,viewW-37,149);
-  txt("PLAY",viewW/2,145,25,"#54d6d8","center");txt("WAVES · BASE DEFENSE · 9:16",viewW/2,173,8,"#7f9499","center");
+  txt("PLAY",viewW/2,145,25,"#54d6d8","center");txt("EMPTY MODEL TEST · 9:16",viewW/2,173,8,"#7f9499","center");
   txt("OPERATOR",viewW/2,278,9,"#7f9499","center");const ids=["ASSAULT","VANGUARD","RECON"] as LoadoutId[],gap=8,w=(viewW-36-gap*2)/3;
   ids.forEach((id,i)=>{const x=18+i*(w+gap),active=id===sel;rect(x,300,w,70,active?"rgba(84,214,216,.16)":"rgba(12,18,21,.88)");ctx!.strokeStyle=active?LOAD[id].color:"#344146";ctx!.strokeRect(x+.5,300.5,w-1,69);txt(id,x+w/2,326,9,active?LOAD[id].color:"#aab5b8","center");txt(String(LOAD[id].hp)+" HP",x+w/2,346,7,"#7f9499","center")});
   txt("One arena. No level selection.",viewW/2,viewH-30,8,"#53666b","center");
