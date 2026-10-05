@@ -11,9 +11,10 @@ const shade=(l:number)=>{const b=0x737a79,r=Math.round(((b>>16)&255)*l),g=Math.r
 import {HumanJointRig} from "./cargo-deck-biomech";
 export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:true,rig:"procedural-human-joint-limits"} as const;
 const rig=new HumanJointRig();
+// Model presentation transform: the source mesh is stored upside-down; flip it onto its feet.\nconst MODEL_HEIGHT=21.2;\nconst MODEL_SCALE=1.5;
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
 function poseVertex(i:number,walk:number,aim:number,recoil:number){
-  let x=V[i*3]*.01,y=V[i*3+1]*.01,z=(V[i*3+2]*.01+18);
+  let x=V[i*3]*.01,y=V[i*3+1]*.01;\n  const rawZ=V[i*3+2]*.01+18;\n  let z=MODEL_HEIGHT-rawZ;
   const zn=z/21.2,side=x>=0?1:-1,ax=Math.abs(x);
   const limbWeight=Math.max(0,Math.min(1,(ax-.065)/.13));
   const upperWeight=Math.max(0,Math.min(1,(ax-.075)/.12));
@@ -48,7 +49,7 @@ function poseVertex(i:number,walk:number,aim:number,recoil:number){
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
-  const ctx=f.ctx,s=Math.max(.04,f.scale),c=Math.cos(f.facing),sn=Math.sin(f.facing);
+  const ctx=f.ctx,s=Math.max(.04,f.scale)*MODEL_SCALE,c=Math.cos(f.facing),sn=Math.sin(f.facing);
   const g=Math.sin(f.walkPhase)*Math.max(0,Math.min(1,f.moving));
   const bob=Math.abs(Math.sin(f.walkPhase))*.5*Math.max(0,Math.min(1,f.moving));
   const r=f.firing>0?Math.min(1,f.firing):0;
