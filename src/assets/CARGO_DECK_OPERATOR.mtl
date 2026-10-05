@@ -1,0 +1,10 @@
+newmtl OperatorArmor
+Kd 0.19 0.22 0.23
+Ka 0.03 0.04 0.05
+Ks 0.35 0.35 0.35
+Ns 80
+newmtl Visor
+Kd 0.08 0.18 0.20
+Ka 0.01 0.02 0.025
+Ks 0.75 0.75 0.75
+Ns 150
