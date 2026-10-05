@@ -43,7 +43,7 @@ interface ArenaConfig{
 const ARENAS:Record<ArenaId,ArenaConfig>={
   cargo:{
     id:"cargo",name:"CARGO DECK",subtitle:"MULTI-LEVEL ORBITAL FREIGHT STATION",width:1600,height:3600,
-    playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3200,core:{x:800,y:250,hp:2600},
+    playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3380,core:{x:800,y:250,hp:2600},
     levels:[
       {id:0,name:"MAIN DECK",elevation:0},
       {id:1,name:"UPPER DECK",elevation:118}
@@ -77,7 +77,7 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:520,y:1850,w:560,h:92,level:1,elevation:118,height:42,role:"bridge",collision:false},
       {x:520,y:2560,w:560,h:92,level:1,elevation:118,height:42,role:"bridge",collision:false},
 
-      {x:590,y:3020,w:420,h:300,level:0,elevation:24,height:80,role:"base",collision:true},
+      {x:590,y:3340,w:420,h:180,level:0,elevation:24,height:80,role:"base",collision:true},
       {x:90,y:3280,w:420,h:150,level:0,elevation:0,height:58,role:"building",collision:true},
       {x:1090,y:3280,w:420,h:150,level:0,elevation:0,height:58,role:"building",collision:true}
     ],
@@ -134,12 +134,14 @@ function buildStaticDeck():void{
     if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
     // Central MOBA-style lane: wide, readable, and visually continuous from base to base.
     g.save();
-    g.fillStyle="rgba(8,18,24,.70)";g.fillRect(292,210,416,H-420);
-    g.fillStyle="rgba(36,67,76,.20)";g.fillRect(316,210,368,H-420);
-    g.strokeStyle="rgba(84,214,216,.42)";g.lineWidth=4;g.strokeRect(316,210,368,H-420);
+    // Central lane is aligned to the three actual combat routes at x=730/800/870.
+    // The old lane was visually offset by ~300 world units.
+    g.fillStyle="rgba(8,18,24,.70)";g.fillRect(590,210,420,H-420);
+    g.fillStyle="rgba(36,67,76,.20)";g.fillRect(614,210,372,H-420);
+    g.strokeStyle="rgba(84,214,216,.42)";g.lineWidth=4;g.strokeRect(614,210,372,H-420);
     g.strokeStyle="rgba(84,214,216,.18)";g.lineWidth=1;
     for(let yy=300;yy<H-220;yy+=170){
-      g.beginPath();g.moveTo(330,yy);g.lineTo(670,yy);g.stroke();
+      g.beginPath();g.moveTo(628,yy);g.lineTo(972,yy);g.stroke();
     }
     g.restore();
     for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
@@ -266,7 +268,18 @@ function L(){return LOAD[sel]}function weapon(){return HS_WEAPONS[player?.weapon
 function anyHit(obs:HsObstacle[],x:number,y:number,r:number):boolean{for(let i=0;i<obs.length;i++){const o=obs[i];const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;if(dx*dx+dy*dy<r*r)return true}return false}
 function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;return dx*dx+dy*dy<r*r}
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));obsFrame=frame;return obsCache}
-function collisionObstacles():HsObstacle[]{if(collisionCache&&collisionFrame===frame)return collisionCache;collisionCache=obstacles().slice();for(const n of nodes)if(n.hp>0)collisionCache.push({x:n.x-34,y:n.y-44,w:68,h:72});collisionFrame=frame;return collisionCache}
+function collisionObstacles():HsObstacle[]{
+  if(collisionCache&&collisionFrame===frame)return collisionCache;
+  collisionCache=obstacles().slice();
+  for(const s of MAP_STRUCTURES){
+    if(!s.collision||s.level!==0)continue;
+    const duplicate=collisionCache.some(o=>o.x===s.x&&o.y===s.y&&o.w===s.w&&o.h===s.h);
+    if(!duplicate)collisionCache.push({x:s.x,y:s.y,w:s.w,h:s.h});
+  }
+  for(const n of nodes)if(n.hp>0)collisionCache.push({x:n.x-34,y:n.y-44,w:68,h:72});
+  collisionFrame=frame;
+  return collisionCache;
+}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=collisionObstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!collisionObstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
 function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
@@ -274,8 +287,8 @@ function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.
   const baseXs=[W*.42,W*.5,W*.58];
   baseXs.forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY+30,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY-30,team:"player",lane:l,hp:900,maxHp:900,cool:0})});
   if(arenaId==="cargo"){
-    [[W*.28,820],[W*.72,1520],[W*.28,2260]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"enemy",lane:l,hp:900,maxHp:900,cool:45}));
-    [[W*.72,2760],[W*.28,2040],[W*.72,1320]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"player",lane:l,hp:900,maxHp:900,cool:0}));
+    [[W*.375,1100],[W*.625,2000],[W*.375,2800]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"enemy",lane:l,hp:900,maxHp:900,cool:45}));
+    [[W*.625,1100],[W*.375,2000],[W*.625,2800]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"player",lane:l,hp:900,maxHp:900,cool:0}));
   }
   for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
@@ -300,7 +313,7 @@ function spawnWave(){
     const scale=Math.min(2.35,1+(wave-1)*.10);
     const speed=(type==="brawler"?1.38:type==="shooter"?1.05:.78)*(1+Math.min(.20,(wave-1)*.012));
 
-    const spawnY=ARENAS[arenaId].enemyBaseY+40;let sx=lanes[lane],sy=spawnY+Math.random()*36;
+    const spawnY=ARENAS[arenaId].enemyBaseY+100;let sx=lanes[lane],sy=spawnY+Math.random()*36;
     let found=false;
     for(let tries=0;tries<18;tries++){
       const x=lanes[(lane+tries)%lanes.length]+(Math.random()-.5)*34;
@@ -311,7 +324,7 @@ function spawnWave(){
     }
     if(!found){
       // Deterministic safe fallbacks for the three lanes.
-      const fallback=lanes.map(x=>[x,ARENAS[arenaId].enemyBaseY+58] as const);
+      const fallback=lanes.map(x=>[x,ARENAS[arenaId].enemyBaseY+118] as const);
       const q=fallback[lane];
       sx=q[0];sy=q[1];
     }
@@ -1283,6 +1296,8 @@ function isoBeam(
 function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx||!player)return;
   const S=1.42;
+  // Human-proportion reference: the full operator silhouette is ~7 head
+  // heights. Keep the head smaller than the old oversized sci-fi silhouette.
   const moving=Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35);
   const run=Math.sin(walkPhase);
   const bob=moving*Math.abs(run)*2.2;
@@ -1342,14 +1357,14 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
   isoBeam(muzzle.x,muzzle.y,barrel.x,barrel.y,5*S,5*S,84*S,centerX,centerY,z,targetX,targetY,yaw,"#10181c","#080e12","#6c797d");
 
   // Neck + helmet with separate visor volume.
-  isoVolumeBox(baseX,baseY,11*S,11*S,8*S,body,87*S,centerX,centerY,z,targetX,targetY,yaw,"#202b30","#10181c","#536166");
-  isoVolumeBox(baseX,baseY,25*S,22*S,25*S,body,94*S,centerX,centerY,z,targetX,targetY,yaw,"#4b595e","#202c31","#899497",c);
-  const visor=actorWorldPoint(baseX,baseY,10*S,-12*S,body);
-  isoVolumeBox(visor.x,visor.y,18*S,5*S,8*S,body,101*S,centerX,centerY,z,targetX,targetY,yaw,"#071216","#03080b","#19343a",c);
+  isoVolumeBox(baseX,baseY,10*S,10*S,7*S,body,87*S,centerX,centerY,z,targetX,targetY,yaw,"#202b30","#10181c","#536166");
+  isoVolumeBox(baseX,baseY,19*S,18*S,16*S,body,94*S,centerX,centerY,z,targetX,targetY,yaw,"#4b595e","#202c31","#899497",c);
+  const visor=actorWorldPoint(baseX,baseY,8*S,-10*S,body);
+  isoVolumeBox(visor.x,visor.y,14*S,5*S,6*S,body,98*S,centerX,centerY,z,targetX,targetY,yaw,"#071216","#03080b","#19343a",c);
 
   // Side helmet module + life-support backpack.
-  const sideModule=actorWorldPoint(baseX,baseY,-13*S,2*S,body);
-  isoVolumeBox(sideModule.x,sideModule.y,8*S,8*S,11*S,body,99*S,centerX,centerY,z,targetX,targetY,yaw,"#58666a","#263238","#9aa5a7");
+  const sideModule=actorWorldPoint(baseX,baseY,-11*S,2*S,body);
+  isoVolumeBox(sideModule.x,sideModule.y,7*S,7*S,10*S,body,98*S,centerX,centerY,z,targetX,targetY,yaw,"#58666a","#263238","#9aa5a7");
   const pack=actorWorldPoint(baseX,baseY,-13*S,0,body);
   isoVolumeBox(pack.x,pack.y,15*S,12*S,30*S,body,55*S,centerX,centerY,z,targetX,targetY,yaw,"#26353a","#10191e","#59696e");
 
@@ -1404,9 +1419,10 @@ function drawIsoMob(m:Mob,centerX:number,centerY:number,z:number,targetX:number,
 
   // Helmet and illuminated face panel.
   const headZ=torsoZ+torsoH+h*.20;
-  isoVolumeBox(m.x,m.y,20*S,17*S,h*.22,body,headZ,centerX,centerY,z,targetX,targetY,yaw,topCol,sideCol,"#a0a4a0",color);
-  const face=actorWorldPoint(m.x,m.y,8*S,-9*S,body);
-  isoVolumeBox(face.x,face.y,13*S,4*S,6*S,body,headZ+7*S,centerX,centerY,z,targetX,targetY,yaw,"#080f13","#03080b","#16282d",color);
+  const headH=h*.16;
+  isoVolumeBox(m.x,m.y,17*S,15*S,headH,body,headZ,centerX,centerY,z,targetX,targetY,yaw,topCol,sideCol,"#a0a4a0",color);
+  const face=actorWorldPoint(m.x,m.y,7*S,-8*S,body);
+  isoVolumeBox(face.x,face.y,11*S,4*S,5*S,body,headZ+headH*.34,centerX,centerY,z,targetX,targetY,yaw,"#080f13","#03080b","#16282d",color);
 
   // Back module gives every mob a readable 3D silhouette.
   const pack=actorWorldPoint(m.x,m.y,-10*S,0,body);
@@ -1491,7 +1507,9 @@ function drawWorld(){
   const centerX=viewW*.5;
   // The player is the visual anchor; look-ahead is expressed by targetX/Y,
   // not by moving the player toward the lower edge of the viewport.
-  const centerY=viewH*.50;
+  // The feet anchor slightly below geometric screen center so the full body,
+  // including the head, sits around the visual center of the viewport.
+  const centerY=viewH*.55;
   const c=.8660254038,si=.5,co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
   drawSpaceBackdrop();
@@ -1703,7 +1721,7 @@ function bindUI(){
       e.preventDefault();
       const rect=canvas!.getBoundingClientRect();
       const sx=e.clientX-(rect.left+rect.width*.5);
-      const sy=e.clientY-(rect.top+rect.height*.5);
+      const sy=e.clientY-(rect.top+rect.height*.55);
       const world=screenToWorld(sx,sy);
       selectAttackTarget(world.x,world.y);
     });
@@ -1735,7 +1753,10 @@ function bindUI(){
   }
 }
 function getCameraZoom():number{
-  return arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
+  // Camera scale is keyed to the operator's physical head/helmet reference.
+  // On a 9:16 phone the head remains readable while the full arena still fits
+  // around the centered operator.
+  return arenaId==="cargo"?Math.min(1.08,viewW/560):Math.min(1.02,viewW/760);
 }
 function clampCameraTarget(x:number,y:number):{x:number;y:number}{
   const marginX=Math.min(420,Math.max(220,W*.14));
