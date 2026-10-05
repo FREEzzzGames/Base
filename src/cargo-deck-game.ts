@@ -1,6 +1,7 @@
 import{HS_WEAPONS,createCombatState,consumeShot,startReload,stepWeapon,spawnShots,traceShot,lineOfSight,recoilAngle,grenade as makeGrenade,type HsCombatState,type HsObstacle}from"./freezzz-combat-core";
 import * as VFX from"./cargo-deck-vfx";
 import {renderOperator3D,loadOperatorAsset3D,renderOperatorAsset3D,SoldierBehaviorController} from"./cargo-deck-operator-3d";
+import {renderPixelSoldier3D,PixelSoldierModelConfig} from"./pixel-soldier-3d";
 type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type MobType="brawler"|"shooter"|"sniper";type LoadoutId="ASSAULT"|"VANGUARD"|"RECON";
 interface Mob{id:number;x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackX:number;attackY:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
@@ -1443,7 +1444,9 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
   ctx.globalAlpha=.12;ctx.fillStyle=L().color;ctx.beginPath();
   ctx.ellipse(ground.x,ground.y,31*modelScale*z,10*modelScale*z,0,0,Math.PI*2);ctx.fill();
   ctx.globalAlpha=1;
-  const renderedAsset=renderOperatorAsset3D({
+  // Primary player model: the new articulated Pixel Soldier. The legacy OBJ
+  // renderer remains available as a hard fallback for asset/debug recovery.
+  renderPixelSoldier3D({
     ctx,
     baseX:player.x,baseY:player.y,
     facing:bodyFacing,
@@ -1455,7 +1458,7 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
     color:L().color,
     project:(wx,wy,h)=>projectActor3D(wx,wy,h,centerX,centerY,z,targetX,targetY,yaw)
   });
-  if(!renderedAsset)renderOperator3D({
+  if(false)renderOperatorAsset3D({
     ctx,
     baseX:player.x,baseY:player.y,
     facing:player.facing,
