@@ -1,6 +1,7 @@
 import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
+import "./cargo-deck.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { portalVideoUrl } from "./video-assets";
