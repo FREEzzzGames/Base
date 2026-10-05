@@ -46,3 +46,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - [ ] 29 Web/Telegram/Android/TV convergence
 - [ ] 30 Security / Performance
 - [ ] 31 Production Gate
+
+
+## 2026-10-05 Code Audit
+
+- Separated static combat line-of-sight geometry from node collision geometry.
+- Fixed tower/node line-of-sight being blocked by the node's own collision rectangle.
+- Fixed projectile mob hit tracking to use stable mob IDs instead of mutable array indices.
+- Added per-frame collision-geometry caching to avoid repeated allocations during movement/path resolution.
+- Verified TypeScript typecheck, production build, release smoke, Pages artifact generation and published-build verification on the resulting validation chain.
