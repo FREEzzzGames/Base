@@ -706,10 +706,20 @@ function update(dt:number){
   if(Math.abs(moveY)<.008)moveY=0;
   const target=currentAttackTarget();
   const nodeTarget=target?null:currentAttackNode();
+  const movingInput=Math.hypot(moveX,moveY)>.01;
+  if(movingInput) soldierController?.setMovement(true,Math.atan2(moveY,moveX),dt);
+  else soldierController?.setMovement(false,player.facing,dt);
   if(target||nodeTarget){
     const desired=Math.atan2((target?.y??nodeTarget!.y)-player.y,(target?.x??nodeTarget!.x)-player.x);
-    const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
-    player.facing+=turn*(1-Math.exp(-dt*.22));
+    soldierController?.setAim(desired,dt);
+  }else if(player.attackState==="ready"&&!auto){
+    soldierController?.clearAim();
+  }
+  if(soldierController){
+    soldierController.walkPhase=walkPhase;
+    player.facing=soldierController.bodyAngle;
+    if(player.attackState==="windup"||player.attackState==="cooldown")soldierController.isAiming=true;
+    soldierController.update(dt/60);
   }
   // Stable reference camera: no world rotation.
   cameraYaw=0;
