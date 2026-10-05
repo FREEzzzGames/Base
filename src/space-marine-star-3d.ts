@@ -10,7 +10,7 @@ function buildMaterials(){
     const j=k*3,a=F[j],b=F[j+1],c=F[j+2];
     const x=(V[a*3]+V[b*3]+V[c*3])/3*.01;
     const y=(V[a*3+1]+V[b*3+1]+V[c*3+1])/3*.01;
-    const z=MODEL_HEIGHT-(V[a*3+2]+V[b*3+2]+V[c*3+2])/3*.01-18;
+    const z=(V[a*3+2]+V[b*3+2]+V[c*3+2])/3*.01+MODEL_Z_OFFSET;
     const ax=Math.abs(x),ay=Math.abs(y);
     let m=0; // blue armor
     if(z<3.2 || (ax>.32 && z<9.2))m=1; // dark joints/undersuit
