@@ -696,3 +696,79 @@
   top:82px!important;
   bottom:0!important;
 }
+
+
+/* CARGO DECK — authoritative reference HUD + readability pass. */
+.cargo-deck-ui{
+  --attack-size:clamp(154px,32vw,210px);
+  --small-combat:calc(var(--attack-size) * .46);
+  --combat-right:max(16px,3.5vw);
+  --combat-bottom:max(22px,calc(3.5vh + var(--tg-safe-area-inset-bottom,0px)));
+}
+.cargo-deck-ui .cargo-fire-main{
+  right:var(--combat-right)!important;
+  bottom:var(--combat-bottom)!important;
+  width:var(--attack-size)!important;
+  height:var(--attack-size)!important;
+}
+.cargo-deck-ui .cargo-ult{
+  right:calc(var(--combat-right) + var(--attack-size) * .72)!important;
+  bottom:calc(var(--combat-bottom) + var(--attack-size) * .42)!important;
+}
+.cargo-deck-ui .cargo-skill{
+  right:calc(var(--combat-right) + var(--attack-size) * .10)!important;
+  bottom:calc(var(--combat-bottom) + var(--attack-size) * .93)!important;
+}
+.cargo-deck-ui .cargo-tower{
+  right:calc(var(--combat-right) + var(--attack-size) * .88)!important;
+  bottom:calc(var(--combat-bottom) + var(--attack-size) * .05)!important;
+}
+
+/* Make the primary attack visually dominant and readable on a 9:16 phone. */
+.cargo-deck-ui .cargo-fire-icon{
+  width:58%!important;height:58%!important;
+  border:2px solid rgba(218,250,252,.92)!important;
+  background:radial-gradient(circle,rgba(84,214,216,.18),rgba(4,12,16,.12) 68%,transparent 70%)!important;
+}
+.cargo-deck-ui .cargo-fire-label{
+  bottom:10%!important;
+  font-size:clamp(8px,2.2vw,12px)!important;
+}
+
+/* Reference-like glyphs without external assets. */
+.cargo-deck-ui .cargo-ult .cargo-combat-icon{
+  width:48%!important;height:48%!important;
+  border:2px solid currentColor!important;
+  transform:rotate(-42deg)!important;
+  border-radius:12% 55% 12% 55%!important;
+}
+.cargo-deck-ui .cargo-ult .cargo-combat-icon::after{
+  content:""!important;
+  position:absolute!important;
+  width:12%!important;height:70%!important;
+  left:44%!important;top:15%!important;
+  background:currentColor!important;
+}
+.cargo-deck-ui .cargo-skill .cargo-combat-icon{
+  font-size:0!important;
+  width:48%!important;height:48%!important;
+  border:2px solid currentColor!important;
+  border-radius:50%!important;
+}
+.cargo-deck-ui .cargo-skill .cargo-combat-icon::before{
+  content:""!important;
+  position:absolute!important;
+  width:52%!important;height:52%!important;
+  left:24%!important;top:24%!important;
+  border:2px solid currentColor!important;
+  border-radius:50% 25% 50% 25%!important;
+  transform:rotate(35deg)!important;
+}
+.cargo-deck-ui .cargo-tower .cargo-combat-icon{
+  font-size:clamp(24px,6vw,34px)!important;
+}
+
+/* Keep the combat stack above the world but below the browser/Telegram chrome. */
+.cargo-deck-ui .cargo-combat-radial{z-index:30!important}
+.cargo-deck-ui .cargo-fire-main{z-index:40!important}
+.cargo-deck-ui .cargo-combat-small{z-index:41!important}
