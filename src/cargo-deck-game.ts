@@ -46,8 +46,8 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
     playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3380,core:{x:800,y:250,hp:2600},
     levels:[
       {id:0,name:"MAIN DECK",elevation:0},
-      {id:1,name:"SERVICE CATWALK",elevation:96},
-      {id:2,name:"CONTROL PLATFORM",elevation:188}
+      {id:1,name:"SERVICE CATWALK",elevation:176},
+      {id:2,name:"CONTROL PLATFORM",elevation:332}
     ],
     obstacles:[
       {x:105,y:255,w:330,h:150},{x:1165,y:255,w:330,h:150},
@@ -61,18 +61,35 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
     structures:[
       {x:105,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
       {x:1165,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
-      {x:565,y:90,w:470,h:190,level:2,elevation:188,height:110,role:"tower",collision:false},
-      {x:105,y:680,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:1250,y:680,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:105,y:1340,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:1250,y:1340,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:105,y:2050,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:1250,y:2050,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:105,y:2750,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:1250,y:2750,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-      {x:430,y:905,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
-      {x:430,y:1605,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
-      {x:430,y:2310,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
+      {x:565,y:90,w:470,h:190,level:2,elevation:332,height:150,role:"tower",collision:false},
+      {x:105,y:680,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:1250,y:680,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:105,y:1340,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:1250,y:1340,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:105,y:2050,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:1250,y:2050,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:105,y:2750,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:1250,y:2750,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+
+      {x:145,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:315,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1290,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1460,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:145,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:315,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1290,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1460,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:145,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:315,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1290,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1460,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:145,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:315,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1290,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:1460,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
+      {x:430,y:905,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
+      {x:430,y:1605,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
+      {x:430,y:2310,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
       {x:55,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:1450,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:55,y:1660,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
@@ -172,17 +189,19 @@ function buildStaticDeck():void{
   if(arenaId==="cargo"){
     const floor=g.createPattern(cargoFloorImage,"repeat");
     if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
-    // Central MOBA-style lane: wide, readable, and visually continuous from base to base.
+    // Central freight/service corridor: concrete-steel deck with restrained
+    // markings. Combat lanes remain clear and readable without sci-fi framing.
     g.save();
-    // Central lane is aligned to the three actual combat routes at x=730/800/870.
-    // The old lane was visually offset by ~300 world units.
-    g.fillStyle="rgba(8,18,24,.70)";g.fillRect(590,210,420,H-420);
-    g.fillStyle="rgba(36,67,76,.20)";g.fillRect(614,210,372,H-420);
-    g.strokeStyle="rgba(84,214,216,.42)";g.lineWidth=4;g.strokeRect(614,210,372,H-420);
-    g.strokeStyle="rgba(84,214,216,.18)";g.lineWidth=1;
-    for(let yy=300;yy<H-220;yy+=170){
-      g.beginPath();g.moveTo(628,yy);g.lineTo(972,yy);g.stroke();
+    g.fillStyle="rgba(48,46,41,.72)";g.fillRect(560,210,480,H-420);
+    g.fillStyle="rgba(119,100,72,.10)";g.fillRect(582,210,436,H-420);
+    g.strokeStyle="rgba(168,143,101,.18)";g.lineWidth=2;g.strokeRect(582,210,436,H-420);
+    g.strokeStyle="rgba(116,104,82,.16)";g.lineWidth=1;
+    for(let yy=300;yy<H-220;yy+=190){
+      g.beginPath();g.moveTo(590,yy);g.lineTo(1010,yy);g.stroke();
     }
+    // Faded logistics center line.
+    g.strokeStyle="rgba(189,158,96,.22)";g.lineWidth=3;g.setLineDash([28,22]);
+    g.beginPath();g.moveTo(800,250);g.lineTo(800,H-250);g.stroke();g.setLineDash([]);
     g.restore();
     for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
     for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
@@ -1192,7 +1211,7 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   const q1={x:p1.x,y:p1.y-h*zoom},q2={x:p2.x,y:p2.y-h*zoom},q3={x:p3.x,y:p3.y-h*zoom},q4={x:p4.x,y:p4.y-h*zoom};
-  const accent=o.level>0?"#54d6d8":"#68777c";
+  const accent=o.level>0?"#a18a66":"#68777c";
   const shade=o.role==="bridge"?"#35474d":i%3===0?"#384047":i%3===1?"#465057":"#30383d";
   const top=o.role==="platform"?"#5f6f72":o.role==="tower"?"#697a7e":i%4===0?"#727875":i%4===1?"#646c70":"#5c666b";
   ctx.save();
@@ -1206,13 +1225,19 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   ctx.fillStyle=top;
   ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q4.x,q4.y);ctx.closePath();ctx.fill();ctx.stroke();
   if(o.role==="bridge"){
-    ctx.strokeStyle="rgba(84,214,216,.55)";ctx.lineWidth=Math.max(1,zoom);
+    ctx.strokeStyle="rgba(161,138,102,.46)";ctx.lineWidth=Math.max(1,zoom);
     ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.stroke();
-    ctx.strokeStyle="rgba(255,183,75,.30)";ctx.beginPath();ctx.moveTo((q1.x+q4.x)*.5,(q1.y+q4.y)*.5);ctx.lineTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);ctx.stroke();
+    ctx.strokeStyle="rgba(158,128,82,.26)";ctx.beginPath();ctx.moveTo((q1.x+q4.x)*.5,(q1.y+q4.y)*.5);ctx.lineTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);ctx.stroke();
   }else if(o.role==="platform"||o.role==="base"){
-    ctx.strokeStyle=o.level>0?"rgba(84,214,216,.38)":"rgba(255,183,75,.24)";
+    ctx.strokeStyle=o.level>0?"rgba(161,138,102,.30)":"rgba(158,128,82,.24)";
     ctx.lineWidth=Math.max(1,zoom);
-    ctx.strokeRect(Math.min(q1.x,q3.x),Math.min(q1.y,q3.y),Math.abs(q3.x-q1.x),Math.abs(q3.y-q1.y)*.22);
+    ctx.strokeRect(Math.min(q1.x,q3.x),Math.min(q1.y,q3.y),Math.abs(q3.x-q1.x),Math.abs(q3.y-q1.y)*.18);
+    if(o.role==="platform"){
+      // Slender structural fascia and underside shadows.
+      ctx.strokeStyle="rgba(23,27,27,.85)";
+      ctx.lineWidth=Math.max(1,2*zoom);
+      ctx.beginPath();ctx.moveTo(q3.x,q3.y);ctx.lineTo(q3.x,q3.y+7*zoom);ctx.lineTo(q4.x,q4.y+7*zoom);ctx.lineTo(q4.x,q4.y);ctx.stroke();
+    }
   }
   /* Industrial surface detail: break up large empty slabs without introducing
      per-frame object allocations or image dependencies. */
@@ -1591,7 +1616,7 @@ function drawWorld(){
   // not by moving the player toward the lower edge of the viewport.
   // The feet anchor slightly below geometric screen center so the full body,
   // including the head, sits around the visual center of the viewport.
-  const centerY=viewH*.55;
+  const centerY=viewH*.52;
   const c=.8660254038,si=.5,co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
   drawSpaceBackdrop();
@@ -1838,7 +1863,7 @@ function getCameraZoom():number{
   // Camera scale is keyed to the operator's physical head/helmet reference.
   // On a 9:16 phone the head remains readable while the full arena still fits
   // around the centered operator.
-  return arenaId==="cargo"?Math.min(1.08,viewW/560):Math.min(1.02,viewW/760);
+  return arenaId==="cargo"?Math.min(1.18,viewW/520):Math.min(1.02,viewW/760);
 }
 function clampCameraTarget(x:number,y:number):{x:number;y:number}{
   const marginX=Math.min(420,Math.max(220,W*.14));
