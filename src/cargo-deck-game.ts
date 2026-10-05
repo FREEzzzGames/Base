@@ -1129,7 +1129,7 @@ function limb3D(x1:number,y1:number,x2:number,y2:number,w:number,depth:number,fr
 function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx||!player)return;
   const p=isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw);
-  const moving=Math.abs(moveX)+Math.abs(moveY)>.02;
+  const moving=Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35);
   const run=Math.sin(walkPhase),bob=moving*Math.abs(run)*2.2*z;
   const aim=isoActorAngle(player.x,player.y,Math.cos(player.facing),Math.sin(player.facing),z,targetX,targetY,yaw);
   const body=isoActorAngle(player.x,player.y,Math.cos(player.facing),Math.sin(player.facing),z,targetX,targetY,yaw);
@@ -1255,9 +1255,9 @@ function drawIsoMob(m:Mob,centerX:number,centerY:number,z:number,targetX:number,
 }
 function drawIsoActors(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx)return;
-  const actors=mobs.map(m=>({m,depth:isoActorPoint(m.x,m.y,centerX,centerY,z,targetX,targetY,yaw).y}))
-    .concat(player?[{m:null as Mob|null,depth:isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw).y}]:[])
-    .sort((a,b)=>a.depth-b.depth);
+  const actors:Array<{m:Mob|null;depth:number}>=mobs.map(m=>({m,depth:isoActorPoint(m.x,m.y,centerX,centerY,z,targetX,targetY,yaw).y}));
+  if(player)actors.push({m:null,depth:isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw).y});
+  actors.sort((a,b)=>a.depth-b.depth);
   for(const item of actors)if(item.m)drawIsoMob(item.m,centerX,centerY,z,targetX,targetY,yaw);else drawIsoOperator(centerX,centerY,z,targetX,targetY,yaw);
 }
 
