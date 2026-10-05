@@ -596,11 +596,8 @@ function update(dt:number){
     const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
     player.facing+=turn*(1-Math.exp(-dt*.22));
   }
-  // Stable reference camera: no world rotation and no drifting camera target.
+  // Stable reference camera: no world rotation.
   cameraYaw=0;
-  cameraYawTarget=0;
-  camX=player.x;
-  camY=player.y;
 
   if(Math.abs(moveX)+Math.abs(moveY)>.01){
     const n=Math.hypot(moveX,moveY)||1;
