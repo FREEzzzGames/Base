@@ -795,8 +795,8 @@ function drawPlayer(){
   const bodyX=Math.cos(bodyAngle),bodyY=Math.sin(bodyAngle);
   const sideX=-bodyY,sideY=bodyX;
   const recoil=Math.min(6,player.combat.recoil*.34);
-  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
-  const S=1.15;
+  const gunLen=[48,58,64,72,78,88,96,84,108][player.weapon]||54;
+  const S=1.30;
 
   const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.4)=>{
     ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx!.fill();
@@ -822,11 +822,11 @@ function drawPlayer(){
   ctx!.rotate(lean);
 
   // Contact shadow and subtle operator halo.
-  ctx!.globalAlpha=.34;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(0,32,34,10,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+  ctx!.globalAlpha=.40;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(0,34,38,11,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
   ctx!.globalAlpha=.11;ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(0,-17,51+Math.sin(frame*.08)*2,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
   ctx!.save();ctx!.globalAlpha=.62;ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=2;ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=8;
-  ctx!.beginPath();ctx!.ellipse(0,31,29,9,0,0,Math.PI*2);ctx!.stroke();
-  ctx!.globalAlpha=.18;ctx!.lineWidth=5;ctx!.beginPath();ctx!.ellipse(0,31,34,11,0,0,Math.PI*2);ctx!.stroke();ctx!.restore();
+  ctx!.beginPath();ctx!.ellipse(0,33,32,10,0,0,Math.PI*2);ctx!.stroke();
+  ctx!.globalAlpha=.16;ctx!.lineWidth=5;ctx!.beginPath();ctx!.ellipse(0,33,38,12,0,0,Math.PI*2);ctx!.stroke();ctx!.restore();
 
   // Life-support backpack.
   ctx!.save();ctx!.rotate(bodyAngle);
@@ -844,8 +844,8 @@ function drawPlayer(){
   const swingPos=(g:number)=>-.46+(swingT(g))*.92;
   const footPhase=(g:number)=>g>.60?swingPos(g):stancePos(g);
   const footLift=(g:number)=>Math.sin(Math.PI*swingT(g))*10;
-  const stepLen=18;
-  const hipY=11,legGap=11;
+  const stepLen=20;
+  const hipY=12,legGap=12;
   const hipL={x:-sideX*legGap,y:hipY-sideY*legGap};
   const hipR={x:sideX*legGap,y:hipY+sideY*legGap};
   const rig=(drawPlayer as any)._rig??=((drawPlayer as any)._rig={
@@ -883,67 +883,67 @@ function drawPlayer(){
   };
   const footL=updateFoot(rig.left,gaitL,hipL);
   const footR=updateFoot(rig.right,gaitR,hipR);
-  const kneeL=twoBone(hipL,footL,22,20,1);
-  const kneeR=twoBone(hipR,footR,22,20,-1);
-  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,13,"#343f44","#10171b");
-  limb(kneeL.x,kneeL.y,footL.x,footL.y,10,"#293439","#10171b");
-  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,13,"#303b40","#10171b");
-  limb(kneeR.x,kneeR.y,footR.x,footR.y,10,"#273238","#10171b");
+  const kneeL=twoBone(hipL,footL,24,22,1);
+  const kneeR=twoBone(hipR,footR,24,22,-1);
+  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,15,"#343f44","#10171b");
+  limb(kneeL.x,kneeL.y,footL.x,footL.y,11,"#293439","#10171b");
+  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,15,"#303b40","#10171b");
+  limb(kneeR.x,kneeR.y,footR.x,footR.y,11,"#273238","#10171b");
   ellipse(kneeL.x,kneeL.y,7,6,0,"#46535a","#152027",1);
   ellipse(kneeR.x,kneeR.y,7,6,0,"#46535a","#152027",1);
-  ellipse(footL.x,footL.y,12,7,bodyAngle,"#182126","#080f13",1.2);
-  ellipse(footR.x,footR.y,12,7,bodyAngle,"#182126","#080f13",1.2);
+  ellipse(footL.x,footL.y,14,8,bodyAngle,"#182126","#080f13",1.2);
+  ellipse(footR.x,footR.y,14,8,bodyAngle,"#182126","#080f13",1.2);
 
   // Pelvis and torso rotate slightly opposite the legs to sell weight transfer.
   const pelvisTwist=runCycle*weight*.10;
   ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
-  ellipse(0,10,17,12,0,"#222d32","#0d1519",1.3);
-  ellipse(0,-15,27,35,0,"#2b373c","#0e171b",1.8);
-  ctx!.fillStyle="#c6cfcc";ctx!.beginPath();ctx!.roundRect(-18,-37,36,25,8);ctx!.fill();
+  ellipse(0,11,19,13,0,"#222d32","#0d1519",1.3);
+  ellipse(0,-16,30,38,0,"#2b373c","#0e171b",1.8);
+  ctx!.fillStyle="#c6cfcc";ctx!.beginPath();ctx!.roundRect(-20,-40,40,28,9);ctx!.fill();
   ctx!.strokeStyle="#29373b";ctx!.lineWidth=1.5;ctx!.stroke();
-  ctx!.fillStyle="#172126";ctx!.fillRect(-11,-33,22,12);
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=6;ctx!.fillRect(-7,-29,14,3);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#66757a";ctx!.fillRect(-13,-18,26,5);
+  ctx!.fillStyle="#172126";ctx!.fillRect(-12,-36,24,13);
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=6;ctx!.fillRect(-8,-32,16,3);ctx!.shadowBlur=0;
+  ctx!.fillStyle="#66757a";ctx!.fillRect(-15,-20,30,6);
   ctx!.fillStyle="#273238";ctx!.fillRect(-8,-17,4,3);ctx!.fillRect(4,-17,4,3);
-  ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=1.2;ctx!.beginPath();ctx!.moveTo(-17,-10);ctx!.lineTo(-9,4);ctx!.moveTo(17,-10);ctx!.lineTo(9,4);ctx!.stroke();
+  ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=1.2;ctx!.beginPath();ctx!.moveTo(-19,-11);ctx!.lineTo(-10,5);ctx!.moveTo(19,-11);ctx!.lineTo(10,5);ctx!.stroke();
   ctx!.restore();
 
   ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
   ctx!.fillStyle="#3b484d";ctx!.strokeStyle="#10181c";ctx!.lineWidth=1;
-  ctx!.beginPath();ctx!.moveTo(-13,-29);ctx!.lineTo(0,-34);ctx!.lineTo(13,-29);ctx!.lineTo(11,-13);ctx!.lineTo(0,-8);ctx!.lineTo(-11,-13);ctx!.closePath();ctx!.fill();ctx!.stroke();
-  ctx!.fillStyle="#19262b";ctx!.fillRect(-7,-25,14,10);
-  ctx!.fillStyle="#54d6d8";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=5;ctx!.fillRect(-4,-23,8,2);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#5b696e";ctx!.fillRect(-17,-19,4,12);ctx!.fillRect(13,-19,4,12);
+  ctx!.beginPath();ctx!.moveTo(-15,-32);ctx!.lineTo(0,-37);ctx!.lineTo(15,-32);ctx!.lineTo(13,-14);ctx!.lineTo(0,-8);ctx!.lineTo(-13,-14)ctx!.closePath();ctx!.fill();ctx!.stroke();
+  ctx!.fillStyle="#19262b";ctx!.fillRect(-8,-28,16,11);
+  ctx!.fillStyle="#54d6d8";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=5;ctx!.fillRect(-5,-26,10,2);ctx!.shadowBlur=0;
+  ctx!.fillStyle="#5b696e";ctx!.fillRect(-19,-21,5,14);ctx!.fillRect(14,-21,5,14);
   ctx!.restore();
 
   // Aim-driven upper body. The weapon is the primary constraint; both hands solve toward its grips.
   const spineAim=Math.max(-.20,Math.min(.20,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.32));
   const shoulderAngle=bodyAngle+spineAim;
-  const shoulderFront={x:sideX*18+Math.cos(shoulderAngle)*4,y:-25+sideY*18+Math.sin(shoulderAngle)*4};
-  const shoulderBack={x:-sideX*18+Math.cos(shoulderAngle)*4,y:-25-sideY*18+Math.sin(shoulderAngle)*4};
+  const shoulderFront={x:sideX*20+Math.cos(shoulderAngle)*5,y:-27+sideY*20+Math.sin(shoulderAngle)*5};
+  const shoulderBack={x:-sideX*20+Math.cos(shoulderAngle)*5,y:-27-sideY*20+Math.sin(shoulderAngle)*5};
   const gunBaseX=dirX*(24-recoil),gunBaseY=dirY*(24-recoil);
   const support={x:gunBaseX-dirX*5+sideX*11,y:gunBaseY-dirY*5+sideY*11};
-  const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},22,21,1);
-  const elbowBack=twoBone(shoulderBack,support,22,21,-1);
-  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,10,"#364248","#11191d");
-  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,9,"#2b373c","#11191d");
-  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,10,"#303b40","#10181c");
-  limb(elbowBack.x,elbowBack.y,support.x,support.y,9,"#273238","#10181c");
-  ellipse(shoulderFront.x,shoulderFront.y,8,8,aimAngle,"#59666a","#182329",1);
-  ellipse(shoulderBack.x,shoulderBack.y,8,8,aimAngle,"#59666a","#182329",1);
-  ellipse(gunBaseX,gunBaseY,6,6,aimAngle,"#d9d5c8","#182329",1);
-  ellipse(support.x,support.y,6,6,aimAngle,"#d9d5c8","#182329",1);
+  const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},24,23,1);
+  const elbowBack=twoBone(shoulderBack,support,24,23,-1);
+  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,11,"#364248","#11191d");
+  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,10,"#2b373c","#11191d");
+  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,11,"#303b40","#10181c");
+  limb(elbowBack.x,elbowBack.y,support.x,support.y,10,"#273238","#10181c");
+  ellipse(shoulderFront.x,shoulderFront.y,9,9,aimAngle,"#59666a","#182329",1);
+  ellipse(shoulderBack.x,shoulderBack.y,9,9,aimAngle,"#59666a","#182329",1);
+  ellipse(gunBaseX,gunBaseY,7,7,aimAngle,"#d9d5c8","#182329",1);
+  ellipse(support.x,support.y,7,7,aimAngle,"#d9d5c8","#182329",1);
 
   // Head follows aim with limited rotation.
   const headTurn=Math.max(-.22,Math.min(.22,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.55));
   ctx!.save();ctx!.rotate(bodyAngle+headTurn);
-  ellipse(0,-48,14,8,0,"#202b30","#080f13",1);
-  ellipse(0,-56,19,19,0,"#303b40","#0b1418",1.6);
+  ellipse(0,-51,16,9,0,"#202b30","#080f13",1);
+  ellipse(0,-60,22,22,0,"#303b40","#0b1418",1.6);
   ctx!.fillStyle="#071217";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=12;
-  ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
+  ctx!.beginPath();ctx!.ellipse(6,-62,16,11,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
   ctx!.strokeStyle="#6edfe1";ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.stroke();
-  ctx!.fillStyle="#d7ffff";ctx!.globalAlpha=.9;ctx!.beginPath();ctx!.ellipse(9,-63,4,2.2,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
-  ctx!.fillStyle="#536167";ctx!.fillRect(-20,-61,6,10);ctx!.fillRect(14,-61,6,10);
+  ctx!.fillStyle="#d7ffff";ctx!.globalAlpha=.9;ctx!.beginPath();ctx!.ellipse(10,-67,4.5,2.4,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+  ctx!.fillStyle="#536167";ctx!.fillRect(-23,-65,7,12);ctx!.fillRect(16,-65,7,12);
   ctx!.restore();
 
   // Weapon: detailed hard-surface sci-fi carbine. The gun remains the primary
