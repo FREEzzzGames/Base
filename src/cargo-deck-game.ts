@@ -49,9 +49,6 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {id:1,name:"SERVICE CATWALK",elevation:96},
       {id:2,name:"CONTROL PLATFORM",elevation:188}
     ],
-    // The main combat routes stay on a continuous ground deck. Elevated
-    // service structures cross the route at safe heights and are never inserted
-    // into ground collision, so actors cannot become trapped inside them.
     obstacles:[
       {x:105,y:255,w:330,h:150},{x:1165,y:255,w:330,h:150},
       {x:105,y:700,w:245,h:150},{x:1250,y:700,w:245,h:150},
@@ -64,9 +61,7 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
     structures:[
       {x:105,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
       {x:1165,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
-
       {x:565,y:90,w:470,h:190,level:2,elevation:188,height:110,role:"tower",collision:false},
-
       {x:105,y:680,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
       {x:1250,y:680,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
       {x:105,y:1340,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
@@ -75,18 +70,15 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:1250,y:2050,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
       {x:105,y:2750,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
       {x:1250,y:2750,w:245,h:150,level:1,elevation:96,height:58,role:"platform",collision:false},
-
       {x:430,y:905,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
       {x:430,y:1605,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
       {x:430,y:2310,w:740,h:72,level:1,elevation:96,height:34,role:"bridge",collision:false},
-
       {x:55,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:1450,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:55,y:1660,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:1450,y:1660,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:55,y:2360,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
       {x:1450,y:2360,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-
       {x:515,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:910,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:60,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
@@ -147,12 +139,12 @@ function buildStaticDeck():void{
     g.save();
     // Central lane is aligned to the three actual combat routes at x=730/800/870.
     // The old lane was visually offset by ~300 world units.
-    g.fillStyle="rgba(31,36,37,.62)";g.fillRect(610,210,380,H-420);
-    g.fillStyle="rgba(91,75,57,.12)";g.fillRect(628,210,344,H-420);
-    g.strokeStyle="rgba(190,157,111,.18)";g.lineWidth=2;g.strokeRect(628,210,344,H-420);
-    g.strokeStyle="rgba(177,150,112,.12)";g.lineWidth=1;
-    for(let yy=300;yy<H-220;yy+=175){
-      g.beginPath();g.moveTo(640,yy);g.lineTo(960,yy);g.stroke();
+    g.fillStyle="rgba(8,18,24,.70)";g.fillRect(590,210,420,H-420);
+    g.fillStyle="rgba(36,67,76,.20)";g.fillRect(614,210,372,H-420);
+    g.strokeStyle="rgba(84,214,216,.42)";g.lineWidth=4;g.strokeRect(614,210,372,H-420);
+    g.strokeStyle="rgba(84,214,216,.18)";g.lineWidth=1;
+    for(let yy=300;yy<H-220;yy+=170){
+      g.beginPath();g.moveTo(628,yy);g.lineTo(972,yy);g.stroke();
     }
     g.restore();
     for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
@@ -1163,7 +1155,7 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   const q1={x:p1.x,y:p1.y-h*zoom},q2={x:p2.x,y:p2.y-h*zoom},q3={x:p3.x,y:p3.y-h*zoom},q4={x:p4.x,y:p4.y-h*zoom};
-  const accent=o.level>0?"#9b8a70":"#68777c";
+  const accent=o.level>0?"#54d6d8":"#68777c";
   const shade=o.role==="bridge"?"#35474d":i%3===0?"#384047":i%3===1?"#465057":"#30383d";
   const top=o.role==="platform"?"#5f6f72":o.role==="tower"?"#697a7e":i%4===0?"#727875":i%4===1?"#646c70":"#5c666b";
   ctx.save();
@@ -1177,11 +1169,11 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   ctx.fillStyle=top;
   ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q4.x,q4.y);ctx.closePath();ctx.fill();ctx.stroke();
   if(o.role==="bridge"){
-    ctx.strokeStyle="rgba(178,154,112,.48)";ctx.lineWidth=Math.max(1,zoom);
+    ctx.strokeStyle="rgba(84,214,216,.55)";ctx.lineWidth=Math.max(1,zoom);
     ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.stroke();
-    ctx.strokeStyle="rgba(168,132,82,.34)";ctx.beginPath();ctx.moveTo((q1.x+q4.x)*.5,(q1.y+q4.y)*.5);ctx.lineTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);ctx.stroke();
+    ctx.strokeStyle="rgba(255,183,75,.30)";ctx.beginPath();ctx.moveTo((q1.x+q4.x)*.5,(q1.y+q4.y)*.5);ctx.lineTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);ctx.stroke();
   }else if(o.role==="platform"||o.role==="base"){
-    ctx.strokeStyle=o.level>0?"rgba(188,163,121,.30)":"rgba(255,183,75,.24)";
+    ctx.strokeStyle=o.level>0?"rgba(84,214,216,.38)":"rgba(255,183,75,.24)";
     ctx.lineWidth=Math.max(1,zoom);
     ctx.strokeRect(Math.min(q1.x,q3.x),Math.min(q1.y,q3.y),Math.abs(q3.x-q1.x),Math.abs(q3.y-q1.y)*.22);
   }
@@ -1216,50 +1208,10 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
     }
     ctx.restore();
   }
-  if(o.role==="platform"||o.role==="bridge"){
-    ctx.save();
-    ctx.strokeStyle="rgba(39,45,46,.95)";
-    ctx.lineWidth=Math.max(1.4,2.2*zoom);
-    const railLift=12*zoom;
-    const edgeA={x:q1.x,y:q1.y-railLift},edgeB={x:q2.x,y:q2.y-railLift};
-    ctx.beginPath();ctx.moveTo(edgeA.x,edgeA.y);ctx.lineTo(edgeB.x,edgeB.y);ctx.stroke();
-    for(let k=0;k<=5;k++){
-      const t=k/5,px=edgeA.x+(edgeB.x-edgeA.x)*t,py=edgeA.y+(edgeB.y-edgeA.y)*t;
-      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+15*zoom);ctx.stroke();
-    }
-    ctx.strokeStyle="rgba(161,126,76,.48)";ctx.lineWidth=Math.max(.7,zoom);
-    ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.stroke();
-    ctx.restore();
-  }
-  if(o.role==="building"||o.role==="base"){
-    ctx.save();
-    const mx=(q1.x+q2.x+q3.x+q4.x)/4,my=(q1.y+q2.y+q3.y+q4.y)/4;
-    ctx.strokeStyle="rgba(28,32,32,.9)";
-    ctx.lineWidth=Math.max(1,1.4*zoom);
-    const dw=Math.max(12,Math.min(42,o.w*.10))*zoom;
-    ctx.strokeRect(mx-dw,my-8*zoom,dw*2,18*zoom);
-    for(let k=0;k<3;k++){
-      const vx=mx+(k-1)*16*zoom,vy=my+26*zoom;
-      ctx.beginPath();ctx.moveTo(vx-5*zoom,vy);ctx.lineTo(vx+5*zoom,vy);ctx.stroke();
-    }
-    ctx.restore();
-  }
   if(o.role==="tower"){
-    ctx.save();
-    const cx=(q1.x+q3.x)*.5,cy=(q1.y+q3.y)*.5;
-    ctx.fillStyle="#4b4d4b";ctx.strokeStyle="#242726";ctx.lineWidth=Math.max(1,zoom);
-    ctx.beginPath();ctx.ellipse(cx,cy-26*zoom,28*zoom,9*zoom,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-28*zoom,cy-26*zoom);ctx.lineTo(cx-28*zoom,cy+4*zoom);ctx.lineTo(cx+28*zoom,cy+4*zoom);ctx.lineTo(cx+28*zoom,cy-26*zoom);ctx.stroke();
-    ctx.strokeStyle="#8d7657";
-    ctx.beginPath();ctx.moveTo(cx-20*zoom,cy-18*zoom);ctx.lineTo(cx-20*zoom,cy+2*zoom);
-    ctx.moveTo(cx,cy-18*zoom);ctx.lineTo(cx,cy+2*zoom);
-    ctx.moveTo(cx+20*zoom,cy-18*zoom);ctx.lineTo(cx+20*zoom,cy+2*zoom);ctx.stroke();
-    ctx.restore();
-  }
-  if(o.role==="tower"){
-    ctx.strokeStyle="rgba(178,154,112,.58)";ctx.lineWidth=2*zoom;
+    ctx.strokeStyle="rgba(84,214,216,.65)";ctx.lineWidth=2*zoom;
     ctx.beginPath();ctx.arc((q1.x+q3.x)*.5,(q1.y+q3.y)*.5,18*zoom,0,Math.PI*2);ctx.stroke();
-    ctx.strokeStyle="rgba(178,154,112,.24)";ctx.lineWidth=Math.max(1,zoom);
+    ctx.strokeStyle="rgba(84,214,216,.30)";ctx.lineWidth=Math.max(1,zoom);
     ctx.beginPath();
     ctx.moveTo((q1.x+q2.x)*.5,(q1.y+q2.y)*.5);
     ctx.lineTo((q3.x+q4.x)*.5,(q3.y+q4.y)*.5);
@@ -1849,3 +1801,15 @@ function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))
 function loop(t:number){
   if(!last){
     last=t;
+    renderCanvas();
+    raf=requestAnimationFrame(loop);
+    return;
+  }
+  const dt=Math.min(2,(t-last)/16.67||0);
+  last=t;
+  if(mode==="play")update(dt);
+  renderCanvas();
+  raf=requestAnimationFrame(loop);
+}
+function setup(){load();render();last=0;raf=requestAnimationFrame(loop)}
+export function mountCargoDeck(host:HTMLElement){cleanup();root=host;setup();const k=(e:KeyboardEvent)=>key(e),u=(e:KeyboardEvent)=>up(e),r=()=>{resize();renderCanvas()};addEventListener("keydown",k);addEventListener("keyup",u);addEventListener("resize",r);cleanup=()=>{cancelAnimationFrame(raf);removeEventListener("keydown",k);removeEventListener("keyup",u);removeEventListener("resize",r);root=null;canvas=null;ctx=null;ui=null};return()=>cleanup()}
