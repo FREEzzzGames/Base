@@ -1,7 +1,7 @@
 import{HS_WEAPONS,createCombatState,consumeShot,startReload,stepWeapon,spawnShots,traceShot,lineOfSight,recoilAngle,grenade as makeGrenade,type HsCombatState,type HsObstacle}from"./freezzz-combat-core";
 import * as VFX from"./cargo-deck-vfx";
-import {renderOperator3D,loadOperatorAsset3D,renderOperatorAsset3D,SoldierBehaviorController} from"./cargo-deck-operator-3d";
-import {renderPixelSoldier3D,PixelSoldierModelConfig} from"./pixel-soldier-3d";
+import {SoldierBehaviorController} from"./cargo-deck-operator-3d";
+import {renderPixelSoldier3D} from"./pixel-soldier-3d";
 type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type MobType="brawler"|"shooter"|"sniper";type LoadoutId="ASSAULT"|"VANGUARD"|"RECON";
 interface Mob{id:number;x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackX:number;attackY:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
@@ -1458,18 +1458,6 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
     color:L().color,
     project:(wx,wy,h)=>projectActor3D(wx,wy,h,centerX,centerY,z,targetX,targetY,yaw)
   });
-  if(false)renderOperatorAsset3D({
-    ctx,
-    baseX:player.x,baseY:player.y,
-    facing:player.facing,
-    scale:modelScale,
-    moving,
-    walkPhase,
-    aiming:aimState,
-    firing:player.attackState==="cooldown"?Math.min(1,player.attackTimer/8):0,
-    color:L().color,
-    project:(wx,wy,h)=>projectActor3D(wx,wy,h,centerX,centerY,z,targetX,targetY,yaw)
-  });
   ctx.globalAlpha=.7;ctx.strokeStyle=L().color;ctx.lineWidth=Math.max(.8,z);
   ctx.beginPath();ctx.ellipse(ground.x,ground.y,25*modelScale*z,8*modelScale*z,0,0,Math.PI*2);ctx.stroke();
   ctx.restore();
@@ -1906,5 +1894,5 @@ function loop(t:number){
   renderCanvas();
   raf=requestAnimationFrame(loop);
 }
-function setup(){load();void loadOperatorAsset3D();render();last=0;raf=requestAnimationFrame(loop)}
+function setup(){load();render();last=0;raf=requestAnimationFrame(loop)}
 export function mountCargoDeck(host:HTMLElement){cleanup();root=host;setup();const k=(e:KeyboardEvent)=>key(e),u=(e:KeyboardEvent)=>up(e),r=()=>{resize();renderCanvas()};addEventListener("keydown",k);addEventListener("keyup",u);addEventListener("resize",r);cleanup=()=>{cancelAnimationFrame(raf);removeEventListener("keydown",k);removeEventListener("keyup",u);removeEventListener("resize",r);root=null;canvas=null;ctx=null;ui=null};return()=>cleanup()}
