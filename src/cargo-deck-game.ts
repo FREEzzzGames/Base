@@ -1396,9 +1396,8 @@ function drawHUD(){
 
   txt(ARENAS[arenaId].name,16,14,13,"#f0eee7");
   txt(
-    "WAVE "+String(wave).padStart(2,"0")+
-    " · HOSTILES "+mobs.length+
-    " · KILLS "+kills,
+    MODEL_TEST_MODE ? "MODEL TEST · EMPTY ARENA" :
+    "WAVE "+String(wave).padStart(2,"0")+" · HOSTILES "+mobs.length+" · KILLS "+kills,
     16,35,9,L().color
   );
 
