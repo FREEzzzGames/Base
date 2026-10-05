@@ -198,7 +198,7 @@ jobs:
               fi
               echo "Published build is ${build:-<missing>}; expected ${expected}; retrying (${attempt}/24)."
             else
-              echo "version.json not reachable yet; retrying (${attempt}/12)."
+              echo "version.json not reachable yet; retrying (${attempt}/24)."
             fi
             sleep 5
           done
