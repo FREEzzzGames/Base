@@ -67,23 +67,27 @@ function buildMaterials(){
     MAT[k]=m;
   }
 }
-async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);calibrateModel();buildMaterials();READY=true}catch{READY=false}}
+async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);calibrateModel();buildMaterials();buildBasePose();READY=true}catch{READY=false}}
 void load();
 export interface SpaceMarineFrame{ctx:CanvasRenderingContext2D;baseX:number;baseY:number;facing:number;scale:number;moving:number;walkPhase:number;aiming:boolean;firing:number;color:string;project:(x:number,y:number,z:number)=>{x:number;y:number}}
 const shade=(l:number,m=0)=>{const base=m===2?0xd18a24:m===3?0x6f7675:m===4?0x7de8e8:m===1?0x182027:0x234b82;const r=Math.round(((base>>16)&255)*l),g=Math.round(((base>>8)&255)*l),b=Math.round((base&255)*l);return`rgb(${r},${g},${b})`};
-import {HumanJointRig} from "./cargo-deck-biomech";
 export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:true,rig:"procedural-human-joint-limits"} as const;
-const rig=new HumanJointRig();
-// Stable presentation rig. The source 3MF already uses Z as the vertical axis;
-// the previous build inverted Z and put the head toward the floor.
-// First milestone: preserve the authored mesh and place both feet on the ground.
-// Joint deformation is deliberately disabled until the upright base pose is verified.
+// Presentation layer: the supplied mesh is rigidly calibrated first. Joint
+// limits remain a separate gameplay contract and are not faked as skinning.
 const MODEL_SCALE=1.5;
 const MX=new Float32Array(VCOUNT),MY=new Float32Array(VCOUNT),MZ=new Float32Array(VCOUNT);
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
+function buildBasePose(){
+  for(let i=0;i<VCOUNT;i++){
+    const x=(sourceCoord(i,HORIZONTAL_X)-MODEL_CENTER_X)*.01;
+    const y=(sourceCoord(i,HORIZONTAL_Y)-MODEL_CENTER_Y)*-.01;
+    const raw=sourceCoord(i,VERTICAL_AXIS);
+    const z=(VERTICAL_SIGN>0?raw-MODEL_MIN_V:MODEL_MAX_V-raw)*.01;
+    MX[i]=x;MY[i]=y;MZ[i]=z;
+  }
+}
 function poseVertex(i:number,recoil:number):void{
-  const p=calibratedVertex(i);
-  MX[i]=p.x;MY[i]=p.y;MZ[i]=p.z+recoil*.018;
+  MZ[i]+=recoil*.018;
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
@@ -92,11 +96,11 @@ export function renderSpaceMarineStar(f:SpaceMarineFrame){
   const c=Math.cos(f.facing),sn=Math.sin(f.facing);
   const r=f.firing>0?Math.min(1,f.firing):0;
 
-  // Keep the authored Space Marine mesh rigid and upright.
-  // No guessed vertex-region skinning: that was the source of the broken pose.
+  // Keep the calibrated authored mesh rigid. No per-frame vertex allocation
+  // and no guessed skinning: facing rotates only the horizontal plane.
   for(let i=0;i<VCOUNT;i++){
-    poseVertex(i,r);
-    const x=MX[i]*s,y=MY[i]*s,z=MZ[i]*s;
+    const baseZ=MZ[i];
+    const x=MX[i]*s,y=MY[i]*s,z=(baseZ+r*.018)*s;
     const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);
     PX[i]=q.x;PY[i]=q.y;
   }
