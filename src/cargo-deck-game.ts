@@ -498,7 +498,8 @@ function currentAttackTarget():Mob|null{
   if(validAttackTarget(attackTarget)&&Math.hypot(attackTarget.x-player.x,attackTarget.y-player.y)<=weapon().range)return attackTarget;
   attackTarget=enemyTarget(player.x,player.y,weapon().range);return attackTarget;
 }
-function fireShot():void{\n  const target=currentAttackTarget();\n  if(!target)return;\n  const a=Math.atan2(target.y-player.y,target.x-player.x);
+function fireShot():void{
+  const target=currentAttackTarget();\n  if(!target)return;\n  const a=Math.atan2(target.y-player.y,target.x-player.x);
   const w=weapon();
   if(!consumeShot(player.combat,w))return;
   const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;
