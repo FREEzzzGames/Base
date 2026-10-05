@@ -1162,9 +1162,47 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
     ctx.lineWidth=Math.max(1,zoom);
     ctx.strokeRect(Math.min(q1.x,q3.x),Math.min(q1.y,q3.y),Math.abs(q3.x-q1.x),Math.abs(q3.y-q1.y)*.22);
   }
+  /* Industrial surface detail: break up large empty slabs without introducing
+     per-frame object allocations or image dependencies. */
+  if(o.role==="platform"||o.role==="base"||o.role==="building"){
+    ctx.save();
+    ctx.globalAlpha=o.level>0?.46:.34;
+    ctx.strokeStyle=o.level>0?"#89d9dc":"#a0a7a9";
+    ctx.lineWidth=Math.max(.7,.9*zoom);
+    const lanes=Math.max(2,Math.min(6,Math.round(o.w/120)));
+    for(let k=1;k<lanes;k++){
+      const t=k/lanes;
+      const a={x:q1.x+(q2.x-q1.x)*t,y:q1.y+(q2.y-q1.y)*t};
+      const b={x:q4.x+(q3.x-q4.x)*t,y:q4.y+(q3.y-q4.y)*t};
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    const cuts=Math.max(1,Math.min(4,Math.round(o.h/130)));
+    for(let k=1;k<cuts;k++){
+      const t=k/cuts;
+      const a={x:q1.x+(q4.x-q1.x)*t,y:q1.y+(q4.y-q1.y)*t};
+      const b={x:q2.x+(q3.x-q2.x)*t,y:q2.y+(q3.y-q2.y)*t};
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    if(o.role==="base"){
+      ctx.strokeStyle="rgba(255,183,75,.62)";
+      ctx.lineWidth=Math.max(1,1.4*zoom);
+      const t=.5;
+      const a={x:q1.x+(q2.x-q1.x)*t,y:q1.y+(q2.y-q1.y)*t};
+      const b={x:q4.x+(q3.x-q4.x)*t,y:q4.y+(q3.y-q4.y)*t};
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    ctx.restore();
+  }
   if(o.role==="tower"){
     ctx.strokeStyle="rgba(84,214,216,.65)";ctx.lineWidth=2*zoom;
     ctx.beginPath();ctx.arc((q1.x+q3.x)*.5,(q1.y+q3.y)*.5,18*zoom,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle="rgba(84,214,216,.30)";ctx.lineWidth=Math.max(1,zoom);
+    ctx.beginPath();
+    ctx.moveTo((q1.x+q2.x)*.5,(q1.y+q2.y)*.5);
+    ctx.lineTo((q3.x+q4.x)*.5,(q3.y+q4.y)*.5);
+    ctx.moveTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);
+    ctx.lineTo((q4.x+q1.x)*.5,(q4.y+q1.y)*.5);
+    ctx.stroke();
   }
   ctx.restore();
 }
