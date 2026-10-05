@@ -1746,6 +1746,32 @@ function renderUI(){
 function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
 function bindUI(){
+  // Input failsafe: the combat UI must remain interactive even if an older
+  // portal stylesheet places a transparent touch layer above the buttons.
+  if(root && !(root as HTMLElement & {__cargoInputBound?:boolean}).__cargoInputBound){
+    (root as HTMLElement & {__cargoInputBound?:boolean}).__cargoInputBound=true;
+    root.addEventListener("pointerdown",(e:PointerEvent)=>{
+      if(mode!=="play")return;
+      const target=e.target as HTMLElement|null;
+      if(target?.closest("button,[data-cargo-weapon]"))return;
+      const x=e.clientX,y=e.clientY;
+      const hit=(selector:string):HTMLElement|null=>{
+        const els=Array.from(root!.querySelectorAll<HTMLElement>(selector));
+        for(const el of els){
+          const r=el.getBoundingClientRect();
+          if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return el;
+        }
+        return null;
+      };
+      const weaponButton=hit("[data-cargo-weapon]");
+      if(weaponButton){e.preventDefault();weaponButton.click();return}
+      const action=hit("[data-cargo]");
+      if(action){e.preventDefault();action.click();return}
+      const fireButton=hit("[data-fire]");
+      if(fireButton){e.preventDefault();fireHeld=true;fireButton.classList.add("pressed");fire();}
+    },true);
+  }
+
   ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school"&&id!=="test")return;arenaId=id;save.loadout=sel;persist();start()});
   ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});
   ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{
