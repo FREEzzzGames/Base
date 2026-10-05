@@ -215,7 +215,7 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;\nlet cameraYaw=0,cameraYawTarget=0;\nconst CAMERA_ROTATION_STEP=Math.PI/2;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;\nlet cameraYaw=0,cameraYawTarget=0;\nconst CAMERA_ROTATION_STEP=Math.PI/2;\nlet rotationTouchActive=false,rotationTouchStartX=0,rotationTouchStartYaw=0;
 let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
@@ -1312,6 +1312,30 @@ function bindUI(){
 function rotateCamera(direction:number):void{
   if(mode!=="play")return;
   cameraYawTarget+=direction*CAMERA_ROTATION_STEP;
+}
+function bindRotationGesture():void{
+  const frameEl=ui?.parentElement;
+  if(!frameEl)return;
+  frameEl.addEventListener("touchstart",e=>{
+    if(e.touches.length!==2)return;
+    rotationTouchActive=true;
+    rotationTouchStartX=(e.touches[0].clientX+e.touches[1].clientX)*.5;
+    rotationTouchStartYaw=cameraYawTarget;
+    moveId=null;combatId=null;fireHeld=false;
+  },{passive:true});
+  frameEl.addEventListener("touchmove",e=>{
+    if(!rotationTouchActive||e.touches.length<2)return;
+    const x=(e.touches[0].clientX+e.touches[1].clientX)*.5;
+    const dx=x-rotationTouchStartX;
+    if(Math.abs(dx)>=52){
+      cameraYawTarget=rotationTouchStartYaw+(dx>0?CAMERA_ROTATION_STEP:-CAMERA_ROTATION_STEP);
+      rotationTouchStartYaw=cameraYawTarget;
+      rotationTouchStartX=x;
+    }
+    e.preventDefault();
+  },{passive:false});
+  frameEl.addEventListener("touchend",e=>{if(e.touches.length<2)rotationTouchActive=false},{passive:true});
+  frameEl.addEventListener("touchcancel",()=>{rotationTouchActive=false},{passive:true});
 }
 function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="z"||e.key==="Z")rotateCamera(-1);if(e.key==="x"||e.key==="X")rotateCamera(1);if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
 function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveTargetY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveTargetX=0}
