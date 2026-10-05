@@ -934,6 +934,45 @@ function drawPlayer(){
 
   ctx!.restore();
 }
+function drawIndustrialLighting():void{
+  if(!ctx)return;
+  // Localized light pools and contact shadows: purely visual, no gameplay influence.
+  const pools=[
+    {x:120,y:260,r:170,c:"#ffb04f",a:.12},
+    {x:880,y:260,r:170,c:"#ffb04f",a:.12},
+    {x:500,y:610,r:190,c:"#54d6d8",a:.07},
+    {x:110,y:1080,r:155,c:"#ffb04f",a:.09},
+    {x:890,y:1080,r:155,c:"#ffb04f",a:.09},
+    {x:500,y:1510,r:180,c:"#54d6d8",a:.06},
+    {x:120,y:1930,r:165,c:"#ffb04f",a:.09},
+    {x:880,y:1930,r:165,c:"#ffb04f",a:.09}
+  ];
+  ctx.save();
+  ctx.globalCompositeOperation="screen";
+  for(const p of pools){
+    const g=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,p.r);
+    g.addColorStop(0,p.c.replace(")",","+p.a+")").replace("rgb","rgba"));
+    g.addColorStop(.42,p.c.replace(")",","+(p.a*.42)+")").replace("rgb","rgba"));
+    g.addColorStop(1,p.c.replace(")",",0)").replace("rgb","rgba"));
+    ctx.fillStyle=g;ctx.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2);
+  }
+  ctx.restore();
+
+  // Subtle directional haze gives the deck depth without adding geometry.
+  ctx.save();ctx.globalCompositeOperation="screen";
+  const haze=ctx.createLinearGradient(0,0,W,H);
+  haze.addColorStop(0,"rgba(84,214,216,.035)");
+  haze.addColorStop(.48,"rgba(255,255,255,0)");
+  haze.addColorStop(1,"rgba(255,176,79,.045)");
+  ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);ctx.restore();
+
+  const shadow=(x:number,y:number,rx:number,ry:number,a:number)=>{
+    ctx!.save();ctx!.globalAlpha=a;ctx!.fillStyle="#000";
+    ctx!.beginPath();ctx!.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx!.fill();ctx!.restore();
+  };
+  for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
+  if(player)shadow(player.x,player.y+25,19,8,.42);
+}
 function drawWorld(){
   // Restored vertical combat view: fixed world orientation, smooth follow camera.
   const worldZoom=Math.min(1,viewW/W);
@@ -944,7 +983,7 @@ function drawWorld(){
   ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
   ctx!.scale(worldZoom,worldZoom);
   if(!staticDeckReady)buildStaticDeck();
-  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
+  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);\n  drawIndustrialLighting();
   else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();
