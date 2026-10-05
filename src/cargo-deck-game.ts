@@ -11,9 +11,8 @@ const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;spe
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
 RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
-type ArenaId="cargo"|"school"|"test";
+type ArenaId="cargo";
 type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower"|"container"|"tank"|"pipe"|"stairs"|"barrier"|"equipment";
-interface MapLevel{id:number;name:string;elevation:number}
 interface MapStructure extends HsObstacle{
   level:number;
   elevation:number;
@@ -39,18 +38,12 @@ interface ArenaConfig{
   core:{x:number;y:number;hp:number};
   obstacles:HsObstacle[];
   routes:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>;
-  levels:ReadonlyArray<MapLevel>;
   structures:ReadonlyArray<MapStructure>;
 }
 const ARENAS:Record<ArenaId,ArenaConfig>={
   cargo:{
     id:"cargo",name:"CARGO DECK",subtitle:"MULTI-LEVEL ORBITAL FREIGHT STATION",width:1600,height:3600,
     playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3380,core:{x:800,y:250,hp:2600},
-    levels:[
-      {id:0,name:"MAIN DECK",elevation:0},
-      {id:1,name:"SERVICE CATWALK",elevation:176},
-      {id:2,name:"CONTROL PLATFORM",elevation:332}
-    ],
     obstacles:[
       {x:105,y:255,w:330,h:150},{x:1165,y:255,w:330,h:150},
       {x:105,y:700,w:245,h:150},{x:1250,y:700,w:245,h:150},
@@ -146,34 +139,7 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       [{x:870,y:500},{x:870,y:760},{x:870,y:1030},{x:870,y:1300},{x:870,y:1570},{x:870,y:1840},{x:870,y:2110},{x:870,y:2380},{x:870,y:2650},{x:870,y:2940},{x:870,y:3140}]
     ]
   },
-  school:{
-    id:"school",name:"BLOCK 17",subtitle:"ABANDONED SOVIET SCHOOL · SPORTS WING",width:1000,height:1778,
-    playerSpawn:{x:500,y:1570},enemyBaseY:230,playerBaseY:1500,core:{x:500,y:108,hp:2600},
-    obstacles:[
-      {x:58,y:128,w:228,h:86},{x:716,y:128,w:226,h:86},
-      {x:646,y:238,w:105,h:58},{x:790,y:238,w:105,h:58},
-      {x:72,y:610,w:265,h:62},{x:88,y:704,w:218,h:70},
-      {x:690,y:602,w:210,h:66},{x:620,y:735,w:120,h:54},{x:792,y:740,w:118,h:54},
-      {x:80,y:1030,w:92,h:74},{x:238,y:1078,w:100,h:92},{x:78,y:1350,w:116,h:80},{x:250,y:1415,w:88,h:76},
-      {x:650,y:1088,w:120,h:70},{x:808,y:1150,w:112,h:82},{x:646,y:1305,w:94,h:78},{x:790,y:1395,w:126,h:76},
-      {x:412,y:1460,w:66,h:190},{x:522,y:1460,w:66,h:190}
-    ],
-    levels:[{id:0,name:"GROUND",elevation:0}],
-    structures:[],
-    routes:[
-      [{x:360,y:300},{x:360,y:470},{x:360,y:650},{x:360,y:850},{x:360,y:1060},{x:360,y:1260},{x:360,y:1450},{x:400,y:1510}],
-      [{x:500,y:300},{x:500,y:470},{x:500,y:650},{x:500,y:850},{x:500,y:1060},{x:500,y:1260},{x:500,y:1450}],
-      [{x:640,y:300},{x:640,y:470},{x:640,y:650},{x:640,y:850},{x:640,y:1060},{x:640,y:1260},{x:640,y:1450},{x:600,y:1510}]
-    ]
-  },
-  test:{
-    id:"test",name:"JOINT TEST",subtitle:"FLAT BIOMECHANICAL TEST PLATFORM",width:1200,height:1800,
-    playerSpawn:{x:600,y:1450},enemyBaseY:260,playerBaseY:1550,core:{x:600,y:1700,hp:999999},
-    obstacles:[],
-    routes:[[{x:600,y:280},{x:600,y:600},{x:600,y:900},{x:600,y:1200},{x:600,y:1450}]],
-    levels:[{id:0,name:"FLAT TEST PLATFORM",elevation:0}],
-    structures:[]
-  }
+
 };
 let arenaId:ArenaId="cargo";
 let W=ARENAS.cargo.width,H=ARENAS.cargo.height;
@@ -190,15 +156,11 @@ let staticDeckCanvas:HTMLCanvasElement|null=null;
 let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
 function buildStaticDeck():void{
-  if(arenaId==="cargo"&&(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth))return;
+  if(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth)return;
   if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
-  const deckW=W+720,deckH=H+2800;
-  staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
-  const g=staticDeckCtx;if(!g)return;
-  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
-
-  if(arenaId==="cargo"){
-    const floor=g.createPattern(cargoFloorImage,"repeat");
+  const deckW=W+720,deckH=H+2800;staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
+  const g=staticDeckCtx;if(!g)return;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
+      const floor=g.createPattern(cargoFloorImage,"repeat");
     if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
     // Central freight/service corridor: concrete-steel deck with restrained
     // markings. Combat lanes remain clear and readable without sci-fi framing.
@@ -247,90 +209,9 @@ function buildStaticDeck():void{
     // Static layer contains only the ground plane. All architecture is
     // rendered through the shared isometric depth pipeline below so elevated
     // structures and actors participate in one ordering system.
-  }else if(arenaId==="test"){
-    g.fillStyle="#11161a";g.fillRect(0,0,W,H);
-    g.fillStyle="#1b2428";g.fillRect(40,40,W-80,H-80);
-    g.strokeStyle="rgba(102,252,241,.18)";g.lineWidth=2;
-    for(let x=80;x<W-40;x+=80){g.beginPath();g.moveTo(x,40);g.lineTo(x,H-40);g.stroke()}
-    for(let y=80;y<H-40;y+=80){g.beginPath();g.moveTo(40,y);g.lineTo(W-40,y);g.stroke()}
-    g.strokeStyle="rgba(102,252,241,.42)";g.lineWidth=3;g.strokeRect(40,40,W-80,H-80);
-    g.strokeStyle="rgba(255,183,3,.35)";g.lineWidth=2;
-    g.beginPath();g.moveTo(W*.5,70);g.lineTo(W*.5,H-70);g.stroke();
-    g.fillStyle="rgba(102,252,241,.08)";g.fillRect(60,60,W-120,H-120);
-  }else{
-    // BLOCK 17: top-down abandoned Soviet school / sports wing.
-    g.fillStyle="#3a3a36";g.fillRect(0,0,W,H);
-    const concrete=g.createLinearGradient(0,0,W,H);concrete.addColorStop(0,"#4a4a43");concrete.addColorStop(.48,"#343633");concrete.addColorStop(1,"#292b29");g.fillStyle=concrete;g.fillRect(0,0,W,H);
-
-    const room=(x:number,y:number,w:number,h:number,fill:string)=>{
-      g.fillStyle=fill;g.fillRect(x,y,w,h);g.strokeStyle="#161816";g.lineWidth=18;g.strokeRect(x+9,y+9,w-18,h-18);
-      g.strokeStyle="rgba(206,204,184,.16)";g.lineWidth=2;g.strokeRect(x+18,y+18,w-36,h-36);
-    };
-    room(34,34,566,520,"#806e52"); // basketball court
-    room(610,34,356,430,"#51524d"); // meeting room
-    room(34,584,354,374,"#69665a"); // lit classroom
-    room(612,530,354,410,"#292c2b"); // dark classroom
-    room(34,1000,354,610,"#252827"); // ritual/utility room
-    room(612,980,354,700,"#565044"); // warm storage
-
-    // Basketball court, bleachers and windows — matching the reference composition.
-    g.fillStyle="#9a815d";g.fillRect(52,52,530,484);
-    g.strokeStyle="rgba(238,231,204,.68)";g.lineWidth=3;
-    g.strokeRect(78,78,478,432);g.beginPath();g.moveTo(317,78);g.lineTo(317,510);g.stroke();
-    g.beginPath();g.arc(317,294,48,0,Math.PI*2);g.stroke();
-    g.strokeRect(78,184,125,220);g.strokeRect(431,184,125,220);
-    g.beginPath();g.arc(203,294,62,-Math.PI/2,Math.PI/2);g.stroke();g.beginPath();g.arc(431,294,62,Math.PI/2,Math.PI*1.5);g.stroke();
-    for(let i=0;i<3;i++){const yy=96+i*34;g.fillStyle="rgba(54,39,28,.88)";g.fillRect(74,yy,175,22);g.fillRect(385,yy,175,22);g.strokeStyle="rgba(15,15,13,.55)";g.strokeRect(74,yy,175,22);g.strokeRect(385,yy,175,22)}
-    for(let i=0;i<5;i++){g.fillStyle="rgba(246,239,203,.70)";g.fillRect(70+i*100,42,78,30);g.strokeStyle="rgba(34,34,30,.72)";g.strokeRect(70+i*100,42,78,30)}
-    g.fillStyle="rgba(255,224,139,.16)";g.fillRect(48,48,540,490);
-
-    // Upper-right meeting room: two long tables and chairs.
-    const table=(x:number,y:number,w:number,h:number)=>{
-      g.fillStyle="#807c6b";g.fillRect(x,y,w,h);g.strokeStyle="#1e211f";g.lineWidth=6;g.strokeRect(x,y,w,h);
-      g.fillStyle="#b7a986";g.fillRect(x-18,y+16,14,h-32);g.fillRect(x+w+4,y+16,14,h-32);
-      for(let yy=y+30;yy<y+h-10;yy+=46){g.fillStyle="#716b5a";g.fillRect(x-24,yy,18,28);g.fillRect(x+w+6,yy,18,28)}
-    };
-    table(676,112,82,210);table(812,112,82,210);
-    g.fillStyle="rgba(255,214,117,.22)";g.fillRect(624,62,300,60);
-
-    // Left classroom, shelves and warm windows.
-    for(let i=0;i<4;i++){g.fillStyle="#6d523c";g.fillRect(70+i*76,664,54,76);g.strokeStyle="#25251f";g.strokeRect(70+i*76,664,54,76)}
-    g.fillStyle="#e4c06c";g.fillRect(52,620,18,250);g.fillStyle="rgba(255,220,130,.18)";g.fillRect(54,618,170,260);
-    for(let i=0;i<4;i++){g.fillStyle="#705c45";g.fillRect(92+i*55,820,42,36)}
-
-    // Right classroom shelves / desks.
-    for(let i=0;i<5;i++){g.fillStyle="#5b5143";g.fillRect(632,570+i*60,70,42);g.strokeStyle="#1c1e1c";g.strokeRect(632,570+i*60,70,42)}
-    g.fillStyle="#625b4c";g.fillRect(774,610,108,82);g.strokeStyle="#181a18";g.strokeRect(774,610,108,82);
-    g.fillStyle="#4e4a41";g.fillRect(728,760,120,62);
-
-    // Central corridor and lower stairwell.
-    g.fillStyle="#474844";g.fillRect(388,530,224,1170);
-    g.strokeStyle="#1a1c1b";g.lineWidth=16;g.strokeRect(396,538,208,1154);
-    g.fillStyle="#242625";g.fillRect(430,1288,140,330);
-    for(let y=1300;y<1610;y+=30){g.strokeStyle="#8d8b7c";g.lineWidth=3;g.beginPath();g.moveTo(438,y);g.lineTo(562,y);g.stroke()}
-
-    // Lower-left ritual/utility room.
-    g.strokeStyle="rgba(232,224,196,.72)";g.lineWidth=5;g.beginPath();g.arc(206,1280,92,0,Math.PI*2);g.stroke();
-    g.beginPath();g.arc(206,1280,62,0,Math.PI*2);g.stroke();
-    for(let i=0;i<5;i++){const a=i*Math.PI*2/5-Math.PI/2;g.beginPath();g.moveTo(206+Math.cos(a)*62,1280+Math.sin(a)*62);g.lineTo(206+Math.cos(a+1.25)*62,1280+Math.sin(a+1.25)*62);g.stroke()}
-    g.fillStyle="rgba(255,244,205,.08)";g.fillRect(56,1060,300,460);
-
-    // Lower-right storage, crates and warm window/light.
-    for(let i=0;i<3;i++){for(let j=0;j<3;j++){const x=660+i*82,y=1100+j*104;g.fillStyle="#6a5b47";g.fillRect(x,y,58,68);g.strokeStyle="#282720";g.strokeRect(x,y,58,68);}}
-    g.fillStyle="#f1c84f";g.fillRect(692,1560,92,74);g.fillRect(812,1560,42,74);
-    const glow=g.createRadialGradient(760,1570,4,760,1570,240);glow.addColorStop(0,"rgba(255,222,105,.36)");glow.addColorStop(1,"rgba(255,190,55,0)");g.fillStyle=glow;g.fillRect(560,1320,400,400);
-
-    // Reference-style overhead light cones; no visible lamps.
-    const lights=[[110,610,360,860],[760,520,970,820],[690,1010,940,1260],[160,1000,350,1250],[500,400,720,650]];
-    for(const [cx,top,bx,by] of lights){g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-24,top);g.lineTo(cx+24,top);g.lineTo(bx,by);g.lineTo(cx-120,by);g.closePath();const lg=g.createLinearGradient(cx,top,cx,by);lg.addColorStop(0,"rgba(255,225,145,.28)");lg.addColorStop(.4,"rgba(255,202,105,.13)");lg.addColorStop(1,"rgba(255,180,70,0)");g.fillStyle=lg;g.fill();g.restore()}
-
-    // Cracks, debris and grime: deterministic, cheap, static.
-    g.strokeStyle="rgba(15,16,15,.55)";g.lineWidth=2;
-    for(let i=0;i<28;i++){const x=40+(i*137)%900,y=520+(i*83)%(H-560);g.beginPath();g.moveTo(x,y);g.lineTo(x+18+((i*17)%34),y+12+((i*11)%30));g.lineTo(x+6,y+34+((i*7)%26));g.stroke()}
-    for(let i=0;i<42;i++){const x=20+(i*97)%950,y=70+(i*149)%(H-120);g.fillStyle=i%3===0?"rgba(24,25,23,.55)":"rgba(130,123,106,.28)";g.fillRect(x,y,3+(i%5)*2,3+(i%4)*2)}
-    g.fillStyle="rgba(0,0,0,.20)";g.fillRect(0,0,W,H);
-  }
+  
   staticDeckReady=true;
+}
 }cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
@@ -889,56 +770,14 @@ function updateNodes(dt:number){
 function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();cameraState.yaw=0;cameraYaw=0;mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}
 function drawLoadout(){
-  rect(0,0,viewW,viewH,"#070b0e");
-  txt("FREEzzyPortal",viewW/2,34,21,"#f0eee7","center");
-  txt("SELECT ARENA",viewW/2,62,10,"#54d6d8","center");
-
-  const cards=[
-    {id:"cargo" as ArenaId,x:18,y:86,w:viewW/2-27,h:260,color:"#54d6d8"},
-    {id:"school" as ArenaId,x:viewW/2+9,y:86,w:viewW/2-27,h:260,color:"#d8b56a"}
-  ];
-  for(const c of cards){
-    const A=ARENAS[c.id],selected=arenaId===c.id;
-    rect(c.x,c.y,c.w,c.h,"#11171a");
-    ctx!.strokeStyle=selected?c.color:"#394449";ctx!.lineWidth=selected?2:1;ctx!.strokeRect(c.x+.5,c.y+.5,c.w-1,c.h-1);
-    // Compact top-down preview. The school preview follows the uploaded reference layout.
-    ctx!.save();ctx!.translate(c.x+8,c.y+28);ctx!.scale((c.w-16)/A.width,(c.h-62)/A.height);
-    if(c.id==="cargo"){
-      ctx!.fillStyle="#182126";ctx!.fillRect(0,0,A.width,A.height);
-      for(const s of ARENAS.cargo.structures){
-        ctx!.fillStyle=s.level>0?"#52676b":"#4b5456";
-        ctx!.fillRect(s.x,s.y,s.w,s.h);
-        if(s.level>0){ctx!.fillStyle="rgba(84,214,216,.16)";ctx!.fillRect(s.x,s.y,s.w,Math.min(14,s.h))}
-      }
-      ctx!.fillStyle="rgba(255,190,75,.20)";
-      for(const o of ARENAS.cargo.obstacles)ctx!.fillRect(o.x-10,o.y+o.h,o.w+20,Math.min(100,o.h));
-    }else{
-      ctx!.fillStyle="#454640";ctx!.fillRect(0,0,1000,A.height);
-      ctx!.fillStyle="#8d7455";ctx!.fillRect(34,34,566,520);
-      ctx!.fillStyle="#5a5b55";ctx!.fillRect(610,34,356,430);
-      ctx!.fillStyle="#66645a";ctx!.fillRect(34,584,354,374);
-      ctx!.fillStyle="#292c2b";ctx!.fillRect(612,530,354,410);
-      ctx!.fillStyle="#252827";ctx!.fillRect(34,1000,354,610);
-      ctx!.fillStyle="#5c5548";ctx!.fillRect(612,980,354,700);
-      ctx!.fillStyle="#474844";ctx!.fillRect(388,530,224,1170);
-      ctx!.strokeStyle="rgba(240,230,205,.72)";ctx!.lineWidth=6;ctx!.strokeRect(78,78,478,432);ctx!.beginPath();ctx!.moveTo(317,78);ctx!.lineTo(317,510);ctx!.stroke();ctx!.arc(317,294,48,0,Math.PI*2);ctx!.stroke();
-      ctx!.fillStyle="#6e5944";for(let i=0;i<6;i++)ctx!.fillRect(70+i*82,100,64,22);
-      ctx!.strokeStyle="rgba(240,230,205,.48)";ctx!.lineWidth=5;ctx!.beginPath();ctx!.arc(206,1280,92,0,Math.PI*2);ctx!.stroke();
-      ctx!.fillStyle="#f1c84f";ctx!.fillRect(692,1560,92,74);ctx!.fillRect(812,1560,42,74);
-    }
-    ctx!.restore();
-    txt(A.name,c.x+10,c.y+16,11,c.color);
-    txt(A.subtitle,c.x+c.w-10,c.y+16,6,"#7f8a8d","right");
-  }
-
-  txt("OPERATOR",viewW/2,374,9,"#7f8a8d","center");
-  (["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{
-    const l=LOAD[id],x=18+i*((viewW-36)/3),w=(viewW-48)/3,a=id===sel;
-    rect(x,390,w,86,a?"#182328":"#11191d");ctx!.strokeStyle=a?l.color:"#354147";ctx!.strokeRect(x+.5,390+.5,w-1,85);
-    txt(l.name,x+w/2,408,10,l.color,"center");txt(l.ability,x+w/2,430,8,"#f0eee7","center");txt("HP "+l.hp+" · AR "+l.armor,x+w/2,450,7,"#7e898d","center");txt(a?"SELECTED":"TAP",x+w/2,466,6,a?l.color:"#66757a","center");
-  });
-  txt("TAP AN ARENA TO DEPLOY · NO PLAY BUTTON",viewW/2,viewH-28,8,"#8a9699","center");
-}function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,22,"#f0eee7","center");txt("РУЧНОЙ ВЫБОР · PICKUP НЕ ПЕРЕКЛЮЧАЕТ ОРУЖИЕ",viewW/2,60,8,"#66757a","center");const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length));save.inventory.forEach((id,i)=>{const y=78+i*(h+5),w=HS_WEAPONS[id],a=id===player.weapon;rect(24,y,viewW-48,h,"#11191d");ctx!.strokeStyle=a?L().color:"#344146";ctx!.strokeRect(24,y,viewW-48,h);txt(String(i+1).padStart(2,"0"),38,y+h*.3,9,"#66757a");txt(w.name,72,y+h*.3,14,a?L().color:"#f0eee7");txt("DMG "+w.damage+" · MAG "+w.magazine+" · "+Math.round(3600/w.fireInterval)+" RPM",72,y+h*.65,9,"#8e9b9f")});txt("TAP CARD / NUMBER KEY",viewW/2,viewH-25,10,"#aeb8ba","center")}
+  rect(0,0,viewW,viewH,"#070b0e");txt("CARGO DECK",viewW/2,42,24,"#f0eee7","center");txt("SINGLE ARENA",viewW/2,68,9,"#54d6d8","center");
+  rect(18,92,viewW-36,150,"rgba(12,22,27,.88)");ctx!.strokeStyle="#54d6d8";ctx!.strokeRect(18.5,92.5,viewW-37,149);
+  txt("PLAY",viewW/2,145,25,"#54d6d8","center");txt("WAVES · BASE DEFENSE · 9:16",viewW/2,173,8,"#7f9499","center");
+  txt("OPERATOR",viewW/2,278,9,"#7f9499","center");const ids=["ASSAULT","VANGUARD","RECON"] as LoadoutId[],gap=8,w=(viewW-36-gap*2)/3;
+  ids.forEach((id,i)=>{const x=18+i*(w+gap),active=id===sel;rect(x,300,w,70,active?"rgba(84,214,216,.16)":"rgba(12,18,21,.88)");ctx!.strokeStyle=active?LOAD[id].color:"#344146";ctx!.strokeRect(x+.5,300.5,w-1,69);txt(id,x+w/2,326,9,active?LOAD[id].color:"#aab5b8","center");txt(String(LOAD[id].hp)+" HP",x+w/2,346,7,"#7f9499","center")});
+  txt("One arena. No level selection.",viewW/2,viewH-30,8,"#53666b","center");
+}
+function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,22,"#f0eee7","center");txt("РУЧНОЙ ВЫБОР · PICKUP НЕ ПЕРЕКЛЮЧАЕТ ОРУЖИЕ",viewW/2,60,8,"#66757a","center");const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length));save.inventory.forEach((id,i)=>{const y=78+i*(h+5),w=HS_WEAPONS[id],a=id===player.weapon;rect(24,y,viewW-48,h,"#11191d");ctx!.strokeStyle=a?L().color:"#344146";ctx!.strokeRect(24,y,viewW-48,h);txt(String(i+1).padStart(2,"0"),38,y+h*.3,9,"#66757a");txt(w.name,72,y+h*.3,14,a?L().color:"#f0eee7");txt("DMG "+w.damage+" · MAG "+w.magazine+" · "+Math.round(3600/w.fireInterval)+" RPM",72,y+h*.65,9,"#8e9b9f")});txt("TAP CARD / NUMBER KEY",viewW/2,viewH-25,10,"#aeb8ba","center")}
 function drawResult(){rect(0,0,viewW,viewH,"#05090b");const c=won?"#54d6d8":"#ff557d";txt("CARGO DECK",viewW/2,90,24,c,"center");txt(won?"CARGO DECK SECURED":(resultReason||"MISSION FAILED"),viewW/2,135,17,"#f0eee7","center");txt("WAVE "+String(wave).padStart(2,"0"),viewW/2,205,15,c,"center");txt("ENEMIES DESTROYED · "+kills,viewW/2,245,12,"#aeb8ba","center");txt("SURVIVAL TIME · "+fmt(time),viewW/2,278,12,"#aeb8ba","center");txt("CORE INTEGRITY · "+Math.round(core.hp/core.maxHp*100)+"%",viewW/2,311,12,"#aeb8ba","center");txt(won?"ARENA SECURED":"RETRY AVAILABLE",viewW/2,390,12,c,"center")}
 function fmt(s:number){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
 function drawPlayer(){
@@ -1738,155 +1577,37 @@ function renderUI(){
         '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">'+weapon().name.slice(0,1)+'</span><span class="cargo-fire-label">ATTACK</span></button>'+
       '</div>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
-  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button><button data-arena="test" aria-label="JOINT TEST"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
+  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="PLAY CARGO DECK"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
   else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
   else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
   bindUI()
 }
 function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();bindUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
-function bindUI(){
-  // Input failsafe: the combat UI must remain interactive even if an older
-  // portal stylesheet places a transparent touch layer above the buttons.
-  if(root && !(root as HTMLElement & {__cargoInputBound?:boolean}).__cargoInputBound){
-    (root as HTMLElement & {__cargoInputBound?:boolean}).__cargoInputBound=true;
-    root.addEventListener("pointerdown",(e:PointerEvent)=>{
-      if(mode!=="play")return;
-      const target=e.target as HTMLElement|null;
-      if(target?.closest("button,[data-cargo-weapon]"))return;
-      const x=e.clientX,y=e.clientY;
-      const hit=(selector:string):HTMLElement|null=>{
-        const els=Array.from(root!.querySelectorAll<HTMLElement>(selector));
-        for(const el of els){
-          const r=el.getBoundingClientRect();
-          if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return el;
-        }
-        return null;
-      };
-      const weaponButton=hit("[data-cargo-weapon]");
-      if(weaponButton){e.preventDefault();weaponButton.click();return}
-      const action=hit("[data-cargo]");
-      if(action){e.preventDefault();action.click();return}
-      const fireButton=hit("[data-fire]");
-      if(fireButton){e.preventDefault();fireHeld=true;fireButton.classList.add("pressed");fire();}
-    },true);
-  }
-
-  ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school"&&id!=="test")return;arenaId=id;save.loadout=sel;persist();start()});
-  ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});
-  ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{
-    const a=b.dataset.cargo;
-    if(a==="start")start();
-    else if(a==="weapon"){mode="weapon";render()}
-    else if(a==="reload"){startReload(player.combat,weapon())}
-    else if(a==="auto"){auto=!auto;msg=auto?"АВТОАТАКА · ВКЛ":"РУЧНАЯ АТАКА · ВКЛ";msgT=60;renderUI()}
-    else if(a==="medkit"){medkit();renderUI()}
-    else if(a==="grenade")grenade();
-    else if(a==="ability")special();
-    else if(a==="tower"){
-      let nearest:Node|null=null,best=Infinity;
-      for(const n of nodes){
-        if(n.team!=="enemy"||n.hp<=0)continue;
-        const d=Math.hypot(n.x-player.x,n.y-player.y);
-        if(d<=weapon().range&&d<best&&lineOfSight(player.x,player.y,n.x,n.y,obstacles())){best=d;nearest=n}
-      }
-      if(nearest){attackNode=nearest;attackTarget=null;msg="БАШНЯ · ЦЕЛЬ ЗАХВАЧЕНА";msgT=45}
-      else {msg="НЕТ БАШНИ В РАДИУСЕ";msgT=45}
-      renderUI();
-    }
-    else if(a==="menu")exit();
-    else if(a==="retry")start()
+function bindUI():void{
+  if(!root)return;const host=root as HTMLElement & {__cargoInputBound?:boolean};if(host.__cargoInputBound)return;host.__cargoInputBound=true;let swipeY=0;
+  root.addEventListener("click",(e)=>{const el=(e.target as HTMLElement|null)?.closest<HTMLElement>("[data-cargo],[data-cargo-weapon],[data-loadout],[data-arena]");if(!el)return;
+    if(el.dataset.cargoWeapon!==undefined){const n=Number(el.dataset.cargoWeapon);if(Number.isFinite(n)&&save.inventory.includes(n))chooseWeapon(n);return;}
+    if(el.dataset.loadout){sel=el.dataset.loadout as LoadoutId;save.loadout=sel;persist();render();return;}
+    if(el.dataset.arena!==undefined){arenaId="cargo";save.loadout=sel;persist();start();return;}
+    const action=el.dataset.cargo;
+    if(action==="start")start();else if(action==="weapon"){mode="weapon";render();}else if(action==="reload"){startReload(player.combat,weapon());renderUI();}else if(action==="auto"){auto=!auto;msg=auto?"AUTO · ON":"AUTO · OFF";msgT=60;renderUI();}else if(action==="medkit"){medkit();renderUI();}else if(action==="grenade"){grenade();renderUI();}else if(action==="ability"){special();renderUI();}else if(action==="tower"){let nearest:Node|null=null,best=Infinity;for(const n of nodes)if(n.team==="enemy"&&n.hp>0){const dist=Math.hypot(n.x-player.x,n.y-player.y);if(dist<=weapon().range&&dist<best&&lineOfSight(player.x,player.y,n.x,n.y,obstacles())){best=dist;nearest=n}}attackNode=nearest;attackTarget=null;msg=nearest?"TOWER · TARGET LOCKED":"NO TOWER IN RANGE";msgT=45;renderUI();}else if(action==="menu")exit();else if(action==="retry")start();
   });
-  ui?.querySelectorAll<HTMLElement>("[data-cargo-weapon]").forEach(b=>b.onclick=()=>{
-    const n=Number(b.dataset.cargoWeapon);
-    if(Number.isFinite(n)&&save.inventory.includes(n))chooseWeapon(n)
-  });
-
-  // The weapon bar remains a vertical touch carousel.
-  const inv=ui?.querySelector<HTMLElement>(".cargo-inventory-list");
-  if(inv){
-    let sy=0;
-    inv.addEventListener("pointerdown",e=>{sy=e.clientY});
-    inv.addEventListener("pointerup",e=>{
-      const dy=e.clientY-sy;
-      if(Math.abs(dy)<24)return;
-      const ids=save.inventory;
-      if(!ids.length)return;
-      const cur=Math.max(0,ids.indexOf(player.weapon));
-      const next=ids[(cur+(dy<0?1:-1)+ids.length)%ids.length];
-      chooseWeapon(next);
-    });
-  }
-
-  // LEFT/free touch: movement. RIGHT is target/attack command; no manual aim control.
-  const touch=ui?.querySelector<HTMLElement>(".cargo-touch-zone");
-  const combat=ui?.querySelector<HTMLElement>(".cargo-combat-zone");
-  if(touch){
-    const stop=(e:PointerEvent)=>{
-      if(e.pointerId===moveId){moveId=null;moveTargetX=moveTargetY=0}
-    };
-    const upd=(e:PointerEvent)=>{
-      const dx=e.clientX-moveOriginX,dy=e.clientY-moveOriginY;
-      const max=Math.max(55,Math.min(105,Math.min(touch.clientWidth,touch.clientHeight)*.16));
-      const v=screenVectorToWorld(dx,dy);
-      const len=Math.hypot(v.x,v.y)||1;
-      moveTargetX=Math.max(-1,Math.min(1,v.x/len*(Math.min(1,Math.hypot(dx,dy)/max))));
-      moveTargetY=Math.max(-1,Math.min(1,v.y/len*(Math.min(1,Math.hypot(dx,dy)/max))));
-    };
-    touch.addEventListener("pointerdown",e=>{
-      if(e.button!==undefined&&e.button!==0)return;
-      e.preventDefault();
-      moveId=e.pointerId;moveOriginX=e.clientX;moveOriginY=e.clientY;
-      touch.setPointerCapture(e.pointerId);upd(e);
-    });
-    touch.addEventListener("pointermove",e=>{if(e.pointerId===moveId)upd(e)});
-    touch.addEventListener("pointerup",stop);touch.addEventListener("pointercancel",stop);
-  }
-
-  if(combat){
-    // Right-side playfield tap selects a target; the primary FIRE button
-    // is the only manual firing control.
-    combat.addEventListener("pointerdown",e=>{
-      if(e.button!==undefined&&e.button!==0)return;
-      e.preventDefault();
-      const rect=canvas!.getBoundingClientRect();
-      const sx=e.clientX-(rect.left+rect.width*.5);
-      const sy=e.clientY-(rect.top+rect.height*.55);
-      const world=screenToWorld(sx,sy);
-      selectAttackTarget(world.x,world.y);
-    });
-  }
-
-  const fireButton=ui?.querySelector<HTMLButtonElement>("[data-fire]");
-  if(fireButton){
-    const stopFire=(e:PointerEvent)=>{
-      if(fireButton.hasPointerCapture(e.pointerId))fireButton.releasePointerCapture(e.pointerId);
-      fireHeld=false;
-      fireButton.classList.remove("pressed");
-    };
-    fireButton.addEventListener("pointerdown",e=>{
-      if(e.button!==undefined&&e.button!==0)return;
-      e.preventDefault();
-      fireHeld=true;
-      fireButton.classList.add("pressed");
-      fireButton.setPointerCapture(e.pointerId);
-      fire();
-    });
-    fireButton.addEventListener("pointerup",stopFire);
-    fireButton.addEventListener("pointercancel",stopFire);
-    fireButton.addEventListener("lostpointercapture",()=>{fireHeld=false;fireButton.classList.remove("pressed")});
-  }
-
-  if(mode==="weapon"){
-    const h=ui?.querySelector(".cargo-weapon-hit");
-    h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
-  }
+  root.addEventListener("pointerdown",(e)=>{if(mode!=="play")return;const el=e.target as HTMLElement|null;if(el?.closest("button,[data-cargo-weapon]"))return;
+    const button=ui?.querySelector<HTMLElement>("[data-fire]");if(button){const q=button.getBoundingClientRect();if(e.clientX>=q.left&&e.clientX<=q.right&&e.clientY>=q.top&&e.clientY<=q.bottom){e.preventDefault();fireHeld=true;button.classList.add("pressed");fire();return;}}
+    const inv=ui?.querySelector<HTMLElement>(".cargo-inventory-list");if(inv){const q=inv.getBoundingClientRect();if(e.clientX>=q.left&&e.clientX<=q.right&&e.clientY>=q.top&&e.clientY<=q.bottom){swipeY=e.clientY;return;}}
+    const combat=ui?.querySelector<HTMLElement>(".cargo-combat-zone");if(combat){const q=combat.getBoundingClientRect();if(e.clientX>=q.left&&e.clientX<=q.right&&e.clientY>=q.top&&e.clientY<=q.bottom){const rect=canvas!.getBoundingClientRect();const world=screenToWorld(e.clientX-(rect.left+rect.width*.5),e.clientY-(rect.top+rect.height*.55));selectAttackTarget(world.x,world.y);return;}}
+    const touch=ui?.querySelector<HTMLElement>(".cargo-touch-zone");if(touch){const q=touch.getBoundingClientRect();if(e.clientX>=q.left&&e.clientX<=q.right&&e.clientY>=q.top&&e.clientY<=q.bottom){moveId=e.pointerId;moveOriginX=e.clientX;moveOriginY=e.clientY;try{touch.setPointerCapture(e.pointerId)}catch{};moveTargetX=0;moveTargetY=0;return;}}
+  },true);
+  root.addEventListener("pointermove",(e)=>{if(moveId!==e.pointerId)return;const dx=e.clientX-moveOriginX,dy=e.clientY-moveOriginY,max=105,v=screenVectorToWorld(dx,dy),len=Math.hypot(v.x,v.y)||1,k=Math.min(1,Math.hypot(dx,dy)/max);moveTargetX=Math.max(-1,Math.min(1,v.x/len*k));moveTargetY=Math.max(-1,Math.min(1,v.y/len*k));},true);
+  root.addEventListener("pointerup",(e)=>{if(moveId===e.pointerId){moveId=null;moveTargetX=moveTargetY=0}if(swipeY){const inv=ui?.querySelector<HTMLElement>(".cargo-inventory-list"),q=inv?.getBoundingClientRect(),dy=e.clientY-swipeY;swipeY=0;if(q&&e.clientX>=q.left&&e.clientX<=q.right&&Math.abs(dy)>=24){const ids=save.inventory;if(ids.length){const cur=Math.max(0,ids.indexOf(player.weapon));chooseWeapon(ids[(cur+(dy<0?1:-1)+ids.length)%ids.length]);}}}fireHeld=false;ui?.querySelector("[data-fire]")?.classList.remove("pressed");},true);
+  root.addEventListener("pointercancel",()=>{moveId=null;moveTargetX=moveTargetY=0;fireHeld=false;ui?.querySelector("[data-fire]")?.classList.remove("pressed")},true);
 }
 function getCameraZoom():number{
   // Camera scale is keyed to the operator's physical head/helmet reference.
   // On a 9:16 phone the head remains readable while the full arena still fits
   // around the centered operator.
-  return arenaId==="cargo"?Math.min(1.18,viewW/520):Math.min(1.02,viewW/760);
+  return Math.min(1.18,viewW/520);
 }
 function clampCameraTarget(x:number,y:number):{x:number;y:number}{
   const marginX=Math.min(420,Math.max(220,W*.14));
@@ -1897,7 +1618,7 @@ function updateCamera(dt:number):void{
   if(!player)return;
   const zoom=getCameraZoom();
   const moving=Math.hypot(moveX,moveY)>.04;
-  const lookDistance=arenaId==="cargo"?(moving?90:0):(moving?70:0);
+  const lookDistance=moving?90:0;
   const desired=clampCameraTarget(player.x+moveX*lookDistance,player.y+moveY*lookDistance);
   const ease=1-Math.exp(-dt*.18);
   cameraState.targetX=desired.x;cameraState.targetY=desired.y;cameraState.zoom=zoom;
