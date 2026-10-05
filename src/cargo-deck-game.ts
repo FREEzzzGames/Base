@@ -215,7 +215,7 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;\nlet cameraYaw=0,cameraYawTarget=0;\nconst CAMERA_ROTATION_STEP=Math.PI/2;
 let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
@@ -572,11 +572,7 @@ function update(dt:number){
     const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
     player.facing+=turn*(1-Math.exp(-dt*.22));
   }
-  const camEase=1-Math.exp(-dt*.085);
-  camX+=(player.x-camX)*camEase;
-  camY+=(player.y-camY)*camEase;
-
-  if(Math.abs(moveX)+Math.abs(moveY)>.01){
+  const camEase=1-Math.exp(-dt*.085);\n  camX+=(player.x-camX)*camEase;\n  camY+=(player.y-camY)*camEase;\n  const yawDelta=Math.atan2(Math.sin(cameraYawTarget-cameraYaw),Math.cos(cameraYawTarget-cameraYaw));\n  cameraYaw+=yawDelta*(1-Math.exp(-dt*.18));\n\n  if(Math.abs(moveX)+Math.abs(moveY)>.01){
     const n=Math.hypot(moveX,moveY)||1;
     const speed=l.speed*(ability&&sel==="ASSAULT"?1.25:1)*.92;
     const q=move(player.x,player.y,moveX/n*speed*dt,moveY/n*speed*dt,18);
@@ -717,7 +713,7 @@ function updateNodes(dt:number){
     }
   }
 }function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
-function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
+function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();cameraYaw=0;cameraYawTarget=0;mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}function sy(y:number){return y-cam}
 function drawLoadout(){
   rect(0,0,viewW,viewH,"#070b0e");
@@ -1046,17 +1042,20 @@ function drawIndustrialLighting():void{
   for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
   if(player)shadow(player.x,player.y+25,19,8,.42);
 }
-function isoProject(x:number,y:number,ox:number,oy:number,z:number){
+function isoProject(x:number,y:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
+  const dx=x-targetX,dy=y-targetY;
+  const co=Math.cos(yaw),siYaw=Math.sin(yaw);
+  const rx=dx*co-dy*siYaw,ry=dx*siYaw+dy*co;
   const c=.8660254038,si=.5;
-  return {x:ox+(x-y)*c*z,y:oy+(x+y)*si*z};
+  return {x:centerX+(rx-ry)*c*z,y:centerY+(rx+ry)*si*z};
 }
-function drawIsoArchitecture(ox:number,oy:number,z:number):void{
+function drawIsoArchitecture(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
   const face=(p:{x:number;y:number},h:number)=>({x:p.x,y:p.y+h*z});
   for(let i=0;i<OBS.length;i++){
     const o=OBS[i];
     const h=arenaId==="school"?Math.min(92,34+o.h*.32):Math.min(88,38+o.h*.26);
-    const p1=isoProject(o.x,o.y,ox,oy,z),p2=isoProject(o.x+o.w,o.y,ox,oy,z),p3=isoProject(o.x+o.w,o.y+o.h,ox,oy,z),p4=isoProject(o.x,o.y+o.h,ox,oy,z);
+    const p1=isoProject(o.x,o.y,centerX,centerY,z,targetX,targetY,yaw),p2=isoProject(o.x+o.w,o.y,centerX,centerY,z,targetX,targetY,yaw),p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw),p4=isoProject(o.x,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
     const q1=face(p1,h),q2=face(p2,h),q3=face(p3,h),q4=face(p4,h);
     ctx.save();
     ctx.globalAlpha=.30;ctx.fillStyle="#000";
@@ -1070,7 +1069,6 @@ function drawIsoArchitecture(ox:number,oy:number,z:number):void{
     const top=i%4===0?"#727875":i%4===1?"#646c70":i%4===2?"#7b7f79":"#5c666b";
     ctx.fillStyle=top;
     ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(p4.x,p4.y);ctx.closePath();ctx.fill();ctx.stroke();
-    // Structural bands and rooftop details keep the old footprint but give it volume.
     ctx.strokeStyle="rgba(221,212,184,.20)";ctx.lineWidth=Math.max(1,z);
     const mid1={x:(p1.x+p2.x)*.5,y:(p1.y+p2.y)*.5},mid2={x:(p4.x+p3.x)*.5,y:(p4.y+p3.y)*.5};
     ctx.beginPath();ctx.moveTo(mid1.x,mid1.y);ctx.lineTo(mid2.x,mid2.y);ctx.stroke();
@@ -1081,6 +1079,27 @@ function drawIsoArchitecture(ox:number,oy:number,z:number):void{
     ctx.restore();
   }
 }
+function drawWorld(){
+  // Portrait isometric combat view. Gameplay coordinates remain unchanged.
+  // The camera can rotate in 90° steps while player, collision and AI stay in world space.
+  const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
+  const targetX=player?.x??W*.5,targetY=player?.y??H*.5;
+  const centerX=viewW*.5;
+  const centerY=Math.min(viewH*.62,viewH*.56);
+  const c=.8660254038,si=.5;
+  rect(0,0,viewW,viewH,"#0a0f12");
+
+  ctx!.save();
+  ctx!.translate(centerX,centerY);
+  ctx!.scale(isoZoom,isoZoom);
+  ctx!.transform(c,si,-c,si,0,0);
+  ctx!.rotate(cameraYaw);
+  ctx!.translate(-targetX,-targetY);
+  if(!staticDeckReady)buildStaticDeck();
+  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
+  ctx!.restore();
+
+  drawIsoArchitecture(centerX,centerY,isoZoom,targetX,targetY,cameraYaw);
 function drawWorld(){
   // Portrait isometric combat view. Gameplay coordinates remain unchanged; only the renderer is projected.
   const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
@@ -1290,7 +1309,11 @@ function bindUI(){
     h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
   }
 }
-function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
+function rotateCamera(direction:number):void{
+  if(mode!=="play")return;
+  cameraYawTarget+=direction*CAMERA_ROTATION_STEP;
+}
+function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="z"||e.key==="Z")rotateCamera(-1);if(e.key==="x"||e.key==="X")rotateCamera(1);if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
 function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveTargetY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveTargetX=0}
 function loop(t:number){
   if(!last){
