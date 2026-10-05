@@ -951,9 +951,13 @@ function drawIndustrialLighting():void{
   ctx.globalCompositeOperation="screen";
   for(const p of pools){
     const g=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,p.r);
-    g.addColorStop(0,p.c.replace(")",","+p.a+")").replace("rgb","rgba"));
-    g.addColorStop(.42,p.c.replace(")",","+(p.a*.42)+")").replace("rgb","rgba"));
-    g.addColorStop(1,p.c.replace(")",",0)").replace("rgb","rgba"));
+    const rgba=(hex:string,a:number)=>{
+      const n=parseInt(hex.slice(1),16);
+      return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+    };
+    g.addColorStop(0,rgba(p.c,p.a));
+    g.addColorStop(.42,rgba(p.c,p.a*.42));
+    g.addColorStop(1,rgba(p.c,0));
     ctx.fillStyle=g;ctx.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2);
   }
   ctx.restore();
