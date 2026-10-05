@@ -1272,7 +1272,10 @@ function bindUI(){
     const upd=(e:PointerEvent)=>{
       const dx=e.clientX-moveOriginX,dy=e.clientY-moveOriginY;
       const max=Math.max(55,Math.min(105,Math.min(touch.clientWidth,touch.clientHeight)*.16));
-      moveTargetX=Math.max(-1,Math.min(1,dx/max)); moveTargetY=Math.max(-1,Math.min(1,dy/max));
+      const v=screenVectorToWorld(dx,dy);
+      const len=Math.hypot(v.x,v.y)||1;
+      moveTargetX=Math.max(-1,Math.min(1,v.x/len*(Math.min(1,Math.hypot(dx,dy)/max))));
+      moveTargetY=Math.max(-1,Math.min(1,v.y/len*(Math.min(1,Math.hypot(dx,dy)/max))));
     };
     touch.addEventListener("pointerdown",e=>{
       if(e.button!==undefined&&e.button!==0)return;
@@ -1290,9 +1293,10 @@ function bindUI(){
       if(e.button!==undefined&&e.button!==0)return;
       e.preventDefault();combatId=e.pointerId;combat.setPointerCapture(e.pointerId);
       const rect=combat.getBoundingClientRect();
-      const wx=player.x+(e.clientX-(rect.left+rect.width*.5));
-      const wy=player.y+(e.clientY-(rect.top+rect.height*.5));
-      selectAttackTarget(wx,wy);
+      const sx=e.clientX-(rect.left+rect.width*.5);
+      const sy=e.clientY-(rect.top+rect.height*.5);
+      const world=screenToWorld(sx,sy);
+      selectAttackTarget(world.x,world.y);
       fireHeld=true;
       fire();
     });
@@ -1304,6 +1308,21 @@ function bindUI(){
     const h=ui?.querySelector(".cargo-weapon-hit");
     h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
   }
+}
+function screenToWorld(sx:number,sy:number):{x:number;y:number}{
+  const z=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
+  const c=.8660254038,si=.5;
+  const px=sx/(c*z),py=sy/(si*z);
+  const rx=(px+py)*.5,ry=(py-px)*.5;
+  const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
+  return{x:player.x+rx*co+ry*sn,y:player.y-rx*sn+ry*co};
+}
+function screenVectorToWorld(sx:number,sy:number):{x:number;y:number}{
+  const c=.8660254038,si=.5;
+  const px=sx/c,py=sy/si;
+  const rx=(px+py)*.5,ry=(py-px)*.5;
+  const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
+  return{x:rx*co+ry*sn,y:-rx*sn+ry*co};
 }
 function rotateCamera(direction:number):void{
   if(mode!=="play")return;
