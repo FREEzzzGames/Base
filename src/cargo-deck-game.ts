@@ -1431,10 +1431,12 @@ function isoBeam(
 }
 function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx||!player)return;
-  const moving=Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35);
+  const moving=soldierController?.isMoving?Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35):0;
   const ground=isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw);
   const modelScale=6.2;
   const aimState=player.attackState==="windup"||player.attackState==="cooldown"||auto||attackTarget!==null||attackNode!==null;
+  const bodyFacing=soldierController?.bodyAngle??player.facing;
+  const animationPhase=soldierController?.walkPhase??walkPhase;
   ctx.save();
   ctx.globalAlpha=.34;ctx.fillStyle="#000";ctx.beginPath();
   ctx.ellipse(ground.x,ground.y+3,25*modelScale*z,8*modelScale*z,0,0,Math.PI*2);ctx.fill();
@@ -1444,10 +1446,10 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
   const renderedAsset=renderOperatorAsset3D({
     ctx,
     baseX:player.x,baseY:player.y,
-    facing:player.facing,
+    facing:bodyFacing,
     scale:modelScale*.18,
     moving,
-    walkPhase,
+    walkPhase:animationPhase,
     aiming:aimState,
     firing:player.attackState==="cooldown"?Math.min(1,player.attackTimer/8):0,
     color:L().color,
