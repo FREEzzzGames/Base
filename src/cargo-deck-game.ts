@@ -4,7 +4,7 @@ type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type Mob
 interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackX:number;attackY:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
-interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackAngle:number}
+interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number}
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
@@ -215,8 +215,8 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0;
-let combatTouchId:number|null=null,combatStartX=0,combatStartY=0,combatLastX=0,combatLastY=0,combatMoved=false,combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+let combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
@@ -227,7 +227,7 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0,attackAngle:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
+function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
 function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};camX=PLAYER_SPAWN.x;camY=PLAYER_SPAWN.y;OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
@@ -484,7 +484,17 @@ function resolve(){
     x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1];
   }
 }
-function fireShot(a:number):void{
+function validAttackTarget(m:Mob|null):m is Mob{return !!m&&m.hp>0&&m.team==="enemy"}
+function selectAttackTarget(x:number,y:number):void{
+  let best:Mob|null=null,bestD=Infinity;
+  for(const m of mobs){if(m.hp<=0||m.team!=="enemy")continue;const d=Math.hypot(m.x-x,m.y-y);if(d<bestD&&d<=90){best=m;bestD=d}}
+  attackTarget=best||enemyTarget(player.x,player.y,weapon().range);
+}
+function currentAttackTarget():Mob|null{
+  if(validAttackTarget(attackTarget)&&Math.hypot(attackTarget.x-player.x,attackTarget.y-player.y)<=weapon().range)return attackTarget;
+  attackTarget=enemyTarget(player.x,player.y,weapon().range);return attackTarget;
+}
+function fireShot():void{\n  const target=currentAttackTarget();\n  if(!target)return;\n  const a=Math.atan2(target.y-player.y,target.x-player.x);
   const w=weapon();
   if(!consumeShot(player.combat,w))return;
   const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;
@@ -498,24 +508,17 @@ function fireShot(a:number):void{
 }
 function fire(manual=false):void{
   if(mode!=="play"||player.combat.reloadTimer>0||player.attackState!=="ready")return;
-  const w=weapon();
-  let a=aim;
-  if(auto&&!manual){
-    const t=enemyTarget(player.x,player.y,w.range);
-    if(!t)return;
-    a=Math.atan2(t.y-player.y,t.x-player.x);
-  }
-  if(player.combat.fireTimer>0)return;
+  const target=currentAttackTarget();
+  if(!target||player.combat.fireTimer>0)return;
   player.attackState="windup";
-  player.attackTimer=Math.min(6,Math.max(3,Math.round(w.fireInterval*.35)));
-  player.attackAngle=a;
+  player.attackTimer=Math.min(6,Math.max(3,Math.round(weapon().fireInterval*.35)));
 }
 function stepPlayerAttack(dt:number):void{
   if(player.attackState==="ready")return;
   player.attackTimer-=dt;
   if(player.attackState==="windup"){
     if(player.attackTimer<=0){
-      fireShot(player.attackAngle);
+      fireShot();
       player.attackState="cooldown";
       player.attackTimer=Math.max(0,weapon().fireInterval-player.combat.fireTimer);
     }
@@ -1129,6 +1132,12 @@ function drawWorld(){
     ctx!.restore();
   }
 
+  if(validAttackTarget(attackTarget)){
+    const tx=attackTarget.x,ty=attackTarget.y-18;
+    ctx!.save();ctx!.globalAlpha=.78;ctx!.strokeStyle=L().color;ctx!.lineWidth=1.5;
+    ctx!.beginPath();ctx!.arc(tx,ty,22+Math.sin(frame*.12)*2,0,Math.PI*2);ctx!.stroke();
+    ctx!.restore();
+  }
   drawPlayer();
 
   // Projectiles: bright core + short energy tail.
@@ -1248,8 +1257,7 @@ function bindUI(){
     });
   }
 
-  // LEFT/free touch: movement. The right combat zone is intentionally
-  // separate so movement and aiming can be performed independently.
+  // LEFT/free touch: movement. RIGHT is target/attack command; no manual aim control.
   const touch=ui?.querySelector<HTMLElement>(".cargo-touch-zone");
   const combat=ui?.querySelector<HTMLElement>(".cargo-combat-zone");
   if(touch){
@@ -1272,63 +1280,23 @@ function bindUI(){
   }
 
   if(combat){
-    const DOUBLE_MS=230;
-    const stop=(e:PointerEvent)=>{
-      if(e.pointerId!==combatTouchId)return;
-      combatTouchId=null;fireHeld=false;
-    };
+    const stop=()=>{combatId=null;fireHeld=false};
     combat.addEventListener("pointerdown",e=>{
       if(e.button!==undefined&&e.button!==0)return;
-      e.preventDefault();
-      combatTouchId=e.pointerId;
-      combatStartX=combatLastX=e.clientX;
-      combatStartY=combatLastY=e.clientY;
-      combatMoved=false;
-      combat.setPointerCapture(e.pointerId);
-
+      e.preventDefault();combatId=e.pointerId;combat.setPointerCapture(e.pointerId);
+      const rect=combat.getBoundingClientRect();
+      const wx=player.x+(e.clientX-(rect.left+rect.width*.5));
+      const wy=player.y+(e.clientY-(rect.top+rect.height*.5));
+      selectAttackTarget(wx,wy);
       if(combatTapPending){
-        combatTapPending=false;
-        if(combatTapTimer)window.clearTimeout(combatTapTimer);
-        combatTapTimer=0;
-        startReload(player.combat,weapon());
-        return;
+        combatTapPending=false;if(combatTapTimer)window.clearTimeout(combatTapTimer);combatTapTimer=0;
+        startReload(player.combat,weapon());return;
       }
-
       combatTapPending=true;
-      combatTapTimer=window.setTimeout(()=>{
-        combatTapTimer=0;
-        if(!combatTapPending)return;
-        combatTapPending=false;
-        if(combatTouchId!==null)fireHeld=true;
-        fire(true);
-      },DOUBLE_MS);
+      combatTapTimer=window.setTimeout(()=>{combatTapTimer=0;if(!combatTapPending)return;combatTapPending=false;fireHeld=true;fire(true)},180);
     });
-    combat.addEventListener("pointermove",e=>{
-      if(e.pointerId!==combatTouchId)return;
-      const dx=e.clientX-combatStartX,dy=e.clientY-combatStartY;
-      combatLastX=e.clientX;combatLastY=e.clientY;
-      if(Math.hypot(dx,dy)>10){
-        combatMoved=true;
-        combatTapPending=false;
-        if(combatTapTimer)window.clearTimeout(combatTapTimer);
-        combatTapTimer=0;
-        const gestureAngle=Math.atan2(dy,dx);
-        const aimDelta=Math.atan2(Math.sin(gestureAngle-aim),Math.cos(gestureAngle-aim));
-        if(Math.abs(aimDelta)>.035)aimTarget=gestureAngle;
-        fireHeld=true;
-        fire(true);
-      }
-    });
-    combat.addEventListener("pointerup",e=>{
-      if(e.pointerId!==combatTouchId)return;
-      stop(e);
-    });
-    combat.addEventListener("pointercancel",e=>{
-      if(e.pointerId!==combatTouchId)return;
-      if(combatTapTimer)window.clearTimeout(combatTapTimer);
-      combatTapTimer=0;combatTapPending=false;
-      stop(e);
-    });
+    combat.addEventListener("pointerup",e=>{if(e.pointerId===combatId)stop()});
+    combat.addEventListener("pointercancel",e=>{if(e.pointerId===combatId){if(combatTapTimer)window.clearTimeout(combatTapTimer);combatTapTimer=0;combatTapPending=false;stop()}});
   }
 
   if(mode==="weapon"){
