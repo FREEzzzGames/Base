@@ -795,7 +795,9 @@ function drawPlayer(){
   const bodyX=Math.cos(bodyAngle),bodyY=Math.sin(bodyAngle);
   const sideX=-bodyY,sideY=bodyX;
   const recoil=Math.min(6,player.combat.recoil*.34);
-  const gunLen=[48,58,64,72,78,88,96,84,108][player.weapon]||54;
+  const HEAD=22;
+  const PART={torso:.90,pelvis:.88,legs:.92,arms:.90,feet:.92,weapon:1.0};
+  const gunLen=HEAD*([2.18,2.64,2.91,3.27,3.55,4.00,4.36,3.82,4.91][player.weapon]||2.45)*PART.weapon;
   const S=1.30;
 
   const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.4)=>{
@@ -844,8 +846,8 @@ function drawPlayer(){
   const swingPos=(g:number)=>-.46+(swingT(g))*.92;
   const footPhase=(g:number)=>g>.60?swingPos(g):stancePos(g);
   const footLift=(g:number)=>Math.sin(Math.PI*swingT(g))*10;
-  const stepLen=20;
-  const hipY=12,legGap=12;
+  const stepLen=HEAD*.91*PART.legs;
+  const hipY=HEAD*.55*PART.pelvis,legGap=HEAD*.55*PART.legs;
   const hipL={x:-sideX*legGap,y:hipY-sideY*legGap};
   const hipR={x:sideX*legGap,y:hipY+sideY*legGap};
   const rig=(drawPlayer as any)._rig??=((drawPlayer as any)._rig={
@@ -883,67 +885,67 @@ function drawPlayer(){
   };
   const footL=updateFoot(rig.left,gaitL,hipL);
   const footR=updateFoot(rig.right,gaitR,hipR);
-  const kneeL=twoBone(hipL,footL,24,22,1);
-  const kneeR=twoBone(hipR,footR,24,22,-1);
-  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,15,"#343f44","#10171b");
-  limb(kneeL.x,kneeL.y,footL.x,footL.y,11,"#293439","#10171b");
-  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,15,"#303b40","#10171b");
-  limb(kneeR.x,kneeR.y,footR.x,footR.y,11,"#273238","#10171b");
+  const kneeL=twoBone(hipL,footL,HEAD*1.09*PART.legs,HEAD*1.00*PART.legs,1);
+  const kneeR=twoBone(hipR,footR,HEAD*1.09*PART.legs,HEAD*1.00*PART.legs,-1);
+  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,HEAD*.68*PART.legs,"#343f44","#10171b");
+  limb(kneeL.x,kneeL.y,footL.x,footL.y,HEAD*.50*PART.legs,"#293439","#10171b");
+  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,HEAD*.68*PART.legs,"#303b40","#10171b");
+  limb(kneeR.x,kneeR.y,footR.x,footR.y,HEAD*.50*PART.legs,"#273238","#10171b");
   ellipse(kneeL.x,kneeL.y,7,6,0,"#46535a","#152027",1);
   ellipse(kneeR.x,kneeR.y,7,6,0,"#46535a","#152027",1);
-  ellipse(footL.x,footL.y,14,8,bodyAngle,"#182126","#080f13",1.2);
-  ellipse(footR.x,footR.y,14,8,bodyAngle,"#182126","#080f13",1.2);
+  ellipse(footL.x,footL.y,HEAD*.64*PART.feet,HEAD*.36*PART.feet,bodyAngle,"#182126","#080f13",1.2);
+  ellipse(footR.x,footR.y,HEAD*.64*PART.feet,HEAD*.36*PART.feet,bodyAngle,"#182126","#080f13",1.2);
 
   // Pelvis and torso rotate slightly opposite the legs to sell weight transfer.
   const pelvisTwist=runCycle*weight*.10;
   ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
-  ellipse(0,11,19,13,0,"#222d32","#0d1519",1.3);
-  ellipse(0,-16,30,38,0,"#2b373c","#0e171b",1.8);
-  ctx!.fillStyle="#c6cfcc";ctx!.beginPath();ctx!.roundRect(-20,-40,40,28,9);ctx!.fill();
+  ellipse(0,HEAD*.50*PART.pelvis,HEAD*.86*PART.pelvis,HEAD*.59*PART.pelvis,0,"#222d32","#0d1519",1.3);
+  ellipse(0,-HEAD*.73*PART.torso,HEAD*1.36*PART.torso,HEAD*1.73*PART.torso,0,"#2b373c","#0e171b",1.8);
+  ctx!.fillStyle="#c6cfcc";ctx!.beginPath();ctx!.roundRect(-HEAD*.91*PART.torso,-HEAD*1.82*PART.torso,HEAD*1.82*PART.torso,HEAD*1.27*PART.torso,HEAD*.41*PART.torso);ctx!.fill();
   ctx!.strokeStyle="#29373b";ctx!.lineWidth=1.5;ctx!.stroke();
-  ctx!.fillStyle="#172126";ctx!.fillRect(-12,-36,24,13);
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=6;ctx!.fillRect(-8,-32,16,3);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#66757a";ctx!.fillRect(-15,-20,30,6);
+  ctx!.fillStyle="#172126";ctx!.fillRect(-HEAD*.55*PART.torso,-HEAD*1.64*PART.torso,HEAD*1.09*PART.torso,HEAD*.59*PART.torso);
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=6;ctx!.fillRect(-HEAD*.36*PART.torso,-HEAD*1.45*PART.torso,HEAD*.73*PART.torso,HEAD*.14*PART.torso);ctx!.shadowBlur=0;
+  ctx!.fillStyle="#66757a";ctx!.fillRect(-HEAD*.68*PART.torso,-HEAD*.91*PART.torso,HEAD*1.36*PART.torso,HEAD*.27*PART.torso);
   ctx!.fillStyle="#273238";ctx!.fillRect(-8,-17,4,3);ctx!.fillRect(4,-17,4,3);
-  ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=1.2;ctx!.beginPath();ctx!.moveTo(-19,-11);ctx!.lineTo(-10,5);ctx!.moveTo(19,-11);ctx!.lineTo(10,5);ctx!.stroke();
+  ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=1.2;ctx!.beginPath();ctx!.moveTo(-HEAD*.86*PART.torso,-HEAD*.50*PART.torso);ctx!.lineTo(-HEAD*.45*PART.torso,HEAD*.23*PART.torso);ctx!.moveTo(HEAD*.86*PART.torso,-HEAD*.50*PART.torso);ctx!.lineTo(HEAD*.45*PART.torso,HEAD*.23*PART.torso);ctx!.stroke();
   ctx!.restore();
 
   ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
   ctx!.fillStyle="#3b484d";ctx!.strokeStyle="#10181c";ctx!.lineWidth=1;
-  ctx!.beginPath();ctx!.moveTo(-15,-32);ctx!.lineTo(0,-37);ctx!.lineTo(15,-32);ctx!.lineTo(13,-14);ctx!.lineTo(0,-8);ctx!.lineTo(-13,-14)ctx!.closePath();ctx!.fill();ctx!.stroke();
-  ctx!.fillStyle="#19262b";ctx!.fillRect(-8,-28,16,11);
-  ctx!.fillStyle="#54d6d8";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=5;ctx!.fillRect(-5,-26,10,2);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#5b696e";ctx!.fillRect(-19,-21,5,14);ctx!.fillRect(14,-21,5,14);
+  ctx!.beginPath();ctx!.moveTo(-HEAD*.68*PART.torso,-HEAD*1.45*PART.torso);ctx!.lineTo(0,-HEAD*1.68*PART.torso);ctx!.lineTo(HEAD*.68*PART.torso,-HEAD*1.45*PART.torso);ctx!.lineTo(HEAD*.59*PART.torso,-HEAD*.64*PART.torso);ctx!.lineTo(0,-HEAD*.36*PART.torso);ctx!.lineTo(-HEAD*.59*PART.torso,-HEAD*.64*PART.torso);ctx!.closePath();ctx!.fill();ctx!.stroke();
+  ctx!.fillStyle="#19262b";ctx!.fillRect(-HEAD*.36*PART.torso,-HEAD*1.27*PART.torso,HEAD*.73*PART.torso,HEAD*.50*PART.torso);
+  ctx!.fillStyle="#54d6d8";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=5;ctx!.fillRect(-HEAD*.23*PART.torso,-HEAD*1.18*PART.torso,HEAD*.45*PART.torso,HEAD*.09*PART.torso);ctx!.shadowBlur=0;
+  ctx!.fillStyle="#5b696e";ctx!.fillRect(-HEAD*.86*PART.torso,-HEAD*.95*PART.torso,HEAD*.23*PART.torso,HEAD*.64*PART.torso);ctx!.fillRect(HEAD*.64*PART.torso,-HEAD*.95*PART.torso,HEAD*.23*PART.torso,HEAD*.64*PART.torso);
   ctx!.restore();
 
   // Aim-driven upper body. The weapon is the primary constraint; both hands solve toward its grips.
   const spineAim=Math.max(-.20,Math.min(.20,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.32));
   const shoulderAngle=bodyAngle+spineAim;
-  const shoulderFront={x:sideX*20+Math.cos(shoulderAngle)*5,y:-27+sideY*20+Math.sin(shoulderAngle)*5};
-  const shoulderBack={x:-sideX*20+Math.cos(shoulderAngle)*5,y:-27-sideY*20+Math.sin(shoulderAngle)*5};
+  const shoulderFront={x:sideX*HEAD*.91*PART.arms+Math.cos(shoulderAngle)*HEAD*.23*PART.arms,y:-HEAD*1.23*PART.arms+sideY*HEAD*.91*PART.arms+Math.sin(shoulderAngle)*HEAD*.23*PART.arms};
+  const shoulderBack={x:-sideX*HEAD*.91*PART.arms+Math.cos(shoulderAngle)*HEAD*.23*PART.arms,y:-HEAD*1.23*PART.arms-sideY*HEAD*.91*PART.arms+Math.sin(shoulderAngle)*HEAD*.23*PART.arms};
   const gunBaseX=dirX*(24-recoil),gunBaseY=dirY*(24-recoil);
   const support={x:gunBaseX-dirX*5+sideX*11,y:gunBaseY-dirY*5+sideY*11};
-  const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},24,23,1);
-  const elbowBack=twoBone(shoulderBack,support,24,23,-1);
-  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,11,"#364248","#11191d");
-  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,10,"#2b373c","#11191d");
-  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,11,"#303b40","#10181c");
-  limb(elbowBack.x,elbowBack.y,support.x,support.y,10,"#273238","#10181c");
-  ellipse(shoulderFront.x,shoulderFront.y,9,9,aimAngle,"#59666a","#182329",1);
-  ellipse(shoulderBack.x,shoulderBack.y,9,9,aimAngle,"#59666a","#182329",1);
-  ellipse(gunBaseX,gunBaseY,7,7,aimAngle,"#d9d5c8","#182329",1);
-  ellipse(support.x,support.y,7,7,aimAngle,"#d9d5c8","#182329",1);
+  const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},HEAD*1.09*PART.arms,HEAD*1.05*PART.arms,1);
+  const elbowBack=twoBone(shoulderBack,support,HEAD*1.09*PART.arms,HEAD*1.05*PART.arms,-1);
+  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,HEAD*.50*PART.arms,"#364248","#11191d");
+  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,HEAD*.45*PART.arms,"#2b373c","#11191d");
+  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,HEAD*.50*PART.arms,"#303b40","#10181c");
+  limb(elbowBack.x,elbowBack.y,support.x,support.y,HEAD*.45*PART.arms,"#273238","#10181c");
+  ellipse(shoulderFront.x,shoulderFront.y,HEAD*.41*PART.arms,HEAD*.41*PART.arms,aimAngle,"#59666a","#182329",1);
+  ellipse(shoulderBack.x,shoulderBack.y,HEAD*.41*PART.arms,HEAD*.41*PART.arms,aimAngle,"#59666a","#182329",1);
+  ellipse(gunBaseX,gunBaseY,HEAD*.32*PART.arms,HEAD*.32*PART.arms,aimAngle,"#d9d5c8","#182329",1);
+  ellipse(support.x,support.y,HEAD*.32*PART.arms,HEAD*.32*PART.arms,aimAngle,"#d9d5c8","#182329",1);
 
   // Head follows aim with limited rotation.
   const headTurn=Math.max(-.22,Math.min(.22,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.55));
   ctx!.save();ctx!.rotate(bodyAngle+headTurn);
-  ellipse(0,-51,16,9,0,"#202b30","#080f13",1);
-  ellipse(0,-60,22,22,0,"#303b40","#0b1418",1.6);
+  ellipse(0,-HEAD*2.32,HEAD*.73,HEAD*.41,0,"#202b30","#080f13",1);
+  ellipse(0,-HEAD*2.73,HEAD,HEAD,0,"#303b40","#0b1418",1.6);
   ctx!.fillStyle="#071217";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=12;
-  ctx!.beginPath();ctx!.ellipse(6,-62,16,11,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
-  ctx!.strokeStyle="#6edfe1";ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.stroke();
-  ctx!.fillStyle="#d7ffff";ctx!.globalAlpha=.9;ctx!.beginPath();ctx!.ellipse(10,-67,4.5,2.4,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
-  ctx!.fillStyle="#536167";ctx!.fillRect(-23,-65,7,12);ctx!.fillRect(16,-65,7,12);
+  ctx!.beginPath();ctx!.ellipse(6,-HEAD*2.82,HEAD*.73,HEAD*.50,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
+  ctx!.strokeStyle="#6edfe1";ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.ellipse(5,-HEAD*2.64,HEAD*.64,HEAD*.45,0,0,Math.PI*2);ctx!.stroke();
+  ctx!.fillStyle="#d7ffff";ctx!.globalAlpha=.9;ctx!.beginPath();ctx!.ellipse(10,-HEAD*3.05,HEAD*.20,HEAD*.11,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+  ctx!.fillStyle="#536167";ctx!.fillRect(-HEAD*1.05,-HEAD*2.95,HEAD*.32,HEAD*.55);ctx!.fillRect(HEAD*.73,-HEAD*2.95,HEAD*.32,HEAD*.55);
   ctx!.restore();
 
   // Weapon: detailed hard-surface sci-fi carbine. The gun remains the primary
