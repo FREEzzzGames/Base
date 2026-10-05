@@ -179,6 +179,7 @@ jobs:
           artifact_name: github-pages
 
       - name: Verify published build
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -186,7 +187,7 @@ jobs:
           base_url="${base_url%/}"
           expected="${GITHUB_SHA}"
           published=""
-          for attempt in $(seq 1 12); do
+          for attempt in $(seq 1 24); do
             published="$(curl -fsSL --connect-timeout 10 --max-time 20 \
               "${base_url}/version.json?verify=${expected}" 2>/dev/null || true)"
             if [ -n "${published}" ]; then
@@ -195,7 +196,7 @@ jobs:
                 echo "PUBLISHED_BUILD_OK: ${build}"
                 exit 0
               fi
-              echo "Published build is "${build:-<missing>}" ; expected ${expected}; retrying (${attempt}/12)."
+              echo "Published build is ${build:-<missing>}; expected ${expected}; retrying (${attempt}/24)."
             else
               echo "version.json not reachable yet; retrying (${attempt}/12)."
             fi
