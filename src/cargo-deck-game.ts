@@ -10,6 +10,21 @@ ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVER
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
 RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
 type ArenaId="cargo"|"school";
+type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower";
+interface MapLevel{id:number;name:string;elevation:number}
+interface MapStructure extends HsObstacle{
+  level:number;
+  elevation:number;
+  height:number;
+  role:MapStructureRole;
+  collision:boolean;
+}
+interface CameraState{
+  x:number;y:number;
+  targetX:number;targetY:number;
+  zoom:number;
+  yaw:number;
+}
 interface ArenaConfig{
   id:ArenaId;
   name:string;
@@ -22,27 +37,54 @@ interface ArenaConfig{
   core:{x:number;y:number;hp:number};
   obstacles:HsObstacle[];
   routes:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>;
+  levels:ReadonlyArray<MapLevel>;
+  structures:ReadonlyArray<MapStructure>;
 }
 const ARENAS:Record<ArenaId,ArenaConfig>={
   cargo:{
-    id:"cargo",name:"CARGO DECK",subtitle:"SINGLE-LANE FREIGHT BATTLEFIELD",width:1000,height:2700,
-    playerSpawn:{x:500,y:2420},enemyBaseY:350,playerBaseY:2280,core:{x:500,y:250,hp:2600},
-    // One readable central lane. The three logical routes are deliberately
-    // compressed into the same corridor so the existing AI/wave system is
-    // preserved without visually turning the map into a three-lane arena.
+    id:"cargo",name:"CARGO DECK",subtitle:"MULTI-LEVEL ORBITAL FREIGHT STATION",width:1600,height:3600,
+    playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3200,core:{x:800,y:250,hp:2600},
+    levels:[
+      {id:0,name:"MAIN DECK",elevation:0},
+      {id:1,name:"UPPER DECK",elevation:118}
+    ],
+    // Ground collision is intentionally limited to the main deck. Elevated
+    // structures are visual/walkable-space candidates for the next navigation
+    // pass and do not block movement underneath them.
     obstacles:[
-      {x:90,y:250,w:260,h:150},{x:650,y:250,w:260,h:150},
-      {x:80,y:560,w:190,h:90},{x:730,y:560,w:190,h:90},
-      {x:120,y:860,w:170,h:80},{x:710,y:860,w:170,h:80},
-      {x:80,y:1160,w:190,h:90},{x:730,y:1160,w:190,h:90},
-      {x:120,y:1460,w:170,h:80},{x:710,y:1460,w:170,h:80},
-      {x:80,y:1760,w:190,h:90},{x:730,y:1760,w:190,h:90},
-      {x:90,y:2100,w:260,h:150},{x:650,y:2100,w:260,h:150}
+      {x:110,y:260,w:430,h:210},{x:1060,y:260,w:430,h:210},
+      {x:90,y:760,w:360,h:170},{x:1150,y:760,w:360,h:170},
+      {x:90,y:1460,w:330,h:160},{x:1180,y:1460,w:330,h:160},
+      {x:100,y:2200,w:360,h:180},{x:1140,y:2200,w:360,h:180},
+      {x:130,y:2860,w:330,h:170},{x:1140,y:2860,w:330,h:170},
+      {x:650,y:2920,w:110,h:150},{x:840,y:2920,w:110,h:150}
+    ],
+    structures:[
+      {x:110,y:260,w:430,h:210,level:0,elevation:0,height:92,role:"base",collision:true},
+      {x:1060,y:260,w:430,h:210,level:0,elevation:0,height:92,role:"base",collision:true},
+      {x:610,y:105,w:380,h:270,level:1,elevation:52,height:92,role:"tower",collision:false},
+
+      {x:90,y:690,w:420,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:1090,y:690,w:420,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:90,y:1380,w:370,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:1140,y:1380,w:370,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:100,y:2120,w:390,h:270,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:1110,y:2120,w:390,h:270,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:120,y:2780,w:360,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+      {x:1120,y:2780,w:360,h:250,level:1,elevation:118,height:72,role:"platform",collision:false},
+
+      {x:520,y:980,w:560,h:92,level:1,elevation:118,height:42,role:"bridge",collision:false},
+      {x:520,y:1850,w:560,h:92,level:1,elevation:118,height:42,role:"bridge",collision:false},
+      {x:520,y:2560,w:560,h:92,level:1,elevation:118,height:42,role:"bridge",collision:false},
+
+      {x:590,y:3020,w:420,h:300,level:0,elevation:24,height:80,role:"base",collision:true},
+      {x:90,y:3280,w:420,h:150,level:0,elevation:0,height:58,role:"building",collision:true},
+      {x:1090,y:3280,w:420,h:150,level:0,elevation:0,height:58,role:"building",collision:true}
     ],
     routes:[
-      [{x:430,y:450},{x:430,y:650},{x:430,y:850},{x:430,y:1050},{x:430,y:1250},{x:430,y:1450},{x:430,y:1650},{x:430,y:1850},{x:430,y:2050},{x:430,y:2200}],
-      [{x:500,y:450},{x:500,y:650},{x:500,y:850},{x:500,y:1050},{x:500,y:1250},{x:500,y:1450},{x:500,y:1650},{x:500,y:1850},{x:500,y:2050},{x:500,y:2200}],
-      [{x:570,y:450},{x:570,y:650},{x:570,y:850},{x:570,y:1050},{x:570,y:1250},{x:570,y:1450},{x:570,y:1650},{x:570,y:1850},{x:570,y:2050},{x:570,y:2200}]
+      [{x:730,y:500},{x:730,y:760},{x:730,y:1030},{x:730,y:1300},{x:730,y:1570},{x:730,y:1840},{x:730,y:2110},{x:730,y:2380},{x:730,y:2650},{x:730,y:2940},{x:730,y:3140}],
+      [{x:800,y:500},{x:800,y:760},{x:800,y:1030},{x:800,y:1300},{x:800,y:1570},{x:800,y:1840},{x:800,y:2110},{x:800,y:2380},{x:800,y:2650},{x:800,y:2940},{x:800,y:3140}],
+      [{x:870,y:500},{x:870,y:760},{x:870,y:1030},{x:870,y:1300},{x:870,y:1570},{x:870,y:1840},{x:870,y:2110},{x:870,y:2380},{x:870,y:2650},{x:870,y:2940},{x:870,y:3140}]
     ]
   },
   school:{
@@ -57,6 +99,8 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:650,y:1088,w:120,h:70},{x:808,y:1150,w:112,h:82},{x:646,y:1305,w:94,h:78},{x:790,y:1395,w:126,h:76},
       {x:412,y:1460,w:66,h:190},{x:522,y:1460,w:66,h:190}
     ],
+    levels:[{id:0,name:"GROUND",elevation:0}],
+    structures:[],
     routes:[
       [{x:360,y:300},{x:360,y:470},{x:360,y:650},{x:360,y:850},{x:360,y:1060},{x:360,y:1260},{x:360,y:1450},{x:400,y:1510}],
       [{x:500,y:300},{x:500,y:470},{x:500,y:650},{x:500,y:850},{x:500,y:1060},{x:500,y:1260},{x:500,y:1450}],
@@ -69,18 +113,17 @@ let W=ARENAS.cargo.width,H=ARENAS.cargo.height;
 let PLAYER_SPAWN={...ARENAS.cargo.playerSpawn};
 let OBS:HsObstacle[]=ARENAS.cargo.obstacles.map(o=>({...o}));
 let LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=ARENAS.cargo.routes;
+let MAP_STRUCTURES:MapStructure[]=ARENAS.cargo.structures.map(s=>({...s}));
+let cameraState:CameraState={x:800,y:3180,targetX:800,targetY:3180,zoom:1.08,yaw:0};
 const KEY="freezzz:cargo-deck:v2";
 const cargoFloorImage=new Image();
 const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
 cargoFloorImage.src=cargoFloorUrl;
-const cargoContainerImage=new Image();
-const cargoContainerUrl=`${import.meta.env.BASE_URL}cargo-container-hazard.svg`;
-cargoContainerImage.src=cargoContainerUrl;
 let staticDeckCanvas:HTMLCanvasElement|null=null;
 let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
 function buildStaticDeck():void{
-  if(arenaId==="cargo"&&(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth||!cargoContainerImage.complete||!cargoContainerImage.naturalWidth))return;
+  if(arenaId==="cargo"&&(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth))return;
   if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
   staticDeckCanvas.width=W;staticDeckCanvas.height=H;
   const g=staticDeckCtx;if(!g)return;
@@ -129,27 +172,9 @@ function buildStaticDeck():void{
     }
     g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
     g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
-    const cp=g.createPattern(cargoContainerImage,"repeat");
-    for(let oi=0;oi<OBS.length;oi++){
-      const o=OBS[oi],x=o.x,y=o.y,w=o.w,h=o.h,cx=x+w*.5,top=y-10,bottom=y+h+Math.min(82,Math.max(42,h*.75)),spread=Math.max(34,w*.42);
-      g.save();g.globalCompositeOperation="screen";g.beginPath();g.moveTo(cx-spread*.42,top);g.lineTo(cx+spread*.42,top);g.lineTo(cx+spread,bottom);g.lineTo(cx-spread,bottom);g.closePath();
-      const cone=g.createLinearGradient(cx,top,cx,bottom);cone.addColorStop(0,"rgba(255,205,108,.34)");cone.addColorStop(.18,"rgba(255,194,91,.25)");cone.addColorStop(.58,"rgba(255,170,64,.10)");cone.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=cone;g.fill();
-      const pool=g.createRadialGradient(cx,y+h*.42,4,cx,y+h*.42,Math.max(w,h)*.82);pool.addColorStop(0,"rgba(255,220,145,.28)");pool.addColorStop(.35,"rgba(255,186,82,.13)");pool.addColorStop(1,"rgba(255,150,45,0)");g.fillStyle=pool;g.fillRect(cx-Math.max(w,h),y-8,Math.max(w,h)*2,Math.max(w,h)*1.65);g.restore();
-      g.save();g.globalAlpha=.78;g.fillStyle="#000";g.beginPath();g.moveTo(x+4,y+h+4);g.lineTo(x+w-4,y+h+4);g.lineTo(x+w+18,y+h+22);g.lineTo(x-18,y+h+22);g.closePath();g.fill();g.globalAlpha=.9;g.fillRect(x+6,y+h-1,w-12,7);g.restore();
-      g.fillStyle=cp||"#17191a";g.fillRect(x,y,w,h);
-      const shade=g.createLinearGradient(x,y,x,y+h);shade.addColorStop(0,"rgba(255,215,130,.16)");shade.addColorStop(.28,"rgba(255,185,80,.04)");shade.addColorStop(.62,"rgba(0,0,0,.10)");shade.addColorStop(1,"rgba(0,0,0,.48)");g.fillStyle=shade;g.fillRect(x,y,w,h);
-      g.strokeStyle="rgba(255,211,118,.28)";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);g.strokeStyle="rgba(84,214,216,.24)";g.strokeRect(x+2.5,y+2.5,w-5,h-5);g.strokeStyle="rgba(0,0,0,.78)";g.beginPath();g.moveTo(x+w*.5,y+3);g.lineTo(x+w*.5,y+h-3);g.stroke();
-      const sections=Math.max(2,Math.floor(w/58));g.strokeStyle="rgba(8,10,11,.62)";for(let i=1;i<sections;i++){const sx=x+(w/sections)*i;g.beginPath();g.moveTo(sx,y+5);g.lineTo(sx,y+h-5);g.stroke()}
-      // Bolts, vents and serialized warning plates break the procedural rectangle silhouette.
-      for(const bx of [x+9,x+w-9])for(const by of [y+10,y+h-10]){
-        g.fillStyle="#9a8d72";g.beginPath();g.arc(bx,by,2,0,Math.PI*2);g.fill();
-        g.fillStyle="#202729";g.beginPath();g.arc(bx,by,1,0,Math.PI*2);g.fill();
-      }
-      g.fillStyle="rgba(0,0,0,.42)";g.fillRect(x+w*.14,y+h*.62,w*.72,8);
-      for(let vx=x+w*.18;vx<x+w*.82;vx+=12){g.fillStyle="rgba(122,145,146,.24)";g.fillRect(vx,y+h*.64,6,2);}
-      g.fillStyle="rgba(222,179,87,.62)";g.fillRect(x+w*.08,y+h*.16,Math.min(42,w*.28),10);
-      g.fillStyle="#182124";g.font="700 6px monospace";g.textAlign="left";g.fillText("CARGO // 17",x+w*.10,y+h*.16+7);
-    }
+    // Static layer contains only the ground plane. All architecture is
+    // rendered through the shared isometric depth pipeline below so elevated
+    // structures and actors participate in one ordering system.
   }else{
     // BLOCK 17: top-down abandoned Soviet school / sports wing.
     g.fillStyle="#3a3a36";g.fillRect(0,0,W,H);
@@ -244,13 +269,13 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0}
-function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;
-  const baseXs=[300,500,700];
+function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
+function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));MAP_STRUCTURES=(A.structures.length?A.structures:A.obstacles.map((o,i)=>({...o,level:0,elevation:0,height:Math.min(88,40+o.h*.28),role:"building" as MapStructureRole,collision:true}))).map(s=>({...s}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;
+  const baseXs=[W*.42,W*.5,W*.58];
   baseXs.forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY+30,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY-30,team:"player",lane:l,hp:900,maxHp:900,cool:0})});
   if(arenaId==="cargo"){
-    [[250,620],[750,900],[250,1180]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"enemy",lane:l,hp:900,maxHp:900,cool:45}));
-    [[750,1980],[250,1700],[750,1420]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"player",lane:l,hp:900,maxHp:900,cool:0}));
+    [[W*.28,820],[W*.72,1520],[W*.28,2260]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"enemy",lane:l,hp:900,maxHp:900,cool:45}));
+    [[W*.72,2760],[W*.28,2040],[W*.72,1320]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"player",lane:l,hp:900,maxHp:900,cool:0}));
   }
   for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
@@ -608,6 +633,8 @@ function update(dt:number){
     player.x=q[0];player.y=q[1];
   }
 
+  updateCamera(dt);
+
   if(auto)fire();
   else if(fireHeld)fire();
 
@@ -740,7 +767,7 @@ function updateNodes(dt:number){
     }
   }
 }function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
-function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();cameraYaw=0;mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
+function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();cameraState.yaw=0;cameraYaw=0;mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}
 function drawLoadout(){
   rect(0,0,viewW,viewH,"#070b0e");
@@ -756,11 +783,16 @@ function drawLoadout(){
     rect(c.x,c.y,c.w,c.h,"#11171a");
     ctx!.strokeStyle=selected?c.color:"#394449";ctx!.lineWidth=selected?2:1;ctx!.strokeRect(c.x+.5,c.y+.5,c.w-1,c.h-1);
     // Compact top-down preview. The school preview follows the uploaded reference layout.
-    ctx!.save();ctx!.translate(c.x+8,c.y+28);ctx!.scale((c.w-16)/1000,(c.h-62)/A.height);
+    ctx!.save();ctx!.translate(c.x+8,c.y+28);ctx!.scale((c.w-16)/A.width,(c.h-62)/A.height);
     if(c.id==="cargo"){
-      ctx!.fillStyle="#182126";ctx!.fillRect(0,0,1000,A.height);
-      for(const o of ARENAS.cargo.obstacles){ctx!.fillStyle="#4b5456";ctx!.fillRect(o.x,o.y,o.w,o.h)}
-      ctx!.fillStyle="rgba(255,190,75,.20)";for(const o of ARENAS.cargo.obstacles){ctx!.fillRect(o.x-10,o.y+o.h,o.w+20,Math.min(100,o.h))}
+      ctx!.fillStyle="#182126";ctx!.fillRect(0,0,A.width,A.height);
+      for(const s of ARENAS.cargo.structures){
+        ctx!.fillStyle=s.level>0?"#52676b":"#4b5456";
+        ctx!.fillRect(s.x,s.y,s.w,s.h);
+        if(s.level>0){ctx!.fillStyle="rgba(84,214,216,.16)";ctx!.fillRect(s.x,s.y,s.w,Math.min(14,s.h))}
+      }
+      ctx!.fillStyle="rgba(255,190,75,.20)";
+      for(const o of ARENAS.cargo.obstacles)ctx!.fillRect(o.x-10,o.y+o.h,o.w+20,Math.min(100,o.h));
     }else{
       ctx!.fillStyle="#454640";ctx!.fillRect(0,0,1000,A.height);
       ctx!.fillStyle="#8d7455";ctx!.fillRect(34,34,566,520);
@@ -1069,56 +1101,56 @@ function drawIndustrialLighting():void{
   for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
   if(player)shadow(player.x,player.y+25,19,8,.42);
 }
-function isoProject(x:number,y:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
+function isoProject(x:number,y:number,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number,elevation=0){
   const dx=x-targetX,dy=y-targetY;
   const co=Math.cos(yaw),sn=Math.sin(yaw);
   const rx=dx*co-dy*sn,ry=dx*sn+dy*co;
   const c=.8660254038,si=.5;
-  return {x:centerX+((rx-ry)*c*z),y:centerY+((rx+ry)*si*z)};
+  return {x:centerX+((rx-ry)*c*zoom),y:centerY+((rx+ry)*si*zoom)-elevation*zoom};
 }
 
-function isoArchitectureDepth(o:HsObstacle,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):number{
-  const p1=isoProject(o.x,o.y,centerX,centerY,z,targetX,targetY,yaw);
-  const p2=isoProject(o.x+o.w,o.y,centerX,centerY,z,targetX,targetY,yaw);
-  const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
-  const p4=isoProject(o.x,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
+function isoArchitectureDepth(o:MapStructure,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number):number{
+  const p1=isoProject(o.x,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p2=isoProject(o.x+o.w,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   return Math.max(p1.y,p2.y,p3.y,p4.y);
 }
-function drawIsoArchitectureItem(o:HsObstacle,i:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
+function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
-  const h=arenaId==="school"?Math.min(92,34+o.h*.32):Math.min(88,38+o.h*.26);
-  const p1=isoProject(o.x,o.y,centerX,centerY,z,targetX,targetY,yaw);
-  const p2=isoProject(o.x+o.w,o.y,centerX,centerY,z,targetX,targetY,yaw);
-  const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
-  const p4=isoProject(o.x,o.y+o.h,centerX,centerY,z,targetX,targetY,yaw);
-  const q1={x:p1.x,y:p1.y-h*z},q2={x:p2.x,y:p2.y-h*z},q3={x:p3.x,y:p3.y-h*z},q4={x:p4.x,y:p4.y-h*z};
+  const h=o.height;
+  const p1=isoProject(o.x,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p2=isoProject(o.x+o.w,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
+  const q1={x:p1.x,y:p1.y-h*zoom},q2={x:p2.x,y:p2.y-h*zoom},q3={x:p3.x,y:p3.y-h*zoom},q4={x:p4.x,y:p4.y-h*zoom};
+  const accent=o.level>0?"#54d6d8":"#68777c";
+  const shade=o.role==="bridge"?"#35474d":i%3===0?"#384047":i%3===1?"#465057":"#30383d";
+  const top=o.role==="platform"?"#5f6f72":o.role==="tower"?"#697a7e":i%4===0?"#727875":i%4===1?"#646c70":"#5c666b";
   ctx.save();
-  ctx.globalAlpha=.26;ctx.fillStyle="#000";
-  ctx.beginPath();ctx.moveTo(p1.x+8*z,p1.y+9*z);ctx.lineTo(p2.x+8*z,p2.y+9*z);ctx.lineTo(p3.x+8*z,p3.y+9*z);ctx.lineTo(p4.x+8*z,p4.y+9*z);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=.22;ctx.fillStyle="#000";
+  ctx.beginPath();ctx.moveTo(p1.x+7*zoom,p1.y+8*zoom);ctx.lineTo(p2.x+7*zoom,p2.y+8*zoom);ctx.lineTo(p3.x+7*zoom,p3.y+8*zoom);ctx.lineTo(p4.x+7*zoom,p4.y+8*zoom);ctx.closePath();ctx.fill();
   ctx.globalAlpha=1;
-  const shade=i%3===0?"#384047":i%3===1?"#465057":"#30383d";
-  ctx.fillStyle=shade;ctx.strokeStyle="#11181c";ctx.lineWidth=Math.max(1,1.35*z);
+  ctx.fillStyle=shade;ctx.strokeStyle="#10181c";ctx.lineWidth=Math.max(1,1.2*zoom);
   ctx.beginPath();ctx.moveTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q2.x,q2.y);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle="#263137";
+  ctx.fillStyle="#263238";
   ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q1.x,q1.y);ctx.closePath();ctx.fill();ctx.stroke();
-  const top=i%4===0?"#727875":i%4===1?"#646c70":i%4===2?"#7b7f79":"#5c666b";
   ctx.fillStyle=top;
   ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.lineTo(q3.x,q3.y);ctx.lineTo(q4.x,q4.y);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.strokeStyle="rgba(221,212,184,.20)";ctx.lineWidth=Math.max(1,z);
-  const mid1={x:(q1.x+q2.x)*.5,y:(q1.y+q2.y)*.5},mid2={x:(q4.x+q3.x)*.5,y:(q4.y+q3.y)*.5};
-  ctx.beginPath();ctx.moveTo(mid1.x,mid1.y);ctx.lineTo(mid2.x,mid2.y);ctx.stroke();
-  if(o.w>110&&o.h>60){
-    ctx.fillStyle="rgba(20,28,31,.72)";
-    ctx.beginPath();ctx.ellipse((q1.x+q3.x)*.5,(q1.y+q3.y)*.5,Math.max(5,8*z),Math.max(3,4*z),0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="rgba(84,214,216,.32)";ctx.stroke();
+  if(o.role==="bridge"){
+    ctx.strokeStyle="rgba(84,214,216,.55)";ctx.lineWidth=Math.max(1,zoom);
+    ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.stroke();
+    ctx.strokeStyle="rgba(255,183,75,.30)";ctx.beginPath();ctx.moveTo((q1.x+q4.x)*.5,(q1.y+q4.y)*.5);ctx.lineTo((q2.x+q3.x)*.5,(q2.y+q3.y)*.5);ctx.stroke();
+  }else if(o.role==="platform"||o.role==="base"){
+    ctx.strokeStyle=o.level>0?"rgba(84,214,216,.38)":"rgba(255,183,75,.24)";
+    ctx.lineWidth=Math.max(1,zoom);
+    ctx.strokeRect(Math.min(q1.x,q3.x),Math.min(q1.y,q3.y),Math.abs(q3.x-q1.x),Math.abs(q3.y-q1.y)*.22);
+  }
+  if(o.role==="tower"){
+    ctx.strokeStyle="rgba(84,214,216,.65)";ctx.lineWidth=2*zoom;
+    ctx.beginPath();ctx.arc((q1.x+q3.x)*.5,(q1.y+q3.y)*.5,18*zoom,0,Math.PI*2);ctx.stroke();
   }
   ctx.restore();
-}
-function drawIsoArchitecture(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
-  if(!ctx)return;
-  OBS.map((o,i)=>({o,i,depth:isoArchitectureDepth(o,centerX,centerY,z,targetX,targetY,yaw)}))
-    .sort((a,b)=>a.depth-b.depth)
-    .forEach(item=>drawIsoArchitectureItem(item.o,item.i,centerX,centerY,z,targetX,targetY,yaw));
 }
 function isoActorPoint(x:number,y:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   return isoProject(x,y,centerX,centerY,z,targetX,targetY,yaw);
@@ -1366,7 +1398,7 @@ function drawIsoDefenseNode(n:Node,centerX:number,centerY:number,z:number,target
 }
 function drawIsoCore(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
-  const p=isoProject(core.x,core.y,centerX,centerY,z,targetX,targetY,yaw);
+  const p=isoProject(core.x,core.y,centerX,centerY,z,targetX,targetY,yaw,24);
   const s=Math.max(.8,z),c="#54d6d8";
   ctx.save();
   ctx.globalAlpha=.18;ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(p.x,p.y+4,48*s,15*s,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
@@ -1400,11 +1432,13 @@ function drawSpaceBackdrop():void{
   ctx.globalAlpha=1;ctx.restore();
 }
 function drawWorld(){
-  const isoZoom=arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
+  const isoZoom=cameraState.zoom;
   const cam=getCameraTarget();
   const targetX=cam.x,targetY=cam.y;
   const centerX=viewW*.5;
-  const centerY=viewH*.56;
+  // The player is the visual anchor; look-ahead is expressed by targetX/Y,
+  // not by moving the player toward the lower edge of the viewport.
+  const centerY=viewH*.54;
   const c=.8660254038,si=.5,co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
   drawSpaceBackdrop();
@@ -1420,13 +1454,17 @@ function drawWorld(){
   // Everything that can overlap the player is now screen-projected and depth sorted together.
   const depthItems:Array<{depth:number;order:number;draw:()=>void}>=[];
 
-  OBS.forEach((o,i)=>{
+  MAP_STRUCTURES.forEach((o,i)=>{
     depthItems.push({
       depth:isoArchitectureDepth(o,centerX,centerY,isoZoom,targetX,targetY,cameraYaw),
       order:i,
       draw:()=>drawIsoArchitectureItem(o,i,centerX,centerY,isoZoom,targetX,targetY,cameraYaw)
     });
   });
+  {
+    const p=isoProject(core.x,core.y,centerX,centerY,isoZoom,targetX,targetY,cameraYaw,24);
+    depthItems.push({depth:p.y,order:80,draw:()=>drawIsoCore(centerX,centerY,isoZoom,targetX,targetY,cameraYaw)});
+  }
   nodes.filter(n=>n.hp>0).forEach((n,i)=>{
     const p=isoProject(n.x,n.y,centerX,centerY,isoZoom,targetX,targetY,cameraYaw);
     depthItems.push({depth:p.y,order:100+i,draw:()=>drawIsoDefenseNode(n,centerX,centerY,isoZoom,targetX,targetY,cameraYaw)});
@@ -1632,16 +1670,34 @@ function bindUI(){
     h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
   }
 }
-function getCameraTarget():{x:number;y:number}{
-  const lead=arenaId==="cargo"?300:220;
-  return {x:player?.x??W*.5,y:Math.max(260,Math.min(H-260,(player?.y??H*.5)-lead))};
+function getCameraZoom():number{
+  return arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
 }
+function clampCameraTarget(x:number,y:number):{x:number;y:number}{
+  const marginX=Math.min(420,Math.max(220,W*.14));
+  const marginY=Math.min(520,Math.max(260,H*.14));
+  return {x:Math.max(marginX,Math.min(W-marginX,x)),y:Math.max(marginY,Math.min(H-marginY,y))};
+}
+function updateCamera(dt:number):void{
+  if(!player)return;
+  const zoom=getCameraZoom();
+  const moving=Math.hypot(moveX,moveY)>.04;
+  const lookDistance=arenaId==="cargo"?(moving?150:0):(moving?110:0);
+  const desired=clampCameraTarget(player.x+moveX*lookDistance,player.y+moveY*lookDistance);
+  const ease=1-Math.exp(-dt*.10);
+  cameraState.targetX=desired.x;cameraState.targetY=desired.y;cameraState.zoom=zoom;
+  cameraState.x+=(desired.x-cameraState.x)*ease;
+  cameraState.y+=(desired.y-cameraState.y)*ease;
+  cameraState.yaw=0;
+  cameraYaw=0;
+}
+function getCameraTarget():{x:number;y:number}{return{x:cameraState.x,y:cameraState.y}}
 function screenToWorld(sx:number,sy:number):{x:number;y:number}{
-  const z=arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
+  const z=getCameraZoom();
   const c=.8660254038,si=.5;
   const px=sx/(c*z),py=sy/(si*z);
   const rx=(px+py)*.5,ry=(py-px)*.5;
-  const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
+  const co=Math.cos(cameraState.yaw),sn=Math.sin(cameraState.yaw);
   const t=getCameraTarget();
   return{x:t.x+rx*co+ry*sn,y:t.y-rx*sn+ry*co};
 }
