@@ -216,7 +216,7 @@ let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRend
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
-let combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
+let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
@@ -227,7 +227,7 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
+function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
 function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};camX=PLAYER_SPAWN.x;camY=PLAYER_SPAWN.y;OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
@@ -487,7 +487,11 @@ function resolve(){
 function validAttackTarget(m:Mob|null):m is Mob{return !!m&&m.hp>0&&m.team==="enemy"}
 function selectAttackTarget(x:number,y:number):void{
   let best:Mob|null=null,bestD=Infinity;
-  for(const m of mobs){if(m.hp<=0||m.team!=="enemy")continue;const d=Math.hypot(m.x-x,m.y-y);if(d<bestD&&d<=90){best=m;bestD=d}}
+  for(const m of mobs){
+    if(m.hp<=0||m.team!=="enemy")continue;
+    const d=Math.hypot(m.x-x,m.y-y);
+    if(d<bestD&&d<=90){best=m;bestD=d}
+  }
   attackTarget=best||enemyTarget(player.x,player.y,weapon().range);
 }
 function currentAttackTarget():Mob|null{
@@ -506,7 +510,7 @@ function fireShot():void{\n  const target=currentAttackTarget();\n  if(!target)r
   VFX.emitMuzzleFlash(hx,hy,ra,Math.min(1.25,Math.max(.7,w.damage/32)));
   muzzleFlash=1;
 }
-function fire(manual=false):void{
+function fire():void{
   if(mode!=="play"||player.combat.reloadTimer>0||player.attackState!=="ready")return;
   const target=currentAttackTarget();
   if(!target||player.combat.fireTimer>0)return;
@@ -529,7 +533,7 @@ function stepPlayerAttack(dt:number):void{
     player.attackTimer=0;
   }
 }
-function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
+function grenade(){const target=currentAttackTarget();const angle=target?Math.atan2(target.y-player.y,target.x-player.x):player.facing;const g=makeGrenade(player.combat,player.x,player.y,angle);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
 function special(){if(abilityCd>0)return;abilityCd=L().cd;ability=L().dur;if(sel==="ASSAULT")mobs.forEach(m=>{if(m.team==="enemy")m.cool=Math.max(m.cool,80)});if(sel==="VANGUARD")player.armor=Math.max(player.armor,90);if(sel==="RECON")auto=true;msg=L().ability;msgT=70}
 function update(dt:number){
@@ -559,9 +563,12 @@ function update(dt:number){
   moveY+=(moveTargetY-moveY)*moveEase;
   if(Math.abs(moveX)<.008)moveX=0;
   if(Math.abs(moveY)<.008)moveY=0;
-  const aimDiff=Math.atan2(Math.sin(aimTarget-aim),Math.cos(aimTarget-aim));
-  aim+=aimDiff*(1-Math.exp(-dt*.075));
-  if(Math.abs(aimDiff)<.002)aim=aimTarget;
+  const target=currentAttackTarget();
+  if(target){
+    const desired=Math.atan2(target.y-player.y,target.x-player.x);
+    const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
+    player.facing+=turn*(1-Math.exp(-dt*.22));
+  }
   const camEase=1-Math.exp(-dt*.085);
   camX+=(player.x-camX)*camEase;
   camY+=(player.y-camY)*camEase;
@@ -763,18 +770,18 @@ function drawPlayer(){
   (drawPlayer as any)._px=px;(drawPlayer as any)._py=py;
   const speedNow=Math.hypot(moveVX,moveVY);
   const moving=Math.min(1,speedNow/3.2);
-  const moveAngle=moving>.04?Math.atan2(moveVY,moveVX):((drawPlayer as any)._bodyAngle??aim);
+  const moveAngle=moving>.04?Math.atan2(moveVY,moveVX):((drawPlayer as any)._bodyAngle??player.facing);
   let bodyAngle=(drawPlayer as any)._bodyAngle??moveAngle;
   if(moving>.04){
     let d=Math.atan2(Math.sin(moveAngle-bodyAngle),Math.cos(moveAngle-bodyAngle));
     bodyAngle+=d*.18;
   }else{
-    let d=Math.atan2(Math.sin(aim-bodyAngle),Math.cos(aim-bodyAngle));
+    let d=Math.atan2(Math.sin(player.facing-bodyAngle),Math.cos(player.facing-bodyAngle));
     bodyAngle+=d*.06;
   }
   (drawPlayer as any)._bodyAngle=bodyAngle;
 
-  const aimAngle=aim;
+  const aimAngle=player.facing;
   const phase=walkPhase;
   const runCycle=Math.sin(phase);
   const runCycle2=Math.sin(phase+Math.PI);
@@ -1210,7 +1217,7 @@ function renderUI(){
     ui.innerHTML='<div class="cargo-inventory"><div class="cargo-inventory-title">PICKUPS</div><div class="cargo-inventory-list">'+inventory+'</div>'+med+'</div>'+
       '<div class="cargo-touch-zone" aria-hidden="true"></div>'+
       '<div class="cargo-combat-zone" aria-hidden="true"></div>'+
-      '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автострельба">AUTO</button>'+
+      '<button class="cargo-auto'+(auto?' active':'')+'" data-cargo="auto" aria-label="Автоатака">AUTO</button>'+
       '<button class="cargo-grenade" data-cargo="grenade" aria-label="Граната">G</button>'+
       '<button class="cargo-special'+(abilityCd>0?' cooldown':'')+'" data-cargo="ability" aria-label="Спецвозможность">✦</button>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
@@ -1288,15 +1295,11 @@ function bindUI(){
       const wx=player.x+(e.clientX-(rect.left+rect.width*.5));
       const wy=player.y+(e.clientY-(rect.top+rect.height*.5));
       selectAttackTarget(wx,wy);
-      if(combatTapPending){
-        combatTapPending=false;if(combatTapTimer)window.clearTimeout(combatTapTimer);combatTapTimer=0;
-        startReload(player.combat,weapon());return;
-      }
-      combatTapPending=true;
-      combatTapTimer=window.setTimeout(()=>{combatTapTimer=0;if(!combatTapPending)return;combatTapPending=false;fireHeld=true;fire(true)},180);
+      fireHeld=true;
+      fire(true);
     });
     combat.addEventListener("pointerup",e=>{if(e.pointerId===combatId)stop()});
-    combat.addEventListener("pointercancel",e=>{if(e.pointerId===combatId){if(combatTapTimer)window.clearTimeout(combatTapTimer);combatTapTimer=0;combatTapPending=false;stop()}});
+    combat.addEventListener("pointercancel",e=>{if(e.pointerId===combatId)stop()});
   }
 
   if(mode==="weapon"){
@@ -1304,7 +1307,7 @@ function bindUI(){
     h?.addEventListener("click",e=>{const r=(e.currentTarget as HTMLElement).getBoundingClientRect(),n=Math.floor(((e as MouseEvent).clientY-r.top-78)/((Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)))+5));if(n>=0&&n<save.inventory.length)chooseWeapon(save.inventory[n])})
   }
 }
-function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire(true);if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
+function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
 function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveTargetY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveTargetX=0}
 function loop(t:number){
   if(!last){
