@@ -182,7 +182,7 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0;
 let combatTouchId:number|null=null,combatStartX=0,combatStartY=0,combatLastX=0,combatLastY=0,combatMoved=false,combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
@@ -196,7 +196,7 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0}
+function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
 function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};camX=PLAYER_SPAWN.x;camY=PLAYER_SPAWN.y;OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
@@ -433,7 +433,7 @@ function resolve(){
     x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1];
   }
 }
-function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100)){
+function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100)){
   bullets.push({...s});
   VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
 }
@@ -463,22 +463,24 @@ function update(dt:number){
   stepWeapon(player.combat,w,dt);
 
   // Smooth analog response: the thumb/finger sets a target, the character eases into it.
-  const moveEase=1-Math.exp(-dt*.16);
+  const moveEase=1-Math.exp(-dt*.09);
   moveX+=(moveTargetX-moveX)*moveEase;
   moveY+=(moveTargetY-moveY)*moveEase;
   if(Math.abs(moveX)<.008)moveX=0;
   if(Math.abs(moveY)<.008)moveY=0;
   const aimDiff=Math.atan2(Math.sin(aimTarget-aim),Math.cos(aimTarget-aim));
-  aim+=aimDiff*(1-Math.exp(-dt*.13));
+  aim+=aimDiff*(1-Math.exp(-dt*.075));
   if(Math.abs(aimDiff)<.002)aim=aimTarget;
-  const camEase=1-Math.exp(-dt*.11);
+  const camEase=1-Math.exp(-dt*.085);
   camX+=(player.x-camX)*camEase;
   camY+=(player.y-camY)*camEase;
 
   if(Math.abs(moveX)+Math.abs(moveY)>.01){
     const n=Math.hypot(moveX,moveY)||1;
-    const speed=l.speed*(ability&&sel==="ASSAULT"?1.25:1);
+    const speed=l.speed*(ability&&sel==="ASSAULT"?1.25:1)*.92;
     const q=move(player.x,player.y,moveX/n*speed*dt,moveY/n*speed*dt,18);
+    const traveled=Math.hypot(q[0]-player.x,q[1]-player.y);
+    walkPhase+=traveled*.22;
     player.x=q[0];player.y=q[1];
   }
 
@@ -682,7 +684,7 @@ function drawPlayer(){
   (drawPlayer as any)._bodyAngle=bodyAngle;
 
   const aimAngle=aim;
-  const phase=frame*.22;
+  const phase=walkPhase;
   const runCycle=Math.sin(phase);
   const runCycle2=Math.sin(phase+Math.PI);
   const verticalBob=moving*(Math.abs(runCycle)*1.8);
@@ -705,6 +707,7 @@ function drawPlayer(){
 
   ctx!.save();
   ctx!.translate(px,py-verticalBob);
+  ctx!.scale(1.15,1.15);
   ctx!.rotate(lean);
 
   // Contact shadow and subtle operator halo.
@@ -1071,8 +1074,9 @@ function bindUI(){
         combatTapPending=false;
         if(combatTapTimer)window.clearTimeout(combatTapTimer);
         combatTapTimer=0;
-        aimTarget=Math.atan2(dy,dx);
-        if(Math.abs(dx)>5)player.facing=dx<0?-1:1;
+        const gestureAngle=Math.atan2(dy,dx);
+        const aimDelta=Math.atan2(Math.sin(gestureAngle-aim),Math.cos(gestureAngle-aim));
+        if(Math.abs(aimDelta)>.035)aimTarget=gestureAngle;
         fireHeld=true;
         fire(true);
       }
