@@ -182,7 +182,7 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveOriginX=0,moveOriginY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveOriginX=0,moveOriginY=0,aim=0,auto=true,thirdPersonView=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;
 let combatTouchId:number|null=null,combatStartX=0,combatStartY=0,combatLastX=0,combatLastY=0,combatMoved=false,combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
@@ -794,13 +794,22 @@ function drawPlayer(){
   ctx!.restore();
 }
 function drawWorld(){
-  const worldZoom=Math.min(1,viewW/W);
+  const worldZoom=thirdPersonView?Math.min(1.05,Math.max(.72,viewW/520)):Math.min(1,viewW/W);
   const worldViewH=viewH/worldZoom;
   cam=Math.max(0,Math.min(H-worldViewH,player.y-worldViewH*.58));
   rect(0,0,viewW,viewH,"#04080b");
   ctx!.save();
-  ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
-  ctx!.scale(worldZoom,worldZoom);
+  if(thirdPersonView){
+    // Experimental third-person camera: the operator is anchored low-center,
+    // the world rotates toward the aim direction and is compressed in depth.
+    ctx!.translate(viewW*.5,viewH*.70);
+    ctx!.rotate(Math.PI*.5-aim);
+    ctx!.scale(worldZoom,worldZoom*.62);
+    ctx!.translate(-player.x,-player.y);
+  }else{
+    ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
+    ctx!.scale(worldZoom,worldZoom);
+  }
   if(!staticDeckReady)buildStaticDeck();
   if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
   else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
@@ -874,7 +883,7 @@ function drawWorld(){
     ctx!.restore();
   }
 
-  drawPlayer();
+  if(thirdPersonView)drawPlayerThirdPerson();else drawPlayer();
 
   // Projectiles: bright core + short energy tail.
   for(const b of bullets){
@@ -901,6 +910,85 @@ function drawWorld(){
     x:W*.5,y:cam+worldViewH*.5,zoom:worldZoom,width:viewW,height:viewH
   });
   drawHUD();
+}
+function drawPlayerThirdPerson(){
+  const c=L().color;
+  const movingVX=player.x-((drawPlayerThirdPerson as any)._px??player.x);
+  const movingVY=player.y-((drawPlayerThirdPerson as any)._py??player.y);
+  (drawPlayerThirdPerson as any)._px=player.x;(drawPlayerThirdPerson as any)._py=player.y;
+  const moving=Math.min(1,Math.hypot(movingVX,movingVY)/3.2);
+  const moveA=moving>.04?Math.atan2(movingVY,movingVX):aim;
+  const phase=frame*.22;
+  const stride=Math.sin(phase)*moving;
+  const stride2=Math.sin(phase+Math.PI)*moving;
+  const recoil=Math.min(5,player.combat.recoil*.3);
+  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
+
+  // The ground has already been transformed by the third-person camera.
+  // Undo only the depth compression so the operator stays upright and readable.
+  ctx!.save();
+  ctx!.scale(1,1/.62);
+  ctx!.translate(0,18);
+  const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.4)=>{
+    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx!.fill();
+    if(sw>0){ctx!.strokeStyle=stroke;ctx!.lineWidth=sw;ctx!.stroke();}
+  };
+  const limb=(x1:number,y1:number,x2:number,y2:number,w:number,fill:string)=>{
+    ctx!.strokeStyle="#18242a";ctx!.lineWidth=w;ctx!.lineCap="round";ctx!.beginPath();ctx!.moveTo(x1,y1);ctx!.lineTo(x2,y2);ctx!.stroke();
+    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.arc(x2,y2,w*.48,0,Math.PI*2);ctx!.fill();
+  };
+
+  // Shadow is deliberately wide to establish a third-person contact point.
+  ctx!.globalAlpha=.42;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(0,8,38,10,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+
+  // Back-facing pressure suit: head, backpack, torso, hips.
+  ctx!.fillStyle="#303d42";ctx!.strokeStyle="#111a1e";ctx!.lineWidth=2;
+  ctx!.beginPath();ctx!.roundRect(-22,-58,44,45,9);ctx!.fill();ctx!.stroke();
+  ctx!.fillStyle="#56666b";ctx!.fillRect(-15,-53,30,28);
+  ctx!.fillStyle=c;ctx!.globalAlpha=.8;ctx!.fillRect(-11,-49,22,4);ctx!.globalAlpha=1;
+
+  ctx!.fillStyle="#d65b2c";ctx!.beginPath();ctx!.roundRect(-27,-22,54,50,15);ctx!.fill();
+  ctx!.strokeStyle="#182329";ctx!.lineWidth=2;ctx!.stroke();
+  ctx!.fillStyle="#f0e9d8";ctx!.beginPath();ctx!.roundRect(-21,-18,42,24,7);ctx!.fill();
+  ctx!.fillStyle="#33444a";ctx!.fillRect(-13,-14,26,12);
+  ctx!.fillStyle=c;ctx!.fillRect(-8,-11,16,3);
+
+  const legL=15+stride*12,legR=-15+stride2*12;
+  const kneeLiftL=Math.max(0,-stride)*11,kneeLiftR=Math.max(0,-stride2)*11;
+  limb(-13,22,legL,43-kneeLiftL,14,"#d85b2b");
+  limb(13,22,legR,43-kneeLiftR,14,"#c94f28");
+  limb(legL,43-kneeLiftL,legL+stride*10,70-kneeLiftL,11,"#d86532");
+  limb(legR,43-kneeLiftR,legR+stride2*10,70-kneeLiftR,11,"#c9542b");
+  ellipse(legL+stride*10,70-kneeLiftL,13,7,0,"#263238","#10181c",1);
+  ellipse(legR+stride2*10,70-kneeLiftR,13,7,0,"#202b30","#10181c",1);
+
+  // Arms are layered behind the weapon, giving a clear shoulder silhouette.
+  const armSway=Math.sin(phase+.7)*moving*3;
+  limb(-22,-10,-31-armSway,9+stride*3,11,"#c8522a");
+  limb(22,-10,31+armSway,9+stride2*3,11,"#d65b2c");
+  ellipse(-22,-10,8,8,0,"#59666a","#182329",1);
+  ellipse(22,-10,8,8,0,"#59666a","#182329",1);
+
+  // Helmet from behind, with a narrow cyan neck/visor rim.
+  ellipse(0,-76,21,22,0,"#e7e1d1","#172228",1.8);
+  ctx!.fillStyle="#263238";ctx!.beginPath();ctx!.roundRect(-19,-84,38,13,5);ctx!.fill();
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=8;ctx!.fillRect(-11,-79,22,3);ctx!.shadowBlur=0;
+
+  // Weapon projects over the right shoulder toward the aim direction.
+  // In camera space aim is forward (screen-up), so the barrel is drawn upward.
+  ctx!.save();
+  ctx!.translate(19,-12-recoil);
+  ctx!.rotate(0);
+  ctx!.shadowColor="#000";ctx!.shadowBlur=7;ctx!.fillStyle="#080d10";
+  ctx!.beginPath();ctx!.roundRect(-5,-7,gunLen+14,11,3);ctx!.fill();ctx!.shadowBlur=0;
+  ctx!.fillStyle="#35454a";ctx!.fillRect(4,-5,Math.max(20,gunLen-18),7);
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=5;ctx!.fillRect(12,-3,Math.max(10,gunLen-27),3);ctx!.shadowBlur=0;
+  if(muzzleFlash>0){
+    ctx!.globalAlpha=Math.min(1,muzzleFlash*1.8);ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=10;
+    ctx!.beginPath();ctx!.moveTo(gunLen+9,-1);ctx!.lineTo(gunLen+24,-8);ctx!.lineTo(gunLen+19,-1);ctx!.lineTo(gunLen+24,6);ctx!.closePath();ctx!.fill();ctx!.globalAlpha=1;ctx!.shadowBlur=0;
+  }
+  ctx!.restore();
+  ctx!.restore();
 }
 function drawHUD(){
   rect(0,0,viewW,82,"rgba(5,9,11,.96)");
