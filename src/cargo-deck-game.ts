@@ -1155,24 +1155,6 @@ function isoArchitectureDepth(o:MapStructure,centerX:number,centerY:number,zoom:
   const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
   return Math.max(p1.y,p2.y,p3.y,p4.y);
 }
-  for(const m of mobs)shadow(m.x,m.y+23,15,7,.34);
-  if(player)shadow(player.x,player.y+25,19,8,.42);
-}
-function isoProject(x:number,y:number,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number,elevation=0){
-  const dx=x-targetX,dy=y-targetY;
-  const co=Math.cos(yaw),sn=Math.sin(yaw);
-  const rx=dx*co-dy*sn,ry=dx*sn+dy*co;
-  const c=.8660254038,si=.5;
-  return {x:centerX+((rx-ry)*c*zoom),y:centerY+((rx+ry)*si*zoom)-elevation*zoom};
-}
-
-function isoArchitectureDepth(o:MapStructure,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number):number{
-  const p1=isoProject(o.x,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
-  const p2=isoProject(o.x+o.w,o.y,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
-  const p3=isoProject(o.x+o.w,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
-  const p4=isoProject(o.x,o.y+o.h,centerX,centerY,zoom,targetX,targetY,yaw,o.elevation);
-  return Math.max(p1.y,p2.y,p3.y,p4.y);
-}
 function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:number,zoom:number,targetX:number,targetY:number,yaw:number):void{
   if(!ctx)return;
   const h=o.height;
@@ -1234,9 +1216,6 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
     }
     ctx.restore();
   }
-  // Real-world freight-yard details: rails, ladders, vents, pipe runs and
-  // cargo markings. These are attached to the structure footprint, not free
-  // floating sci-fi geometry.
   if(o.role==="platform"||o.role==="bridge"){
     ctx.save();
     ctx.strokeStyle="rgba(39,45,46,.95)";
@@ -1248,23 +1227,19 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
       const t=k/5,px=edgeA.x+(edgeB.x-edgeA.x)*t,py=edgeA.y+(edgeB.y-edgeA.y)*t;
       ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+15*zoom);ctx.stroke();
     }
-    ctx.strokeStyle="rgba(161,126,76,.48)";
-    ctx.lineWidth=Math.max(.7,zoom);
+    ctx.strokeStyle="rgba(161,126,76,.48)";ctx.lineWidth=Math.max(.7,zoom);
     ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q2.x,q2.y);ctx.stroke();
     ctx.restore();
   }
   if(o.role==="building"||o.role==="base"){
     ctx.save();
     const mx=(q1.x+q2.x+q3.x+q4.x)/4,my=(q1.y+q2.y+q3.y+q4.y)/4;
-    // Loading-door / shutter indication.
     ctx.strokeStyle="rgba(28,32,32,.9)";
     ctx.lineWidth=Math.max(1,1.4*zoom);
     const dw=Math.max(12,Math.min(42,o.w*.10))*zoom;
     ctx.strokeRect(mx-dw,my-8*zoom,dw*2,18*zoom);
-    // Small industrial vents.
     for(let k=0;k<3;k++){
       const vx=mx+(k-1)*16*zoom,vy=my+26*zoom;
-      ctx.strokeStyle="rgba(35,40,40,.78)";
       ctx.beginPath();ctx.moveTo(vx-5*zoom,vy);ctx.lineTo(vx+5*zoom,vy);ctx.stroke();
     }
     ctx.restore();
@@ -1272,10 +1247,7 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   if(o.role==="tower"){
     ctx.save();
     const cx=(q1.x+q3.x)*.5,cy=(q1.y+q3.y)*.5;
-    // Water/air tank and access mast silhouette; deliberately non-futuristic.
-    ctx.fillStyle="#4b4d4b";
-    ctx.strokeStyle="#242726";
-    ctx.lineWidth=Math.max(1,zoom);
+    ctx.fillStyle="#4b4d4b";ctx.strokeStyle="#242726";ctx.lineWidth=Math.max(1,zoom);
     ctx.beginPath();ctx.ellipse(cx,cy-26*zoom,28*zoom,9*zoom,0,0,Math.PI*2);ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx-28*zoom,cy-26*zoom);ctx.lineTo(cx-28*zoom,cy+4*zoom);ctx.lineTo(cx+28*zoom,cy+4*zoom);ctx.lineTo(cx+28*zoom,cy-26*zoom);ctx.stroke();
     ctx.strokeStyle="#8d7657";
@@ -1300,7 +1272,65 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
 function isoActorPoint(x:number,y:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   return isoProject(x,y,centerX,centerY,z,targetX,targetY,yaw);
 }
-function isoActorAngle(x:number,y:number,dx:number,dy:number,z:number,targetX:number,targetY:number,yaw:number):number{function isoBeam(
+function isoActorAngle(x:number,y:number,dx:number,dy:number,z:number,targetX:number,targetY:number,yaw:number):number{
+  const a=isoProject(x,y,0,0,z,targetX,targetY,yaw);
+  const b=isoProject(x+dx,y+dy,0,0,z,targetX,targetY,yaw);
+  return Math.atan2(b.y-a.y,b.x-a.x);
+}
+function poly(points:{x:number;y:number}[],fill:string,stroke="#11181c",sw=1){
+  if(!ctx||points.length<3)return;
+  ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+  for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
+  ctx.closePath();ctx.fill();
+  if(sw>0){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
+}
+function box3D(x:number,y:number,w:number,h:number,depth:number,front:string,side:string,top:string,stroke="#11181c"){
+  const d=depth*.62;
+  poly([{x:x,y:y},{x:x+w,y:y},{x:x+w,y:y+h},{x:x,y:y+h}],front,stroke,1.1);
+  poly([{x:x+w,y:y},{x:x+w+d,y:y-depth*.30},{x:x+w+d,y:y+h-depth*.30},{x:x+w,y:y+h}],side,stroke,.9);
+  poly([{x:x,y:y},{x:x+d,y:y-depth*.30},{x:x+w+d,y:y-depth*.30},{x:x+w,y:y}],top,stroke,.9);
+}
+function limb3D(x1:number,y1:number,x2:number,y2:number,w:number,depth:number,front:string,side:string){
+  const dx=x2-x1,dy=y2-y1,d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d;
+  const a={x:x1+nx*w*.5,y:y1+ny*w*.5},b={x:x2+nx*w*.5,y:y2+ny*w*.5};
+  const c={x:x2-nx*w*.5,y:y2-ny*w*.5},d0={x:x1-nx*w*.5,y:y1-ny*w*.5};
+  poly([a,b,c,d0],front,"#10171b",.9);
+  const off={x:depth*.55,y:-depth*.38};
+  poly([b,{x:b.x+off.x,y:b.y+off.y},{x:c.x+off.x,y:c.y+off.y},c],side,"#10171b",.7);
+}
+
+function actorWorldPoint(baseX:number,baseY:number,lx:number,ly:number,angle:number){
+  const co=Math.cos(angle),sn=Math.sin(angle);
+  return {x:baseX+lx*co-ly*sn,y:baseY+lx*sn+ly*co};
+}
+function projectActor3D(wx:number,wy:number,height:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
+  const p=isoProject(wx,wy,centerX,centerY,z,targetX,targetY,yaw);
+  return {x:p.x,y:p.y-height*z};
+}
+function isoVolumeBox(
+  cx:number,cy:number,w:number,d:number,h:number,rot:number,baseHeight:number,
+  centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number,
+  front:string,side:string,top:string,accent?:string
+){
+  if(!ctx)return;
+  const pts=[
+    actorWorldPoint(cx,cy,-w*.5,-d*.5,rot),
+    actorWorldPoint(cx,cy, w*.5,-d*.5,rot),
+    actorWorldPoint(cx,cy, w*.5, d*.5,rot),
+    actorWorldPoint(cx,cy,-w*.5, d*.5,rot)
+  ];
+  const lo=pts.map(p=>projectActor3D(p.x,p.y,baseHeight,centerX,centerY,z,targetX,targetY,yaw));
+  const hi=pts.map(p=>projectActor3D(p.x,p.y,baseHeight+h,centerX,centerY,z,targetX,targetY,yaw));
+  poly([lo[0],lo[1],hi[1],hi[0]],front,"#10171b",.8);
+  poly([lo[1],lo[2],hi[2],hi[1]],side,"#10171b",.8);
+  poly([hi[0],hi[1],hi[2],hi[3]],top,"#10171b",.9);
+  if(accent){
+    ctx.strokeStyle=accent;ctx.globalAlpha=.7;ctx.lineWidth=Math.max(.8,z);
+    ctx.beginPath();ctx.moveTo(hi[0].x,hi[0].y);ctx.lineTo(hi[1].x,hi[1].y);ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+function isoBeam(
   x1:number,y1:number,x2:number,y2:number,width:number,height:number,baseHeight:number,
   centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number,
   front:string,side:string,top:string,rotOffset=0
@@ -1808,3 +1838,14 @@ function screenToWorld(sx:number,sy:number):{x:number;y:number}{
   return{x:t.x+rx*co+ry*sn,y:t.y-rx*sn+ry*co};
 }
 function screenVectorToWorld(sx:number,sy:number):{x:number;y:number}{
+  const c=.8660254038,si=.5;
+  const px=sx/c,py=sy/si;
+  const rx=(px+py)*.5,ry=(py-px)*.5;
+  const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
+  return{x:rx*co+ry*sn,y:-rx*sn+ry*co};
+}
+function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
+function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveTargetY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveTargetX=0}
+function loop(t:number){
+  if(!last){
+    last=t;
