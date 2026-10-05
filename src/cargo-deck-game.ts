@@ -1422,7 +1422,7 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
   if(!ctx||!player)return;
   const moving=Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35);
   const ground=isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw);
-  const modelScale=1.42;
+  const modelScale=6.2;
   const aimState=player.attackState==="windup"||player.attackState==="cooldown"||auto||attackTarget!==null||attackNode!==null;
   ctx.save();
   ctx.globalAlpha=.34;ctx.fillStyle="#000";ctx.beginPath();
