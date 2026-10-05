@@ -13,11 +13,10 @@ permissions:
 
 # RELEASE RULE:
 # Never cancel an earlier validation run just because a newer commit arrived.
-# Every main commit gets a deterministic validation; only the current main SHA
-# is allowed through the production gate below.
+# Every main commit gets a deterministic validation; production deployment is
+# serialized separately and only runs after the matching build job succeeds.
 concurrency:
-  # Every commit validates independently. Production deployment remains serialized
-  # and the SHA gate below rejects stale releases.
+  # Every commit validates independently. Production deployment remains serialized.
   group: freezzz-pages-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 
