@@ -149,19 +149,15 @@ let LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=ARENAS.cargo.r
 let MAP_STRUCTURES:MapStructure[]=ARENAS.cargo.structures.map(s=>({...s}));
 let cameraState:CameraState={x:800,y:3180,targetX:800,targetY:3180,zoom:1.08,yaw:0};
 const KEY="freezzz:cargo-deck:v2";
-const cargoFloorImage=new Image();
-const cargoFloorUrl=new URL("../cargo-deck-floor.svg",import.meta.url).href;
-cargoFloorImage.src=cargoFloorUrl;
 let staticDeckCanvas:HTMLCanvasElement|null=null;
 let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
 function buildStaticDeck():void{
-  if(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth)return;
   if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
   const deckW=W+720,deckH=H+2800;staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
   const g=staticDeckCtx;if(!g)return;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
-      const floor=g.createPattern(cargoFloorImage,"repeat");
-    if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
+      g.fillStyle="#070d11";g.fillRect(0,0,W,H);
+    g.fillStyle="rgba(30,49,55,.22)";g.fillRect(40,0,W-80,H);
     // Central freight/service corridor: concrete-steel deck with restrained
     // markings. Combat lanes remain clear and readable without sci-fi framing.
     g.save();
@@ -212,7 +208,7 @@ function buildStaticDeck():void{
   
   staticDeckReady=true;
 }
-cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
+
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
