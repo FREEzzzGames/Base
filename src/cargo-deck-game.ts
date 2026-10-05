@@ -783,6 +783,7 @@ function drawPlayer(){
   const sideX=-bodyY,sideY=bodyX;
   const recoil=Math.min(6,player.combat.recoil*.34);
   const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
+  const S=1.15;
 
   const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.4)=>{
     ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx!.fill();
@@ -804,7 +805,7 @@ function drawPlayer(){
   };
   ctx!.save();
   ctx!.translate(px,py-verticalBob);
-  ctx!.scale(1.15,1.15);
+  ctx!.scale(S,S);
   ctx!.rotate(lean);
 
   // Contact shadow and subtle operator halo.
