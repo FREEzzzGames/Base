@@ -215,7 +215,10 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;\nlet cameraYaw=0,cameraYawTarget=0;\nconst CAMERA_ROTATION_STEP=Math.PI/2;\nlet rotationTouchActive=false,rotationTouchStartX=0,rotationTouchStartYaw=0;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+let cameraYaw=0,cameraYawTarget=0;
+const CAMERA_ROTATION_STEP=Math.PI/2;
+let rotationTouchActive=false,rotationTouchStartX=0,rotationTouchStartYaw=0;
 let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
@@ -572,7 +575,13 @@ function update(dt:number){
     const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
     player.facing+=turn*(1-Math.exp(-dt*.22));
   }
-  const camEase=1-Math.exp(-dt*.085);\n  camX+=(player.x-camX)*camEase;\n  camY+=(player.y-camY)*camEase;\n  const yawDelta=Math.atan2(Math.sin(cameraYawTarget-cameraYaw),Math.cos(cameraYawTarget-cameraYaw));\n  cameraYaw+=yawDelta*(1-Math.exp(-dt*.18));\n\n  if(Math.abs(moveX)+Math.abs(moveY)>.01){
+  const camEase=1-Math.exp(-dt*.085);
+  camX+=(player.x-camX)*camEase;
+  camY+=(player.y-camY)*camEase;
+  const yawDelta=Math.atan2(Math.sin(cameraYawTarget-cameraYaw),Math.cos(cameraYawTarget-cameraYaw));
+  cameraYaw+=yawDelta*(1-Math.exp(-dt*.18));
+
+  if(Math.abs(moveX)+Math.abs(moveY)>.01){
     const n=Math.hypot(moveX,moveY)||1;
     const speed=l.speed*(ability&&sel==="ASSAULT"?1.25:1)*.92;
     const q=move(player.x,player.y,moveX/n*speed*dt,moveY/n*speed*dt,18);
@@ -1112,7 +1121,8 @@ function drawWorld(){
   ctx!.translate(centerX,centerY);
   ctx!.scale(isoZoom,isoZoom);
   ctx!.transform(ia,ic,ib,id,0,0);
-  ctx!.translate(-targetX,-targetY);\n  drawIndustrialLighting();
+  ctx!.translate(-targetX,-targetY);
+  drawIndustrialLighting();
 
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
