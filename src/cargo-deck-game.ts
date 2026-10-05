@@ -1576,7 +1576,7 @@ function renderUI(){
         '<button class="cargo-combat-small cargo-tower" data-cargo="tower" aria-label="Башня"><span class="cargo-combat-icon">⌖</span><span class="cargo-combat-caption">TOWER</span></button>'+
         '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">'+weapon().name.slice(0,1)+'</span><span class="cargo-fire-label">ATTACK</span></button>'+
       '</div>'+
-      '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
+      '<div class="cargo-bottom"><button data-cargo="reload">RELOAD</button><button data-cargo="auto">AUTO</button><button data-cargo="menu">MENU</button></div>';
   }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="PLAY CARGO DECK"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
   else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
   else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
