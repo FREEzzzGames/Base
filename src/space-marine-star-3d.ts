@@ -86,9 +86,6 @@ function buildBasePose(){
     MX[i]=x;MY[i]=y;MZ[i]=z;
   }
 }
-function poseVertex(i:number,recoil:number):void{
-  MZ[i]+=recoil*.018;
-}
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
   const ctx=f.ctx;
@@ -99,8 +96,7 @@ export function renderSpaceMarineStar(f:SpaceMarineFrame){
   // Keep the calibrated authored mesh rigid. No per-frame vertex allocation
   // and no guessed skinning: facing rotates only the horizontal plane.
   for(let i=0;i<VCOUNT;i++){
-    const baseZ=MZ[i];
-    const x=MX[i]*s,y=MY[i]*s,z=(baseZ+r*.018)*s;
+    const x=MX[i]*s,y=MY[i]*s,z=(MZ[i]+r*.018)*s;
     const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);
     PX[i]=q.x;PY[i]=q.y;
   }
