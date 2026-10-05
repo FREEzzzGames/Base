@@ -89,6 +89,32 @@ function buildStaticDeck():void{
     if(floor){g.globalAlpha=.72;g.fillStyle=floor;g.fillRect(0,0,W,H);g.globalAlpha=1}else{g.fillStyle="#070d11";g.fillRect(0,0,W,H)}
     for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
     for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
+    for(let y=120;y<H;y+=240){
+      g.strokeStyle="rgba(117,145,149,.13)";g.lineWidth=1;
+      g.beginPath();g.moveTo(58,y);g.lineTo(W-58,y);g.stroke();
+      g.strokeStyle="rgba(0,0,0,.24)";
+      g.beginPath();g.moveTo(58,y+3);g.lineTo(W-58,y+3);g.stroke();
+      for(let x=88;x<W-88;x+=112){g.fillStyle="rgba(145,170,170,.08)";g.fillRect(x,y-9,48,2);}
+    }
+    for(let x=94;x<W-94;x+=220){
+      g.fillStyle="rgba(8,12,14,.34)";g.fillRect(x,70,10,H-140);
+      g.fillStyle="rgba(87,116,121,.08)";g.fillRect(x+2,70,2,H-140);
+    }
+    for(const yy of [260,690,1080,1470,1900,2260]){
+      g.save();g.globalAlpha=.52;g.beginPath();g.rect(42,yy,W-84,16);g.clip();
+      for(let x=34;x<W;x+=28){
+        g.fillStyle=x%56===0?"#d69b3a":"#1b2529";
+        g.save();g.translate(x,yy);g.rotate(-.55);g.fillRect(0,-18,9,52);g.restore();
+      }
+      g.restore();
+    }
+    for(let x=90;x<W-70;x+=180){
+      const yy=H-90;
+      const glow=g.createRadialGradient(x,yy,2,x,yy,80);
+      glow.addColorStop(0,"rgba(84,214,216,.18)");glow.addColorStop(1,"rgba(84,214,216,0)");
+      g.fillStyle=glow;g.fillRect(x-80,yy-80,160,160);
+      g.fillStyle="#5dd5d5";g.fillRect(x-2,yy-2,4,4);
+    }
     g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
     g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
     const cp=g.createPattern(cargoContainerImage,"repeat");
@@ -722,6 +748,9 @@ function drawPlayer(){
   // Contact shadow and subtle operator halo.
   ctx!.globalAlpha=.34;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(0,32,34,10,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
   ctx!.globalAlpha=.11;ctx!.fillStyle=c;ctx!.beginPath();ctx!.arc(0,-17,51+Math.sin(frame*.08)*2,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+  ctx!.save();ctx!.globalAlpha=.62;ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=2;ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=8;
+  ctx!.beginPath();ctx!.ellipse(0,31,29,9,0,0,Math.PI*2);ctx!.stroke();
+  ctx!.globalAlpha=.18;ctx!.lineWidth=5;ctx!.beginPath();ctx!.ellipse(0,31,34,11,0,0,Math.PI*2);ctx!.stroke();ctx!.restore();
 
   // Life-support backpack.
   ctx!.save();ctx!.rotate(bodyAngle);
@@ -780,27 +809,35 @@ function drawPlayer(){
   const footR=updateFoot(rig.right,gaitR,hipR);
   const kneeL=twoBone(hipL,footL,22,20,1);
   const kneeR=twoBone(hipR,footR,22,20,-1);
-  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,13,"#d85b2b");
-  limb(kneeL.x,kneeL.y,footL.x,footL.y,10,"#d86532");
-  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,13,"#c94f28");
-  limb(kneeR.x,kneeR.y,footR.x,footR.y,10,"#c9542b");
+  limb(hipL.x,hipL.y,kneeL.x,kneeL.y,13,"#343f44","#10171b");
+  limb(kneeL.x,kneeL.y,footL.x,footL.y,10,"#293439","#10171b");
+  limb(hipR.x,hipR.y,kneeR.x,kneeR.y,13,"#303b40","#10171b");
+  limb(kneeR.x,kneeR.y,footR.x,footR.y,10,"#273238","#10171b");
   ellipse(kneeL.x,kneeL.y,7,6,0,"#46535a","#152027",1);
   ellipse(kneeR.x,kneeR.y,7,6,0,"#46535a","#152027",1);
-  ellipse(footL.x,footL.y,12,7,bodyAngle,"#263238","#10181c",1.2);
-  ellipse(footR.x,footR.y,12,7,bodyAngle,"#202b30","#10181c",1.2);
+  ellipse(footL.x,footL.y,12,7,bodyAngle,"#182126","#080f13",1.2);
+  ellipse(footR.x,footR.y,12,7,bodyAngle,"#182126","#080f13",1.2);
 
   // Pelvis and torso rotate slightly opposite the legs to sell weight transfer.
   const pelvisTwist=runCycle*weight*.10;
   ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
-  ellipse(0,10,17,12,0,"#a94728","#172228",1.3);
-  ellipse(0,-15,27,35,0,"#d65b2c","#182329",1.8);
-  ctx!.fillStyle="#f0e9d8";ctx!.beginPath();ctx!.roundRect(-18,-37,36,25,8);ctx!.fill();
+  ellipse(0,10,17,12,0,"#222d32","#0d1519",1.3);
+  ellipse(0,-15,27,35,0,"#2b373c","#0e171b",1.8);
+  ctx!.fillStyle="#c6cfcc";ctx!.beginPath();ctx!.roundRect(-18,-37,36,25,8);ctx!.fill();
   ctx!.strokeStyle="#29373b";ctx!.lineWidth=1.5;ctx!.stroke();
-  ctx!.fillStyle="#33444a";ctx!.fillRect(-11,-33,22,12);
+  ctx!.fillStyle="#172126";ctx!.fillRect(-11,-33,22,12);
   ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=6;ctx!.fillRect(-7,-29,14,3);ctx!.shadowBlur=0;
-  ctx!.fillStyle="#8b9695";ctx!.fillRect(-13,-18,26,5);
+  ctx!.fillStyle="#66757a";ctx!.fillRect(-13,-18,26,5);
   ctx!.fillStyle="#273238";ctx!.fillRect(-8,-17,4,3);ctx!.fillRect(4,-17,4,3);
-  ctx!.strokeStyle="#f0a35f";ctx!.lineWidth=1;ctx!.beginPath();ctx!.moveTo(-17,-10);ctx!.lineTo(-9,4);ctx!.moveTo(17,-10);ctx!.lineTo(9,4);ctx!.stroke();
+  ctx!.strokeStyle="#54d6d8";ctx!.lineWidth=1.2;ctx!.beginPath();ctx!.moveTo(-17,-10);ctx!.lineTo(-9,4);ctx!.moveTo(17,-10);ctx!.lineTo(9,4);ctx!.stroke();
+  ctx!.restore();
+
+  ctx!.save();ctx!.rotate(bodyAngle+pelvisTwist);
+  ctx!.fillStyle="#3b484d";ctx!.strokeStyle="#10181c";ctx!.lineWidth=1;
+  ctx!.beginPath();ctx!.moveTo(-13,-29);ctx!.lineTo(0,-34);ctx!.lineTo(13,-29);ctx!.lineTo(11,-13);ctx!.lineTo(0,-8);ctx!.lineTo(-11,-13);ctx!.closePath();ctx!.fill();ctx!.stroke();
+  ctx!.fillStyle="#19262b";ctx!.fillRect(-7,-25,14,10);
+  ctx!.fillStyle="#54d6d8";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=5;ctx!.fillRect(-4,-23,8,2);ctx!.shadowBlur=0;
+  ctx!.fillStyle="#5b696e";ctx!.fillRect(-17,-19,4,12);ctx!.fillRect(13,-19,4,12);
   ctx!.restore();
 
   // Aim-driven upper body. The weapon is the primary constraint; both hands solve toward its grips.
@@ -812,10 +849,10 @@ function drawPlayer(){
   const support={x:gunBaseX-dirX*5+sideX*11,y:gunBaseY-dirY*5+sideY*11};
   const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},22,21,1);
   const elbowBack=twoBone(shoulderBack,support,22,21,-1);
-  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,10,"#d65b2c");
-  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,9,"#d65b2c");
-  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,10,"#c8522a");
-  limb(elbowBack.x,elbowBack.y,support.x,support.y,9,"#c8522a");
+  limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,10,"#364248","#11191d");
+  limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,9,"#2b373c","#11191d");
+  limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,10,"#303b40","#10181c");
+  limb(elbowBack.x,elbowBack.y,support.x,support.y,9,"#273238","#10181c");
   ellipse(shoulderFront.x,shoulderFront.y,8,8,aimAngle,"#59666a","#182329",1);
   ellipse(shoulderBack.x,shoulderBack.y,8,8,aimAngle,"#59666a","#182329",1);
   ellipse(gunBaseX,gunBaseY,6,6,aimAngle,"#d9d5c8","#182329",1);
@@ -824,12 +861,12 @@ function drawPlayer(){
   // Head follows aim with limited rotation.
   const headTurn=Math.max(-.22,Math.min(.22,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.55));
   ctx!.save();ctx!.rotate(bodyAngle+headTurn);
-  ellipse(0,-48,13,7,0,"#343f43","#11191d",1);
-  ellipse(0,-56,19,19,0,"#e7e1d1","#172228",1.6);
-  ctx!.fillStyle="#0b1620";ctx!.shadowColor="#2c9eaa";ctx!.shadowBlur=10;
+  ellipse(0,-48,14,8,0,"#202b30","#080f13",1);
+  ellipse(0,-56,19,19,0,"#303b40","#0b1418",1.6);
+  ctx!.fillStyle="#071217";ctx!.shadowColor="#54d6d8";ctx!.shadowBlur=12;
   ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;
-  ctx!.strokeStyle="#9abcc0";ctx!.lineWidth=2;ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.stroke();
-  ctx!.fillStyle="#d7f5f5";ctx!.globalAlpha=.8;ctx!.beginPath();ctx!.ellipse(9,-63,4,2.2,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+  ctx!.strokeStyle="#6edfe1";ctx!.lineWidth=1.5;ctx!.beginPath();ctx!.ellipse(5,-58,14,10,0,0,Math.PI*2);ctx!.stroke();
+  ctx!.fillStyle="#d7ffff";ctx!.globalAlpha=.9;ctx!.beginPath();ctx!.ellipse(9,-63,4,2.2,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
   ctx!.fillStyle="#536167";ctx!.fillRect(-20,-61,6,10);ctx!.fillRect(14,-61,6,10);
   ctx!.restore();
 
