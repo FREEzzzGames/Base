@@ -1126,132 +1126,191 @@ function limb3D(x1:number,y1:number,x2:number,y2:number,w:number,depth:number,fr
   const off={x:depth*.55,y:-depth*.38};
   poly([b,{x:b.x+off.x,y:b.y+off.y},{x:c.x+off.x,y:c.y+off.y},c],side,"#10171b",.7);
 }
+
+function actorWorldPoint(baseX:number,baseY:number,lx:number,ly:number,angle:number){
+  const co=Math.cos(angle),sn=Math.sin(angle);
+  return {x:baseX+lx*co-ly*sn,y:baseY+lx*sn+ly*co};
+}
+function projectActor3D(wx:number,wy:number,height:number,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
+  const p=isoProject(wx,wy,centerX,centerY,z,targetX,targetY,yaw);
+  return {x:p.x,y:p.y-height*z};
+}
+function isoVolumeBox(
+  cx:number,cy:number,w:number,d:number,h:number,rot:number,baseHeight:number,
+  centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number,
+  front:string,side:string,top:string,accent?:string
+){
+  if(!ctx)return;
+  const pts=[
+    actorWorldPoint(cx,cy,-w*.5,-d*.5,rot),
+    actorWorldPoint(cx,cy, w*.5,-d*.5,rot),
+    actorWorldPoint(cx,cy, w*.5, d*.5,rot),
+    actorWorldPoint(cx,cy,-w*.5, d*.5,rot)
+  ];
+  const lo=pts.map(p=>projectActor3D(p.x,p.y,baseHeight,centerX,centerY,z,targetX,targetY,yaw));
+  const hi=pts.map(p=>projectActor3D(p.x,p.y,baseHeight+h,centerX,centerY,z,targetX,targetY,yaw));
+  poly([lo[0],lo[1],hi[1],hi[0]],front,"#10171b",.8);
+  poly([lo[1],lo[2],hi[2],hi[1]],side,"#10171b",.8);
+  poly([hi[0],hi[1],hi[2],hi[3]],top,"#10171b",.9);
+  if(accent){
+    ctx.strokeStyle=accent;ctx.globalAlpha=.7;ctx.lineWidth=Math.max(.8,z);
+    ctx.beginPath();ctx.moveTo(hi[0].x,hi[0].y);ctx.lineTo(hi[1].x,hi[1].y);ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+function isoBeam(
+  x1:number,y1:number,x2:number,y2:number,width:number,height:number,baseHeight:number,
+  centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number,
+  front:string,side:string,top:string,rotOffset=0
+){
+  const a=Math.atan2(y2-y1,x2-x1)+rotOffset;
+  const nx=-Math.sin(a)*width*.5,ny=Math.cos(a)*width*.5;
+  const q1={x:x1+nx,y:y1+ny},q2={x:x2+nx,y:y2+ny},q3={x:x2-nx,y:y2-ny},q4={x:x1-nx,y:y1-ny};
+  const lo=[q1,q2,q3,q4].map(p=>projectActor3D(p.x,p.y,baseHeight,centerX,centerY,z,targetX,targetY,yaw));
+  const hi=[q1,q2,q3,q4].map(p=>projectActor3D(p.x,p.y,baseHeight+height,centerX,centerY,z,targetX,targetY,yaw));
+  poly([lo[0],lo[1],hi[1],hi[0]],front,"#10171b",.8);
+  poly([lo[1],lo[2],hi[2],hi[1]],side,"#10171b",.8);
+  poly([hi[0],hi[1],hi[2],hi[3]],top,"#10171b",.9);
+}
 function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx||!player)return;
-  const p=isoActorPoint(player.x,player.y,centerX,centerY,z,targetX,targetY,yaw);
+  const S=1.42;
   const moving=Math.min(1,(Math.abs(moveX)+Math.abs(moveY))/.35);
-  const run=Math.sin(walkPhase),bob=moving*Math.abs(run)*2.2*z;
-  const aim=isoActorAngle(player.x,player.y,Math.cos(player.facing),Math.sin(player.facing),z,targetX,targetY,yaw);
-  const body=isoActorAngle(player.x,player.y,Math.cos(player.facing),Math.sin(player.facing),z,targetX,targetY,yaw);
-  const s=Math.max(.82,Math.min(1.18,z));
-  const h=104*s;
-  const groundY=p.y+2;
+  const run=Math.sin(walkPhase);
+  const bob=moving*Math.abs(run)*2.2;
+  const body=player.facing;
+  const aim=player.facing;
+  const baseX=player.x,baseY=player.y;
+  const sideX=-Math.sin(body),sideY=Math.cos(body);
+  const forwardX=Math.cos(body),forwardY=Math.sin(body);
+  const ground=isoActorPoint(baseX,baseY,centerX,centerY,z,targetX,targetY,yaw);
   const c=L().color;
   ctx.save();
-  // Ground contact and hard shadow stay on the map plane.
-  ctx.globalAlpha=.34;ctx.fillStyle="#000";ctx.beginPath();ctx.ellipse(p.x,groundY+3,27*s,9*s,0,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=.12;ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(p.x,groundY,34*s,12*s,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
 
-  const hipY=groundY-h*.43+bob;
-  const shoulderY=groundY-h*.68+bob;
-  const headY=groundY-h*.91+bob;
-  const legGap=11*s, legW=10*s, depth=7*s;
-  const stride=Math.sin(walkPhase)*7*s;
-  const lx=p.x-legGap+Math.cos(body)*stride, rx=p.x+legGap-Math.cos(body)*stride;
-  const ly=groundY-5*s, ry=groundY-5*s;
+  // Ground contact: the feet are anchored to the exact gameplay point.
+  ctx.globalAlpha=.34;ctx.fillStyle="#000";ctx.beginPath();
+  ctx.ellipse(ground.x,ground.y+3,25*S*z,8*S*z,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=.11;ctx.fillStyle=c;ctx.beginPath();
+  ctx.ellipse(ground.x,ground.y,31*S*z,10*S*z,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
 
-  // Boots.
-  ctx.save();ctx.translate(lx,ly);ctx.rotate(body);box3D(-8*s,-5*s,18*s,8*s,6*s,"#1b2529","#0d1519","#344147");ctx.restore();
-  ctx.save();ctx.translate(rx,ry);ctx.rotate(body);box3D(-8*s,-5*s,18*s,8*s,6*s,"#1b2529","#0d1519","#344147");ctx.restore();
+  const footL=actorWorldPoint(baseX,baseY,-7*S+Math.sin(walkPhase)*4*S,0,body);
+  const footR=actorWorldPoint(baseX,baseY, 7*S-Math.sin(walkPhase)*4*S,0,body);
+  const hip=actorWorldPoint(baseX,baseY,0,0,body);
+  const shoulder=actorWorldPoint(baseX,baseY,0,0,body);
+  const kneeH=16*S,legH=28*S,hipH=31*S,torsoH=33*S,headH=25*S;
 
-  // Armored legs: segmented low-poly plates, not flat strokes.
-  limb3D(lx,ly-5*s,lx+(p.x-lx)*.30,hipY+7*s,legW,depth,"#303d42","#1b2529");
-  limb3D(rx,ry-5*s,rx+(p.x-rx)*.30,hipY+7*s,legW,depth,"#2b383d","#172126");
-  box3D(lx-7*s,hipY+3*s,15*s,16*s,6*s,"#39474c","#202b30","#5b696e");
-  box3D(rx-7*s,hipY+3*s,15*s,16*s,6*s,"#303e43","#1d282d","#536167");
+  // Boots and segmented legs.
+  isoVolumeBox(footL.x,footL.y,12*S,15*S,8*S,body,0,centerX,centerY,z,targetX,targetY,yaw,"#182226","#0b1317","#46545a");
+  isoVolumeBox(footR.x,footR.y,12*S,15*S,8*S,body,0,centerX,centerY,z,targetX,targetY,yaw,"#182226","#0b1317","#46545a");
+  isoVolumeBox(footL.x,footL.y,10*S,11*S,legH,body,7*S,centerX,centerY,z,targetX,targetY,yaw,"#344248","#182328","#5a686d");
+  isoVolumeBox(footR.x,footR.y,10*S,11*S,legH,body,7*S,centerX,centerY,z,targetX,targetY,yaw,"#2d3b40","#172126","#526167");
 
-  // Pelvis and torso are faceted volumes with visible top/side planes.
-  ctx.save();ctx.translate(p.x,hipY);ctx.rotate(body);
-  box3D(-19*s,-10*s,38*s,20*s,11*s,"#252f34","#182227","#4a585d");
-  ctx.restore();
-  ctx.save();ctx.translate(p.x,shoulderY);ctx.rotate(body);
-  box3D(-22*s,-22*s,44*s,29*s,14*s,"#2f3d42","#1b282d","#69767a");
-  ctx.fillStyle="#0c1519";ctx.fillRect(-10*s,-15*s,20*s,9*s);
-  ctx.fillStyle=c;ctx.globalAlpha=.85;ctx.fillRect(-7*s,-11*s,14*s,2*s);ctx.globalAlpha=1;
-  ctx.restore();
+  // Knee guards.
+  const kL=actorWorldPoint(baseX,baseY,-7*S,0,body),kR=actorWorldPoint(baseX,baseY,7*S,0,body);
+  isoVolumeBox(kL.x,kL.y,12*S,13*S,kneeH,body,22*S,centerX,centerY,z,targetX,targetY,yaw,"#4a585d","#202b30","#758185",c);
+  isoVolumeBox(kR.x,kR.y,12*S,13*S,kneeH,body,22*S,centerX,centerY,z,targetX,targetY,yaw,"#3f4e53","#1c282d","#68767a",c);
 
-  // Shoulder armor and arms.
-  const ax=p.x+Math.cos(aim)*17*s, ay=shoulderY+Math.sin(aim)*4*s;
-  const sx=p.x-Math.cos(aim)*17*s, sy=shoulderY-Math.sin(aim)*4*s;
-  limb3D(p.x-15*s,shoulderY-3*s,ax,ay,9*s,6*s,"#39484d","#1b272c");
-  limb3D(p.x+15*s,shoulderY-3*s,sx,sy,9*s,6*s,"#303e43","#18242a");
-  ctx.fillStyle="#58676b";ctx.beginPath();ctx.arc(ax,ay,5*s,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(sx,sy,5*s,0,Math.PI*2);ctx.fill();
+  // Pelvis and torso: large faceted hard-surface masses, matching the supplied low-poly reference.
+  isoVolumeBox(hip.x,hip.y,28*S,20*S,hipH,body,36*S,centerX,centerY,z,targetX,targetY,yaw,"#263338","#151f24","#59676b");
+  isoVolumeBox(shoulder.x,shoulder.y,38*S,23*S,torsoH,body,55*S,centerX,centerY,z,targetX,targetY,yaw,"#354349","#1b272c","#788488",c);
 
-  // Carbine aligned to the actual target direction.
-  const gunX=p.x+Math.cos(aim)*18*s, gunY=shoulderY+Math.sin(aim)*18*s;
-  ctx.save();ctx.translate(gunX,gunY);ctx.rotate(aim);
-  box3D(-15*s,-4*s,46*s,8*s,8*s,"#26343a","#121b20","#59696e");
-  ctx.fillStyle=c;ctx.globalAlpha=.8;ctx.fillRect(-2*s,-1*s,22*s,2*s);ctx.globalAlpha=1;
-  ctx.fillStyle="#10181c";ctx.fillRect(26*s,-3*s,18*s,6*s);ctx.fillStyle="#69787c";ctx.fillRect(42*s,-4*s,5*s,8*s);
-  ctx.fillStyle="#141e22";ctx.beginPath();ctx.moveTo(1*s,4*s);ctx.lineTo(10*s,4*s);ctx.lineTo(7*s,14*s);ctx.lineTo(-2*s,14*s);ctx.closePath();ctx.fill();
-  ctx.restore();
+  // Chest armor plates.
+  const chest=actorWorldPoint(baseX,baseY,0,-11*S,body);
+  isoVolumeBox(chest.x,chest.y,28*S,7*S,7*S,body,75*S,centerX,centerY,z,targetX,targetY,yaw,"#1b292e","#10191d","#5c6a6f",c);
 
-  // Helmet/head: beveled hard-surface volume with visor and side module.
-  ctx.save();ctx.translate(p.x,headY);ctx.rotate(Math.max(-.16,Math.min(.16,aim-body)));
-  poly([{x:-17*s,y:-13*s},{x:-10*s,y:-22*s},{x:10*s,y:-22*s},{x:18*s,y:-13*s},{x:15*s,y:10*s},{x:-14*s,y:10*s}], "#4a575c","#11191d",1.2);
-  poly([{x:-17*s,y:-13*s},{x:-10*s,y:-22*s},{x:-5*s,y:-25*s},{x:-5*s,y:6*s},{x:-14*s,y:10*s}], "#69777a","#182328",.8);
-  poly([{x:-5*s,y:-25*s},{x:10*s,y:-22*s},{x:18*s,y:-13*s},{x:15*s,y:-18*s},{x:3*s,y:-29*s}], "#7d898b","#1a2428",.8);
-  ctx.fillStyle="#071217";ctx.fillRect(-11*s,-9*s,24*s,9*s);
-  ctx.strokeStyle="#73e5e7";ctx.lineWidth=1.2*s;ctx.strokeRect(-10*s,-8*s,22*s,7*s);
-  ctx.fillStyle="#d9ffff";ctx.fillRect(5*s,-7*s,4*s,2*s);
-  ctx.fillStyle="#344247";ctx.fillRect(15*s,-6*s,6*s,12*s);
-  ctx.restore();
+  // Arms are true world-space beams, so their direction follows the isometric basis.
+  const gunCenter=actorWorldPoint(baseX,baseY,27*S,0,aim);
+  const hand=actorWorldPoint(baseX,baseY,20*S,0,aim);
+  const shL=actorWorldPoint(baseX,baseY,-18*S,0,body),shR=actorWorldPoint(baseX,baseY,18*S,0,body);
+  isoBeam(shL.x,shL.y,hand.x,hand.y,9*S,10*S,72*S,centerX,centerY,z,targetX,targetY,yaw,"#3e4d52","#1c282d","#69777b");
+  isoBeam(shR.x,shR.y,hand.x,hand.y,9*S,10*S,72*S,centerX,centerY,z,targetX,targetY,yaw,"#344348","#18242a","#5e6c71");
+  isoVolumeBox(hand.x,hand.y,10*S,10*S,10*S,aim,80*S,centerX,centerY,z,targetX,targetY,yaw,"#556469","#273338","#879396");
 
-  // Backpack silhouette makes the operator read as a volumetric unit from above.
-  ctx.save();ctx.translate(p.x-Math.cos(body)*16*s,shoulderY+8*s);ctx.rotate(body);
-  box3D(-8*s,-17*s,16*s,32*s,9*s,"#26343a","#111a1e","#526267");
-  ctx.restore();
+  // Carbine: a separate volumetric object, not a flat line.
+  const muzzle=actorWorldPoint(baseX,baseY,58*S,0,aim);
+  isoBeam(gunCenter.x,gunCenter.y,muzzle.x,muzzle.y,8*S,7*S,84*S,centerX,centerY,z,targetX,targetY,yaw,"#26343a","#10191e","#65757a");
+  const barrel=actorWorldPoint(muzzle.x,muzzle.y,11*S,0,aim);
+  isoBeam(muzzle.x,muzzle.y,barrel.x,barrel.y,5*S,5*S,84*S,centerX,centerY,z,targetX,targetY,yaw,"#10181c","#080e12","#6c797d");
 
-  // Small cyan contact ring remains subordinate to the model.
-  ctx.globalAlpha=.62;ctx.strokeStyle=c;ctx.lineWidth=1.4*s;ctx.beginPath();ctx.ellipse(p.x,groundY,24*s,7*s,0,0,Math.PI*2);ctx.stroke();
+  // Neck + helmet with separate visor volume.
+  isoVolumeBox(baseX,baseY,11*S,11*S,8*S,body,87*S,centerX,centerY,z,targetX,targetY,yaw,"#202b30","#10181c","#536166");
+  isoVolumeBox(baseX,baseY,25*S,22*S,25*S,body,94*S,centerX,centerY,z,targetX,targetY,yaw,"#4b595e","#202c31","#899497",c);
+  const visor=actorWorldPoint(baseX,baseY,10*S,-12*S,body);
+  isoVolumeBox(visor.x,visor.y,18*S,5*S,8*S,body,101*S,centerX,centerY,z,targetX,targetY,yaw,"#071216","#03080b","#19343a",c);
+
+  // Side helmet module + life-support backpack.
+  const sideModule=actorWorldPoint(baseX,baseY,-13*S,2*S,body);
+  isoVolumeBox(sideModule.x,sideModule.y,8*S,8*S,11*S,body,99*S,centerX,centerY,z,targetX,targetY,yaw,"#58666a","#263238","#9aa5a7");
+  const pack=actorWorldPoint(baseX,baseY,-13*S,0,body);
+  isoVolumeBox(pack.x,pack.y,15*S,12*S,30*S,body,55*S,centerX,centerY,z,targetX,targetY,yaw,"#26353a","#10191e","#59696e");
+
+  // Small cyan status elements keep the model readable without flattening it.
+  ctx.globalAlpha=.9;ctx.fillStyle=c;
+  const status=projectActor3D(baseX,baseY,76*S,centerX,centerY,z,targetX,targetY,yaw);
+  ctx.fillRect(status.x-4*S,status.y-1.5*S,8*S,3*S);
+  ctx.globalAlpha=.62;ctx.strokeStyle=c;ctx.lineWidth=1.2*z;
+  ctx.beginPath();ctx.ellipse(ground.x,ground.y,25*S*z,7*S*z,0,0,Math.PI*2);ctx.stroke();
   ctx.restore();
 }
 function drawIsoMob(m:Mob,centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx||m.hp<=0)return;
-  const p=isoActorPoint(m.x,m.y,centerX,centerY,z,targetX,targetY,yaw);
+  const S=m.type==="sniper"?1.22:m.type==="shooter"?1.12:1.08;
   const color=m.type==="brawler"?"#ff557d":m.type==="shooter"?"#ffb04f":"#cf7cff";
-  const moving=Math.abs(m.x-m.lastX)+Math.abs(m.y-m.lastY)>.08;
-  const bob=moving?Math.abs(Math.sin(frame*.12+m.x*.01))*1.8*z:Math.sin(frame*.045+m.x*.01)*.7*z;
-  const s=Math.max(.70,Math.min(1.02,z));
-  const h=(m.type==="sniper"?82:m.type==="shooter"?70:64)*s;
-  const groundY=p.y+2;
-  const bodyY=groundY-h*.46+bob, shoulderY=groundY-h*.68+bob, headY=groundY-h*.88+bob;
-  const aim=m.team==="enemy"?isoActorAngle(m.x,m.y,Math.cos(Math.atan2(player.y-m.y,player.x-m.x)),Math.sin(Math.atan2(player.y-m.y,player.x-m.x)),z,targetX,targetY,yaw):0;
+  const body=m.team==="enemy"?Math.atan2(player.y-m.y,player.x-m.x):0;
+  const moving=Math.hypot(m.x-m.lastX,m.y-m.lastY)>.08;
+  const bob=moving?Math.abs(Math.sin(frame*.12+m.x*.01))*1.8:Math.sin(frame*.045+m.x*.01)*.7;
+  const ground=isoActorPoint(m.x,m.y,centerX,centerY,z,targetX,targetY,yaw);
+  const bodyCol=m.type==="brawler"?"#5a2934":m.type==="shooter"?"#55462d":"#40345a";
+  const sideCol=m.type==="brawler"?"#301820":m.type==="shooter"?"#302719":"#261d38";
+  const topCol=m.type==="brawler"?"#ad5269":m.type==="shooter"?"#b78445":"#805faa";
   ctx.save();
-  ctx.globalAlpha=.30;ctx.fillStyle="#000";ctx.beginPath();ctx.ellipse(p.x,groundY+3,18*s,6*s,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-  const bodyCol=m.type==="brawler"?"#552832":m.type==="shooter"?"#51412a":"#3d3154";
-  const sideCol=m.type==="brawler"?"#30171e":m.type==="shooter"?"#302515":"#251c35";
-  const topCol=m.type==="brawler"?"#a24a62":m.type==="shooter"?"#b27d3c":"#7958a4";
-  // Feet and armored legs.
-  box3D(p.x-11*s,groundY-8*s,9*s,8*s,5*s,"#182126","#0d1418","#39484d");
-  box3D(p.x+2*s,groundY-8*s,9*s,8*s,5*s,"#182126","#0d1418","#39484d");
-  limb3D(p.x-7*s,groundY-7*s,p.x-8*s,bodyY+5*s,9*s,5*s,bodyCol,sideCol);
-  limb3D(p.x+7*s,groundY-7*s,p.x+8*s,bodyY+5*s,9*s,5*s,bodyCol,sideCol);
-  box3D(p.x-15*s,bodyY-4*s,30*s,19*s,9*s,bodyCol,sideCol,topCol);
-  box3D(p.x-17*s,shoulderY-15*s,34*s,24*s,11*s,bodyCol,sideCol,topCol);
-  // Head/helmet is a beveled block instead of a flat wisp.
-  poly([{x:p.x-13*s,y:headY-10*s},{x:p.x-7*s,y:headY-17*s},{x:p.x+8*s,y:headY-17*s},{x:p.x+14*s,y:headY-10*s},{x:p.x+11*s,y:headY+6*s},{x:p.x-11*s,y:headY+6*s}],topCol,"#11171b",1);
-  ctx.fillStyle="#090f13";ctx.fillRect(p.x-9*s,headY-6*s,19*s,6*s);
-  ctx.fillStyle=color;ctx.globalAlpha=.88;ctx.fillRect(p.x+3*s,headY-5*s,6*s,2*s);ctx.globalAlpha=1;
-  // Type-specific silhouette and weapon.
+  ctx.globalAlpha=.30;ctx.fillStyle="#000";ctx.beginPath();ctx.ellipse(ground.x,ground.y+3,18*S*z,6*S*z,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+
+  const footL=actorWorldPoint(m.x,m.y,-6*S+(moving?Math.sin(frame*.12+m.x)*3*S:0),0,body);
+  const footR=actorWorldPoint(m.x,m.y, 6*S-(moving?Math.sin(frame*.12+m.x)*3*S:0),0,body);
+  const h=m.type==="sniper"?95*S:m.type==="shooter"?83*S:75*S;
+  isoVolumeBox(footL.x,footL.y,9*S,11*S,7*S,body,0,centerX,centerY,z,targetX,targetY,yaw,"#171f24","#0a1115","#3c494e");
+  isoVolumeBox(footR.x,footR.y,9*S,11*S,7*S,body,0,centerX,centerY,z,targetX,targetY,yaw,"#171f24","#0a1115","#3c494e");
+  isoVolumeBox(footL.x,footL.y,8*S,9*S,h*.30,body,7*S,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol);
+  isoVolumeBox(footR.x,footR.y,8*S,9*S,h*.30,body,7*S,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol);
+
+  // Distinct armor silhouette by mob class.
+  const torsoH=h*.30, torsoZ=30*S;
+  isoVolumeBox(m.x,m.y,24*S,17*S,torsoH,body,torsoZ,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol,color);
+  isoVolumeBox(m.x,m.y,30*S,19*S,h*.27,body,torsoZ+torsoH-4*S,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol,color);
+
   if(m.type==="brawler"){
-    limb3D(p.x-15*s,shoulderY,p.x-25*s,shoulderY+12*s,9*s,5*s,bodyCol,sideCol);
-    limb3D(p.x+15*s,shoulderY,p.x+25*s,shoulderY+12*s,9*s,5*s,bodyCol,sideCol);
-    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=7*s;ctx.beginPath();ctx.arc(p.x-26*s,shoulderY+14*s,4*s,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-    ctx.beginPath();ctx.arc(p.x+26*s,shoulderY+14*s,4*s,0,Math.PI*2);ctx.fill();
+    const a1=actorWorldPoint(m.x,m.y,-19*S,0,body),a2=actorWorldPoint(m.x,m.y,19*S,0,body);
+    isoBeam(a1.x,a1.y,actorWorldPoint(m.x,m.y,-28*S,4*S,body).x,actorWorldPoint(m.x,m.y,-28*S,4*S,body).y,9*S,11*S,52*S,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol);
+    isoBeam(a2.x,a2.y,actorWorldPoint(m.x,m.y,28*S,4*S,body).x,actorWorldPoint(m.x,m.y,28*S,4*S,body).y,9*S,11*S,52*S,centerX,centerY,z,targetX,targetY,yaw,bodyCol,sideCol,topCol);
+    isoVolumeBox(m.x,m.y,34*S,21*S,9*S,body,55*S,centerX,centerY,z,targetX,targetY,yaw,topCol,sideCol,"#c36b7c",color);
   }else{
-    const gx=p.x+Math.cos(aim)*14*s,gy=shoulderY+Math.sin(aim)*12*s;
-    limb3D(p.x-13*s,shoulderY,gx,gy,8*s,5*s,bodyCol,sideCol);
-    limb3D(p.x+13*s,shoulderY,gx,gy,8*s,5*s,bodyCol,sideCol);
-    ctx.save();ctx.translate(gx,gy);ctx.rotate(aim);
-    box3D(-8*s,-3*s,34*s,6*s,6*s,"#1d282d","#0d1418","#59676b");
-    ctx.fillStyle=color;ctx.globalAlpha=.85;ctx.fillRect(4*s,-1*s,12*s,2*s);ctx.globalAlpha=1;
-    ctx.restore();
+    const hand=actorWorldPoint(m.x,m.y,18*S,0,body),muzzle=actorWorldPoint(m.x,m.y,34*S,0,body);
+    isoBeam(hand.x,hand.y,muzzle.x,muzzle.y,7*S,6*S,55*S,centerX,centerY,z,targetX,targetY,yaw,"#202c31","#0d1519","#68777b");
+    if(m.type==="sniper"){
+      const long=actorWorldPoint(m.x,m.y,49*S,0,body);
+      isoBeam(muzzle.x,muzzle.y,long.x,long.y,5*S,5*S,55*S,centerX,centerY,z,targetX,targetY,yaw,"#11191e","#080e12","#777f82");
+    }
   }
-  // Back module adds depth and a clear silhouette.
-  ctx.save();ctx.translate(p.x-7*s,shoulderY+4*s);box3D(-6*s,-12*s,13*s,23*s,7*s,"#202b30","#0d1519","#46565b");ctx.restore();
-  ctx.globalAlpha=.55;ctx.strokeStyle=color;ctx.lineWidth=1*s;ctx.beginPath();ctx.ellipse(p.x,groundY,17*s,5*s,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+
+  // Helmet and illuminated face panel.
+  const headZ=torsoZ+torsoH+h*.20;
+  isoVolumeBox(m.x,m.y,20*S,17*S,h*.22,body,headZ,centerX,centerY,z,targetX,targetY,yaw,topCol,sideCol,"#a0a4a0",color);
+  const face=actorWorldPoint(m.x,m.y,8*S,-9*S,body);
+  isoVolumeBox(face.x,face.y,13*S,4*S,6*S,body,headZ+7*S,centerX,centerY,z,targetX,targetY,yaw,"#080f13","#03080b","#16282d",color);
+
+  // Back module gives every mob a readable 3D silhouette.
+  const pack=actorWorldPoint(m.x,m.y,-10*S,0,body);
+  isoVolumeBox(pack.x,pack.y,10*S,10*S,h*.28,body,torsoZ,centerX,centerY,z,targetX,targetY,yaw,"#202b30","#0c1418","#4d5b60");
+
+  if(m.type==="sniper"&&m.think>0){
+    ctx.globalAlpha=.25+Math.sin(frame*.16)*.10;ctx.strokeStyle=color;ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(ground.x,ground.y,30*S*z,9*S*z,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+  }
+  ctx.globalAlpha=.62;ctx.strokeStyle=color;ctx.lineWidth=1*z;
+  ctx.beginPath();ctx.ellipse(ground.x,ground.y,18*S*z,5*S*z,0,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
 }
 function drawIsoActors(centerX:number,centerY:number,z:number,targetX:number,targetY:number,yaw:number){
   if(!ctx)return;
