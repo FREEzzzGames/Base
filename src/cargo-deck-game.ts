@@ -11,7 +11,7 @@ const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;spe
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
 RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
-type ArenaId="cargo"|"school";
+type ArenaId="cargo"|"school"|"test";
 type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower"|"container"|"tank"|"pipe"|"stairs"|"barrier"|"equipment";
 interface MapLevel{id:number;name:string;elevation:number}
 interface MapStructure extends HsObstacle{
@@ -165,6 +165,14 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       [{x:500,y:300},{x:500,y:470},{x:500,y:650},{x:500,y:850},{x:500,y:1060},{x:500,y:1260},{x:500,y:1450}],
       [{x:640,y:300},{x:640,y:470},{x:640,y:650},{x:640,y:850},{x:640,y:1060},{x:640,y:1260},{x:640,y:1450},{x:600,y:1510}]
     ]
+  },
+  test:{
+    id:"test",name:"JOINT TEST",subtitle:"FLAT BIOMECHANICAL TEST PLATFORM",width:1200,height:1800,
+    playerSpawn:{x:600,y:1450},enemyBaseY:260,playerBaseY:1550,core:{x:600,y:1700,hp:999999},
+    obstacles:[],
+    routes:[[{x:600,y:280},{x:600,y:600},{x:600,y:900},{x:600,y:1200},{x:600,y:1450}]],
+    levels:[{id:0,name:"FLAT TEST PLATFORM",elevation:0}],
+    structures:[]
   }
 };
 let arenaId:ArenaId="cargo";
@@ -239,6 +247,16 @@ function buildStaticDeck():void{
     // Static layer contains only the ground plane. All architecture is
     // rendered through the shared isometric depth pipeline below so elevated
     // structures and actors participate in one ordering system.
+  }else if(arenaId==="test"){
+    g.fillStyle="#11161a";g.fillRect(0,0,W,H);
+    g.fillStyle="#1b2428";g.fillRect(40,40,W-80,H-80);
+    g.strokeStyle="rgba(102,252,241,.18)";g.lineWidth=2;
+    for(let x=80;x<W-40;x+=80){g.beginPath();g.moveTo(x,40);g.lineTo(x,H-40);g.stroke()}
+    for(let y=80;y<H-40;y+=80){g.beginPath();g.moveTo(40,y);g.lineTo(W-40,y);g.stroke()}
+    g.strokeStyle="rgba(102,252,241,.42)";g.lineWidth=3;g.strokeRect(40,40,W-80,H-80);
+    g.strokeStyle="rgba(255,183,3,.35)";g.lineWidth=2;
+    g.beginPath();g.moveTo(W*.5,70);g.lineTo(W*.5,H-70);g.stroke();
+    g.fillStyle="rgba(102,252,241,.08)";g.fillRect(60,60,W-120,H-120);
   }else{
     // BLOCK 17: top-down abandoned Soviet school / sports wing.
     g.fillStyle="#3a3a36";g.fillRect(0,0,W,H);
@@ -1720,7 +1738,7 @@ function renderUI(){
         '<button class="cargo-fire-main" data-fire="1" aria-label="Стрелять"><span class="cargo-fire-icon">'+weapon().name.slice(0,1)+'</span><span class="cargo-fire-label">ATTACK</span></button>'+
       '</div>'+
       '<div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';
-  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
+  }else if(mode==="loadout")ui.innerHTML='<div class="cargo-arena-hitboxes"><button data-arena="cargo" aria-label="CARGO DECK"></button><button data-arena="school" aria-label="BLOCK 17"></button><button data-arena="test" aria-label="JOINT TEST"></button></div><div class="cargo-loadout-operators">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'" aria-label="'+id+'"></button>').join("")+'</div>';
   else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';
   else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
   bindUI()
@@ -1728,7 +1746,7 @@ function renderUI(){
 function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
 function bindUI(){
-  ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school")return;arenaId=id;save.loadout=sel;persist();start()});
+  ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school"&&id!=="test")return;arenaId=id;save.loadout=sel;persist();start()});
   ui?.querySelectorAll<HTMLElement>("[data-loadout]").forEach(b=>b.onclick=()=>{sel=b.dataset.loadout as LoadoutId;save.loadout=sel;persist();render()});
   ui?.querySelectorAll<HTMLElement>("[data-cargo]").forEach(b=>b.onclick=()=>{
     const a=b.dataset.cargo;
