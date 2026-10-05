@@ -55,7 +55,6 @@ export class SoldierBehaviorController{
   setMovement(moving:boolean,moveAngle:number,deltaTime:number){
     this.isMoving=moving;
     if(moving){
-      this.walkPhase+=Math.max(0,deltaTime)*this.movementSpeed*1.6;
       this.rotateTowards(moveAngle,deltaTime);
       this.transitionTo("RUN");
     }else if(this.currentState==="RUN"){
