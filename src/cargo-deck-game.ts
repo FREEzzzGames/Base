@@ -307,7 +307,7 @@ function damage(m:Mob,a:number){
     if(Math.random()<.22)pickups.push({x:m.x,y:m.y,kind:Math.random()<.65?"medkit":"weapon",weapon:Math.floor(Math.random()*HS_WEAPONS.length),life:99999});
   }
 }
-function enemyTarget(x:number,y:number,r:number){
+function enemyTarget(x:number,y:number,r:number):Mob|null{
   let best:Mob|undefined,bd=r*r,o=obstacles();
   for(const m of mobs){
     if(m.team!=="enemy"||m.hp<=0)continue;
