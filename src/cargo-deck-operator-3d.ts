@@ -55,12 +55,32 @@ export function renderOperator3D(frame:Operator3DFrame){
   }
   ctx.restore();
 }
-export const OPERATOR_MODEL_INFO={name:"CARGO DECK Operator",format:"OBJ",heightUnits:21.2,heightMeters:1.82,vertices:vertices.length,triangles:tris.length};
+
 
 
 export interface OperatorAssetFrame{ctx:CanvasRenderingContext2D;baseX:number;baseY:number;facing:number;scale:number;moving:number;walkPhase:number;aiming:boolean;firing:number;color:string;project:(x:number,y:number,z:number)=>{x:number;y:number}}
 type AssetFace={v:number[];group:string;mat:string};type AssetModel={v:number[][];f:AssetFace[]};
 let assetModel:AssetModel|null=null;let assetLoading:Promise<boolean>|null=null;
+function parseBundledOperatorAsset():AssetModel{
+  const v:number[][]=[],f:AssetFace[]=[];let group="Model",mat="OperatorArmor";
+  for(const raw of objText.split(/\r?\n/)){
+    const s=raw.trim();if(!s||s[0]==="#")continue;
+    const p=s.split(/\s+/);
+    if(p[0]==="v")v.push([+p[1],+p[2],+p[3]]);
+    else if(p[0]==="g")group=p[1]||group;
+    else if(p[0]==="usemtl")mat=p[1]||mat;
+    else if(p[0]==="f")f.push({v:p.slice(1).map(x=>parseInt(x.split("/")[0],10)-1),group,mat});
+  }
+  return {v,f};
+}
+export function loadOperatorAsset3D():Promise<boolean>{
+  if(assetModel)return Promise.resolve(true);
+  if(!assetLoading){
+    assetLoading=Promise.resolve().then(()=>{assetModel=parseBundledOperatorAsset();return assetModel.v.length>0&&assetModel.f.length>0}).catch(()=>false);
+  }
+  return assetLoading;
+}
+
 const ASSET_MAT:Record<string,string>={Armor:"#3f494a",ArmorDark:"#20282a",Plate:"#6b7473",Visor:"#0a3035",Accent:"#6bd7d7",Weapon:"#252b2c"};
 function groupMaterial(group:string,mat:string){
   if(mat==="Visor"||group==="visor")return ASSET_MAT.Visor;
@@ -108,4 +128,4 @@ export function renderOperatorAsset3D(f:OperatorAssetFrame):boolean{
   if(f.firing>0){const q=f.project(f.baseX,f.baseY-42,70*f.scale);ctx.globalAlpha=Math.min(1,f.firing);ctx.fillStyle=f.color;ctx.shadowColor=f.color;ctx.shadowBlur=10;ctx.beginPath();ctx.arc(q.x,q.y,3.2*f.scale,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
   ctx.restore();return true;
 }
-export const OPERATOR_MODEL_INFO={name:"CARGO DECK Operator",format:"OBJ",heightUnits:21.2,heightMeters:1.82,vertices:assetModel?.v.length??0,faces:assetModel?.f.length??0};
+export const OPERATOR_MODEL_INFO={name:"CARGO DECK Operator",format:"OBJ",heightUnits:21.2,heightMeters:1.82,vertices:vertices.length,triangles:tris.length};
