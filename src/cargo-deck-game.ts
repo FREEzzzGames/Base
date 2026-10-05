@@ -705,6 +705,15 @@ function drawPlayer(){
     ctx!.fillStyle=fill;ctx!.beginPath();ctx!.arc(x2,y2,w*.48,0,Math.PI*2);ctx!.fill();
   };
 
+  const twoBone=(root:{x:number;y:number},target:{x:number;y:number},a:number,b:number,bend:number)=>{
+    const dx=target.x-root.x,dy=target.y-root.y,d=Math.max(.001,Math.hypot(dx,dy));
+    const reach=Math.max(.001,Math.min(d,a+b-.001));
+    const ux=dx/d,uy=dy/d;
+    const cosK=Math.max(-1,Math.min(1,(a*a+reach*reach-b*b)/(2*a*reach)));
+    const sinK=Math.sqrt(Math.max(0,1-cosK*cosK))*bend;
+    const along=a*cosK,side=a*sinK;
+    return{x:root.x+ux*along-uy*side,y:root.y+uy*along+ux*side};
+  };
   ctx!.save();
   ctx!.translate(px,py-verticalBob);
   ctx!.scale(1.15,1.15);
@@ -721,24 +730,29 @@ function drawPlayer(){
   ctx!.fillStyle=c;ctx!.globalAlpha=.75;ctx!.fillRect(-22,-17,10,3);ctx!.globalAlpha=1;
   ctx!.restore();
 
-  // Pelvis + articulated legs. The feet travel through real contact/compression/extension phases.
-  const hipY=11;
-  const legGap=11;
+  // Pelvis + gait-driven legs. Human walking is modeled as ~60% stance / ~40% swing.
+  // The stance foot moves backward relative to the root; the swing foot advances and lifts.
+  const gait=((phase/(Math.PI*2))%1+1)%1;
+  const gaitL=gait, gaitR=(gait+.5)%1;
+  const swingT=(g:number)=>g>.60?(g-.60)/.40:0;
+  const stancePos=(g:number)=>g<=.60?.46-(g/.60)*.92:.46;
+  const swingPos=(g:number)=>-.46+(swingT(g))*.92;
+  const footPhase=(g:number)=>g>.60?swingPos(g):stancePos(g);
+  const footLift=(g:number)=>Math.sin(Math.PI*swingT(g))*10;
+  const stepLen=18;
+  const hipY=11,legGap=11;
   const hipL={x:-sideX*legGap,y:hipY-sideY*legGap};
   const hipR={x:sideX*legGap,y:hipY+sideY*legGap};
-  const strideL=runCycle*weight*13, strideR=runCycle2*weight*13;
-  const liftL=Math.max(0,-runCycle)*weight*9, liftR=Math.max(0,-runCycle2)*weight*9;
-  const kneeL={x:hipL.x+bodyX*strideL+sideX*6,y:hipL.y+bodyY*strideL+sideY*6+19-liftL};
-  const kneeR={x:hipR.x+bodyX*strideR-sideX*6,y:hipR.y+bodyY*strideR-sideY*6+19-liftR};
-  const footL={x:kneeL.x+bodyX*(19+runCycle*8*weight),y:kneeL.y+bodyY*(19+runCycle*8*weight)+8-liftL*.35};
-  const footR={x:kneeR.x+bodyX*(19+runCycle2*8*weight),y:kneeR.y+bodyY*(19+runCycle2*8*weight)+8-liftR*.35};
-
+  const footL={x:hipL.x+bodyX*footPhase(gaitL)*stepLen,y:hipL.y+bodyY*footPhase(gaitL)*stepLen+38-footLift(gaitL)};
+  const footR={x:hipR.x+bodyX*footPhase(gaitR)*stepLen,y:hipR.y+bodyY*footPhase(gaitR)*stepLen+38-footLift(gaitR)};
+  const kneeL=twoBone(hipL,footL,22,20,1);
+  const kneeR=twoBone(hipR,footR,22,20,-1);
   limb(hipL.x,hipL.y,kneeL.x,kneeL.y,13,"#d85b2b");
+  limb(kneeL.x,kneeL.y,footL.x,footL.y,10,"#d86532");
   limb(hipR.x,hipR.y,kneeR.x,kneeR.y,13,"#c94f28");
+  limb(kneeR.x,kneeR.y,footR.x,footR.y,10,"#c9542b");
   ellipse(kneeL.x,kneeL.y,7,6,0,"#46535a","#152027",1);
   ellipse(kneeR.x,kneeR.y,7,6,0,"#46535a","#152027",1);
-  limb(kneeL.x,kneeL.y,footL.x,footL.y,10,"#d86532");
-  limb(kneeR.x,kneeR.y,footR.x,footR.y,10,"#c9542b");
   ellipse(footL.x,footL.y,12,7,bodyAngle,"#263238","#10181c",1.2);
   ellipse(footR.x,footR.y,12,7,bodyAngle,"#202b30","#10181c",1.2);
 
@@ -756,14 +770,15 @@ function drawPlayer(){
   ctx!.strokeStyle="#f0a35f";ctx!.lineWidth=1;ctx!.beginPath();ctx!.moveTo(-17,-10);ctx!.lineTo(-9,4);ctx!.moveTo(17,-10);ctx!.lineTo(9,4);ctx!.stroke();
   ctx!.restore();
 
-  // Aim-driven two-bone arms. The support hand follows the weapon, not the torso.
-  const shoulderFront={x:sideX*18+dirX*4,y:-25+sideY*18+dirY*4};
-  const shoulderBack={x:-sideX*18+dirX*4,y:-25-sideY*18+dirY*4};
+  // Aim-driven upper body. The weapon is the primary constraint; both hands solve toward its grips.
+  const spineAim=Math.max(-.20,Math.min(.20,Math.atan2(Math.sin(aimAngle-bodyAngle),Math.cos(aimAngle-bodyAngle))*.32));
+  const shoulderAngle=bodyAngle+spineAim;
+  const shoulderFront={x:sideX*18+Math.cos(shoulderAngle)*4,y:-25+sideY*18+Math.sin(shoulderAngle)*4};
+  const shoulderBack={x:-sideX*18+Math.cos(shoulderAngle)*4,y:-25-sideY*18+Math.sin(shoulderAngle)*4};
   const gunBaseX=dirX*(24-recoil),gunBaseY=dirY*(24-recoil);
   const support={x:gunBaseX-dirX*5+sideX*11,y:gunBaseY-dirY*5+sideY*11};
-  const elbowFront={x:shoulderFront.x+dirX*8+sideX*10,y:shoulderFront.y+dirY*8+sideY*10};
-  const elbowBack={x:shoulderBack.x+dirX*4-sideX*11,y:shoulderBack.y+dirY*4-sideY*11};
-
+  const elbowFront=twoBone(shoulderFront,{x:gunBaseX,y:gunBaseY},22,21,1);
+  const elbowBack=twoBone(shoulderBack,support,22,21,-1);
   limb(shoulderFront.x,shoulderFront.y,elbowFront.x,elbowFront.y,10,"#d65b2c");
   limb(elbowFront.x,elbowFront.y,gunBaseX,gunBaseY,9,"#d65b2c");
   limb(shoulderBack.x,shoulderBack.y,elbowBack.x,elbowBack.y,10,"#c8522a");
