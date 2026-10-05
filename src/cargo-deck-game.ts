@@ -42,104 +42,13 @@ interface ArenaConfig{
 }
 const ARENAS:Record<ArenaId,ArenaConfig>={
   cargo:{
-    id:"cargo",name:"CARGO DECK",subtitle:"MULTI-LEVEL ORBITAL FREIGHT STATION",width:1600,height:3600,
-    playerSpawn:{x:800,y:3180},enemyBaseY:420,playerBaseY:3380,core:{x:800,y:250,hp:2600},
-    obstacles:[
-      {x:105,y:255,w:330,h:150},{x:1165,y:255,w:330,h:150},
-      {x:105,y:700,w:245,h:150},{x:1250,y:700,w:245,h:150},
-      {x:105,y:1360,w:245,h:150},{x:1250,y:1360,w:245,h:150},
-      {x:105,y:2070,w:245,h:150},{x:1250,y:2070,w:245,h:150},
-      {x:105,y:2770,w:245,h:150},{x:1250,y:2770,w:245,h:150},
-      {x:520,y:3280,w:170,h:120},{x:910,y:3280,w:170,h:120},
-      {x:60,y:3430,w:360,h:110},{x:1180,y:3430,w:360,h:110}
-    ],
-    structures:[
-      {x:105,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
-      {x:1165,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
-      {x:565,y:90,w:470,h:190,level:2,elevation:332,height:150,role:"tower",collision:false},
-      {x:105,y:680,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:1250,y:680,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:105,y:1340,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:1250,y:1340,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:105,y:2050,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:1250,y:2050,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:105,y:2750,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-      {x:1250,y:2750,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
-
-      {x:145,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:315,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1290,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1460,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:145,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:315,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1290,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1460,y:1380,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:145,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:315,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1290,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1460,y:2090,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:145,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:315,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1290,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:1460,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:430,y:905,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
-      {x:430,y:1605,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
-      {x:430,y:2310,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
-      {x:70,y:600,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:1380,y:600,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:70,y:1660,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:1380,y:1660,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:70,y:2360,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:1380,y:2360,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
-      {x:515,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
-      {x:910,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
-      {x:60,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
-      {x:1180,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
-
-      // MAIN DECK cargo / industrial dressing. All objects stay outside the
-      // three combat lanes and use human-scale dimensions.
-      {x:170,y:500,w:180,h:120,level:0,elevation:0,height:54,role:"container",collision:true},
-      {x:270,y:575,w:150,h:105,level:0,elevation:0,height:48,role:"container",collision:true},
-      {x:1180,y:500,w:180,h:120,level:0,elevation:0,height:54,role:"container",collision:true},
-      {x:1280,y:575,w:150,h:105,level:0,elevation:0,height:48,role:"container",collision:true},
-
-      {x:185,y:1050,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-      {x:1265,y:1050,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-      {x:180,y:1710,w:170,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-      {x:1250,y:1710,w:170,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-      {x:190,y:2420,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-      {x:1260,y:2420,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
-
-      {x:360,y:1010,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
-      {x:1170,y:1010,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
-      {x:360,y:1710,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
-      {x:1170,y:1710,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
-      {x:360,y:2420,w:70,h:280,level:0,elevation:0,height:66,role:"pipe",collision:false},
-      {x:1170,y:2420,w:70,h:280,level:0,elevation:0,height:66,role:"pipe",collision:false},
-
-      // Real stair landings connect the side service decks to the elevated
-      // catwalks; they do not occupy the combat lanes.
-      {x:350,y:825,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-      {x:1170,y:825,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-      {x:350,y:1525,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-      {x:1170,y:1525,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-      {x:350,y:2230,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-      {x:1170,y:2230,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
-
-      {x:455,y:650,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
-      {x:1055,y:650,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
-      {x:455,y:1940,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
-      {x:1055,y:1940,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
-      {x:455,y:2630,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
-      {x:1055,y:2630,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true}
-    ],
-    routes:[
-      [{x:730,y:500},{x:730,y:760},{x:730,y:1030},{x:730,y:1300},{x:730,y:1570},{x:730,y:1840},{x:730,y:2110},{x:730,y:2380},{x:730,y:2650},{x:730,y:2940},{x:730,y:3140}],
-      [{x:800,y:500},{x:800,y:760},{x:800,y:1030},{x:800,y:1300},{x:800,y:1570},{x:800,y:1840},{x:800,y:2110},{x:800,y:2380},{x:800,y:2650},{x:800,y:2940},{x:800,y:3140}],
-      [{x:870,y:500},{x:870,y:760},{x:870,y:1030},{x:870,y:1300},{x:870,y:1570},{x:870,y:1840},{x:870,y:2110},{x:870,y:2380},{x:870,y:2650},{x:870,y:2940},{x:870,y:3140}]
-    ]
-  },
-
+    id:"cargo",name:"CARGO DECK",subtitle:"EMPTY MODEL TEST ARENA",width:1200,height:1800,
+    playerSpawn:{x:600,y:1300},enemyBaseY:250,playerBaseY:1500,
+    core:{x:600,y:250,hp:999999},
+    obstacles:[],
+    routes:[[{x:600,y:300},{x:600,y:600},{x:600,y:900},{x:600,y:1200},{x:600,y:1500}]],
+    structures:[]
+  }
 };
 let arenaId:ArenaId="cargo";
 let W=ARENAS.cargo.width,H=ARENAS.cargo.height;
@@ -154,58 +63,16 @@ let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
 function buildStaticDeck():void{
   if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
-  const deckW=W+720,deckH=H+2800;staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
-  const g=staticDeckCtx;if(!g)return;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
-      g.fillStyle="#070d11";g.fillRect(0,0,W,H);
-    g.fillStyle="rgba(30,49,55,.22)";g.fillRect(40,0,W-80,H);
-    // Central freight/service corridor: concrete-steel deck with restrained
-    // markings. Combat lanes remain clear and readable without sci-fi framing.
-    g.save();
-    g.fillStyle="rgba(48,46,41,.72)";g.fillRect(560,210,480,deckH-420);
-    g.fillStyle="rgba(119,100,72,.10)";g.fillRect(582,210,436,deckH-420);
-    g.strokeStyle="rgba(168,143,101,.18)";g.lineWidth=2;g.strokeRect(582,210,436,H-420);
-    g.strokeStyle="rgba(116,104,82,.16)";g.lineWidth=1;
-    for(let yy=300;yy<deckH-220;yy+=190){
-      g.beginPath();g.moveTo(590,yy);g.lineTo(1010,yy);g.stroke();
-    }
-    // Faded logistics center line.
-    g.strokeStyle="rgba(189,158,96,.22)";g.lineWidth=3;g.setLineDash([28,22]);
-    g.beginPath();g.moveTo(800,250);g.lineTo(800,deckH-250);g.stroke();g.setLineDash([]);
-    g.restore();
-    for(let y=0;y<deckH;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
-    for(let x=80;x<deckW;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
-    for(let y=120;y<deckH;y+=240){
-      g.strokeStyle="rgba(117,145,149,.13)";g.lineWidth=1;
-      g.beginPath();g.moveTo(58,y);g.lineTo(deckW-58,y);g.stroke();
-      g.strokeStyle="rgba(0,0,0,.24)";
-      g.beginPath();g.moveTo(58,y+3);g.lineTo(deckW-58,y+3);g.stroke();
-      for(let x=88;x<deckW-88;x+=112){g.fillStyle="rgba(145,170,170,.08)";g.fillRect(x,y-9,48,2);}
-    }
-    for(let x=94;x<deckW-94;x+=220){
-      g.fillStyle="rgba(8,12,14,.34)";g.fillRect(x,70,10,deckH-140);
-      g.fillStyle="rgba(87,116,121,.08)";g.fillRect(x+2,70,2,deckH-140);
-    }
-    for(const yy of [260,690,1080,1470,1900,2260]){
-      g.save();g.globalAlpha=.52;g.beginPath();g.rect(42,yy,deckW-84,16);g.clip();
-      for(let x=34;x<deckW;x+=28){
-        g.fillStyle=x%56===0?"#d69b3a":"#1b2529";
-        g.save();g.translate(x,yy);g.rotate(-.55);g.fillRect(0,-18,9,52);g.restore();
-      }
-      g.restore();
-    }
-    for(let x=90;x<W-70;x+=180){
-      const yy=deckH-90;
-      const glow=g.createRadialGradient(x,yy,2,x,yy,80);
-      glow.addColorStop(0,"rgba(84,214,216,.18)");glow.addColorStop(1,"rgba(84,214,216,0)");
-      g.fillStyle=glow;g.fillRect(x-80,yy-80,160,160);
-      g.fillStyle="#5dd5d5";g.fillRect(x-2,yy-2,4,4);
-    }
-    g.fillStyle="#101b20";g.fillRect(0,0,38,deckH);g.fillRect(962,0,38,deckH);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,deckH);g.fillRect(960,0,2,deckH);
-    g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
-    // Static layer contains only the ground plane. All architecture is
-    // rendered through the shared isometric depth pipeline below so elevated
-    // structures and actors participate in one ordering system.
-  
+  const deckW=W+720,deckH=H+2800;
+  staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
+  const g=staticDeckCtx;if(!g)return;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,deckW,deckH);
+  g.fillStyle="#11171b";g.fillRect(0,0,deckW,deckH);
+  g.strokeStyle="rgba(84,214,216,.10)";g.lineWidth=1;
+  for(let x=0;x<deckW;x+=100){g.beginPath();g.moveTo(x,0);g.lineTo(x,deckH);g.stroke();}
+  for(let y=0;y<deckH;y+=100){g.beginPath();g.moveTo(0,y);g.lineTo(deckW,y);g.stroke();}
+  g.strokeStyle="rgba(84,214,216,.28)";g.lineWidth=3;g.strokeRect(40,40,deckW-80,deckH-80);
+  g.strokeStyle="rgba(255,183,3,.25)";g.lineWidth=2;g.beginPath();g.moveTo(deckW*.5,60);g.lineTo(deckW*.5,deckH-60);g.stroke();
   staticDeckReady=true;
 }
 
@@ -241,14 +108,18 @@ function collisionObstacles():HsObstacle[]{
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=collisionObstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!collisionObstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
 function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};soldierController=new SoldierBehaviorController({rotation:{y:player.facing},position:{x:player.x,y:player.y,z:0}});moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
-function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));MAP_STRUCTURES=(A.structures.length?A.structures:A.obstacles.map((o,i)=>({...o,level:0,elevation:0,height:Math.min(88,40+o.h*.28),role:"building" as MapStructureRole,collision:true}))).map(s=>({...s}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;collisionCache=null;collisionFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];attackTarget=null;attackNode=null;nextMobId=1;core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;
-  const baseXs=[W*.42,W*.5,W*.58];
-  baseXs.forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY+30,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY-30,team:"player",lane:l,hp:900,maxHp:900,cool:0})});
-  if(arenaId==="cargo"){
-    [[W*.375,1100],[W*.625,2000],[W*.375,2800]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"enemy",lane:l,hp:900,maxHp:900,cool:45}));
-    [[W*.625,1100],[W*.375,2000],[W*.625,2800]].forEach((q,l)=>nodes.push({x:q[0],y:q[1],team:"player",lane:l,hp:900,maxHp:900,cool:0}));
-  }
-  for(let i=0;i<6;i++)spawnPickup();spawnWave()}
+function init(){
+  const A=ARENAS[arenaId];
+  W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};
+  OBS=[];MAP_STRUCTURES=[];LANE_ROUTES=A.routes;
+  obsCache=null;obsFrame=-1;collisionCache=null;collisionFrame=-1;
+  staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;
+  mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];
+  attackTarget=null;attackNode=null;nextMobId=1;
+  core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};
+  wave=0;kills=0;time=0;waveWait=0;waveStart=0;
+  waveState="clear";msg="MODEL TEST · EMPTY ARENA";msgT=120;won=false;
+}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
   wave++;
