@@ -186,7 +186,25 @@ export function renderWisp(ctx:CanvasRenderingContext2D,x0:number,y0:number,size
   const paletteIndex=Math.max(0,Math.min(3,colorIdx|0));
   const pulse=.92+Math.sin(phase)*.08;
   const s=size0*pulse;
+  const c=paletteIndex===0?"#ff557d":paletteIndex===1?"#ffb04f":paletteIndex===2?"#cf7cff":"#54d6d8";
   ctx.drawImage(wispSprites[paletteIndex],x0-s,y0-s,s*2,s*2);
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.lineCap="round";
+  for(let i=0;i<5;i++){
+    const a=phase*.7+i*(Math.PI*2/5);
+    const len=s*(.62+.14*Math.sin(phase*1.7+i));
+    const sx=x0+Math.cos(a)*s*.20,sy=y0+Math.sin(a)*s*.20;
+    const ex=x0+Math.cos(a+.20*Math.sin(phase+i))*len;
+    const ey=y0+Math.sin(a+.20*Math.sin(phase+i))*len+s*.55;
+    const mx=(sx+ex)*.5-Math.sin(a)*s*.24;
+    const my=(sy+ey)*.5+Math.cos(a)*s*.24;
+    ctx.globalAlpha=.20;ctx.strokeStyle=c;ctx.lineWidth=Math.max(1,s*.055);
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(mx,my,ex,ey);ctx.stroke();
+    ctx.globalAlpha=.42;ctx.lineWidth=Math.max(.55,s*.018);
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(mx,my,ex,ey);ctx.stroke();
+  }
+  ctx.restore();
 }
 
 export interface VFXCamera{x:number;y:number;zoom:number;width:number;height:number}
