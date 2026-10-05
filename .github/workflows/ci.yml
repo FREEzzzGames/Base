@@ -179,7 +179,6 @@ jobs:
           artifact_name: github-pages
 
       - name: Verify published build
-        if: steps.release-gate.outputs.deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
