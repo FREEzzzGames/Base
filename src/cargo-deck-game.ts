@@ -308,7 +308,7 @@ function damage(m:Mob,a:number){
   }
 }
 function enemyTarget(x:number,y:number,r:number):Mob|null{
-  let best:Mob|undefined,bd=r*r,o=obstacles();
+  let best:Mob|null=null,bd=r*r,o=obstacles();
   for(const m of mobs){
     if(m.team!=="enemy"||m.hp<=0)continue;
     const dx=m.x-x,dy=m.y-y,d=dx*dx+dy*dy;
