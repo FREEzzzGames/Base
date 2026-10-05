@@ -585,8 +585,8 @@ function update(dt:number){
     player.x=q[0];player.y=q[1];
   }
 
-  if(auto)fire(false);
-  else if(fireHeld)fire(true);
+  if(auto)fire();
+  else if(fireHeld)fire();
 
   for(const m of mobs)updateMob(m,dt);
   updateBullets(dt);
@@ -1299,7 +1299,7 @@ function bindUI(){
       const wy=player.y+(e.clientY-(rect.top+rect.height*.5));
       selectAttackTarget(wx,wy);
       fireHeld=true;
-      fire(true);
+      fire();
     });
     combat.addEventListener("pointerup",e=>{if(e.pointerId===combatId)stop()});
     combat.addEventListener("pointercancel",e=>{if(e.pointerId===combatId)stop()});
