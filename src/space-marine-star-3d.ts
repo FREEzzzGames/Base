@@ -14,34 +14,34 @@ const rig=new HumanJointRig();
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
 function poseVertex(i:number,walk:number,aim:number,recoil:number){
   let x=V[i*3]*.01,y=V[i*3+1]*.01,z=(V[i*3+2]*.01+18);
-  const zn=z/21.2;
-  // Anatomical regions are inferred from the supplied mesh's local vertical
-  // coordinate. The pose is intentionally continuous so armor never "snaps".
-  const side=x>=0?1:-1;
-  const gait=walk;
-  if(zn<.42){
+  const zn=z/21.2,side=x>=0?1:-1,ax=Math.abs(x);
+  const limbWeight=Math.max(0,Math.min(1,(ax-.065)/.13));
+  const upperWeight=Math.max(0,Math.min(1,(ax-.075)/.12));
+  if(zn<.48 && limbWeight>0){
     const hip=side>0?rig.pose.hipR:rig.pose.hipL;
     const knee=side>0?rig.pose.kneeR:rig.pose.kneeL;
-    const a=hip+gait*0.22*side;
-    const px=side*0.075,pz=0.30;
+    const a=(hip+walk*.22*side)*limbWeight;
+    const px=side*.075,pz=.30;
     const dx=x-px,dz=z-pz;
-    x=px+dx*Math.cos(a)-dz*Math.sin(a);
-    z=pz+dx*Math.sin(a)+dz*Math.cos(a);
-    const kneeB=knee*Math.max(0,Math.min(1,(.42-zn)/.20));
-    z-=kneeB*.035;
+    const rx=px+dx*Math.cos(a)-dz*Math.sin(a);
+    const rz=pz+dx*Math.sin(a)+dz*Math.cos(a);
+    x=x+(rx-x)*limbWeight;z=z+(rz-z)*limbWeight;
+    z-=knee*.035*Math.max(0,Math.min(1,(.48-zn)/.22))*limbWeight;
   }else if(zn<.72){
     const spine=rig.pose.spine;
-    x+=Math.sin(spine)*(.72-zn)*.08;
-    y+=Math.cos(spine)*(.72-zn)*.035;
-  }else{
+    const w=Math.max(0,Math.min(1,(.72-zn)/.30));
+    x+=Math.sin(spine)*.08*w;
+    y+=Math.cos(spine)*.035*w;
+  }else if(upperWeight>0){
     const shoulder=side>0?rig.pose.shoulderR:rig.pose.shoulderL;
     const elbow=side>0?rig.pose.elbowR:rig.pose.elbowL;
-    const a=shoulder+aim*.12+gait*.14*side;
+    const a=(shoulder+aim*.12+walk*.14*side)*upperWeight;
     const px=side*.15,pz=.76;
     const dx=x-px,dz=z-pz;
-    x=px+dx*Math.cos(a)-dz*Math.sin(a);
-    z=pz+dx*Math.sin(a)+dz*Math.cos(a);
-    z-=elbow*.018;
+    const rx=px+dx*Math.cos(a)-dz*Math.sin(a);
+    const rz=pz+dx*Math.sin(a)+dz*Math.cos(a);
+    x=x+(rx-x)*upperWeight;z=z+(rz-z)*upperWeight;
+    z-=elbow*.018*upperWeight;
   }
   y+=recoil*.018;
   return {x,y,z};
