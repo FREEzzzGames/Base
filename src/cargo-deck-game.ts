@@ -253,7 +253,7 @@ function buildStaticDeck():void{
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,auto=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+let frame=0,last=0,raf=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,auto=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null,attackNode:Node|null=null;
 // Camera is intentionally locked to the reference vertical/isometric orientation.
 // The previous 360° rotation experiment is removed: gameplay direction stays stable.
 let cameraYaw=0;
@@ -269,7 +269,7 @@ function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
 function reset(){attackTarget=null;const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0],spawn=ARENAS[arenaId].playerSpawn;player={x:spawn.x,y:spawn.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0};moveX=moveY=moveTargetX=moveTargetY=0;ability=abilityCd=0;walkPhase=0;const zoom=getCameraZoom();cameraState={x:spawn.x,y:spawn.y,targetX:spawn.x,targetY:spawn.y,zoom,yaw:0}}
-function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));MAP_STRUCTURES=(A.structures.length?A.structures:A.obstacles.map((o,i)=>({...o,level:0,elevation:0,height:Math.min(88,40+o.h*.28),role:"building" as MapStructureRole,collision:true}))).map(s=>({...s}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;
+function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};OBS=A.obstacles.map(o=>({...o}));MAP_STRUCTURES=(A.structures.length?A.structures:A.obstacles.map((o,i)=>({...o,level:0,elevation:0,height:Math.min(88,40+o.h*.28),role:"building" as MapStructureRole,collision:true}))).map(s=>({...s}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];attackTarget=null;attackNode=null;core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;
   const baseXs=[W*.42,W*.5,W*.58];
   baseXs.forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY+30,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY-30,team:"player",lane:l,hp:900,maxHp:900,cool:0})});
   if(arenaId==="cargo"){
@@ -541,22 +541,37 @@ function selectAttackTarget(x:number,y:number):void{
     if(d<bestD&&d<=120){best=m;bestD=d}
   }
   attackTarget=best||enemyTarget(player.x,player.y,weapon().range);
+  attackNode=null;
 }
 function currentAttackTarget():Mob|null{
-  if(validAttackTarget(attackTarget)&&Math.hypot(attackTarget.x-player.x,attackTarget.y-player.y)<=weapon().range)return attackTarget;
-  attackTarget=enemyTarget(player.x,player.y,weapon().range);return attackTarget;
+  if(validAttackTarget(attackTarget)&&Math.hypot(attackTarget.x-player.x,attackTarget.y-player.y)<=weapon().range){
+    attackNode=null;
+    return attackTarget;
+  }
+  attackTarget=enemyTarget(player.x,player.y,weapon().range);
+  return attackTarget;
+}
+function currentAttackNode():Node|null{
+  if(attackNode&&attackNode.team==="enemy"&&attackNode.hp>0&&Math.hypot(attackNode.x-player.x,attackNode.y-player.y)<=weapon().range&&lineOfSight(player.x,player.y,attackNode.x,attackNode.y,obstacles())){
+    attackTarget=null;
+    return attackNode;
+  }
+  attackNode=null;
+  return null;
 }
 function fireShot():void{
-  const target=currentAttackTarget();
-  if(!target)return;
-  const a=Math.atan2(target.y-player.y,target.x-player.x);
+  const mob=currentAttackTarget();
+  const node=mob?null:currentAttackNode();
+  if(!mob&&!node)return;
+  const tx=mob?.x??node!.x,ty=mob?.y??node!.y;
+  const a=Math.atan2(ty-player.y,tx-player.x);
   const w=weapon();
   if(!consumeShot(player.combat,w))return;
   const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;
   const ra=recoilAngle(a,player.combat);
-  for(const s of spawnShots(hx,hy,ra,w,"player",player.combat.shotCounter*100)){
-    bullets.push({...s});
-    VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
+  for(const sh of spawnShots(hx,hy,ra,w,"player",player.combat.shotCounter*100)){
+    bullets.push({...sh});
+    VFX.emitTracer(hx,hy,sh.vx,sh.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
   }
   VFX.emitMuzzleFlash(hx,hy,ra,Math.min(1.25,Math.max(.7,w.damage/32)));
   muzzleFlash=1;
@@ -564,7 +579,8 @@ function fireShot():void{
 function fire():void{
   if(mode!=="play"||player.combat.reloadTimer>0||player.attackState!=="ready")return;
   const target=currentAttackTarget();
-  if(!target||player.combat.fireTimer>0)return;
+  const node=target?null:currentAttackNode();
+  if(!target&&!node||player.combat.fireTimer>0)return;
   player.attackState="windup";
   player.attackTimer=Math.min(5,Math.max(2,Math.round(weapon().fireInterval*.28)));
 }
@@ -584,7 +600,7 @@ function stepPlayerAttack(dt:number):void{
     player.attackTimer=0;
   }
 }
-function grenade(){const target=currentAttackTarget();const angle=target?Math.atan2(target.y-player.y,target.x-player.x):player.facing;const g=makeGrenade(player.combat,player.x,player.y,angle);if(g)grenades.push(g)}
+function grenade(){const target=currentAttackTarget();const node=currentAttackNode();const angle=target?Math.atan2(target.y-player.y,target.x-player.x):node?Math.atan2(node.y-player.y,node.x-player.x):player.facing;const g=makeGrenade(player.combat,player.x,player.y,angle);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
 function special(){if(abilityCd>0)return;abilityCd=L().cd;ability=L().dur;if(sel==="ASSAULT")mobs.forEach(m=>{if(m.team==="enemy")m.cool=Math.max(m.cool,80)});if(sel==="VANGUARD")player.armor=Math.max(player.armor,90);if(sel==="RECON")auto=true;msg=L().ability;msgT=70}
 function update(dt:number){
@@ -615,8 +631,9 @@ function update(dt:number){
   if(Math.abs(moveX)<.008)moveX=0;
   if(Math.abs(moveY)<.008)moveY=0;
   const target=currentAttackTarget();
-  if(target){
-    const desired=Math.atan2(target.y-player.y,target.x-player.x);
+  const nodeTarget=target?null:currentAttackNode();
+  if(target||nodeTarget){
+    const desired=Math.atan2((target?.y??nodeTarget!.y)-player.y,(target?.x??nodeTarget!.x)-player.x);
     const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
     player.facing+=turn*(1-Math.exp(-dt*.22));
   }
@@ -1582,9 +1599,14 @@ function bindUI(){
     else if(a==="grenade")grenade();
     else if(a==="ability")special();
     else if(a==="tower"){
-      const target=enemyTarget(player.x,player.y,weapon().range);
-      if(target){attackTarget=target;msg="ЦЕЛЬ ЗАХВАЧЕНА";msgT=45}
-      else {msg="НЕТ ЦЕЛИ В РАДИУСЕ";msgT=45}
+      let nearest:Node|null=null,best=Infinity;
+      for(const n of nodes){
+        if(n.team!=="enemy"||n.hp<=0)continue;
+        const d=Math.hypot(n.x-player.x,n.y-player.y);
+        if(d<=weapon().range&&d<best&&lineOfSight(player.x,player.y,n.x,n.y,obstacles())){best=d;nearest=n}
+      }
+      if(nearest){attackNode=nearest;attackTarget=null;msg="БАШНЯ · ЦЕЛЬ ЗАХВАЧЕНА";msgT=45}
+      else {msg="НЕТ БАШНИ В РАДИУСЕ";msgT=45}
       renderUI();
     }
     else if(a==="menu")exit();
