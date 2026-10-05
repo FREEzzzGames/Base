@@ -182,7 +182,7 @@ cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStat
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
-let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;
+let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;
 let combatTouchId:number|null=null,combatStartX=0,combatStartY=0,combatLastX=0,combatLastY=0,combatMoved=false,combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
@@ -807,22 +807,14 @@ function drawPlayer(){
   ctx!.restore();
 }
 function drawWorld(){
-  const worldZoom=thirdPersonView?Math.min(1.05,Math.max(.72,viewW/520)):Math.min(1,viewW/W);
+  // Restored vertical combat view: fixed world orientation, smooth follow camera.
+  const worldZoom=Math.min(1,viewW/W);
   const worldViewH=viewH/worldZoom;
-  cam=Math.max(0,Math.min(H-worldViewH,player.y-worldViewH*.58));
+  cam=Math.max(0,Math.min(H-worldViewH,camY-worldViewH*.58));
   rect(0,0,viewW,viewH,"#04080b");
   ctx!.save();
-  if(thirdPersonView){
-    // Experimental third-person camera: the operator is anchored low-center,
-    // the world rotates toward the aim direction and is compressed in depth.
-    ctx!.translate(viewW*.5,viewH*.70);
-    ctx!.rotate(Math.PI*.5-aim);
-    ctx!.scale(worldZoom,worldZoom*.62);
-    ctx!.translate(-camX,-camY);
-  }else{
-    ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
-    ctx!.scale(worldZoom,worldZoom);
-  }
+  ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
+  ctx!.scale(worldZoom,worldZoom);
   if(!staticDeckReady)buildStaticDeck();
   if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);
   else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
@@ -896,7 +888,7 @@ function drawWorld(){
     ctx!.restore();
   }
 
-  if(!thirdPersonView)drawPlayer();
+  drawPlayer();
 
   // Projectiles: bright core + short energy tail.
   for(const b of bullets){
@@ -919,105 +911,10 @@ function drawWorld(){
   ctx!.globalAlpha=1;
   ctx!.restore();
 
-  if(thirdPersonView)drawPlayerThirdPerson();
-
   VFX.renderVFX(ctx!,{
     x:W*.5,y:cam+worldViewH*.5,zoom:worldZoom,width:viewW,height:viewH
   });
   drawHUD();
-}
-function drawPlayerThirdPerson(){
-  const c=L().color;
-  const movingVX=player.x-((drawPlayerThirdPerson as any)._px??player.x);
-  const movingVY=player.y-((drawPlayerThirdPerson as any)._py??player.y);
-  (drawPlayerThirdPerson as any)._px=player.x;(drawPlayerThirdPerson as any)._py=player.y;
-  const velocity=Math.hypot(movingVX,movingVY);
-  const moving=Math.min(1,velocity/3.0);
-  const phase=frame*.13;
-  const step=Math.sin(phase)*moving;
-  const stepOpp=-step;
-  const bob=moving*Math.abs(Math.sin(phase))*2.5;
-  const lean=moving*.045;
-  const recoil=Math.min(5,player.combat.recoil*.3);
-  const cx=viewW*.5;
-  const cy=viewH*.73;
-  const scale=Math.min(1.18,Math.max(.86,viewW/430));
-  const S=(n:number)=>n*scale;
-  const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.5)=>{
-    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(cx+S(x),cy+S(y),S(rx),S(ry),rot,0,Math.PI*2);ctx!.fill();
-    if(sw){ctx!.strokeStyle=stroke;ctx!.lineWidth=S(sw);ctx!.stroke();}
-  };
-  const limb=(x1:number,y1:number,x2:number,y2:number,w:number,fill:string)=>{
-    ctx!.strokeStyle="#172228";ctx!.lineWidth=S(w);ctx!.lineCap="round";ctx!.beginPath();
-    ctx!.moveTo(cx+S(x1),cy+S(y1));ctx!.lineTo(cx+S(x2),cy+S(y2));ctx!.stroke();
-    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.arc(cx+S(x2),cy+S(y2),S(w*.46),0,Math.PI*2);ctx!.fill();
-  };
-
-  ctx!.save();
-  ctx!.translate(0,-S(bob));
-  ctx!.rotate(lean*Math.sin(aim));
-  // Strong ground contact shadow makes the foreground character read against the dark deck.
-  ctx!.globalAlpha=.5;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(cx,cy+S(70),S(48),S(13),0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
-
-  // Rear legs: explicit contact / passing / extension rather than a free sine swing.
-  const contactL=step>.15?1:0,contactR=step<-.15?1:0;
-  const hipY=31;
-  const kneeLx=-15+step*13,kneeRx=15+stepOpp*13;
-  const kneeLy=57-Math.max(0,-step)*15,kneeRy=57-Math.max(0,-stepOpp)*15;
-  const footLx=kneeLx+step*15,footRx=kneeRx+stepOpp*15;
-  const footLy=87-Math.max(0,-step)*12,footRy=87-Math.max(0,-stepOpp)*12;
-
-  limb(-14,hipY,kneeLx,kneeLy,17,"#d45a2b");
-  limb(14,hipY,kneeRx,kneeRy,17,"#c85029");
-  ellipse(kneeLx,kneeLy,8,7,0,"#59666a","#172228",1);
-  ellipse(kneeRx,kneeRy,8,7,0,"#59666a","#172228",1);
-  limb(kneeLx,kneeLy,footLx,footLy,13,"#d86532");
-  limb(kneeRx,kneeRy,footRx,footRy,13,"#c9542b");
-  ellipse(footLx,footLy,15,8,0,"#202a2e","#0d1519",1.2);
-  ellipse(footRx,footRy,15,8,0,"#202a2e","#0d1519",1.2);
-
-  // Pelvis and torso: torso counter-rotates against the running legs.
-  ellipse(0,29,21,14,step*.08,"#a94728","#172228",1.5);
-  ctx!.fillStyle="#d65b2c";ctx!.strokeStyle="#172228";ctx!.lineWidth=S(2);
-  ctx!.beginPath();ctx!.roundRect(cx-S(30),cy+S(-30),S(60),S(60),S(15));ctx!.fill();ctx!.stroke();
-  ctx!.fillStyle="#f0e9d8";ctx!.beginPath();ctx!.roundRect(cx-S(24),cy+S(-27),S(48),S(29),S(8));ctx!.fill();
-  ctx!.fillStyle="#34454a";ctx!.fillRect(cx-S(15),cy+S(-21),S(30),S(15));
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(8);ctx!.fillRect(cx-S(10),cy+S(-17),S(20),S(4));ctx!.shadowBlur=0;
-  ctx!.fillStyle="#303d42";ctx!.fillRect(cx-S(23),cy+S(-55),S(46),S(27));
-  ctx!.strokeStyle="#111a1e";ctx!.strokeRect(cx-S(23),cy+S(-55),S(46),S(27));
-
-  // Shoulders and two-arm weapon stance. Arms converge toward the weapon rather than hanging.
-  const shoulderY=-17;
-  const weaponX=18,weaponY=-8-recoil;
-  const elbowL=-31+stepOpp*4,elbowR=31+step*4;
-  limb(-24,shoulderY,elbowL,7,12,"#c8522a");
-  limb(24,shoulderY,elbowR,7,12,"#d65b2c");
-  limb(elbowL,7,weaponX-8,weaponY+7,10,"#c8522a");
-  limb(elbowR,7,weaponX+1,weaponY+3,10,"#d65b2c");
-  ellipse(-24,shoulderY,8,8,0,"#59666a","#172228",1);
-  ellipse(24,shoulderY,8,8,0,"#59666a","#172228",1);
-
-  // Helmet / back of head. The narrow cyan strip keeps the operator readable in third person.
-  ellipse(0,-73,22,23,0,"#e7e1d1","#172228",1.8);
-  ctx!.fillStyle="#263238";ctx!.beginPath();ctx!.roundRect(cx-S(20),cy+S(-81),S(40),S(15),S(6));ctx!.fill();
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(10);ctx!.fillRect(cx-S(12),cy+S(-76),S(24),S(4));ctx!.shadowBlur=0;
-  ctx!.fillStyle="#536167";ctx!.fillRect(cx-S(26),cy+S(-70),S(6),S(12));ctx!.fillRect(cx+S(20),cy+S(-70),S(6),S(12));
-
-  // Weapon is presented over the right shoulder; camera forward is screen-up.
-  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
-  ctx!.save();ctx!.translate(cx+S(weaponX),cy+S(weaponY));ctx!.rotate(-Math.PI/2);
-  ctx!.shadowColor="#000";ctx!.shadowBlur=S(8);ctx!.fillStyle="#080d10";
-  ctx!.beginPath();ctx!.roundRect(-S(5),-S(7),S(gunLen+14),S(12),S(3));ctx!.fill();ctx!.shadowBlur=0;
-  ctx!.fillStyle="#35454a";ctx!.fillRect(S(3),-S(5),S(Math.max(20,gunLen-18)),S(7));
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(5);ctx!.fillRect(S(11),-S(3),S(Math.max(10,gunLen-27)),S(3));ctx!.shadowBlur=0;
-  ctx!.fillStyle="#11191d";ctx!.fillRect(S(Math.max(8,gunLen*.38)),S(4),S(8),S(13));
-  if(muzzleFlash>0){
-    ctx!.globalAlpha=Math.min(1,muzzleFlash*1.8);ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=S(12);
-    ctx!.beginPath();ctx!.moveTo(S(gunLen+10),0);ctx!.lineTo(S(gunLen+25),-S(8));ctx!.lineTo(S(gunLen+20),0);ctx!.lineTo(S(gunLen+25),S(8));ctx!.closePath();ctx!.fill();
-    ctx!.globalAlpha=1;ctx!.shadowBlur=0;
-  }
-  ctx!.restore();
-  ctx!.restore();
 }
 function drawHUD(){
   rect(0,0,viewW,82,"rgba(5,9,11,.96)");
