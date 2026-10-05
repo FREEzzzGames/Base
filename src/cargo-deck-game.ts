@@ -1144,7 +1144,7 @@ function drawWorld(){
   for(const e of effects){ctx!.globalAlpha=Math.min(1,e.life/18);txt(e.text,e.x,e.y,9,e.color,"center");}
   ctx!.globalAlpha=1;ctx!.restore();
 
-  VFX.renderVFX(ctx!,{x:viewW*.5,y:viewH*.54,zoom:isoZoom,width:viewW,height:viewH});
+  VFX.renderVFX(ctx!,{x:viewW*.5,y:viewH*.54,zoom:isoZoom,width:viewW,height:viewH,targetX,yaw:cameraYaw});
   drawHUD();
 }
 function drawHUD(){
