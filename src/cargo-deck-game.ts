@@ -62,14 +62,14 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:105,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
       {x:1165,y:250,w:330,h:150,level:0,elevation:0,height:72,role:"base",collision:true},
       {x:565,y:90,w:470,h:190,level:2,elevation:332,height:150,role:"tower",collision:false},
-      {x:105,y:680,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:1250,y:680,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:105,y:1340,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:1250,y:1340,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:105,y:2050,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:1250,y:2050,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:105,y:2750,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
-      {x:1250,y:2750,w:245,h:150,level:1,elevation:176,height:16,role:"platform",collision:false},
+      {x:105,y:680,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:1250,y:680,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:105,y:1340,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:1250,y:1340,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:105,y:2050,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:1250,y:2050,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:105,y:2750,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
+      {x:1250,y:2750,w:190,h:92,level:1,elevation:176,height:10,role:"platform",collision:false},
 
       {x:145,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
       {x:315,y:720,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
@@ -87,15 +87,15 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:315,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
       {x:1290,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
       {x:1460,y:2790,w:28,h:28,level:0,elevation:0,height:164,role:"equipment",collision:false},
-      {x:430,y:905,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
-      {x:430,y:1605,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
-      {x:430,y:2310,w:740,h:72,level:1,elevation:176,height:12,role:"bridge",collision:false},
-      {x:55,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-      {x:1450,y:575,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-      {x:55,y:1660,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-      {x:1450,y:1660,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-      {x:55,y:2360,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
-      {x:1450,y:2360,w:95,h:250,level:0,elevation:0,height:88,role:"building",collision:true},
+      {x:430,y:905,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
+      {x:430,y:1605,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
+      {x:430,y:2310,w:560,h:54,level:1,elevation:176,height:10,role:"bridge",collision:false},
+      {x:70,y:600,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
+      {x:1380,y:600,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
+      {x:70,y:1660,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
+      {x:1380,y:1660,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
+      {x:70,y:2360,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
+      {x:1380,y:2360,w:150,h:105,level:0,elevation:0,height:120,role:"building",collision:true},
       {x:515,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:910,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:60,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
@@ -182,7 +182,8 @@ let staticDeckReady=false;
 function buildStaticDeck():void{
   if(arenaId==="cargo"&&(!cargoFloorImage.complete||!cargoFloorImage.naturalWidth))return;
   if(!staticDeckCanvas){staticDeckCanvas=document.createElement("canvas");staticDeckCtx=staticDeckCanvas.getContext("2d");}
-  staticDeckCanvas.width=W;staticDeckCanvas.height=H;
+  const deckW=W+720,deckH=H+2800;
+  staticDeckCanvas.width=deckW;staticDeckCanvas.height=deckH;
   const g=staticDeckCtx;if(!g)return;
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=true;
 
@@ -192,46 +193,46 @@ function buildStaticDeck():void{
     // Central freight/service corridor: concrete-steel deck with restrained
     // markings. Combat lanes remain clear and readable without sci-fi framing.
     g.save();
-    g.fillStyle="rgba(48,46,41,.72)";g.fillRect(560,210,480,H-420);
-    g.fillStyle="rgba(119,100,72,.10)";g.fillRect(582,210,436,H-420);
+    g.fillStyle="rgba(48,46,41,.72)";g.fillRect(560,210,480,deckH-420);
+    g.fillStyle="rgba(119,100,72,.10)";g.fillRect(582,210,436,deckH-420);
     g.strokeStyle="rgba(168,143,101,.18)";g.lineWidth=2;g.strokeRect(582,210,436,H-420);
     g.strokeStyle="rgba(116,104,82,.16)";g.lineWidth=1;
-    for(let yy=300;yy<H-220;yy+=190){
+    for(let yy=300;yy<deckH-220;yy+=190){
       g.beginPath();g.moveTo(590,yy);g.lineTo(1010,yy);g.stroke();
     }
     // Faded logistics center line.
     g.strokeStyle="rgba(189,158,96,.22)";g.lineWidth=3;g.setLineDash([28,22]);
-    g.beginPath();g.moveTo(800,250);g.lineTo(800,H-250);g.stroke();g.setLineDash([]);
+    g.beginPath();g.moveTo(800,250);g.lineTo(800,deckH-250);g.stroke();g.setLineDash([]);
     g.restore();
-    for(let y=0;y<H;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
-    for(let x=80;x<W;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
-    for(let y=120;y<H;y+=240){
+    for(let y=0;y<deckH;y+=240){g.fillStyle="rgba(24,43,49,.22)";g.fillRect(38,y,W-76,1);g.fillStyle="rgba(0,0,0,.18)";g.fillRect(38,y+1,W-76,54)}
+    for(let x=80;x<deckW;x+=160){g.fillStyle="rgba(45,75,82,.08)";g.fillRect(x,0,1,H)}
+    for(let y=120;y<deckH;y+=240){
       g.strokeStyle="rgba(117,145,149,.13)";g.lineWidth=1;
-      g.beginPath();g.moveTo(58,y);g.lineTo(W-58,y);g.stroke();
+      g.beginPath();g.moveTo(58,y);g.lineTo(deckW-58,y);g.stroke();
       g.strokeStyle="rgba(0,0,0,.24)";
-      g.beginPath();g.moveTo(58,y+3);g.lineTo(W-58,y+3);g.stroke();
-      for(let x=88;x<W-88;x+=112){g.fillStyle="rgba(145,170,170,.08)";g.fillRect(x,y-9,48,2);}
+      g.beginPath();g.moveTo(58,y+3);g.lineTo(deckW-58,y+3);g.stroke();
+      for(let x=88;x<deckW-88;x+=112){g.fillStyle="rgba(145,170,170,.08)";g.fillRect(x,y-9,48,2);}
     }
-    for(let x=94;x<W-94;x+=220){
-      g.fillStyle="rgba(8,12,14,.34)";g.fillRect(x,70,10,H-140);
-      g.fillStyle="rgba(87,116,121,.08)";g.fillRect(x+2,70,2,H-140);
+    for(let x=94;x<deckW-94;x+=220){
+      g.fillStyle="rgba(8,12,14,.34)";g.fillRect(x,70,10,deckH-140);
+      g.fillStyle="rgba(87,116,121,.08)";g.fillRect(x+2,70,2,deckH-140);
     }
     for(const yy of [260,690,1080,1470,1900,2260]){
-      g.save();g.globalAlpha=.52;g.beginPath();g.rect(42,yy,W-84,16);g.clip();
-      for(let x=34;x<W;x+=28){
+      g.save();g.globalAlpha=.52;g.beginPath();g.rect(42,yy,deckW-84,16);g.clip();
+      for(let x=34;x<deckW;x+=28){
         g.fillStyle=x%56===0?"#d69b3a":"#1b2529";
         g.save();g.translate(x,yy);g.rotate(-.55);g.fillRect(0,-18,9,52);g.restore();
       }
       g.restore();
     }
     for(let x=90;x<W-70;x+=180){
-      const yy=H-90;
+      const yy=deckH-90;
       const glow=g.createRadialGradient(x,yy,2,x,yy,80);
       glow.addColorStop(0,"rgba(84,214,216,.18)");glow.addColorStop(1,"rgba(84,214,216,0)");
       g.fillStyle=glow;g.fillRect(x-80,yy-80,160,160);
       g.fillStyle="#5dd5d5";g.fillRect(x-2,yy-2,4,4);
     }
-    g.fillStyle="#101b20";g.fillRect(0,0,38,H);g.fillRect(962,0,38,H);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,H);g.fillRect(960,0,2,H);
+    g.fillStyle="#101b20";g.fillRect(0,0,38,deckH);g.fillRect(962,0,38,deckH);g.fillStyle="rgba(84,214,216,.22)";g.fillRect(38,0,2,deckH);g.fillRect(960,0,2,deckH);
     g.fillStyle="rgba(0,0,0,.60)";g.fillRect(0,0,W,H);
     // Static layer contains only the ground plane. All architecture is
     // rendered through the shared isometric depth pipeline below so elevated
@@ -1267,6 +1268,22 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
       const a={x:q1.x+(q2.x-q1.x)*t,y:q1.y+(q2.y-q1.y)*t};
       const b={x:q4.x+(q3.x-q4.x)*t,y:q4.y+(q3.y-q4.y)*t};
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if(o.role==="platform"||o.role==="bridge"){
+    ctx.save();
+    ctx.strokeStyle="#3d403d";ctx.lineWidth=Math.max(1.2,1.8*zoom);
+    const rail=9*zoom;
+    ctx.beginPath();
+    ctx.moveTo(q1.x,q1.y-rail);ctx.lineTo(q2.x,q2.y-rail);
+    ctx.moveTo(q2.x,q2.y-rail);ctx.lineTo(q3.x,q3.y-rail);
+    ctx.stroke();
+    for(let k=0;k<=5;k++){
+      const t=k/5;
+      const ax=q1.x+(q2.x-q1.x)*t,ay=q1.y+(q2.y-q1.y)*t;
+      const bx=q2.x+(q3.x-q2.x)*t,by=q2.y+(q3.y-q2.y)*t;
+      ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax,ay-rail);ctx.moveTo(bx,by);ctx.lineTo(bx,by-rail);ctx.stroke();
     }
     ctx.restore();
   }
