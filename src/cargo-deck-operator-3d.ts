@@ -1,5 +1,101 @@
 import objText from "./assets/CARGO_DECK_OPERATOR.obj?raw";
 
+export type SoldierAnimationState="IDLE"|"RUN"|"SIT_DOWN"|"STAND_UP"|"AIM"|"SHOOT";
+export interface SoldierModelAdapter{
+  rotation?:{y:number};
+  position?:{x:number;y:number;z?:number};
+}
+export interface SoldierAnimationAction{
+  reset?:()=>SoldierAnimationAction;
+  fadeOut?:(duration:number)=>SoldierAnimationAction;
+  fadeIn?:(duration:number)=>SoldierAnimationAction;
+  play?:()=>SoldierAnimationAction;
+  setLoop?:(mode:number,repetitions?:number)=>SoldierAnimationAction;
+}
+export class SoldierBehaviorController{
+  model:SoldierModelAdapter;
+  mixer:any;
+  currentState:SoldierAnimationState="IDLE";
+  actions:Record<string,SoldierAnimationAction>={};
+  currentAction:SoldierAnimationAction|null=null;
+  transitionDuration=.3;
+  movementSpeed=.05;
+  isMoving=false;
+  isAiming=false;
+  bodyAngle=0;
+  targetAngle=0;
+  walkPhase=0;
+  shotPulse=0;
+  stateTime=0;
+
+  constructor(model:SoldierModelAdapter={},animationMixer:any=null){
+    this.model=model;this.mixer=animationMixer;
+    this.bodyAngle=model.rotation?.y??0;this.targetAngle=this.bodyAngle;
+  }
+  registerAnimation(name:string,action:SoldierAnimationAction){this.actions[name]=action}
+  transitionTo(stateName:SoldierAnimationState,force=false){
+    if(this.currentState===stateName&&!force)return;
+    const next=this.actions[stateName];
+    if(next){
+      const prev=this.currentAction;
+      if(prev?.fadeOut)prev.fadeOut(this.transitionDuration);
+      if(next.reset)next.reset();
+      if(next.fadeIn)next.fadeIn(this.transitionDuration);
+      if(next.play)next.play();
+      this.currentAction=next;
+    }
+    this.currentState=stateName;this.stateTime=0;
+  }
+  rotateTowards(targetAngle:number,deltaTime:number){
+    this.targetAngle=targetAngle;
+    const d=Math.atan2(Math.sin(targetAngle-this.bodyAngle),Math.cos(targetAngle-this.bodyAngle));
+    this.bodyAngle+=d*(1-Math.exp(-deltaTime*10));
+    if(this.model.rotation)this.model.rotation.y=this.bodyAngle;
+  }
+  setMovement(moving:boolean,moveAngle:number,deltaTime:number){
+    this.isMoving=moving;
+    if(moving){
+      this.walkPhase+=Math.max(0,deltaTime)*this.movementSpeed*1.6;
+      this.rotateTowards(moveAngle,deltaTime);
+      this.transitionTo("RUN");
+    }else if(this.currentState==="RUN"){
+      this.transitionTo(this.isAiming?"AIM":"IDLE");
+    }
+  }
+  setAim(targetAngle:number,deltaTime:number){
+    this.isAiming=true;
+    this.rotateTowards(targetAngle,deltaTime);
+    if(!this.isMoving)this.transitionTo("AIM");
+  }
+  clearAim(){this.isAiming=false;if(!this.isMoving)this.transitionTo("IDLE")}
+  shoot(){
+    this.shotPulse=1;
+    const action=this.actions.SHOOT;
+    if(action){
+      if(action.reset)action.reset();
+      if(action.setLoop)action.setLoop(2205,1);
+      if(action.play)action.play();
+    }
+    this.transitionTo("SHOOT",true);
+  }
+  sitDown(){this.isMoving=false;this.isAiming=false;this.transitionTo("SIT_DOWN")}
+  standUp(){
+    this.isMoving=false;this.transitionTo("STAND_UP");
+    if(!this.actions.STAND_UP){
+      this.stateTime=0;
+    }
+  }
+  update(deltaTime:number){
+    this.stateTime+=deltaTime;
+    this.shotPulse=Math.max(0,this.shotPulse-deltaTime*4);
+    if(this.mixer?.update)this.mixer.update(deltaTime);
+    if(this.currentState==="SHOOT"&&this.shotPulse<=0){
+      this.transitionTo(this.isMoving?"RUN":this.isAiming?"AIM":"IDLE");
+    }
+    if(this.currentState==="STAND_UP"&&this.stateTime>.5)this.transitionTo(this.isMoving?"RUN":"IDLE");
+  }
+}
+
 export interface Operator3DFrame {
   ctx: CanvasRenderingContext2D;
   baseX:number;baseY:number;facing:number;scale:number;
