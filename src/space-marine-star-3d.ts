@@ -8,9 +8,87 @@ async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).str
 void load();
 export interface SpaceMarineFrame{ctx:CanvasRenderingContext2D;baseX:number;baseY:number;facing:number;scale:number;moving:number;walkPhase:number;aiming:boolean;firing:number;color:string;project:(x:number,y:number,z:number)=>{x:number;y:number}}
 const shade=(l:number)=>{const b=0x737a79,r=Math.round(((b>>16)&255)*l),g=Math.round(((b>>8)&255)*l),bb=Math.round((b&255)*l);return`rgb(${r},${g},${bb})`};
-export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:false} as const;
-export function renderSpaceMarineStar(f:SpaceMarineFrame){if(!READY)return;const ctx=f.ctx,s=Math.max(.04,f.scale),c=Math.cos(f.facing),sn=Math.sin(f.facing),g=Math.sin(f.walkPhase)*f.moving,bob=Math.abs(Math.sin(f.walkPhase))*.5*f.moving,r=f.firing>0?Math.min(1,f.firing):0,px=new Float32Array(VCOUNT),py=new Float32Array(VCOUNT),d=new Float32Array(FCOUNT),o=new Uint16Array(FCOUNT);
-for(let i=0,j=0;i<VCOUNT;i++,j+=3){let x=V[j]*.01*s,y=V[j+1]*.01*s,z=(V[j+2]*.01+18)*s;x+=g*.22*s;z+=bob*s;y+=r*.75*s;const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);px[i]=q.x;py[i]=q.y}
-for(let i=0,j=0;i<FCOUNT;i++,j+=3){const a=F[j],b=F[j+1],cc=F[j+2];d[i]=(py[a]+py[b]+py[cc])/3;o[i]=i}
-for(let i=1;i<FCOUNT;i++){const k=o[i],q=d[k];let j=i-1;while(j>=0&&d[o[j]]>q){o[j+1]=o[j];j--}o[j+1]=k}
-ctx.save();for(let i=0;i<FCOUNT;i++){const j=o[i]*3,a=F[j],b=F[j+1],cc=F[j+2],l=Math.max(.35,Math.min(1.08,.70+N[j+2]/127*.26-N[j+1]/127*.10));ctx.fillStyle=shade(l);ctx.beginPath();ctx.moveTo(px[a],py[a]);ctx.lineTo(px[b],py[b]);ctx.lineTo(px[cc],py[cc]);ctx.closePath();ctx.fill()}if(r>0){const q=f.project(f.baseX,f.baseY-30*s,22*s);ctx.globalAlpha=r;ctx.fillStyle=f.color;ctx.shadowColor=f.color;ctx.shadowBlur=10*s;ctx.beginPath();ctx.arc(q.x,q.y,2.2*s,0,Math.PI*2);ctx.fill()}ctx.restore()}
+import {HumanJointRig} from "./cargo-deck-biomech";
+export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:true,rig:"procedural-human-joint-limits"} as const;
+const rig=new HumanJointRig();
+const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
+function poseVertex(i:number,walk:number,aim:number,recoil:number){
+  let x=V[i*3]*.01,y=V[i*3+1]*.01,z=(V[i*3+2]*.01+18);
+  const zn=z/21.2;
+  // Anatomical regions are inferred from the supplied mesh's local vertical
+  // coordinate. The pose is intentionally continuous so armor never "snaps".
+  const side=x>=0?1:-1;
+  const gait=walk;
+  if(zn<.42){
+    const hip=side>0?rig.pose.hipR:rig.pose.hipL;
+    const knee=side>0?rig.pose.kneeR:rig.pose.kneeL;
+    const a=hip+gait*0.22*side;
+    const px=side*0.075,pz=0.30;
+    const dx=x-px,dz=z-pz;
+    x=px+dx*Math.cos(a)-dz*Math.sin(a);
+    z=pz+dx*Math.sin(a)+dz*Math.cos(a);
+    const kneeB=knee*Math.max(0,Math.min(1,(.42-zn)/.20));
+    z-=kneeB*.035;
+  }else if(zn<.72){
+    const spine=rig.pose.spine;
+    x+=Math.sin(spine)*(.72-zn)*.08;
+    y+=Math.cos(spine)*(.72-zn)*.035;
+  }else{
+    const shoulder=side>0?rig.pose.shoulderR:rig.pose.shoulderL;
+    const elbow=side>0?rig.pose.elbowR:rig.pose.elbowL;
+    const a=shoulder+aim*.12+gait*.14*side;
+    const px=side*.15,pz=.76;
+    const dx=x-px,dz=z-pz;
+    x=px+dx*Math.cos(a)-dz*Math.sin(a);
+    z=pz+dx*Math.sin(a)+dz*Math.cos(a);
+    z-=elbow*.018;
+  }
+  y+=recoil*.018;
+  return {x,y,z};
+}
+export function renderSpaceMarineStar(f:SpaceMarineFrame){
+  if(!READY)return;
+  const ctx=f.ctx,s=Math.max(.04,f.scale),c=Math.cos(f.facing),sn=Math.sin(f.facing);
+  const g=Math.sin(f.walkPhase)*Math.max(0,Math.min(1,f.moving));
+  const bob=Math.abs(Math.sin(f.walkPhase))*.5*Math.max(0,Math.min(1,f.moving));
+  const r=f.firing>0?Math.min(1,f.firing):0;
+  const aim=f.aiming?-.22:0;
+  rig.solve({
+    hipL:-g*.22,hipR:g*.22,
+    kneeL:Math.max(0,g*.18),kneeR:Math.max(0,-g*.18),
+    ankleL:-g*.08,ankleR:g*.08,
+    shoulderL:g*.12,shoulderR:-g*.12,
+    elbowL:.35+Math.abs(g)*.12,elbowR:.35+Math.abs(g)*.12,
+    spine:aim*.55,neck:aim*.35
+  },1/60);
+  for(let i=0;i<VCOUNT;i++){
+    const p=poseVertex(i,g,aim,r);
+    p.z+=bob;
+    const x=p.x*s,y=p.y*s,z=p.z*s;
+    const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);
+    PX[i]=q.x;PY[i]=q.y;
+  }
+  for(let i=0,j=0;i<FCOUNT;i++,j+=3){
+    const a=F[j],b=F[j+1],cc=F[j+2];
+    PD[i]=(PY[a]+PY[b]+PY[cc])/3;PO[i]=i;
+  }
+  for(let i=1;i<FCOUNT;i++){
+    const k=PO[i],q=PD[k];let j=i-1;
+    while(j>=0&&PD[PO[j]]>q){PO[j+1]=PO[j];j--}
+    PO[j+1]=k;
+  }
+  ctx.save();
+  for(let i=0;i<FCOUNT;i++){
+    const j=PO[i]*3,a=F[j],b=F[j+1],cc=F[j+2];
+    const l=Math.max(.35,Math.min(1.08,.70+N[j+2]/127*.26-N[j+1]/127*.10));
+    ctx.fillStyle=shade(l);ctx.beginPath();
+    ctx.moveTo(PX[a],PY[a]);ctx.lineTo(PX[b],PY[b]);ctx.lineTo(PX[cc],PY[cc]);
+    ctx.closePath();ctx.fill();
+  }
+  if(r>0){
+    const q=f.project(f.baseX,f.baseY-30*s,22*s);
+    ctx.globalAlpha=r;ctx.fillStyle=f.color;ctx.shadowColor=f.color;ctx.shadowBlur=10*s;
+    ctx.beginPath();ctx.arc(q.x,q.y,2.2*s,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
