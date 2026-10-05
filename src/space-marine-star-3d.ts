@@ -4,10 +4,26 @@ const DATA="H4sIAOTow2oC/y1YBXhUR9eeuXctCXFPSIDgJHhwdy9QStECpbgUQhJiuxtWEqIELw5F
 const VCOUNT=409,FCOUNT=1127,VB=2454,FB=6762,NB=3381;
 function b64(s:string){const x=atob(s),o=new Uint8Array(x.length);for(let i=0;i<x.length;i++)o[i]=x.charCodeAt(i);return o}
 let V=new Int16Array(0),F=new Uint16Array(0),N=new Int8Array(0),READY=false;
-async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);READY=true}catch{READY=false}}
+const MAT=new Uint8Array(FCOUNT);
+function buildMaterials(){
+  for(let k=0;k<FCOUNT;k++){
+    const j=k*3,a=F[j],b=F[j+1],c=F[j+2];
+    const x=(V[a*3]+V[b*3]+V[c*3])/3*.01;
+    const y=(V[a*3+1]+V[b*3+1]+V[c*3+1])/3*.01;
+    const z=MODEL_HEIGHT-(V[a*3+2]+V[b*3+2]+V[c*3+2])/3*.01-18;
+    const ax=Math.abs(x),ay=Math.abs(y);
+    let m=0; // blue armor
+    if(z<3.2 || (ax>.32 && z<9.2))m=1; // dark joints/undersuit
+    if(z>17.7 && ax<3.0 && ay<3.0)m=2; // gold visor/head lens
+    if((z>15.5 && z<19.2 && ax>2.0) || (z>3.0 && z<7.0 && ax<1.5))m=3; // worn metal
+    if(z>18.5 && ax<1.0 && ay<1.8)m=4; // warm head light
+    MAT[k]=m;
+  }
+}
+async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);buildMaterials();READY=true}catch{READY=false}}
 void load();
 export interface SpaceMarineFrame{ctx:CanvasRenderingContext2D;baseX:number;baseY:number;facing:number;scale:number;moving:number;walkPhase:number;aiming:boolean;firing:number;color:string;project:(x:number,y:number,z:number)=>{x:number;y:number}}
-const shade=(l:number)=>{const b=0x737a79,r=Math.round(((b>>16)&255)*l),g=Math.round(((b>>8)&255)*l),bb=Math.round((b&255)*l);return`rgb(${r},${g},${bb})`};
+const shade=(l:number,m=0)=>{const base=m===2?0xd18a24:m===3?0x6f7675:m===4?0x7de8e8:m===1?0x182027:0x234b82;const r=Math.round(((base>>16)&255)*l),g=Math.round(((base>>8)&255)*l),b=Math.round((base&255)*l);return`rgb(${r},${g},${b})`};
 import {HumanJointRig} from "./cargo-deck-biomech";
 export const SPACE_MARINE_MODEL_INFO={name:"Space Marine Star",source:"spaceMarineStar.3mf",sourceTriangles:1586022,runtimeVertices:VCOUNT,runtimeTriangles:FCOUNT,format:"gzip-quantized-canvas-mesh",rigged:true,rig:"procedural-human-joint-limits"} as const;
 const rig=new HumanJointRig();
@@ -87,7 +103,7 @@ export function renderSpaceMarineStar(f:SpaceMarineFrame){
   for(let i=0;i<FCOUNT;i++){
     const j=PO[i]*3,a=F[j],b=F[j+1],cc=F[j+2];
     const l=Math.max(.35,Math.min(1.08,.70+N[j+2]/127*.26-N[j+1]/127*.10));
-    ctx.fillStyle=shade(l);ctx.beginPath();
+    ctx.fillStyle=shade(l,MAT[PO[i]]);ctx.beginPath();
     ctx.moveTo(PX[a],PY[a]);ctx.lineTo(PX[b],PY[b]);ctx.lineTo(PX[cc],PY[cc]);
     ctx.closePath();ctx.fill();
   }
