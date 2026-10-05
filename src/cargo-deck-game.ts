@@ -883,7 +883,7 @@ function drawWorld(){
     ctx!.restore();
   }
 
-  if(thirdPersonView)drawPlayerThirdPerson();else drawPlayer();
+  if(!thirdPersonView)drawPlayer();
 
   // Projectiles: bright core + short energy tail.
   for(const b of bullets){
@@ -906,6 +906,8 @@ function drawWorld(){
   ctx!.globalAlpha=1;
   ctx!.restore();
 
+  if(thirdPersonView)drawPlayerThirdPerson();
+
   VFX.renderVFX(ctx!,{
     x:W*.5,y:cam+worldViewH*.5,zoom:worldZoom,width:viewW,height:viewH
   });
@@ -916,76 +918,90 @@ function drawPlayerThirdPerson(){
   const movingVX=player.x-((drawPlayerThirdPerson as any)._px??player.x);
   const movingVY=player.y-((drawPlayerThirdPerson as any)._py??player.y);
   (drawPlayerThirdPerson as any)._px=player.x;(drawPlayerThirdPerson as any)._py=player.y;
-  const moving=Math.min(1,Math.hypot(movingVX,movingVY)/3.2);
-  const moveA=moving>.04?Math.atan2(movingVY,movingVX):aim;
-  const phase=frame*.22;
-  const stride=Math.sin(phase)*moving;
-  const stride2=Math.sin(phase+Math.PI)*moving;
+  const velocity=Math.hypot(movingVX,movingVY);
+  const moving=Math.min(1,velocity/3.0);
+  const phase=frame*.23;
+  const step=Math.sin(phase)*moving;
+  const stepOpp=-step;
+  const bob=moving*Math.abs(Math.sin(phase))*2.5;
+  const lean=moving*.045;
   const recoil=Math.min(5,player.combat.recoil*.3);
-  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
-
-  // The ground has already been transformed by the third-person camera.
-  // Undo only the depth compression so the operator stays upright and readable.
-  ctx!.save();
-  ctx!.scale(1,1/.62);
-  ctx!.translate(0,18);
-  const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.4)=>{
-    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx!.fill();
-    if(sw>0){ctx!.strokeStyle=stroke;ctx!.lineWidth=sw;ctx!.stroke();}
+  const cx=viewW*.5;
+  const cy=viewH*.73;
+  const scale=Math.min(1.18,Math.max(.86,viewW/430));
+  const S=(n:number)=>n*scale;
+  const ellipse=(x:number,y:number,rx:number,ry:number,rot:number,fill:string,stroke="#172228",sw=1.5)=>{
+    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.ellipse(cx+S(x),cy+S(y),S(rx),S(ry),rot,0,Math.PI*2);ctx!.fill();
+    if(sw){ctx!.strokeStyle=stroke;ctx!.lineWidth=S(sw);ctx!.stroke();}
   };
   const limb=(x1:number,y1:number,x2:number,y2:number,w:number,fill:string)=>{
-    ctx!.strokeStyle="#18242a";ctx!.lineWidth=w;ctx!.lineCap="round";ctx!.beginPath();ctx!.moveTo(x1,y1);ctx!.lineTo(x2,y2);ctx!.stroke();
-    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.arc(x2,y2,w*.48,0,Math.PI*2);ctx!.fill();
+    ctx!.strokeStyle="#172228";ctx!.lineWidth=S(w);ctx!.lineCap="round";ctx!.beginPath();
+    ctx!.moveTo(cx+S(x1),cy+S(y1));ctx!.lineTo(cx+S(x2),cy+S(y2));ctx!.stroke();
+    ctx!.fillStyle=fill;ctx!.beginPath();ctx!.arc(cx+S(x2),cy+S(y2),S(w*.46),0,Math.PI*2);ctx!.fill();
   };
 
-  // Shadow is deliberately wide to establish a third-person contact point.
-  ctx!.globalAlpha=.42;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(0,8,38,10,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
-
-  // Back-facing pressure suit: head, backpack, torso, hips.
-  ctx!.fillStyle="#303d42";ctx!.strokeStyle="#111a1e";ctx!.lineWidth=2;
-  ctx!.beginPath();ctx!.roundRect(-22,-58,44,45,9);ctx!.fill();ctx!.stroke();
-  ctx!.fillStyle="#56666b";ctx!.fillRect(-15,-53,30,28);
-  ctx!.fillStyle=c;ctx!.globalAlpha=.8;ctx!.fillRect(-11,-49,22,4);ctx!.globalAlpha=1;
-
-  ctx!.fillStyle="#d65b2c";ctx!.beginPath();ctx!.roundRect(-27,-22,54,50,15);ctx!.fill();
-  ctx!.strokeStyle="#182329";ctx!.lineWidth=2;ctx!.stroke();
-  ctx!.fillStyle="#f0e9d8";ctx!.beginPath();ctx!.roundRect(-21,-18,42,24,7);ctx!.fill();
-  ctx!.fillStyle="#33444a";ctx!.fillRect(-13,-14,26,12);
-  ctx!.fillStyle=c;ctx!.fillRect(-8,-11,16,3);
-
-  const legL=15+stride*12,legR=-15+stride2*12;
-  const kneeLiftL=Math.max(0,-stride)*11,kneeLiftR=Math.max(0,-stride2)*11;
-  limb(-13,22,legL,43-kneeLiftL,14,"#d85b2b");
-  limb(13,22,legR,43-kneeLiftR,14,"#c94f28");
-  limb(legL,43-kneeLiftL,legL+stride*10,70-kneeLiftL,11,"#d86532");
-  limb(legR,43-kneeLiftR,legR+stride2*10,70-kneeLiftR,11,"#c9542b");
-  ellipse(legL+stride*10,70-kneeLiftL,13,7,0,"#263238","#10181c",1);
-  ellipse(legR+stride2*10,70-kneeLiftR,13,7,0,"#202b30","#10181c",1);
-
-  // Arms are layered behind the weapon, giving a clear shoulder silhouette.
-  const armSway=Math.sin(phase+.7)*moving*3;
-  limb(-22,-10,-31-armSway,9+stride*3,11,"#c8522a");
-  limb(22,-10,31+armSway,9+stride2*3,11,"#d65b2c");
-  ellipse(-22,-10,8,8,0,"#59666a","#182329",1);
-  ellipse(22,-10,8,8,0,"#59666a","#182329",1);
-
-  // Helmet from behind, with a narrow cyan neck/visor rim.
-  ellipse(0,-76,21,22,0,"#e7e1d1","#172228",1.8);
-  ctx!.fillStyle="#263238";ctx!.beginPath();ctx!.roundRect(-19,-84,38,13,5);ctx!.fill();
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=8;ctx!.fillRect(-11,-79,22,3);ctx!.shadowBlur=0;
-
-  // Weapon projects over the right shoulder toward the aim direction.
-  // In camera space aim is forward (screen-up), so the barrel is drawn upward.
   ctx!.save();
-  ctx!.translate(19,-12-recoil);
-  ctx!.rotate(0);
-  ctx!.shadowColor="#000";ctx!.shadowBlur=7;ctx!.fillStyle="#080d10";
-  ctx!.beginPath();ctx!.roundRect(-5,-7,gunLen+14,11,3);ctx!.fill();ctx!.shadowBlur=0;
-  ctx!.fillStyle="#35454a";ctx!.fillRect(4,-5,Math.max(20,gunLen-18),7);
-  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=5;ctx!.fillRect(12,-3,Math.max(10,gunLen-27),3);ctx!.shadowBlur=0;
+  ctx!.translate(0,-S(bob));
+  ctx!.rotate(lean*Math.sin(aim));
+  // Strong ground contact shadow makes the foreground character read against the dark deck.
+  ctx!.globalAlpha=.5;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(cx,cy+S(70),S(48),S(13),0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
+
+  // Rear legs: explicit contact / passing / extension rather than a free sine swing.
+  const contactL=step>.15?1:0,contactR=step<-.15?1:0;
+  const hipY=31;
+  const kneeLx=-15+step*13,kneeRx=15+stepOpp*13;
+  const kneeLy=57-Math.max(0,-step)*15,kneeRy=57-Math.max(0,-stepOpp)*15;
+  const footLx=kneeLx+step*15,footRx=kneeRx+stepOpp*15;
+  const footLy=87-Math.max(0,-step)*12,footRy=87-Math.max(0,-stepOpp)*12;
+
+  limb(-14,hipY,kneeLx,kneeLy,17,"#d45a2b");
+  limb(14,hipY,kneeRx,kneeRy,17,"#c85029");
+  ellipse(kneeLx,kneeLy,8,7,0,"#59666a","#172228",1);
+  ellipse(kneeRx,kneeRy,8,7,0,"#59666a","#172228",1);
+  limb(kneeLx,kneeLy,footLx,footLy,13,"#d86532");
+  limb(kneeRx,kneeRy,footRx,footRy,13,"#c9542b");
+  ellipse(footLx,footLy,15,8,0,"#202a2e","#0d1519",1.2);
+  ellipse(footRx,footRy,15,8,0,"#202a2e","#0d1519",1.2);
+
+  // Pelvis and torso: torso counter-rotates against the running legs.
+  ellipse(0,29,21,14,step*.08,"#a94728","#172228",1.5);
+  ctx!.fillStyle="#d65b2c";ctx!.strokeStyle="#172228";ctx!.lineWidth=S(2);
+  ctx!.beginPath();ctx!.roundRect(cx-S(30),cy+S(-30),S(60),S(60),S(15));ctx!.fill();ctx!.stroke();
+  ctx!.fillStyle="#f0e9d8";ctx!.beginPath();ctx!.roundRect(cx-S(24),cy+S(-27),S(48),S(29),S(8));ctx!.fill();
+  ctx!.fillStyle="#34454a";ctx!.fillRect(cx-S(15),cy+S(-21),S(30),S(15));
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(8);ctx!.fillRect(cx-S(10),cy+S(-17),S(20),S(4));ctx!.shadowBlur=0;
+  ctx!.fillStyle="#303d42";ctx!.fillRect(cx-S(23),cy+S(-55),S(46),S(27));
+  ctx!.strokeStyle="#111a1e";ctx!.strokeRect(cx-S(23),cy+S(-55),S(46),S(27));
+
+  // Shoulders and two-arm weapon stance. Arms converge toward the weapon rather than hanging.
+  const shoulderY=-17;
+  const weaponX=18,weaponY=-8-recoil;
+  const elbowL=-31+stepOpp*4,elbowR=31+step*4;
+  limb(-24,shoulderY,elbowL,7,12,"#c8522a");
+  limb(24,shoulderY,elbowR,7,12,"#d65b2c");
+  limb(elbowL,7,weaponX-8,weaponY+7,10,"#c8522a");
+  limb(elbowR,7,weaponX+1,weaponY+3,10,"#d65b2c");
+  ellipse(-24,shoulderY,8,8,0,"#59666a","#172228",1);
+  ellipse(24,shoulderY,8,8,0,"#59666a","#172228",1);
+
+  // Helmet / back of head. The narrow cyan strip keeps the operator readable in third person.
+  ellipse(0,-73,22,23,0,"#e7e1d1","#172228",1.8);
+  ctx!.fillStyle="#263238";ctx!.beginPath();ctx!.roundRect(cx-S(20),cy+S(-81),S(40),S(15),S(6));ctx!.fill();
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(10);ctx!.fillRect(cx-S(12),cy+S(-76),S(24),S(4));ctx!.shadowBlur=0;
+  ctx!.fillStyle="#536167";ctx!.fillRect(cx-S(26),cy+S(-70),S(6),S(12));ctx!.fillRect(cx+S(20),cy+S(-70),S(6),S(12));
+
+  // Weapon is presented over the right shoulder; camera forward is screen-up.
+  const gunLen=[42,50,56,62,68,76,84,72,98][player.weapon]||48;
+  ctx!.save();ctx!.translate(cx+S(weaponX),cy+S(weaponY));ctx!.rotate(-Math.PI/2);
+  ctx!.shadowColor="#000";ctx!.shadowBlur=S(8);ctx!.fillStyle="#080d10";
+  ctx!.beginPath();ctx!.roundRect(-S(5),-S(7),S(gunLen+14),S(12),S(3));ctx!.fill();ctx!.shadowBlur=0;
+  ctx!.fillStyle="#35454a";ctx!.fillRect(S(3),-S(5),S(Math.max(20,gunLen-18)),S(7));
+  ctx!.fillStyle=c;ctx!.shadowColor=c;ctx!.shadowBlur=S(5);ctx!.fillRect(S(11),-S(3),S(Math.max(10,gunLen-27)),S(3));ctx!.shadowBlur=0;
+  ctx!.fillStyle="#11191d";ctx!.fillRect(S(Math.max(8,gunLen*.38)),S(4),S(8),S(13));
   if(muzzleFlash>0){
-    ctx!.globalAlpha=Math.min(1,muzzleFlash*1.8);ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=10;
-    ctx!.beginPath();ctx!.moveTo(gunLen+9,-1);ctx!.lineTo(gunLen+24,-8);ctx!.lineTo(gunLen+19,-1);ctx!.lineTo(gunLen+24,6);ctx!.closePath();ctx!.fill();ctx!.globalAlpha=1;ctx!.shadowBlur=0;
+    ctx!.globalAlpha=Math.min(1,muzzleFlash*1.8);ctx!.fillStyle="#ffe2a1";ctx!.shadowColor="#fff0b5";ctx!.shadowBlur=S(12);
+    ctx!.beginPath();ctx!.moveTo(S(gunLen+10),0);ctx!.lineTo(S(gunLen+25),-S(8));ctx!.lineTo(S(gunLen+20),0);ctx!.lineTo(S(gunLen+25),S(8));ctx!.closePath();ctx!.fill();
+    ctx!.globalAlpha=1;ctx!.shadowBlur=0;
   }
   ctx!.restore();
   ctx!.restore();
