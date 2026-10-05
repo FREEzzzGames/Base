@@ -1,10 +1,10 @@
 import{HS_WEAPONS,createCombatState,consumeShot,startReload,stepWeapon,spawnShots,traceShot,lineOfSight,recoilAngle,grenade as makeGrenade,type HsCombatState,type HsObstacle}from"./freezzz-combat-core";
 import * as VFX from"./cargo-deck-vfx";
 type Mode="loadout"|"play"|"weapon"|"result";type Team="player"|"enemy";type MobType="brawler"|"shooter"|"sniper";type LoadoutId="ASSAULT"|"VANGUARD"|"RECON";
-interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number}
+interface Mob{x:number;y:number;team:Team;type:MobType;hp:number;maxHp:number;speed:number;damage:number;range:number;cool:number;think:number;strafe:number;stuck:number;lastX:number;lastY:number;state:string;hit:number;lane:number;waypoint:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackX:number;attackY:number}
 interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;cool:number}interface Bullet{x:number;y:number;vx:number;vy:number;life:number;damage:number;from:Team;penetration:number;weaponId:string;shotId:number;hitIds:Set<number>}interface Grenade{x:number;y:number;vx:number;vy:number;life:number;radius:number;damage:number}interface Pickup{x:number;y:number;kind:"medkit"|"weapon";weapon?:number;life:number}
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
-interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
+interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number;attackState:"ready"|"windup"|"cooldown";attackTimer:number;attackAngle:number}
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
@@ -72,8 +72,6 @@ cargoFloorImage.src=cargoFloorUrl;
 const cargoContainerImage=new Image();
 const cargoContainerUrl=`${import.meta.env.BASE_URL}cargo-container-hazard.svg`;
 cargoContainerImage.src=cargoContainerUrl;
-let cargoFloorPattern:CanvasPattern|null=null;
-let cargoContainerPattern:CanvasPattern|null=null;
 let staticDeckCanvas:HTMLCanvasElement|null=null;
 let staticDeckCtx:CanvasRenderingContext2D|null=null;
 let staticDeckReady=false;
@@ -220,8 +218,6 @@ let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:num
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,aim=0,aimTarget=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0;
 let combatTouchId:number|null=null,combatStartX=0,combatStartY=0,combatLastX=0,combatLastY=0,combatMoved=false,combatTapTimer=0,combatTapPending=false;let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
-let obsGradients:CanvasGradient[]|null=null,obsGradCtx:CanvasRenderingContext2D|null=null;
-function ensureObsGradients():CanvasGradient[]{if(obsGradients&&obsGradCtx===ctx)return obsGradients;obsGradCtx=ctx;obsGradients=OBS.map(o=>{const g=ctx!.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);g.addColorStop(0,"#3b464b");g.addColorStop(.55,"#242d31");g.addColorStop(1,"#171d20");return g});return obsGradients}
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch{}}
@@ -231,7 +227,7 @@ function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.
 function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!anyHit(o,nx,y,r))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,Math.max(r,Math.min(W-r,x+sx*m)),y,r))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!anyHit(o,x,ny,r))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!anyHit(o,x,Math.max(180,Math.min(H-r,y+sy*m)),r))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){const lo=Math.max(180,Math.min(a,H-180));const hi=Math.max(lo+1,Math.min(b,H-90));for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=lo+Math.random()*(hi-lo);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,Math.max(180,Math.min((lo+hi)*.5,H-90))]as const}
-function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
+function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:PLAYER_SPAWN.x,y:PLAYER_SPAWN.y,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0,attackState:"ready",attackTimer:0,attackAngle:0};moveX=moveY=moveTargetX=moveTargetY=0;aim=aimTarget=0;camX=player.x;camY=player.y;ability=abilityCd=0;walkPhase=0}
 function init(){const A=ARENAS[arenaId];W=A.width;H=A.height;PLAYER_SPAWN={...A.playerSpawn};camX=PLAYER_SPAWN.x;camY=PLAYER_SPAWN.y;OBS=A.obstacles.map(o=>({...o}));LANE_ROUTES=A.routes;obsCache=null;obsFrame=-1;staticDeckReady=false;staticDeckCanvas=null;staticDeckCtx=null;mobs=[];bullets=[];grenades=[];pickups=[];effects=[];nodes=[];core={x:A.core.x,y:A.core.y,hp:A.core.hp,maxHp:A.core.hp};wave=kills=0;time=waveWait=0;waveStart=0;waveState="fighting";msgT=0;won=false;[250,500,750].forEach((x,l)=>{nodes.push({x,y:A.enemyBaseY,team:"enemy",lane:l,hp:900,maxHp:900,cool:20});nodes.push({x,y:A.playerBaseY,team:"player",lane:l,hp:900,maxHp:900,cool:0})});for(let i=0;i<6;i++)spawnPickup();spawnWave()}
 function spawnPickup(){const[x,y]=freePoint(430,2200,30);if(Math.random()<.4)pickups.push({x,y,kind:"medkit",life:99999});else{const locked=Array.from({length:HS_WEAPONS.length},(_,n)=>n).filter(n=>!save.inventory.includes(n));const w=locked.length?locked[Math.floor(Math.random()*locked.length)]:Math.floor(Math.random()*HS_WEAPONS.length);pickups.push({x,y,kind:"weapon",weapon:w,life:99999})}}
 function spawnWave(){
@@ -277,7 +273,7 @@ function spawnWave(){
       speed,damage:type==="brawler"?24:type==="shooter"?15:28,
       range:type==="brawler"?42:type==="shooter"?210:430,
       cool:30+Math.random()*30,think:type==="sniper"?18:0,strafe:i%2?-1:1,
-      stuck:0,lastX:sx,lastY:sy,state:"inbound",hit:0,lane,waypoint:0
+      stuck:0,lastX:sx,lastY:sy,state:"inbound",hit:0,lane,waypoint:0,attackState:"ready",attackTimer:0,attackX:sx,attackY:sy
     });
   }
 
@@ -351,10 +347,44 @@ function laneAdvance(m:Mob,dt:number){
   m.state="lane-"+String(m.lane+1);
   return true;
 }
+function beginMobAttack(m:Mob,x:number,y:number,windup:number):void{
+  if(m.attackState!=="ready"||m.cool>0)return;
+  m.attackState="windup";
+  m.attackTimer=windup;
+  m.attackX=x;
+  m.attackY=y;
+}
+function fireMobAttack(m:Mob):void{
+  const aa=Math.atan2(m.attackY-m.y,m.attackX-m.x);
+  const w=m.type==="sniper"?HS_WEAPONS[5]:HS_WEAPONS[1];
+  const color=m.type==="sniper"?VFX.VFX_COLORS.PURPLE:VFX.VFX_COLORS.CYAN;
+  for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
+    bullets.push(sh);
+    VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,m.type==="sniper"?.075:.07,color,m.type==="sniper"?1.5:1.25,.5);
+  }
+  m.attackState="cooldown";
+  m.attackTimer=m.type==="sniper"?78:30;
+  m.cool=m.attackTimer;
+}
+function stepMobAttack(m:Mob,dt:number):boolean{
+  if(m.attackState==="ready")return false;
+  m.attackTimer-=dt;
+  if(m.attackState==="windup"){
+    if(m.attackTimer<=0)fireMobAttack(m);
+    return true;
+  }
+  if(m.attackTimer<=0){
+    m.attackState="ready";
+    m.attackTimer=0;
+    m.cool=0;
+  }
+  return true;
+}
 function updateMob(m:Mob,dt:number){
   if(m.hp<=0)return;
-  m.cool-=dt;
+  m.cool=Math.max(0,m.cool-dt);
   m.hit=Math.max(0,m.hit-dt*.1);
+  const attacking=stepMobAttack(m,dt);
 
   // Every enemy owns a lane and follows explicit CARGO-DECK waypoints.
   // This keeps the three attack groups separated and makes container
@@ -376,21 +406,14 @@ function updateMob(m:Mob,dt:number){
       if(m.cool<=0&&d<55){m.cool=44;hurt(m.damage)}
       else if(!laneActive&&d>48)stepMob(m,playerAttack.x,playerAttack.y,dt);
     }else if(m.type==="sniper"){
+      if(attacking){m.state="telegraph";return}
       if(m.think>0){
         m.think=Math.max(0,m.think-dt);
         m.state="telegraph";
         if(d<360*.82&&!laneActive){
           stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.35);
         }
-        if(m.think<=0){
-          const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
-          const w=HS_WEAPONS[5];
-          for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-            bullets.push(sh);
-            VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.075,VFX.VFX_COLORS.PURPLE,1.5,.55);
-          }
-          m.cool=78;
-        }
+        if(m.think<=0)beginMobAttack(m,playerAttack.x,playerAttack.y,12);
       }else if(m.cool<=0){
         m.think=32;
         m.state="telegraph";
@@ -401,15 +424,8 @@ function updateMob(m:Mob,dt:number){
       }
     }else{
       m.state="attack";
-      if(m.cool<=0){
-        m.cool=30;
-        const w=HS_WEAPONS[1];
-        const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
-        for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-        bullets.push(sh);
-        VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.07,VFX.VFX_COLORS.CYAN,1.25,.5);
-      }
-      }
+      if(attacking)return;
+      if(m.cool<=0)beginMobAttack(m,playerAttack.x,playerAttack.y,7);
       if(!laneActive){
         if(d>165)stepMob(m,playerAttack.x,playerAttack.y,dt);
         else stepMob(m,m.x-(playerAttack.y-m.y)*m.strafe,m.y+(playerAttack.x-m.x)*m.strafe,dt*.7);
@@ -468,12 +484,48 @@ function resolve(){
     x.x=A[0];x.y=A[1];y.x=B[0];y.y=B[1];
   }
 }
-function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100)){
-  bullets.push({...s});
-  VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
+function fireShot(a:number):void{
+  const w=weapon();
+  if(!consumeShot(player.combat,w))return;
+  const hx=player.x+Math.cos(a)*25,hy=player.y+Math.sin(a)*25;
+  const ra=recoilAngle(a,player.combat);
+  for(const s of spawnShots(hx,hy,ra,w,"player",player.combat.shotCounter*100)){
+    bullets.push({...s});
+    VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
+  }
+  VFX.emitMuzzleFlash(hx,hy,ra,Math.min(1.25,Math.max(.7,w.damage/32)));
+  muzzleFlash=1;
 }
-VFX.emitMuzzleFlash(hx,hy,a,Math.min(1.25,Math.max(.7,w.damage/32)));
-muzzleFlash=1}
+function fire(manual=false):void{
+  if(mode!=="play"||player.combat.reloadTimer>0||player.attackState!=="ready")return;
+  const w=weapon();
+  let a=aim;
+  if(auto&&!manual){
+    const t=enemyTarget(player.x,player.y,w.range);
+    if(!t)return;
+    a=Math.atan2(t.y-player.y,t.x-player.x);
+  }
+  if(player.combat.fireTimer>0)return;
+  player.attackState="windup";
+  player.attackTimer=Math.min(6,Math.max(3,Math.round(w.fireInterval*.35)));
+  player.attackAngle=a;
+}
+function stepPlayerAttack(dt:number):void{
+  if(player.attackState==="ready")return;
+  player.attackTimer-=dt;
+  if(player.attackState==="windup"){
+    if(player.attackTimer<=0){
+      fireShot(player.attackAngle);
+      player.attackState="cooldown";
+      player.attackTimer=Math.max(0,weapon().fireInterval-player.combat.fireTimer);
+    }
+    return;
+  }
+  if(player.attackTimer<=0){
+    player.attackState="ready";
+    player.attackTimer=0;
+  }
+}
 function grenade(){const g=makeGrenade(player.combat,player.x,player.y,aim);if(g)grenades.push(g)}
 function medkit(){if(player.medkits>0&&player.hp<player.maxHp){player.medkits--;player.hp=Math.min(player.maxHp,player.hp+40);save.medkits=player.medkits;persist();msg="АПТЕЧКА · +40 HP";msgT=60}}
 function special(){if(abilityCd>0)return;abilityCd=L().cd;ability=L().dur;if(sel==="ASSAULT")mobs.forEach(m=>{if(m.team==="enemy")m.cool=Math.max(m.cool,80)});if(sel==="VANGUARD")player.armor=Math.max(player.armor,90);if(sel==="RECON")auto=true;msg=L().ability;msgT=70}
@@ -496,6 +548,7 @@ function update(dt:number){
 
   const w=weapon(),l=L();
   stepWeapon(player.combat,w,dt);
+  stepPlayerAttack(dt);
 
   // Smooth analog response: the thumb/finger sets a target, the character eases into it.
   const moveEase=1-Math.exp(-dt*.09);
@@ -987,7 +1040,7 @@ function drawWorld(){
   ctx!.translate(viewW*.5-W*.5*worldZoom,-cam*worldZoom);
   ctx!.scale(worldZoom,worldZoom);
   if(!staticDeckReady)buildStaticDeck();
-  if(staticDeckCanvas)ctx!.drawImage(staticDeckCanvas,0,0);\n  drawIndustrialLighting();
+  if(staticDeckCanvas){ctx!.drawImage(staticDeckCanvas,0,0);drawIndustrialLighting();}
   else{ctx!.fillStyle="#020406";ctx!.fillRect(0,0,W,H);}
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();
@@ -1156,7 +1209,7 @@ function renderUI(){
   else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';
   bindUI()
 }
-function render(){obsGradients=null;if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
+function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");resize();renderUI();renderCanvas()}
 function resize(){if(!root||!canvas||!ctx)return;viewW=Math.max(320,root.clientWidth||innerWidth);viewH=Math.max(480,root.clientHeight||innerHeight);const d=Math.max(1,Math.min(2,devicePixelRatio||1));canvas.width=Math.round(viewW*d);canvas.height=Math.round(viewH*d);canvas.style.width=viewW+"px";canvas.style.height=viewH+"px";ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=true}
 function bindUI(){
   ui?.querySelectorAll<HTMLElement>("[data-arena]").forEach(b=>b.onclick=()=>{const id=b.dataset.arena as ArenaId;if(id!=="cargo"&&id!=="school")return;arenaId=id;save.loadout=sel;persist();start()});
