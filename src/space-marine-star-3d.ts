@@ -16,7 +16,8 @@ const MODEL_HEIGHT=21.2;
 const MODEL_SCALE=1.5;
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
 function poseVertex(i:number,walk:number,aim:number,recoil:number){
-  let x=V[i*3]*.01,y=V[i*3+1]*.01;
+  // The source mesh is upside-down. Rotate it 180° around X, rather than mirroring Z.
+  let x=V[i*3]*.01,y=-V[i*3+1]*.01;
   const rawZ=V[i*3+2]*.01+18;
   let z=MODEL_HEIGHT-rawZ;
   const zn=z/21.2,side=x>=0?1:-1,ax=Math.abs(x);
