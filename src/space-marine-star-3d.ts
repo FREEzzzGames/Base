@@ -5,22 +5,69 @@ const VCOUNT=409,FCOUNT=1127,VB=2454,FB=6762,NB=3381;
 function b64(s:string){const x=atob(s),o=new Uint8Array(x.length);for(let i=0;i<x.length;i++)o[i]=x.charCodeAt(i);return o}
 let V=new Int16Array(0),F=new Uint16Array(0),N=new Int8Array(0),READY=false;
 const MAT=new Uint8Array(FCOUNT);
+type ModelAxis=0|1|2;
+let VERTICAL_AXIS:ModelAxis=2;
+let VERTICAL_SIGN=1;
+let HORIZONTAL_X:ModelAxis=0;
+let HORIZONTAL_Y:ModelAxis=1;
+let MODEL_MIN_V=0;
+let MODEL_MAX_V=0;
+let MODEL_CENTER_X=0;
+let MODEL_CENTER_Y=0;
+
+function sourceCoord(i:number,axis:ModelAxis):number{return V[i*3+axis]}
+function calibrateModel(){
+  const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+  for(let i=0;i<VCOUNT;i++){
+    for(let a=0;a<3;a++){const q=V[i*3+a];if(q<min[a])min[a]=q;if(q>max[a])max[a]=q}
+  }
+  const ranges=[max[0]-min[0],max[1]-min[1],max[2]-min[2]];
+  VERTICAL_AXIS=(ranges[1]>ranges[0]&&ranges[1]>=ranges[2])?1:(ranges[2]>=ranges[0]?2:0);
+  const others=([0,1,2] as ModelAxis[]).filter(a=>a!==VERTICAL_AXIS) as ModelAxis[];
+  HORIZONTAL_X=others[0];HORIZONTAL_Y=others[1];
+  MODEL_CENTER_X=(min[HORIZONTAL_X]+max[HORIZONTAL_X])*.5;
+  MODEL_CENTER_Y=(min[HORIZONTAL_Y]+max[HORIZONTAL_Y])*.5;
+  MODEL_MIN_V=min[VERTICAL_AXIS];MODEL_MAX_V=max[VERTICAL_AXIS];
+
+  // Choose the head end from the endpoint cross-section. This axis is never
+  // rotated by gameplay facing, so turning the operator cannot tip the model.
+  const profile=(high:boolean)=>{
+    const edge=high?MODEL_MAX_V:MODEL_MIN_V,span=MODEL_MAX_V-MODEL_MIN_V||1,limit=span*.16;
+    let sum=0,n=0;
+    for(let i=0;i<VCOUNT;i++){
+      const q=sourceCoord(i,VERTICAL_AXIS);
+      if(Math.abs(q-edge)<=limit){
+        const a=sourceCoord(i,HORIZONTAL_X)-MODEL_CENTER_X;
+        const b=sourceCoord(i,HORIZONTAL_Y)-MODEL_CENTER_Y;
+        sum+=Math.hypot(a,b);n++;
+      }
+    }
+    return n?sum/n:Infinity;
+  };
+  VERTICAL_SIGN=profile(true)<=profile(false)?1:-1;
+}
+function calibratedVertex(i:number){
+  const x=(sourceCoord(i,HORIZONTAL_X)-MODEL_CENTER_X)*.01;
+  const y=(sourceCoord(i,HORIZONTAL_Y)-MODEL_CENTER_Y)*-.01;
+  const raw=sourceCoord(i,VERTICAL_AXIS);
+  const z=(VERTICAL_SIGN>0?raw-MODEL_MIN_V:MODEL_MAX_V-raw)*.01;
+  return{x,y,z};
+}
 function buildMaterials(){
   for(let k=0;k<FCOUNT;k++){
     const j=k*3,a=F[j],b=F[j+1],c=F[j+2];
-    const x=(V[a*3]+V[b*3]+V[c*3])/3*.01;
-    const y=(V[a*3+1]+V[b*3+1]+V[c*3+1])/3*.01;
-    const z=(V[a*3+2]+V[b*3+2]+V[c*3+2])/3*.01+MODEL_Z_OFFSET;
+    const va=calibratedVertex(a),vb=calibratedVertex(b),vc=calibratedVertex(c);
+    const x=(va.x+vb.x+vc.x)/3,y=(va.y+vb.y+vc.y)/3,z=(va.z+vb.z+vc.z)/3;
     const ax=Math.abs(x),ay=Math.abs(y);
-    let m=0; // blue armor
-    if(z<3.2 || (ax>.32 && z<9.2))m=1; // dark joints/undersuit
-    if(z>17.7 && ax<3.0 && ay<3.0)m=2; // gold visor/head lens
-    if((z>15.5 && z<19.2 && ax>2.0) || (z>3.0 && z<7.0 && ax<1.5))m=3; // worn metal
-    if(z>18.5 && ax<1.0 && ay<1.8)m=4; // warm head light
+    let m=0;
+    if(z<.16 || (ax>.32 && z<.46))m=1;
+    if(z>.88 && ax<.30 && ay<.30)m=2;
+    if((z>.76 && z<.98 && ax>.20) || (z>.16 && z<.38 && ax<.15))m=3;
+    if(z>.94 && ax<.10 && ay<.18)m=4;
     MAT[k]=m;
   }
 }
-async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);buildMaterials();READY=true}catch{READY=false}}
+async function load(){try{const raw=await new Response(new Blob([b64(DATA)]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();V=new Int16Array(raw,0,VB/2);F=new Uint16Array(raw,VB,FB/2);N=new Int8Array(raw,VB+FB,NB);calibrateModel();buildMaterials();READY=true}catch{READY=false}}
 void load();
 export interface SpaceMarineFrame{ctx:CanvasRenderingContext2D;baseX:number;baseY:number;facing:number;scale:number;moving:number;walkPhase:number;aiming:boolean;firing:number;color:string;project:(x:number,y:number,z:number)=>{x:number;y:number}}
 const shade=(l:number,m=0)=>{const base=m===2?0xd18a24:m===3?0x6f7675:m===4?0x7de8e8:m===1?0x182027:0x234b82;const r=Math.round(((base>>16)&255)*l),g=Math.round(((base>>8)&255)*l),b=Math.round((base&255)*l);return`rgb(${r},${g},${b})`};
@@ -32,14 +79,11 @@ const rig=new HumanJointRig();
 // First milestone: preserve the authored mesh and place both feet on the ground.
 // Joint deformation is deliberately disabled until the upright base pose is verified.
 const MODEL_SCALE=1.5;
-const MODEL_Z_OFFSET=18.08;
 const MX=new Float32Array(VCOUNT),MY=new Float32Array(VCOUNT),MZ=new Float32Array(VCOUNT);
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
 function poseVertex(i:number,recoil:number):void{
-  const x=V[i*3]*.01;
-  const y=-V[i*3+1]*.01;
-  const z=V[i*3+2]*.01+MODEL_Z_OFFSET;
-  MX[i]=x;MY[i]=y;MZ[i]=z+recoil*.018;
+  const p=calibratedVertex(i);
+  MX[i]=p.x;MY[i]=p.y;MZ[i]=p.z+recoil*.018;
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
