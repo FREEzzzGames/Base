@@ -216,9 +216,9 @@ let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRend
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,moveX=0,moveY=0,moveTargetX=0,moveTargetY=0,moveOriginX=0,moveOriginY=0,camX=0,camY=0,auto=true,thirdPersonView=false,fireHeld=false,moveId:number|null=null,combatId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0,walkPhase=0,attackTarget:Mob|null=null;
+// Camera is intentionally locked to the reference vertical/isometric orientation.
+// The previous 360° rotation experiment is removed: gameplay direction stays stable.
 let cameraYaw=0,cameraYawTarget=0;
-const CAMERA_ROTATION_STEP=Math.PI/2;
-let rotationTouchActive=false,rotationTouchStartX=0,rotationTouchStartYaw=0;
 let cleanup=()=>{};
 let obsCache:HsObstacle[]|null=null,obsFrame=-1;
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
@@ -575,11 +575,11 @@ function update(dt:number){
     const turn=Math.atan2(Math.sin(desired-player.facing),Math.cos(desired-player.facing));
     player.facing+=turn*(1-Math.exp(-dt*.22));
   }
-  const camEase=1-Math.exp(-dt*.085);
-  camX+=(player.x-camX)*camEase;
-  camY+=(player.y-camY)*camEase;
-  const yawDelta=Math.atan2(Math.sin(cameraYawTarget-cameraYaw),Math.cos(cameraYawTarget-cameraYaw));
-  cameraYaw+=yawDelta*(1-Math.exp(-dt*.18));
+  // Stable reference camera: no world rotation and no drifting camera target.
+  cameraYaw=0;
+  cameraYawTarget=0;
+  camX=player.x;
+  camY=player.y;
 
   if(Math.abs(moveX)+Math.abs(moveY)>.01){
     const n=Math.hypot(moveX,moveY)||1;
@@ -1099,10 +1099,13 @@ function drawIsoArchitecture(centerX:number,centerY:number,z:number,targetX:numb
 function drawWorld(){
   // Portrait isometric combat view. Gameplay coordinates remain unchanged.
   // Camera rotation affects only rendering; collision, AI, targets and weapons remain in world space.
-  const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
+  // Reference camera scale: the playable plane must fill the portrait viewport,
+  // not float as a small diamond inside a large black field.
+  const isoZoom=arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
   const targetX=player?.x??W*.5,targetY=player?.y??H*.5;
   const centerX=viewW*.5;
-  const centerY=Math.min(viewH*.62,viewH*.56);
+  // Keep the operator slightly below screen centre, matching the reference MOBA/ARPG framing.
+  const centerY=viewH*.57;
   const c=.8660254038,si=.5;
   const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   const ia=c*(co+sn),ib=c*(-sn-co),ic=si*(co-sn),id=si*(sn+co);
@@ -1292,7 +1295,9 @@ function bindUI(){
     combat.addEventListener("pointerdown",e=>{
       if(e.button!==undefined&&e.button!==0)return;
       e.preventDefault();combatId=e.pointerId;combat.setPointerCapture(e.pointerId);
-      const rect=combat.getBoundingClientRect();
+      // Target selection is mapped from the actual game canvas, not the HUD combat zone.
+      // This keeps touch targeting correct after any HUD/layout change.
+      const rect=canvas!.getBoundingClientRect();
       const sx=e.clientX-(rect.left+rect.width*.5);
       const sy=e.clientY-(rect.top+rect.height*.5);
       const world=screenToWorld(sx,sy);
@@ -1310,7 +1315,7 @@ function bindUI(){
   }
 }
 function screenToWorld(sx:number,sy:number):{x:number;y:number}{
-  const z=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
+  const z=arenaId==="cargo"?Math.min(1.08,viewW/720):Math.min(1.02,viewW/760);
   const c=.8660254038,si=.5;
   const px=sx/(c*z),py=sy/(si*z);
   const rx=(px+py)*.5,ry=(py-px)*.5;
@@ -1324,32 +1329,11 @@ function screenVectorToWorld(sx:number,sy:number):{x:number;y:number}{
   const co=Math.cos(cameraYaw),sn=Math.sin(cameraYaw);
   return{x:rx*co+ry*sn,y:-rx*sn+ry*co};
 }
-function rotateCamera(direction:number):void{
-  if(mode!=="play")return;
-  cameraYawTarget+=direction*CAMERA_ROTATION_STEP;
+function rotateCamera(_direction:number):void{
+  // Intentionally disabled. The world keeps the fixed reference orientation.
 }
 function bindRotationGesture():void{
-  const frameEl=ui?.parentElement;
-  if(!frameEl)return;
-  frameEl.addEventListener("touchstart",e=>{
-    if(e.touches.length!==2)return;
-    rotationTouchActive=true;
-    rotationTouchStartX=(e.touches[0].clientX+e.touches[1].clientX)*.5;
-    rotationTouchStartYaw=cameraYawTarget;
-    moveId=null;combatId=null;fireHeld=false;
-  },{passive:true});
-  frameEl.addEventListener("touchmove",e=>{
-    if(!rotationTouchActive||e.touches.length<2)return;
-    const x=(e.touches[0].clientX+e.touches[1].clientX)*.5,dx=x-rotationTouchStartX;
-    if(Math.abs(dx)>=52){
-      cameraYawTarget=rotationTouchStartYaw+(dx>0?CAMERA_ROTATION_STEP:-CAMERA_ROTATION_STEP);
-      rotationTouchStartYaw=cameraYawTarget;
-      rotationTouchStartX=x;
-    }
-    e.preventDefault();
-  },{passive:false});
-  frameEl.addEventListener("touchend",e=>{if(e.touches.length<2)rotationTouchActive=false},{passive:true});
-  frameEl.addEventListener("touchcancel",()=>{rotationTouchActive=false},{passive:true});
+  // Intentionally disabled. Two-finger gestures remain available to the browser/UI.
 }
 function key(e:KeyboardEvent){if(mode==="play"){if(e.key==="w"||e.key==="ArrowUp")moveTargetY=-1;if(e.key==="s"||e.key==="ArrowDown")moveTargetY=1;if(e.key==="a"||e.key==="ArrowLeft")moveTargetX=-1;if(e.key==="d"||e.key==="ArrowRight")moveTargetX=1;if(e.key===" ")fire();if(e.key==="r")startReload(player.combat,weapon());if(e.key==="g")grenade();if(e.key==="e")special();if(e.key==="q")medkit();if(e.key==="z"||e.key==="Z")rotateCamera(-1);if(e.key==="x"||e.key==="X")rotateCamera(1);if(e.key==="Tab"){e.preventDefault();mode="weapon";render()}for(let i=0;i<save.inventory.length;i++)if(e.key===String(i+1))chooseWeapon(save.inventory[i])}else if(mode==="loadout"&&e.key==="Enter")start();else if(mode==="weapon"&&e.key==="Escape"){mode="play";render()}else if(mode==="result"&&e.key==="Enter")start()}
 function up(e:KeyboardEvent){if(["w","ArrowUp","s","ArrowDown"].includes(e.key))moveTargetY=0;if(["a","ArrowLeft","d","ArrowRight"].includes(e.key))moveTargetX=0}
