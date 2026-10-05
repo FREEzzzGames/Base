@@ -10,7 +10,7 @@ ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVER
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
 RECON:{name:"RECON",color:"#9f83d6",hp:105,armor:25,speed:3.7,ability:"FOCUS",cd:360,dur:150}};
 type ArenaId="cargo"|"school";
-type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower";
+type MapStructureRole="platform"|"building"|"bridge"|"base"|"tower"|"container"|"tank"|"pipe"|"stairs"|"barrier"|"equipment";
 interface MapLevel{id:number;name:string;elevation:number}
 interface MapStructure extends HsObstacle{
   level:number;
@@ -82,7 +82,44 @@ const ARENAS:Record<ArenaId,ArenaConfig>={
       {x:515,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:910,y:3270,w:175,h:130,level:0,elevation:24,height:66,role:"building",collision:true},
       {x:60,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
-      {x:1180,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true}
+      {x:1180,y:3430,w:360,h:110,level:0,elevation:0,height:54,role:"building",collision:true},
+
+      // MAIN DECK cargo / industrial dressing. All objects stay outside the
+      // three combat lanes and use human-scale dimensions.
+      {x:170,y:500,w:180,h:120,level:0,elevation:0,height:54,role:"container",collision:true},
+      {x:270,y:575,w:150,h:105,level:0,elevation:0,height:48,role:"container",collision:true},
+      {x:1180,y:500,w:180,h:120,level:0,elevation:0,height:54,role:"container",collision:true},
+      {x:1280,y:575,w:150,h:105,level:0,elevation:0,height:48,role:"container",collision:true},
+
+      {x:185,y:1050,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+      {x:1265,y:1050,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+      {x:180,y:1710,w:170,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+      {x:1250,y:1710,w:170,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+      {x:190,y:2420,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+      {x:1260,y:2420,w:150,h:130,level:0,elevation:0,height:82,role:"tank",collision:true},
+
+      {x:360,y:1010,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
+      {x:1170,y:1010,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
+      {x:360,y:1710,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
+      {x:1170,y:1710,w:70,h:300,level:0,elevation:0,height:66,role:"pipe",collision:false},
+      {x:360,y:2420,w:70,h:280,level:0,elevation:0,height:66,role:"pipe",collision:false},
+      {x:1170,y:2420,w:70,h:280,level:0,elevation:0,height:66,role:"pipe",collision:false},
+
+      // Real stair landings connect the side service decks to the elevated
+      // catwalks; they do not occupy the combat lanes.
+      {x:350,y:825,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+      {x:1170,y:825,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+      {x:350,y:1525,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+      {x:1170,y:1525,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+      {x:350,y:2230,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+      {x:1170,y:2230,w:80,h:150,level:0,elevation:0,height:88,role:"stairs",collision:false},
+
+      {x:455,y:650,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
+      {x:1055,y:650,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
+      {x:455,y:1940,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
+      {x:1055,y:1940,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
+      {x:455,y:2630,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true},
+      {x:1055,y:2630,w:90,h:52,level:0,elevation:0,height:42,role:"barrier",collision:true}
     ],
     routes:[
       [{x:730,y:500},{x:730,y:760},{x:730,y:1030},{x:730,y:1300},{x:730,y:1570},{x:730,y:1840},{x:730,y:2110},{x:730,y:2380},{x:730,y:2650},{x:730,y:2940},{x:730,y:3140}],
@@ -1179,7 +1216,7 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
   }
   /* Industrial surface detail: break up large empty slabs without introducing
      per-frame object allocations or image dependencies. */
-  if(o.role==="platform"||o.role==="base"||o.role==="building"){
+  if(o.role==="platform"||o.role==="base"||o.role==="building"||o.role==="equipment"){
     ctx.save();
     ctx.globalAlpha=o.level>0?.46:.34;
     ctx.strokeStyle=o.level>0?"#89d9dc":"#a0a7a9";
@@ -1206,6 +1243,48 @@ function drawIsoArchitectureItem(o:MapStructure,i:number,centerX:number,centerY:
       const b={x:q4.x+(q3.x-q4.x)*t,y:q4.y+(q3.y-q4.y)*t};
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
+    ctx.restore();
+  }
+  if(o.role==="container"){
+    ctx.save();
+    const band=Math.max(2,5*zoom);
+    ctx.fillStyle=i%2?"#4d514e":"#5a5045";ctx.strokeStyle="#202424";ctx.lineWidth=Math.max(1,zoom);
+    ctx.fillRect(q1.x,q1.y,q3.x-q1.x,q3.y-q1.y);
+    ctx.strokeRect(q1.x,q1.y,q3.x-q1.x,q3.y-q1.y);
+    ctx.strokeStyle="rgba(183,145,92,.45)";ctx.lineWidth=band;
+    ctx.beginPath();ctx.moveTo(q1.x+(q2.x-q1.x)*.33,q1.y);ctx.lineTo(q4.x+(q3.x-q4.x)*.33,q4.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(q1.x+(q2.x-q1.x)*.66,q1.y);ctx.lineTo(q4.x+(q3.x-q4.x)*.66,q4.y);ctx.stroke();
+    ctx.restore();
+  }else if(o.role==="tank"){
+    ctx.save();
+    const cx=(q1.x+q3.x)*.5,cy=(q1.y+q3.y)*.5;
+    ctx.fillStyle="#62625b";ctx.strokeStyle="#242827";ctx.lineWidth=Math.max(1,zoom);
+    ctx.beginPath();ctx.ellipse(cx,cy-24*zoom,28*zoom,10*zoom,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-28*zoom,cy-24*zoom);ctx.lineTo(cx-28*zoom,cy+26*zoom);ctx.quadraticCurveTo(cx,cy+38*zoom,cx+28*zoom,cy+26*zoom);ctx.lineTo(cx+28*zoom,cy-24*zoom);ctx.stroke();
+    ctx.strokeStyle="#927b5b";
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(cx+k*18*zoom,cy-20*zoom);ctx.lineTo(cx+k*18*zoom,cy+25*zoom);ctx.stroke();}
+    ctx.restore();
+  }else if(o.role==="pipe"){
+    ctx.save();
+    const cx=(q1.x+q3.x)*.5;
+    ctx.strokeStyle="#6b6256";ctx.lineWidth=Math.max(5,9*zoom);ctx.lineCap="square";
+    ctx.beginPath();ctx.moveTo(cx,q1.y);ctx.lineTo(cx,q3.y);ctx.stroke();
+    ctx.strokeStyle="#292d2c";ctx.lineWidth=Math.max(1,2*zoom);
+    ctx.beginPath();ctx.moveTo(cx-4*zoom,q1.y);ctx.lineTo(cx-4*zoom,q3.y);ctx.stroke();
+    ctx.restore();
+  }else if(o.role==="stairs"){
+    ctx.save();
+    const x0=q1.x,x1=q2.x,yy=q1.y,yy2=q3.y;
+    ctx.strokeStyle="#2a2e2d";ctx.lineWidth=Math.max(2,3*zoom);
+    for(let k=0;k<7;k++){const t=k/7,y=yy+(yy2-yy)*t;ctx.beginPath();ctx.moveTo(x0+(x1-x0)*t*.35,y);ctx.lineTo(x1-(x1-x0)*t*.35,y);ctx.stroke();}
+    ctx.strokeStyle="#806d52";ctx.lineWidth=Math.max(1,1.5*zoom);
+    ctx.beginPath();ctx.moveTo(x0,yy);ctx.lineTo(x0+(x1-x0)*.2,yy2);ctx.moveTo(x1,yy);ctx.lineTo(x1-(x1-x0)*.2,yy2);ctx.stroke();
+    ctx.restore();
+  }else if(o.role==="barrier"){
+    ctx.save();ctx.strokeStyle="#383c3a";ctx.lineWidth=Math.max(4,7*zoom);
+    ctx.beginPath();ctx.moveTo(q1.x,q1.y);ctx.lineTo(q3.x,q3.y);ctx.stroke();
+    ctx.strokeStyle="#a07b4e";ctx.lineWidth=Math.max(1,2*zoom);
+    for(let k=0;k<4;k++){const t=k/4;ctx.beginPath();ctx.moveTo(q1.x+(q3.x-q1.x)*t,q1.y+(q3.y-q1.y)*t);ctx.lineTo(q1.x+(q3.x-q1.x)*t+12*zoom,q1.y+(q3.y-q1.y)*t-12*zoom);ctx.stroke();}
     ctx.restore();
   }
   if(o.role==="tower"){
