@@ -250,7 +250,6 @@ function buildStaticDeck():void{
   }
   staticDeckReady=true;
 }cargoFloorImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
-cargoContainerImage.addEventListener("load",()=>{staticDeckReady=false;buildStaticDeck()});
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
