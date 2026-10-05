@@ -1434,7 +1434,7 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
     ctx,
     baseX:player.x,baseY:player.y,
     facing:player.facing,
-    scale:modelScale*.24,
+    scale:modelScale*.18,
     moving,
     walkPhase,
     aiming:aimState,
