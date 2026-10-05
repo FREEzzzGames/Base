@@ -1447,7 +1447,7 @@ function drawIsoOperator(centerX:number,centerY:number,z:number,targetX:number,t
   // Primary player model: the new articulated Pixel Soldier. The legacy OBJ
   // renderer remains available as a hard fallback for asset/debug recovery.
   renderPixelSoldier3D({
-    ctx,
+    ctx:ctx!,
     baseX:player.x,baseY:player.y,
     facing:bodyFacing,
     scale:modelScale*.18,
