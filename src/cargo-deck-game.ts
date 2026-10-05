@@ -1080,7 +1080,7 @@ function drawIsoArchitecture(ox:number,oy:number,z:number):void{
 function drawWorld(){
   // Portrait isometric combat view. Gameplay coordinates remain unchanged.
   // Camera rotation affects only rendering; collision, AI, targets and weapons remain in world space.
-  const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewH/1450);
+  const isoZoom=arenaId==="cargo"?Math.min(.62,viewW/1750):Math.min(.68,viewW/1450);
   const targetX=player?.x??W*.5,targetY=player?.y??H*.5;
   const centerX=viewW*.5;
   const centerY=Math.min(viewH*.62,viewH*.56);
@@ -1098,10 +1098,7 @@ function drawWorld(){
   drawIsoArchitecture(centerX,centerY,isoZoom,targetX,targetY,cameraYaw);
 
   ctx!.save();
-  ctx!.translate(ox,oy);
-  ctx!.scale(isoZoom,isoZoom);
-  ctx!.transform(c,si,-c,si,0,0);
-  drawIndustrialLighting();
+  ctx!.translate(centerX,centerY);\n  ctx!.scale(isoZoom,isoZoom);\n  ctx!.transform(c,si,-c,si,0,0);\n  ctx!.rotate(cameraYaw);\n  ctx!.translate(-targetX,-targetY);\n  drawIndustrialLighting();
 
   // Player CARGO CORE: compact energy reactor.
   ctx!.save();ctx!.globalAlpha=.14;ctx!.fillStyle="#54d6d8";
