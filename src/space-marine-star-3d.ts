@@ -14,8 +14,9 @@ const rig=new HumanJointRig();
 // Model presentation transform: the source mesh is stored upside-down; flip it onto its feet.
 const MODEL_HEIGHT=21.2;
 const MODEL_SCALE=1.5;
+const MX=new Float32Array(VCOUNT),MY=new Float32Array(VCOUNT),MZ=new Float32Array(VCOUNT);
 const PX=new Float32Array(VCOUNT),PY=new Float32Array(VCOUNT),PD=new Float32Array(FCOUNT),PO=new Uint16Array(FCOUNT);
-function poseVertex(i:number,walk:number,aim:number,recoil:number){
+function poseVertex(i:number,walk:number,aim:number,recoil:number):void{
   // The source mesh is upside-down. Rotate it 180° around X, rather than mirroring Z.
   let x=V[i*3]*.01,y=-V[i*3+1]*.01;
   const rawZ=V[i*3+2]*.01+18;
@@ -50,7 +51,7 @@ function poseVertex(i:number,walk:number,aim:number,recoil:number){
     z-=elbow*.018*upperWeight;
   }
   y+=recoil*.018;
-  return {x,y,z};
+  MX[i]=x;MY[i]=y;MZ[i]=z;
 }
 export function renderSpaceMarineStar(f:SpaceMarineFrame){
   if(!READY)return;
@@ -68,9 +69,8 @@ export function renderSpaceMarineStar(f:SpaceMarineFrame){
     spine:aim*.55,neck:aim*.35
   },1/60);
   for(let i=0;i<VCOUNT;i++){
-    const p=poseVertex(i,g,aim,r);
-    p.z+=bob;
-    const x=p.x*s,y=p.y*s,z=p.z*s;
+    poseVertex(i,g,aim,r);
+    const x=MX[i]*s,y=MY[i]*s,z=(MZ[i]+bob)*s;
     const q=f.project(f.baseX+x*c-y*sn,f.baseY+x*sn+y*c,z);
     PX[i]=q.x;PY[i]=q.y;
   }
