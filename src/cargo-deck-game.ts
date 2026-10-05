@@ -743,8 +743,41 @@ function drawPlayer(){
   const hipY=11,legGap=11;
   const hipL={x:-sideX*legGap,y:hipY-sideY*legGap};
   const hipR={x:sideX*legGap,y:hipY+sideY*legGap};
-  const footL={x:hipL.x+bodyX*footPhase(gaitL)*stepLen,y:hipL.y+bodyY*footPhase(gaitL)*stepLen+38-footLift(gaitL)};
-  const footR={x:hipR.x+bodyX*footPhase(gaitR)*stepLen,y:hipR.y+bodyY*footPhase(gaitR)*stepLen+38-footLift(gaitR)};
+  const rig=(drawPlayer as any)._rig??=((drawPlayer as any)._rig={
+    left:{planted:false,x:px,y:py,phase:-1},
+    right:{planted:false,x:px,y:py,phase:-1}
+  });
+  const localToWorld=(p:{x:number;y:number})=>{
+    const lx=p.x*S,ly=p.y*S,co=Math.cos(lean),si=Math.sin(lean);
+    return{x:px+lx*co-ly*si,y:py+lx*si+ly*co};
+  };
+  const worldToLocal=(p:{x:number;y:number})=>{
+    const dx=(p.x-px)/S,dy=(p.y-py)/S,co=Math.cos(lean),si=Math.sin(lean);
+    return{x:dx*co+dy*si,y:-dx*si+dy*co};
+  };
+  const rawFoot=(hip:{x:number;y:number},g:number)=>({
+    x:hip.x+bodyX*footPhase(g)*stepLen,
+    y:hip.y+bodyY*footPhase(g)*stepLen+38-footLift(g)
+  });
+  const updateFoot=(state:any,g:number,hip:{x:number;y:number})=>{
+    const stance=g<=.60;
+    if(state.phase<0){
+      state.phase=g;
+      const p=localToWorld(rawFoot(hip,g));
+      state.planted=stance;state.x=p.x;state.y=p.y;
+    }else{
+      if(stance&&!state.planted){
+        const p=localToWorld(rawFoot(hip,g));
+        state.planted=true;state.x=p.x;state.y=p.y;
+      }else if(!stance&&state.planted){
+        state.planted=false;
+      }
+      state.phase=g;
+    }
+    return state.planted?worldToLocal({x:state.x,y:state.y}):rawFoot(hip,g);
+  };
+  const footL=updateFoot(rig.left,gaitL,hipL);
+  const footR=updateFoot(rig.right,gaitR,hipR);
   const kneeL=twoBone(hipL,footL,22,20,1);
   const kneeR=twoBone(hipR,footR,22,20,-1);
   limb(hipL.x,hipL.y,kneeL.x,kneeL.y,13,"#d85b2b");
