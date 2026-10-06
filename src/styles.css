@@ -5959,3 +5959,33 @@ html.visual-comfort-enabled video{
 .portal-game-fullscreen .mafia-action button{min-width:170px!important}
 .portal-game-fullscreen .mafia-controls{bottom:3vh!important;left:4vw!important;width:min(46vw,330px)!important}
 .portal-game-fullscreen .mafia-aim-sensor{right:4vw!important;bottom:4vh!important}
+
+
+/* Telegram CHAT */
+.chat-telegram-state,.chat-telegram-connect{display:flex;flex-direction:column;gap:12px;padding:18px;min-height:180px;justify-content:center}
+.chat-telegram-state span,.chat-telegram-connect span{opacity:.72}
+.chat-auth-form,.chat-message-form{display:flex;gap:8px}
+.chat-auth-form label{font-size:12px;opacity:.72}
+.chat-auth-form input,.chat-message-form input{flex:1;min-width:0;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(0,0,0,.28);color:inherit}
+.chat-error{color:#ff6b6b;font-size:12px}
+.chat-telegram-shell{display:grid;grid-template-columns:minmax(130px,34%) 1fr;min-height:460px;overflow:hidden;border-radius:14px;background:rgba(0,0,0,.22)}
+.chat-dialogs{border-right:1px solid rgba(255,255,255,.1);overflow:auto}
+.chat-dialogs-head,.chat-conversation>header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.chat-dialogs-head button{border:0;background:none;color:inherit;font-size:20px}
+.chat-dialog-list{display:flex;flex-direction:column}
+.chat-dialog{position:relative;text-align:left;padding:11px;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit}
+.chat-dialog.active{background:rgba(102,252,241,.1)}
+.chat-dialog-title{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-dialog small{display:block;margin-top:4px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-dialog i{position:absolute;right:8px;top:9px;font-style:normal;font-size:10px;padding:2px 5px;border-radius:8px;background:rgba(102,252,241,.18)}
+.chat-conversation{display:grid;grid-template-rows:auto 1fr auto;min-width:0}
+.chat-conversation>header{align-items:flex-start;flex-direction:column;gap:3px}
+.chat-conversation>header small{opacity:.55}
+.chat-history{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chat-tg-message{align-self:flex-start;max-width:88%;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.07)}
+.chat-tg-message.outgoing{align-self:flex-end;background:rgba(102,252,241,.1)}
+.chat-tg-message b{font-size:11px;opacity:.75}
+.chat-tg-message p{margin:3px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-tg-message time{font-size:9px;opacity:.4}
+.chat-message-form{padding:10px;border-top:1px solid rgba(255,255,255,.1)}
+@media(max-width:520px){.chat-telegram-shell{grid-template-columns:38% 1fr}.chat-auth-form,.chat-message-form{flex-wrap:wrap}.chat-auth-form input,.chat-message-form input{flex-basis:100%}}
