@@ -117,6 +117,7 @@ let telegramAuthStep:"phone"|"code"|"password"|"none"="phone";
 let telegramAuthBusy=false;
 let telegramAuthPhone="";
 let telegramChatRefreshing=false;
+let telegramDialogsOpen=false;
 let telegramChatLoadToken=0;
 let telegramMessageLoadToken=0;
 
@@ -333,7 +334,7 @@ function renderTelegramChat(){
     return '<article class="chat-tg-message '+(message.outgoing?"outgoing":"")+'"><b>'+escapeHtml(message.senderName)+'</b><p>'+telegramMessageText(message)+'</p>'+telegramMessageExpandControl(message)+'<time>'+new Date(message.date).toLocaleString()+'</time></article>';
   }).join("");
 
-  return '<div class="chat-telegram-shell"><aside class="chat-dialogs"><div class="chat-dialogs-head"><b>Telegram</b><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button></div><div class="chat-dialog-list">'+chatRows+'</div></aside><section class="chat-conversation"><header><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></header><div class="chat-history" id="telegram-chat-history">'+messages+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button class="tg-button" type="submit">Отправить</button></form></section></div>';
+  return '<div class="chat-telegram-shell"><aside class="chat-dialogs '+(telegramDialogsOpen?"is-open":"")+'"><div class="chat-dialogs-head"><b>Диалоги</b><div><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button><button type="button" class="chat-dialogs-close" data-chat-dialogs-close aria-label="Закрыть список чатов" title="Закрыть">×</button></div></div><div class="chat-dialog-list">'+chatRows+'</div></aside><section class="chat-conversation"><header><button type="button" class="chat-dialogs-toggle" data-chat-dialogs aria-label="Открыть список чатов" title="Чаты">☰</button><div class="chat-conversation-title"><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></div></header><div class="chat-history" id="telegram-chat-history">'+messages+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button type="submit" aria-label="Отправить" title="Отправить">↗</button></form></section></div>';
 }
 
 let radioBrowser:RadioBrowserClient|null=null;
@@ -850,7 +851,9 @@ function bind(){
   });
   if(view==="chat"){
     if(telegramChatStatus==="idle")void loadTelegramChatStatus();
-    document.querySelectorAll<HTMLElement>("[data-chat-id]").forEach(x=>x.onclick=()=>void loadTelegramMessages(x.dataset.chatId||""));
+    document.querySelectorAll<HTMLElement>("[data-chat-id]").forEach(x=>x.onclick=()=>{telegramDialogsOpen=false;void loadTelegramMessages(x.dataset.chatId||"");});
+    document.querySelector<HTMLElement>("[data-chat-dialogs]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();telegramDialogsOpen=!telegramDialogsOpen;render();});
+    document.querySelector<HTMLElement>("[data-chat-dialogs-close]")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();telegramDialogsOpen=false;render();});
     document.querySelectorAll<HTMLButtonElement>("[data-chat-favorite]").forEach(button=>button.addEventListener("click",e=>{
       e.preventDefault();e.stopPropagation();
       toggleTelegramFavorite(button.dataset.chatFavorite||"");
