@@ -13,8 +13,23 @@ const windows:Record<MiniId,MiniWindow> = {
 let nextZ=60;
 let liveName=streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
-let chat=[{author:"FREEzzzBot",message:"Добро пожаловать в FREEzzz."}];
 type ChatMessage={author:string;message:string};
+type TelegramPopupChat={id:string;title:string;kind:string;username?:string;lastMessage?:{text:string;date:string;outgoing:boolean}};
+type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
+let telegramPopupChat:TelegramPopupChat|null=null;
+let telegramPopupMessages:TelegramPopupMessage[]=[];
+const LAST_CHAT_KEY="freezzz:telegram:last-chat";
+function loadLastChatId():string{
+  try{return localStorage.getItem(LAST_CHAT_KEY)||"";}catch{return "";}
+}
+function syncTelegramPopup(detail?:{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}){
+  if(detail?.chat!==undefined)telegramPopupChat=detail.chat;
+  if(Array.isArray(detail?.messages))telegramPopupMessages=detail.messages.slice(-30);
+  if(telegramPopupChat?.id){
+    try{localStorage.setItem(LAST_CHAT_KEY,telegramPopupChat.id);}catch{}
+  }
+  if(windows.chat.open)render();
+}
 let layer:HTMLDivElement|null=null;
 
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
@@ -60,8 +75,10 @@ function render(){
   }
   if(windows.chat.open){
     out.push('<section class="portal-mw portal-mw-chat" data-mw="chat" style="left:'+windows.chat.x+'px;top:'+windows.chat.y+'px;width:'+windows.chat.width+'px;height:'+windows.chat.height+'px;z-index:'+windows.chat.z+'">'+
-      '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 CHAT</strong><button data-mw-close="chat">×</button></header>'+
-      '<div class="portal-mw-chat-list">'+chat.slice(-8).map(m=>'<p><b>'+esc(m.author)+'</b><span>'+esc(m.message)+'</span></p>').join("")+'</div>'+
+      '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 '+esc(telegramPopupChat?.title||"CHAT")+'</strong><div><button data-mw-chat-open type="button" title="Открыть CHAT">↗</button><button data-mw-close="chat">×</button></div></header>'+
+      '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
+        ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'"><b>'+esc(m.senderName)+'</b><span>'+esc(m.text||"")+'</span></p>').join("")
+        : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
       '<form data-mw-chat-form><input data-mw-chat-input placeholder="Сообщение…" autocomplete="off"><button>↗</button></form>'+resizeHandles("chat")+'</section>');
   }
   if(windows.radio.open){
@@ -116,8 +133,13 @@ function bind(){
   layer?.querySelector<HTMLElement>("[data-mw-chat-form]")?.addEventListener("submit",e=>{
     e.preventDefault();
     const i=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]"),m=i?.value.trim()||"";
-    if(!m)return;
-    chat.push({author:"You",message:m});chat=chat.slice(-50);render();
+    if(!m||!telegramPopupChat?.id)return;
+    window.dispatchEvent(new CustomEvent("freezzz:chat-send",{detail:{chatId:telegramPopupChat.id,text:m}}));
+    if(i)i.value="";
+  });
+  layer?.querySelector<HTMLElement>("[data-mw-chat-open]")?.addEventListener("click",e=>{
+    e.preventDefault();e.stopPropagation();
+    window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"chat"}}));
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-radio]").forEach(b=>b.onclick=()=>{
     window.dispatchEvent(new CustomEvent("freezzz:radio-mini",{detail:{action:b.dataset.mwRadio||"play"}}));
@@ -159,12 +181,14 @@ export function initMultiWindowPortal(){
   layer.className="portal-mw-layer";
   document.body.append(layer);
   intercept();
-  window.addEventListener("freezzz:chat-sync",event=>{
-    const messages=(event as CustomEvent<{messages?:ChatMessage[]}>).detail?.messages;
-    if(!Array.isArray(messages))return;
-    chat=messages.slice(-50).map(m=>({author:String(m.author||""),message:String(m.message||"")}));
-    if(windows.chat.open)render();
+  window.addEventListener("freezzz:telegram-chat-sync",event=>{
+    const detail=(event as CustomEvent<{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}>).detail;
+    syncTelegramPopup(detail);
   });
+  const savedId=loadLastChatId();
+  if(savedId){
+    window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:savedId}}));
+  }
   const clampWindows=()=>{
     (Object.keys(windows) as MiniId[]).forEach(id=>{
       const w=windows[id];
