@@ -663,10 +663,19 @@ function bind(){
       if(expandedTelegramMessages.has(id))expandedTelegramMessages.delete(id);else expandedTelegramMessages.add(id);
       render();
     }));
-    document.querySelector<HTMLButtonElement>("[data-chat-bottom]")?.addEventListener("click",()=>{
-      const history=document.querySelector<HTMLElement>("#telegram-chat-history");
-      if(history)history.scrollTo({top:history.scrollHeight,behavior:"smooth"});
-    });
+    const chatHistory=document.querySelector<HTMLElement>("#telegram-chat-history");
+    const chatBottom=document.querySelector<HTMLButtonElement>("[data-chat-bottom]");
+    if(chatHistory&&chatBottom){
+      const syncChatBottom=()=>{
+        const distance=chatHistory.scrollHeight-chatHistory.clientHeight-chatHistory.scrollTop;
+        chatBottom.classList.toggle("is-hidden",distance<48);
+      };
+      chatHistory.addEventListener("scroll",syncChatBottom,{passive:true});
+      chatBottom.addEventListener("click",()=>{
+        chatHistory.scrollTo({top:chatHistory.scrollHeight,behavior:"smooth"});
+      });
+      requestAnimationFrame(syncChatBottom);
+    }
     document.querySelector("[data-chat-retry]")?.addEventListener("click",()=>void loadTelegramChatStatus());
     document.querySelector("#telegram-connect-form")?.addEventListener("submit",e=>{e.preventDefault();const input=document.querySelector<HTMLInputElement>("#telegram-auth-input");const value=input?.value.trim()||"";if(telegramAuthStep==="phone"){telegramAuthPhone=value;void submitTelegramConnect();}else if(telegramAuthStep==="code")void submitTelegramCode(value);else if(telegramAuthStep==="password")void submitTelegramPassword(value);});
     const telegramMessageInput=document.querySelector<HTMLInputElement>("#telegram-message-input");
