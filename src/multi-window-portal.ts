@@ -33,6 +33,7 @@ function loadLastChatId():string{
   try{return localStorage.getItem(LAST_CHAT_KEY)||"";}catch{return "";}
 }
 function syncTelegramPopup(detail?:{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}){
+  if(detail?.chat!==undefined&&detail.chat?.id!==telegramPopupChat?.id)expandedTelegramPopupMessages.clear();
   if(detail?.chat!==undefined)telegramPopupChat=detail.chat;
   if(Array.isArray(detail?.messages))telegramPopupMessages=detail.messages.slice(-10);
   if(telegramPopupChat?.id){
