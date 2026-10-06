@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
-    "gramjs": "^2.26.21"
+    "telegram": "^2.26.21"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
