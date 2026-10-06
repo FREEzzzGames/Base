@@ -17,11 +17,13 @@ export function validateTelegramInitData(initData, botToken, nowSeconds = Math.f
   const { hash, dataCheckString } = buildDataCheckString(initData);
   if (!hash || !/^[a-f0-9]{64}$/i.test(hash)) throw new Error("INVALID_HASH");
 
-  const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
+  // Telegram Mini Apps: HMAC-SHA256(key="WebAppData", message=botToken),
+  // then HMAC-SHA256(key=secretKey, message=dataCheckString).
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
   const calculated = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
-  const expected = Buffer.from(calculated, "utf8");
-  const received = Buffer.from(hash, "utf8");
+  const expected = Buffer.from(calculated, "hex");
+  const received = Buffer.from(hash, "hex");
   if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
     throw new Error("INVALID_SIGNATURE");
   }
