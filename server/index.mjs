@@ -89,6 +89,21 @@ async function logBotIdentity() {
         username: payload.result?.username || "",
         firstName: payload.result?.first_name || ""
       });
+      try {
+        const menuResponse = await fetch("https://api.telegram.org/bot" + encodeURIComponent(botToken) + "/getChatMenuButton", {
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(5000)
+        });
+        const menuPayload = await menuResponse.json();
+        const button = menuPayload?.ok ? menuPayload.result : null;
+        console.log("telegram default menu button", {
+          type: button?.type || "",
+          text: button?.text || "",
+          webAppUrl: button?.web_app?.url || ""
+        });
+      } catch (error) {
+        console.error("telegram menu button check failed", error?.message || "UNKNOWN");
+      }
     } else {
       console.error("telegram bot identity check failed", payload?.error_code || "UNKNOWN");
     }
