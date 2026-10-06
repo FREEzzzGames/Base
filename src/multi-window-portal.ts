@@ -7,7 +7,7 @@ type MiniWindow = { open:boolean; x:number; y:number; width:number; height:numbe
 
 const windows:Record<MiniId,MiniWindow> = {
   live:{open:false,x:60,y:70,width:300,height:205,z:30,minWidth:220,minHeight:150},
-  chat:{open:false,x:80,y:290,width:286,height:245,z:40,minWidth:220,minHeight:170},
+  chat:{open:false,x:48,y:250,width:340,height:360,z:40,minWidth:250,minHeight:220},
   radio:{open:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64}
 };
 let nextZ=60;
