@@ -51,6 +51,7 @@ function diagnoseInitData(initData) {
     const params = new URLSearchParams(initData);
     const receivedHash = params.get("hash") || "";
     params.delete("hash");
+    params.delete("signature");
     const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
     const dataCheckString = entries.map(([key, value]) => key + "=" + value).join("\n");
     const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
