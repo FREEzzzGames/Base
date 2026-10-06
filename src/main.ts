@@ -418,15 +418,6 @@ function renderProfileCard(){
     
   </section></div>`;
 }
-function savePortalSessionSnapshot(){
-  try{
-    sessionStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({
-      view,
-      profileOpen
-    } satisfies PortalSessionSnapshot));
-  }catch{}
-}
-
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
     ["game","game","GAME"],
@@ -454,7 +445,6 @@ function renderPortalToolbar(){
   </nav>`;
 }
 function render(){
-  savePortalSessionSnapshot();
   if(freezzzArenaCleanup){ freezzzArenaCleanup(); freezzzArenaCleanup=null; }
   let body="";
 
