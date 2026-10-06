@@ -21,6 +21,7 @@ export function validateTelegramInitData(initData, botToken, nowSeconds = Math.f
   // secretKey = HMAC-SHA256(key="WebAppData", message=botToken),
   // then HMAC-SHA256(key=secretKey, message=dataCheckString).
   // Only `hash` is excluded; a received `signature` remains in the HMAC input.
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
   const calculated = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
   const expected = Buffer.from(calculated, "hex");
