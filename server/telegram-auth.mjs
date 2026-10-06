@@ -17,9 +17,9 @@ export function validateTelegramInitData(initData, botToken, nowSeconds = Math.f
   const { hash, dataCheckString } = buildDataCheckString(initData);
   if (!hash || !/^[a-f0-9]{64}$/i.test(hash)) throw new Error("INVALID_HASH");
 
-  // Telegram Mini Apps: HMAC-SHA256(key="WebAppData", message=botToken),
+  // Telegram Mini Apps: secretKey = HMAC-SHA256(key=botToken, message="WebAppData"),
   // then HMAC-SHA256(key=secretKey, message=dataCheckString).
-  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
+  const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
   const calculated = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
   const expected = Buffer.from(calculated, "hex");
