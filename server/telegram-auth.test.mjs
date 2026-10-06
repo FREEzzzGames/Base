@@ -11,7 +11,6 @@ function makeInitData(botToken, authDate) {
     query_id: "AA-test",
     signature: "test-signature"
   });
-  values.delete("signature");
   const check = [...values.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => k + "=" + v)
