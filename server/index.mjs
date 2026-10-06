@@ -46,6 +46,56 @@ async function readBody(req, maxBytes = 64 * 1024) {
   return JSON.parse(body || "{}");
 }
 
+function diagnoseInitData(initData) {
+  try {
+    const params = new URLSearchParams(initData);
+    const receivedHash = params.get("hash") || "";
+    params.delete("hash");
+    const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+    const dataCheckString = entries.map(([key, value]) => key + "=" + value).join("\n");
+    const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
+    const calculatedHash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+    return {
+      fields: entries.map(([key]) => key),
+      hasSignature: params.has("signature"),
+      hasHash: Boolean(receivedHash),
+      receivedHashPrefix: receivedHash.slice(0, 12),
+      calculatedHashPrefix: calculatedHash.slice(0, 12),
+      hashMatches: Boolean(receivedHash) && crypto.timingSafeEqual(
+        Buffer.from(receivedHash, "utf8"),
+        Buffer.from(calculatedHash, "utf8")
+      ),
+      authDate: params.get("auth_date") || "",
+      userPresent: Boolean(params.get("user")),
+      configuredBotId: botToken.includes(":") ? botToken.split(":", 1)[0] : ""
+    };
+  } catch {
+    return { diagnosticError: true };
+  }
+}
+
+async function logBotIdentity() {
+  if (!botToken) return;
+  try {
+    const response = await fetch("https://api.telegram.org/bot" + encodeURIComponent(botToken) + "/getMe", {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(5000)
+    });
+    const payload = await response.json();
+    if (payload?.ok) {
+      console.log("telegram bot identity", {
+        id: payload.result?.id,
+        username: payload.result?.username || "",
+        firstName: payload.result?.first_name || ""
+      });
+    } else {
+      console.error("telegram bot identity check failed", payload?.error_code || "UNKNOWN");
+    }
+  } catch (error) {
+    console.error("telegram bot identity check failed", error?.message || "UNKNOWN");
+  }
+}
+
 function deriveKey() {
   if (!sessionSecret) throw new Error("SESSION_SECRET_NOT_CONFIGURED");
   return crypto.createHash("sha256").update(sessionSecret).digest();
@@ -125,9 +175,16 @@ function authFromRequest(req) {
   if (!botToken) throw new Error("AUTH_SERVICE_NOT_CONFIGURED");
   const raw = req.headers["x-telegram-init-data"];
   if (typeof raw !== "string" || !raw) throw new Error("MISSING_INIT_DATA");
-  const result = validateTelegramInitData(raw, botToken);
-  if (!result.user?.id) throw new Error("TELEGRAM_USER_REQUIRED");
-  return result.user;
+  try {
+    const result = validateTelegramInitData(raw, botToken);
+    if (!result.user?.id) throw new Error("TELEGRAM_USER_REQUIRED");
+    return result.user;
+  } catch (error) {
+    if (error?.message === "INVALID_SIGNATURE") {
+      console.error("telegram initData signature diagnostic", diagnoseInitData(raw));
+    }
+    throw error;
+  }
 }
 
 function rateLimit(userId, cost = 1) {
@@ -276,6 +333,7 @@ async function disconnectTelegram(userId) {
 }
 
 await loadStoredSessions();
+void logBotIdentity();
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
@@ -347,7 +405,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, result, responseOrigin);
       }
 
-      const codeMatch = pathName.match(/^\/api\/telegram\/connect\/(code|password)$/);
+      const codeMatch = pathName.match(/^\\/api\\/telegram\\/connect\\/(code|password)$/);
       if (codeMatch && req.method === "POST") {
         const body = await readBody(req);
         const value = typeof body.value === "string" ? body.value.trim() : "";
@@ -361,7 +419,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { ok: true }, responseOrigin);
       }
 
-      const messagesMatch = pathName.match(/^\/api\/telegram\/chats\/([^/]+)\/messages$/);
+      const messagesMatch = pathName.match(/^\\/api\\/telegram\\/chats\\/([^/]+)\\/messages$/);
       if (messagesMatch && req.method === "GET") {
         const chatId = decodeURIComponent(messagesMatch[1]);
         const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 50), 1), 100);
