@@ -295,8 +295,12 @@ const server = http.createServer(async (req, res) => {
   if (origin && !isTrustedOrigin(origin)) return sendJson(res, 403, { ok: false, error: "ORIGIN_NOT_ALLOWED" }, responseOrigin);
 
   if (req.url === "/health" && req.method === "GET") {
+    const configuredBotId = botToken.includes(":") ? botToken.split(":", 1)[0] : "";
     return sendJson(res, 200, {
       ok: true, service: "freezzz-telegram-auth",
+      allowedOrigin,
+      configuredBotId: configuredBotId || undefined,
+      botConfigured: Boolean(botToken),
       mtprotoConfigured: Boolean(apiId && apiHash),
       sessionStoreConfigured: Boolean(sessionSecret)
     }, responseOrigin);
