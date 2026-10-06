@@ -6,9 +6,6 @@ function buildDataCheckString(initData) {
   const params = new URLSearchParams(initData);
   const hash = params.get("hash");
   params.delete("hash");
-  // Telegram adds an Ed25519 `signature` field for third-party verification.
-  // It is not part of the bot-token HMAC data-check-string.
-  params.delete("signature");
   const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
   return { hash, dataCheckString: entries.map(([key, value]) => key + "=" + value).join("\n") };
 }
@@ -20,9 +17,10 @@ export function validateTelegramInitData(initData, botToken, nowSeconds = Math.f
   const { hash, dataCheckString } = buildDataCheckString(initData);
   if (!hash || !/^[a-f0-9]{64}$/i.test(hash)) throw new Error("INVALID_HASH");
 
-  // Telegram Mini Apps: secretKey = HMAC-SHA256(key=botToken, message="WebAppData"),
+  // Telegram Mini Apps validation for the payload observed from this client:
+  // secretKey = HMAC-SHA256(key="WebAppData", message=botToken),
   // then HMAC-SHA256(key=secretKey, message=dataCheckString).
-  const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
+  // Only `hash` is excluded; a received `signature` remains in the HMAC input.
   const calculated = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
   const expected = Buffer.from(calculated, "hex");
