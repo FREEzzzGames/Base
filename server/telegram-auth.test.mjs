@@ -5,9 +5,17 @@ import { validateTelegramInitData } from "./telegram-auth.mjs";
 
 function makeInitData(botToken, authDate) {
   const user = JSON.stringify({ id: 123456789, first_name: "Test", username: "tester" });
-  const values = new URLSearchParams({ auth_date: String(authDate), user, query_id: "AA-test", signature: "test-signature" });
+  const values = new URLSearchParams({
+    auth_date: String(authDate),
+    user,
+    query_id: "AA-test",
+    signature: "test-signature"
+  });
   values.delete("signature");
-  const check = [...values.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k,v]) => k+"="+v).join("\n");
+  const check = [...values.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => k + "=" + v)
+    .join("\n");
   const secret = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
   const hash = crypto.createHmac("sha256", secret).update(check).digest("hex");
   values.set("hash", hash);
@@ -22,7 +30,13 @@ test("valid Telegram initData is accepted", () => {
   assert.equal(result.user.username, "tester");
 });
 
-test("Telegram signature field does not affect bot-token HMAC", () => {\n  const now = 1_800_000_000;\n  const raw = makeInitData("123456:TEST", now - 30);\n  assert.doesNotThrow(() => validateTelegramInitData(raw, "123456:TEST", now));\n});\n\ntest("tampered initData is rejected", () => {
+test("Telegram signature field does not affect bot-token HMAC", () => {
+  const now = 1_800_000_000;
+  const raw = makeInitData("123456:TEST", now - 30);
+  assert.doesNotThrow(() => validateTelegramInitData(raw, "123456:TEST", now));
+});
+
+test("tampered initData is rejected", () => {
   const now = 1_800_000_000;
   const raw = makeInitData("123456:TEST", now - 30).replace("tester", "attacker");
   assert.throws(() => validateTelegramInitData(raw, "123456:TEST", now), /INVALID_SIGNATURE/);
