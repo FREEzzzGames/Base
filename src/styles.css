@@ -6045,3 +6045,7 @@ html.visual-comfort-enabled video{
   touch-action:manipulation!important;
 }
 .chat-message-expand:active,.portal-mw-chat-expand:active{opacity:.7!important}
+
+.chat-dialogs-head .chat-refresh-button{appearance:none!important;width:32px!important;height:32px!important;display:grid!important;place-items:center!important;flex:0 0 32px!important;padding:0!important;border:1px solid rgba(102,252,241,.38)!important;border-radius:50%!important;background:rgba(7,9,11,.72)!important;color:#66fcf1!important;font:700 18px/1 monospace!important;cursor:pointer!important;pointer-events:auto!important;touch-action:manipulation!important}
+.chat-dialogs-head .chat-refresh-button:disabled{opacity:.55!important;cursor:default!important}
+.chat-dialogs-head .chat-refresh-button:active:not(:disabled){transform:scale(.94)!important}
