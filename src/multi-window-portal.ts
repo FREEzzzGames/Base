@@ -79,7 +79,7 @@ function render(){
       '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
         ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'"><b>'+esc(m.senderName)+'</b><span>'+esc(m.text||"")+'</span></p>').join("")
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
-      '<form data-mw-chat-form><input data-mw-chat-input placeholder="Сообщение…" autocomplete="off"><button>↗</button></form>'+resizeHandles("chat")+'</section>');
+      '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandles("chat")+'</section>');
   }
   if(windows.radio.open){
     out.push('<section class="portal-mw portal-mw-radio" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
@@ -130,6 +130,9 @@ function bind(){
     const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}};
     h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
   });
+  const popupInput=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]");
+  popupInput?.addEventListener("pointerdown",e=>{e.stopPropagation();});
+  popupInput?.addEventListener("click",e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);});
   layer?.querySelector<HTMLElement>("[data-mw-chat-form]")?.addEventListener("submit",e=>{
     e.preventDefault();
     const i=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]"),m=i?.value.trim()||"";
