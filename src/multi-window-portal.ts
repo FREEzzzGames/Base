@@ -13,7 +13,6 @@ const windows:Record<MiniId,MiniWindow> = {
 let nextZ=60;
 let liveName=streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
-type ChatMessage={author:string;message:string};
 type TelegramPopupChat={id:string;title:string;kind:string;username?:string;lastMessage?:{text:string;date:string;outgoing:boolean}};
 type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
 let telegramPopupChat:TelegramPopupChat|null=null;
