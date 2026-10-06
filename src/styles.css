@@ -6013,7 +6013,7 @@ html.visual-comfort-enabled video{
 .chat-dialogs-head,.chat-conversation>header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .chat-dialogs-head button{border:0;background:none;color:inherit;font-size:20px}
 .chat-dialog-list{display:flex;flex-direction:column}
-.chat-dialog{position:relative;text-align:left;padding:11px;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit}
+.chat-dialog{position:relative;text-align:left;padding:11px;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;cursor:pointer;touch-action:manipulation}
 .chat-dialog.active{background:rgba(102,252,241,.1)}
 .chat-dialog-title{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chat-dialog small{display:block;margin-top:4px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
