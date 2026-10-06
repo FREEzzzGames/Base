@@ -16,7 +16,7 @@ function makeInitData(botToken, authDate) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => k + "=" + v)
     .join("\n");
-  const secret = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
+  const secret = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
   const hash = crypto.createHmac("sha256", secret).update(check).digest("hex");
   values.set("hash", hash);
   return values.toString();
