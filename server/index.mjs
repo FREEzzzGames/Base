@@ -229,7 +229,7 @@ async function startTelegramLogin(userId, phoneNumber) {
     pendingAuth.delete(key);
     schedulePersist();
     return { connected: true };
-  }).catch(error => {
+  }).catch(async error => {
     pendingAuth.delete(key);
     try { await client.disconnect(); } catch {}
     throw error;
