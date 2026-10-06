@@ -6,7 +6,6 @@ function buildDataCheckString(initData) {
   const params = new URLSearchParams(initData);
   const hash = params.get("hash");
   params.delete("hash");
-  params.delete("signature");
   const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
   return { hash, dataCheckString: entries.map(([key, value]) => key + "=" + value).join("\n") };
 }
