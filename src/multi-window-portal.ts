@@ -18,13 +18,24 @@ type TelegramPopupChat={id:string;title:string;kind:string;username?:string;last
 type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
 let telegramPopupChat:TelegramPopupChat|null=null;
 let telegramPopupMessages:TelegramPopupMessage[]=[];
+const expandedTelegramPopupMessages=new Set<string>();
+function popupMessageText(message:TelegramPopupMessage):string{
+  const text=message.text||"";
+  if(text.length<=200||expandedTelegramPopupMessages.has(message.id))return esc(text);
+  return esc(text.slice(0,200))+"…";
+}
+function popupMessageExpandControl(message:TelegramPopupMessage):string{
+  if((message.text||"").length<=200)return "";
+  const expanded=expandedTelegramPopupMessages.has(message.id);
+  return '<button class="portal-mw-chat-expand" type="button" data-mw-chat-expand="'+esc(message.id)+'" aria-expanded="'+expanded+'">'+(expanded?"Свернуть":"Развернуть")+'</button>';
+}
 const LAST_CHAT_KEY="freezzz:telegram:last-chat";
 function loadLastChatId():string{
   try{return localStorage.getItem(LAST_CHAT_KEY)||"";}catch{return "";}
 }
 function syncTelegramPopup(detail?:{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}){
   if(detail?.chat!==undefined)telegramPopupChat=detail.chat;
-  if(Array.isArray(detail?.messages))telegramPopupMessages=detail.messages.slice(-30);
+  if(Array.isArray(detail?.messages))telegramPopupMessages=detail.messages.slice(-10);
   if(telegramPopupChat?.id){
     try{localStorage.setItem(LAST_CHAT_KEY,telegramPopupChat.id);}catch{}
   }
@@ -77,7 +88,7 @@ function render(){
     out.push('<section class="portal-mw portal-mw-chat" data-mw="chat" style="left:'+windows.chat.x+'px;top:'+windows.chat.y+'px;width:'+windows.chat.width+'px;height:'+windows.chat.height+'px;z-index:'+windows.chat.z+'">'+
       '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 '+esc(telegramPopupChat?.title||"CHAT")+'</strong><div><button data-mw-chat-open type="button" title="Открыть CHAT">↗</button><button data-mw-close="chat">×</button></div></header>'+
       '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
-        ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'"><b>'+esc(m.senderName)+'</b><span>'+esc(m.text||"")+'</span></p>').join("")
+        ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'"><b>'+esc(m.senderName)+'</b><span>'+popupMessageText(m)+'</span>'+popupMessageExpandControl(m)+'</p>').join("")
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
       '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandles("chat")+'</section>');
   }
@@ -130,6 +141,13 @@ function bind(){
     const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}};
     h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
   });
+  layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.addEventListener("click",e=>{
+    e.preventDefault();e.stopPropagation();
+    const id=(e.currentTarget as HTMLElement).dataset.mwChatExpand||"";
+    if(!id)return;
+    if(expandedTelegramPopupMessages.has(id))expandedTelegramPopupMessages.delete(id);else expandedTelegramPopupMessages.add(id);
+    render();
+  }));
   const popupInput=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]");
   popupInput?.addEventListener("pointerdown",e=>{e.stopPropagation();});
   popupInput?.addEventListener("click",e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);});
