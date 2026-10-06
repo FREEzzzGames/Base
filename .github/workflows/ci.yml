@@ -124,6 +124,9 @@ jobs:
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
+      - name: Telegram gateway syntax check
+        run: node --check server/index.mjs
+
 
       - name: Typecheck
         run: npm run typecheck
