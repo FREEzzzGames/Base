@@ -6001,58 +6001,243 @@ html.visual-comfort-enabled video{
 .portal-game-fullscreen .mafia-aim-sensor{right:4vw!important;bottom:4vh!important}
 
 
-/* Telegram CHAT */
-.chat-telegram-state,.chat-telegram-connect{display:flex;flex-direction:column;gap:12px;padding:18px;min-height:180px;justify-content:center}
-.chat-telegram-state span,.chat-telegram-connect span{opacity:.72}
-.chat-auth-form,.chat-message-form{display:flex;gap:8px}
-.chat-auth-form label{font-size:12px;opacity:.72}
-.chat-auth-form input,.chat-message-form input{flex:1;min-width:0;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(0,0,0,.28);color:inherit}
-.chat-error{color:#ff6b6b;font-size:12px}
-.chat-telegram-shell{display:grid;grid-template-columns:minmax(130px,34%) 1fr;min-height:460px;overflow:hidden;border-radius:14px;background:rgba(0,0,0,.22)}
-.chat-dialogs{border-right:1px solid rgba(255,255,255,.1);overflow:auto}
-.chat-dialogs-head,.chat-conversation>header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,.1)}
-.chat-dialogs-head button{border:0;background:none;color:inherit;font-size:20px}
-.chat-dialog-list{display:flex;flex-direction:column}
-.chat-dialog{position:relative;text-align:left;padding:11px;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;cursor:pointer;touch-action:manipulation}
-.chat-dialog.active{background:rgba(102,252,241,.1)}
-.chat-dialog-title{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-dialog small{display:block;margin-top:4px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-dialog i{position:absolute;right:8px;top:9px;font-style:normal;font-size:10px;padding:2px 5px;border-radius:8px;background:rgba(102,252,241,.18)}
-.chat-conversation{display:grid;grid-template-rows:auto 1fr auto;min-width:0}
-.chat-conversation>header{align-items:flex-start;flex-direction:column;gap:3px}
-.chat-conversation>header small{opacity:.55}
-.chat-history{position:relative;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
-.chat-scroll-bottom{position:absolute;right:12px;bottom:12px;width:34px;height:34px;border:1px solid rgba(102,252,241,.45);border-radius:50%;background:rgba(7,9,11,.86);color:#66fcf1;font:700 20px/1 monospace;display:grid;place-items:center;cursor:pointer;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.35);touch-action:manipulation;opacity:1;transform:translateY(0);transition:opacity .16s ease,transform .16s ease;pointer-events:auto}
-.chat-scroll-bottom.is-hidden{opacity:0;transform:translateY(6px);pointer-events:none}
-.chat-scroll-bottom:active{transform:translateY(1px)}
-.chat-tg-message{align-self:flex-start;max-width:88%;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.07)}
-.chat-tg-message.outgoing{align-self:flex-end;background:rgba(102,252,241,.1)}
-.chat-tg-message b{font-size:11px;opacity:.75}
-.chat-tg-message p{margin:3px 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.chat-tg-message time{font-size:9px;opacity:.4}
-.chat-message-form{padding:10px;border-top:1px solid rgba(255,255,255,.1)}
-@media(max-width:520px){.chat-telegram-shell{grid-template-columns:38% 1fr}.chat-auth-form,.chat-message-form{flex-wrap:wrap}.chat-auth-form input,.chat-message-form input{flex-basis:100%}}
+/* ================================================================
+   TELEGRAM CHAT
+   ================================================================ */
 
-/* Telegram CHAT — expandable long messages. */
-.chat-message-expand,.portal-mw-chat-expand{
-  display:inline-block!important;
-  margin-top:5px!important;
-  padding:2px 0!important;
-  border:0!important;
-  background:transparent!important;
-  color:#66fcf1!important;
-  font:700 10px/1.2 monospace!important;
-  cursor:pointer!important;
-  touch-action:manipulation!important;
+.chat-telegram-state,
+.chat-telegram-connect{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:18px;
+  min-height:180px;
+  justify-content:center;
 }
-.chat-message-expand:active,.portal-mw-chat-expand:active{opacity:.7!important}
+.chat-telegram-state span,
+.chat-telegram-connect span{opacity:.72}
 
-.chat-dialogs-head .chat-refresh-button{appearance:none!important;width:32px!important;height:32px!important;display:grid!important;place-items:center!important;flex:0 0 32px!important;padding:0!important;border:1px solid rgba(102,252,241,.38)!important;border-radius:50%!important;background:rgba(7,9,11,.72)!important;color:#66fcf1!important;font:700 18px/1 monospace!important;cursor:pointer!important;pointer-events:auto!important;touch-action:manipulation!important}
-.chat-dialogs-head .chat-refresh-button:disabled{opacity:.55!important;cursor:default!important}
-.chat-dialogs-head .chat-refresh-button:active:not(:disabled){transform:scale(.94)!important}
+.chat-auth-form,
+.chat-message-form{
+  display:flex;
+  gap:8px;
+}
+.chat-auth-form label{font-size:12px;opacity:.72}
+.chat-auth-form input,
+.chat-message-form input{
+  flex:1;
+  min-width:0;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  background:rgba(0,0,0,.28);
+  color:inherit;
+  touch-action:manipulation;
+  -webkit-user-select:text;
+  user-select:text;
+}
+.chat-error{color:#ff6b6b;font-size:12px}
 
-.chat-dialog-row{display:flex!important;align-items:stretch!important;min-width:0!important}
-.chat-dialog-row .chat-dialog{flex:1 1 auto!important;min-width:0!important}
-.chat-favorite{width:38px!important;min-width:38px!important;border:0!important;border-left:1px solid rgba(255,255,255,.10)!important;background:rgba(7,9,11,.72)!important;color:rgba(255,255,255,.48)!important;font:700 22px/1 monospace!important;cursor:pointer!important;touch-action:manipulation!important}
-.chat-favorite.active{color:#ff2020!important;text-shadow:0 0 8px rgba(255,32,32,.7)!important}
-.chat-favorite:active{transform:scale(.92)!important}
+.chat-telegram-shell{
+  display:grid;
+  grid-template-columns:minmax(130px,34%) 1fr;
+  min-height:460px;
+  overflow:hidden;
+  border-radius:14px;
+  background:rgba(0,0,0,.22);
+}
+.chat-dialogs{
+  min-width:0;
+  border-right:1px solid rgba(255,255,255,.1);
+  overflow:auto;
+}
+.chat-dialogs-head,
+.chat-conversation>header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.chat-dialogs-head{min-height:56px;box-sizing:border-box}
+.chat-dialog-list{display:flex;flex-direction:column}
+
+.chat-dialog-row{
+  display:flex;
+  align-items:stretch;
+  min-width:0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.chat-dialog{
+  position:relative;
+  flex:1 1 auto;
+  min-width:0;
+  padding:11px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.chat-dialog.active{background:rgba(102,252,241,.1)}
+.chat-dialog-title{
+  display:block;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.chat-dialog small{
+  display:block;
+  margin-top:4px;
+  opacity:.55;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.chat-dialog i{
+  position:absolute;
+  right:8px;
+  top:9px;
+  font-style:normal;
+  font-size:10px;
+  padding:2px 5px;
+  border-radius:8px;
+  background:rgba(102,252,241,.18);
+}
+
+.chat-favorite{
+  width:38px;
+  min-width:38px;
+  border:0;
+  border-left:1px solid rgba(255,255,255,.1);
+  background:rgba(7,9,11,.72);
+  color:rgba(255,255,255,.48);
+  font:700 22px/1 monospace;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.chat-favorite.active{
+  color:#ff2020;
+  text-shadow:0 0 8px rgba(255,32,32,.7);
+}
+.chat-favorite:active{transform:scale(.92)}
+
+.chat-refresh-button{
+  appearance:none;
+  width:32px;
+  height:32px;
+  min-width:32px;
+  min-height:32px;
+  display:grid;
+  place-items:center;
+  flex:0 0 32px;
+  padding:0;
+  border:1px solid rgba(102,252,241,.38);
+  border-radius:50%;
+  background:rgba(7,9,11,.72);
+  color:#66fcf1;
+  font:700 18px/1 monospace;
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+.chat-refresh-button:disabled{opacity:.55;cursor:default}
+.chat-refresh-button:active:not(:disabled){transform:scale(.94)}
+
+.chat-conversation{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-width:0;
+}
+.chat-conversation>header{
+  align-items:flex-start;
+  flex-direction:column;
+  gap:3px;
+}
+.chat-conversation>header small{opacity:.55}
+
+.chat-history{
+  position:relative;
+  min-height:0;
+  overflow:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.chat-scroll-bottom{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  width:34px;
+  height:34px;
+  border:1px solid rgba(102,252,241,.45);
+  border-radius:50%;
+  background:rgba(7,9,11,.86);
+  color:#66fcf1;
+  font:700 20px/1 monospace;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  z-index:3;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+  touch-action:manipulation;
+  opacity:1;
+  transform:translateY(0);
+  transition:opacity .16s ease,transform .16s ease;
+}
+.chat-scroll-bottom.is-hidden{
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+}
+.chat-scroll-bottom:active{transform:translateY(1px)}
+
+.chat-tg-message{
+  align-self:flex-start;
+  max-width:88%;
+  padding:9px 11px;
+  border-radius:11px;
+  background:rgba(255,255,255,.07);
+}
+.chat-tg-message.outgoing{
+  align-self:flex-end;
+  background:rgba(102,252,241,.1);
+}
+.chat-tg-message b{font-size:11px;opacity:.75}
+.chat-tg-message p{
+  margin:3px 0;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.chat-tg-message time{font-size:9px;opacity:.4}
+
+.chat-message-expand,
+.portal-mw-chat-expand{
+  display:inline-block;
+  margin-top:5px;
+  padding:2px 0;
+  border:0;
+  background:transparent;
+  color:#66fcf1;
+  font:700 10px/1.2 monospace;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.chat-message-expand:active,
+.portal-mw-chat-expand:active{opacity:.7}
+
+.chat-message-form{
+  padding:10px;
+  border-top:1px solid rgba(255,255,255,.1);
+}
+
+@media(max-width:520px){
+  .chat-telegram-shell{grid-template-columns:38% 1fr}
+  .chat-auth-form,
+  .chat-message-form{flex-wrap:wrap}
+  .chat-auth-form input,
+  .chat-message-form input{flex-basis:100%}
+}
