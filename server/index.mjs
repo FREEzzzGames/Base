@@ -7,7 +7,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 
 const port = Number(process.env.PORT || 10000);
-const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzgames.github.io";
+const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
 const botToken = process.env.TELEGRAM_BOT_TOKEN || "";
 const requiredChatId = process.env.TELEGRAM_REQUIRED_CHAT_ID || "";
 const requireMembership = process.env.TELEGRAM_REQUIRE_MEMBERSHIP === "true";
