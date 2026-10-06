@@ -102,6 +102,17 @@ let telegramAuthStep:"phone"|"code"|"password"|"none"="phone";
 let telegramAuthBusy=false;
 let telegramAuthPhone="";
 let telegramChatLoadToken=0;
+const expandedTelegramMessages=new Set<string>();
+function telegramMessageText(message:TelegramMessage):string{
+  const text=message.text||"";
+  if(text.length<=200||expandedTelegramMessages.has(message.id))return escapeHtml(text);
+  return escapeHtml(text.slice(0,200))+"…";
+}
+function telegramMessageExpandControl(message:TelegramMessage):string{
+  if((message.text||"").length<=200)return "";
+  const expanded=expandedTelegramMessages.has(message.id);
+  return '<button class="chat-message-expand" type="button" data-chat-expand="'+escapeHtml(message.id)+'" aria-expanded="'+expanded+'">'+(expanded?"Свернуть":"Развернуть")+'</button>';
+}
 async function loadTelegramChatStatus(){telegramChatStatus="loading";telegramChatError="";render();try{const status=await telegramChatClient.getStatus();telegramChatStatus=status.connected?"connected":"disconnected";if(status.connected){telegramAuthStep="none";await loadTelegramChats();}else if(status.pending==="code")telegramAuthStep="code";else if(status.pending==="password")telegramAuthStep="password";}catch(error){telegramChatStatus="error";telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
 function syncTelegramPopup(){
   const chat=telegramChats.find(x=>x.id===telegramSelectedChatId)||null;
@@ -111,7 +122,7 @@ function syncTelegramPopup(){
   }}));
 }
 async function loadTelegramChats(){const token=++telegramChatLoadToken;try{telegramChats=await telegramChatClient.getChats();if(token!==telegramChatLoadToken)return;if(!telegramSelectedChatId||!telegramChats.some(x=>x.id===telegramSelectedChatId))telegramSelectedChatId=telegramChats[0]?.id||"";if(telegramSelectedChatId)await loadTelegramMessages(telegramSelectedChatId);syncTelegramPopup();render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
-async function loadTelegramMessages(chatId:string){telegramSelectedChatId=chatId;try{telegramMessages=await telegramChatClient.getMessages(chatId,100);telegramMessages.reverse();telegramChatError="";try{localStorage.setItem(TELEGRAM_LAST_CHAT_KEY,chatId);}catch{};syncTelegramPopup();render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
+async function loadTelegramMessages(chatId:string){telegramSelectedChatId=chatId;try{telegramMessages=(await telegramChatClient.getMessages(chatId,100)).slice(-10);telegramMessages.reverse();telegramChatError="";try{localStorage.setItem(TELEGRAM_LAST_CHAT_KEY,chatId);}catch{};syncTelegramPopup();render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
 async function submitTelegramConnect(){const phone=telegramAuthPhone.trim();if(!phone)return;telegramAuthBusy=true;telegramChatError="";render();try{const result=await telegramChatClient.connect(phone);telegramAuthStep=result.awaiting==="code"?"code":"none";await loadTelegramChatStatus();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_CONNECT_FAILED";}finally{telegramAuthBusy=false;render();}}
 async function submitTelegramCode(code:string){telegramAuthBusy=true;telegramChatError="";render();try{const result=await telegramChatClient.submitCode(code.trim());telegramAuthStep=result.awaiting==="password_or_complete"?"password":"none";await waitForTelegramConnection();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_CODE_FAILED";}finally{telegramAuthBusy=false;render();}}
 async function submitTelegramPassword(password:string){telegramAuthBusy=true;telegramChatError="";render();try{await telegramChatClient.submitPassword(password);await waitForTelegramConnection();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_PASSWORD_FAILED";}finally{telegramAuthBusy=false;render();}}
@@ -121,7 +132,7 @@ if(telegramChatStatus==="loading")return '<div class="chat-telegram-state"><b>Te
 if(telegramChatStatus==="error")return '<div class="chat-telegram-state"><b>Telegram CHAT</b><span>'+escapeHtml(telegramChatError)+'</span><button class="tg-button" data-chat-retry type="button">Повторить</button></div>';
 if(telegramChatStatus!=="connected"){const step=telegramAuthStep;const label=step==="code"?"Код из Telegram":step==="password"?"Пароль 2FA":"Номер телефона";const placeholder=step==="code"?"12345":step==="password"?"Пароль 2FA":"+491234567890";return '<div class="chat-telegram-connect"><div class="chat-telegram-state"><b>Telegram account</b><span>Авторизация нужна один раз. Данные Telegram остаются на сервере.</span></div><form id="telegram-connect-form" class="chat-auth-form"><label>'+label+'</label><input id="telegram-auth-input" type="'+(step==="password"?"password":"text")+'" inputmode="'+(step==="code"?"numeric":"text")+'" autocomplete="off" placeholder="'+placeholder+'" value="'+escapeHtml(step==="phone"?telegramAuthPhone:"")+'" '+(telegramAuthBusy?"disabled":"")+'><button class="tg-button" type="submit" '+(telegramAuthBusy?"disabled":"")+'>'+(telegramAuthBusy?"…":step==="phone"?"Получить код":step==="code"?"Подтвердить код":"Подтвердить пароль")+"</button></form>"+(telegramChatError?'<p class="chat-error">'+escapeHtml(telegramChatError)+'</p>':"")+'</div>';}
 const selected=telegramChats.find(x=>x.id===telegramSelectedChatId);
-return '<div class="chat-telegram-shell"><aside class="chat-dialogs"><div class="chat-dialogs-head"><b>Telegram</b><button type="button" data-chat-refresh aria-label="Обновить">↻</button></div><div class="chat-dialog-list">'+telegramChats.map(chat=>'<button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i>'+chat.unreadCount+'</i>':"")+'</button>').join("")+'</div></aside><section class="chat-conversation"><header><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></header><div class="chat-history" id="telegram-chat-history">'+telegramMessages.map(m=>'<article class="chat-tg-message '+(m.outgoing?"outgoing":"")+'"><b>'+escapeHtml(m.senderName)+'</b><p>'+escapeHtml(m.text||"")+'</p><time>'+new Date(m.date).toLocaleString()+'</time></article>').join("")+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button class="tg-button" type="submit">Отправить</button></form></section></div>';
+return '<div class="chat-telegram-shell"><aside class="chat-dialogs"><div class="chat-dialogs-head"><b>Telegram</b><button type="button" data-chat-refresh aria-label="Обновить">↻</button></div><div class="chat-dialog-list">'+telegramChats.map(chat=>'<button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i>'+chat.unreadCount+'</i>':"")+'</button>').join("")+'</div></aside><section class="chat-conversation"><header><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></header><div class="chat-history" id="telegram-chat-history">'+telegramMessages.map(m=>'<article class="chat-tg-message '+(m.outgoing?"outgoing":"")+'"><b>'+escapeHtml(m.senderName)+'</b><p>'+telegramMessageText(m)+'</p>'+telegramMessageExpandControl(m)+'<time>'+new Date(m.date).toLocaleString()+'</time></article>').join("")+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button class="tg-button" type="submit">Отправить</button></form></section></div>';
 }
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
@@ -645,6 +656,13 @@ function bind(){
     if(telegramChatStatus==="idle")void loadTelegramChatStatus();
     document.querySelectorAll<HTMLElement>("[data-chat-id]").forEach(x=>x.onclick=()=>void loadTelegramMessages(x.dataset.chatId||""));
     document.querySelector("[data-chat-refresh]")?.addEventListener("click",()=>void loadTelegramChats());
+    document.querySelectorAll<HTMLElement>("[data-chat-expand]").forEach(button=>button.addEventListener("click",e=>{
+      e.preventDefault();e.stopPropagation();
+      const id=(e.currentTarget as HTMLElement).dataset.chatExpand||"";
+      if(!id)return;
+      if(expandedTelegramMessages.has(id))expandedTelegramMessages.delete(id);else expandedTelegramMessages.add(id);
+      render();
+    }));
     document.querySelector<HTMLButtonElement>("[data-chat-bottom]")?.addEventListener("click",()=>{
       const history=document.querySelector<HTMLElement>("#telegram-chat-history");
       if(history)history.scrollTo({top:history.scrollHeight,behavior:"smooth"});
