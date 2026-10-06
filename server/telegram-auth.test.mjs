@@ -5,7 +5,7 @@ import { validateTelegramInitData } from "./telegram-auth.mjs";
 
 function makeInitData(botToken, authDate) {
   const user = JSON.stringify({ id: 123456789, first_name: "Test", username: "tester" });
-  const values = new URLSearchParams({ auth_date: String(authDate), user, query_id: "AA-test" });
+  const values = new URLSearchParams({ auth_date: String(authDate), user, query_id: "AA-test", signature: "test-signature" });
   const check = [...values.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k,v]) => k+"="+v).join("\n");
   const secret = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
   const hash = crypto.createHmac("sha256", secret).update(check).digest("hex");
