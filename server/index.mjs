@@ -222,6 +222,7 @@ async function startTelegramLogin(userId, phoneNumber) {
     phoneNumber: async () => phoneNumber,
     phoneCode: async () => new Promise(resolve => { pending.code = resolve; }),
     password: async () => new Promise(resolve => { pending.password = resolve; }),
+    firstAndLastNames: async () => { throw new Error("TELEGRAM_SIGNUP_NOT_ALLOWED"); },
     onError: () => {}
   }).then(async () => {
     const session = client.session.save();
