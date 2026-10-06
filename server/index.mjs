@@ -50,22 +50,27 @@ function diagnoseInitData(initData) {
   try {
     const params = new URLSearchParams(initData);
     const receivedHash = params.get("hash") || "";
-    params.delete("hash");
-    params.delete("signature");
-    const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
-    const dataCheckString = entries.map(([key, value]) => key + "=" + value).join("\n");
-    const secretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
-    const calculatedHash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+    const entriesWithoutHash = [...params.entries()]
+      .filter(([key]) => key !== "hash")
+      .sort(([a], [b]) => a.localeCompare(b));
+    const dataCheckString = entriesWithoutHash.map(([key, value]) => key + "=" + value).join("\n");
+    const officialSecretKey = crypto.createHmac("sha256", botToken).update("WebAppData").digest();
+    const officialHash = crypto.createHmac("sha256", officialSecretKey).update(dataCheckString).digest("hex");
+    const reversedSecretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
+    const reversedHash = crypto.createHmac("sha256", reversedSecretKey).update(dataCheckString).digest("hex");
+    const sha256TokenKey = crypto.createHash("sha256").update(botToken).digest();
+    const loginWidgetHash = crypto.createHmac("sha256", sha256TokenKey).update(dataCheckString).digest("hex");
     return {
-      fields: entries.map(([key]) => key),
+      fields: entriesWithoutHash.map(([key]) => key),
       hasSignature: params.has("signature"),
       hasHash: Boolean(receivedHash),
       receivedHashPrefix: receivedHash.slice(0, 12),
-      calculatedHashPrefix: calculatedHash.slice(0, 12),
-      hashMatches: Boolean(receivedHash) && crypto.timingSafeEqual(
-        Buffer.from(receivedHash, "utf8"),
-        Buffer.from(calculatedHash, "utf8")
-      ),
+      officialHashPrefix: officialHash.slice(0, 12),
+      reversedHmacPrefix: reversedHash.slice(0, 12),
+      sha256TokenHmacPrefix: loginWidgetHash.slice(0, 12),
+      officialHashMatches: receivedHash === officialHash,
+      reversedHmacMatches: receivedHash === reversedHash,
+      sha256TokenHmacMatches: receivedHash === loginWidgetHash,
       authDate: params.get("auth_date") || "",
       userPresent: Boolean(params.get("user")),
       configuredBotId: botToken.includes(":") ? botToken.split(":", 1)[0] : ""
