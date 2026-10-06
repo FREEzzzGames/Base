@@ -454,6 +454,19 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");radioError=T("playError");render();},{once:true});
   void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");radioError=T("autoplayError");}).finally(()=>render());
 }
+window.addEventListener("freezzz:telegram-chat-request",async event=>{
+  const requestedId=String((event as CustomEvent<{chatId?:string}>).detail?.chatId||"");
+  if(telegramChatStatus==="idle"||telegramChatStatus==="error"){
+    await loadTelegramChatStatus();
+  }else if(telegramChatStatus==="connected"){
+    await loadTelegramChats();
+  }
+  if(telegramChatStatus==="connected"&&requestedId&&telegramChats.some(x=>x.id===requestedId)&&requestedId!==telegramSelectedChatId){
+    await loadTelegramMessages(requestedId);
+  }else if(telegramChatStatus==="connected"){
+    syncTelegramPopup();
+  }
+});
 window.addEventListener("freezzz:navigate",event=>{
   const next=(event as CustomEvent<{view?:string}>).detail?.view;
   if(next!=="game"&&next!=="library")return;
