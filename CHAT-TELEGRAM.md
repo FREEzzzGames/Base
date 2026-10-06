@@ -25,13 +25,13 @@ The browser never receives the Telegram user session.
 - [x] Base/main remains the only working repository.
 - [x] Frontend adapter contract: src/chat/telegram-client.ts
 - [x] Backend API contract documented.
-- [ ] MTProto backend implementation.
-- [ ] Secure server-side session storage.
+- [x] MTProto backend implementation (initial server adapter).
+- [ ] Secure server-side session storage and authenticated FREEzzz identity binding.
 - [ ] Telegram account connect flow.
 - [ ] Dialog synchronization.
 - [ ] Message history synchronization.
 - [ ] Send-message endpoint.
-- [ ] Production backend deployment.
+- [ ] Production backend deployment behind an authenticated HTTPS gateway.
 - [ ] End-to-end Mini App authentication binding.
 
 A Bot API token is not sufficient for a user's complete Telegram dialog list. Full user-dialog access requires an authorized Telegram user client/MTProto session.
