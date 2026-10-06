@@ -33,7 +33,8 @@ export interface TelegramChatClient {
   disconnect(): Promise<void>;
 }
 
-const DEFAULT_BASE = (import.meta.env.VITE_TELEGRAM_AUTH_URL || "/api/telegram").replace(/\/$/, "");
+const configuredBase = String(import.meta.env.VITE_TELEGRAM_AUTH_URL || "https://freezzz-telegram-auth.onrender.com").trim();
+const DEFAULT_BASE = configuredBase.replace(/\/$/, "").replace(/\/api\/telegram$/, "");
 const initData = () => getTelegramWebApp()?.initData || "";
 
 async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
@@ -57,29 +58,30 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
 }
 
 export function createTelegramChatClient(baseUrl = DEFAULT_BASE): TelegramChatClient {
-  const base = baseUrl.replace(/\/$/, "");
+  const base = baseUrl.replace(/\/$/, "").replace(/\/api\/telegram$/, "");
+  const apiBase = `${base}/api/telegram`;
   return {
-    getStatus: () => request(`${base}/api/telegram/status`),
-    getChats: (signal) => request<TelegramChat[]>(`${base}/api/telegram/chats`, { signal }),
+    getStatus: () => request(`${apiBase}/status`),
+    getChats: (signal) => request<TelegramChat[]>(`${apiBase}/chats`, { signal }),
     getMessages: (chatId, limit = 50, signal) =>
       request<TelegramMessage[]>(
-        `${base}/api/telegram/chats/${encodeURIComponent(chatId)}/messages?limit=${Math.min(Math.max(limit, 1), 100)}`,
+        `${apiBase}/chats/${encodeURIComponent(chatId)}/messages?limit=${Math.min(Math.max(limit, 1), 100)}`,
         { signal }
       ),
     sendMessage: async (chatId, text) => {
-      await request(`${base}/api/telegram/chats/${encodeURIComponent(chatId)}/messages`, {
+      await request(`${apiBase}/chats/${encodeURIComponent(chatId)}/messages`, {
         method: "POST", body: JSON.stringify({ text })
       });
     },
-    connect: (phoneNumber) => request<{ connected:boolean; awaiting?:string }>(`${base}/api/telegram/connect`, {
+    connect: (phoneNumber) => request<{ connected:boolean; awaiting?:string }>(`${apiBase}/connect`, {
       method: "POST", body: JSON.stringify({ phoneNumber })
     }),
-    submitCode: (code) => request<{ awaiting?:string }>(`${base}/api/telegram/connect/code`, {
+    submitCode: (code) => request<{ awaiting?:string }>(`${apiBase}/connect/code`, {
       method: "POST", body: JSON.stringify({ value: code })
     }),
-    submitPassword: (password) => request<{ awaiting?:string }>(`${base}/api/telegram/connect/password`, {
+    submitPassword: (password) => request<{ awaiting?:string }>(`${apiBase}/connect/password`, {
       method: "POST", body: JSON.stringify({ value: password })
     }),
-    disconnect: async () => { await request(`${base}/api/telegram/disconnect`, { method: "POST" }); }
+    disconnect: async () => { await request(`${apiBase}/disconnect`, { method: "POST" }); }
   };
 }
