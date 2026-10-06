@@ -405,7 +405,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, result, responseOrigin);
       }
 
-      const codeMatch = pathName.match(/^\\/api\\/telegram\\/connect\\/(code|password)$/);
+      const codeMatch = pathName.match(/^\/api\/telegram\/connect\/(code|password)$/);
       if (codeMatch && req.method === "POST") {
         const body = await readBody(req);
         const value = typeof body.value === "string" ? body.value.trim() : "";
@@ -419,7 +419,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { ok: true }, responseOrigin);
       }
 
-      const messagesMatch = pathName.match(/^\\/api\\/telegram\\/chats\\/([^/]+)\\/messages$/);
+      const messagesMatch = pathName.match(/^\/api\/telegram\/chats\/([^/]+)\/messages$/);
       if (messagesMatch && req.method === "GET") {
         const chatId = decodeURIComponent(messagesMatch[1]);
         const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 50), 1), 100);
