@@ -47,17 +47,6 @@ type View = PortalView;
 type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-type PortalSessionSnapshot={view:View;profileOpen:boolean;};
-const PORTAL_SESSION_KEY="freezzz:session-state:v1";
-function loadPortalSessionSnapshot():Partial<PortalSessionSnapshot>{
-  try{
-    const raw=sessionStorage.getItem(PORTAL_SESSION_KEY);
-    if(!raw)return {};
-    const parsed=JSON.parse(raw) as Partial<PortalSessionSnapshot>;
-    return parsed&&typeof parsed==="object"?parsed:{};
-  }catch{return {};}
-}
-const portalSession=loadPortalSessionSnapshot();
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 const moduleManager=new PortalModuleManager();
@@ -605,8 +594,6 @@ function render(){
   if(view==="game"){
     const host=document.querySelector<HTMLElement>(".game-story-block");
     if(host)freezzzArenaCleanup=mountFreezzzMafia(host);
-  }
-  if(view==="game"){
   }
   bindHudTouchGesture();
   updateHomeClock();
