@@ -6021,7 +6021,8 @@ html.visual-comfort-enabled video{
 .chat-conversation>header{align-items:flex-start;flex-direction:column;gap:3px}
 .chat-conversation>header small{opacity:.55}
 .chat-history{position:relative;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
-.chat-scroll-bottom{position:absolute;right:12px;bottom:12px;width:34px;height:34px;border:1px solid rgba(102,252,241,.45);border-radius:50%;background:rgba(7,9,11,.86);color:#66fcf1;font:700 20px/1 monospace;display:grid;place-items:center;cursor:pointer;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.35);touch-action:manipulation}
+.chat-scroll-bottom{position:absolute;right:12px;bottom:12px;width:34px;height:34px;border:1px solid rgba(102,252,241,.45);border-radius:50%;background:rgba(7,9,11,.86);color:#66fcf1;font:700 20px/1 monospace;display:grid;place-items:center;cursor:pointer;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.35);touch-action:manipulation;opacity:1;transform:translateY(0);transition:opacity .16s ease,transform .16s ease;pointer-events:auto}
+.chat-scroll-bottom.is-hidden{opacity:0;transform:translateY(6px);pointer-events:none}
 .chat-scroll-bottom:active{transform:translateY(1px)}
 .chat-tg-message{align-self:flex-start;max-width:88%;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.07)}
 .chat-tg-message.outgoing{align-self:flex-end;background:rgba(102,252,241,.1)}
