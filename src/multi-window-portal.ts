@@ -34,7 +34,7 @@ let layer:HTMLDivElement|null=null;
 
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
 function focus(id:MiniId){windows[id].z=nextZ++;}
-function open(id:MiniId){windows[id].open=true;focus(id);render();}
+function open(id:MiniId){windows[id].open=true;focus(id);if(id==="chat"){window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));}render();}
 function close(id:MiniId){windows[id].open=false;render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandles(id:MiniId){
