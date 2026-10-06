@@ -4267,6 +4267,10 @@ main{
   border-top:1px solid rgba(255,255,255,.08)!important;
 }
 .portal-mw-chat input{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  -webkit-user-select:text!important;
+  user-select:text!important;
   min-width:0!important;
   flex:1!important;
   height:34px!important;
