@@ -96,6 +96,16 @@ let telegramChats:TelegramChat[]=[];
 let telegramMessages:TelegramMessage[]=[];
 const TELEGRAM_LAST_CHAT_KEY="freezzz:telegram:last-chat";
 let telegramSelectedChatId=(()=>{try{return localStorage.getItem(TELEGRAM_LAST_CHAT_KEY)||"";}catch{return "";}})();
+const TELEGRAM_FAVORITES_KEY="freezzz:telegram:favorites";
+let telegramFavoriteChatIds=new Set<string>((()=>{try{const raw=JSON.parse(localStorage.getItem(TELEGRAM_FAVORITES_KEY)||"[]");return Array.isArray(raw)?raw.map(String):[];}catch{return [];}})());
+function saveTelegramFavorites(){try{localStorage.setItem(TELEGRAM_FAVORITES_KEY,JSON.stringify([...telegramFavoriteChatIds]));}catch{}}
+function toggleTelegramFavorite(chatId:string){
+  if(!chatId)return;
+  if(telegramFavoriteChatIds.has(chatId))telegramFavoriteChatIds.delete(chatId);else telegramFavoriteChatIds.add(chatId);
+  saveTelegramFavorites();
+  render();
+}
+
 let telegramChatStatus:"idle"|"loading"|"connected"|"disconnected"|"error"="idle";
 let telegramChatError="";
 let telegramAuthStep:"phone"|"code"|"password"|"none"="phone";
@@ -133,7 +143,12 @@ if(telegramChatStatus==="loading")return '<div class="chat-telegram-state"><b>Te
 if(telegramChatStatus==="error")return '<div class="chat-telegram-state"><b>Telegram CHAT</b><span>'+escapeHtml(telegramChatError)+'</span><button class="tg-button" data-chat-retry type="button">Повторить</button></div>';
 if(telegramChatStatus!=="connected"){const step=telegramAuthStep;const label=step==="code"?"Код из Telegram":step==="password"?"Пароль 2FA":"Номер телефона";const placeholder=step==="code"?"12345":step==="password"?"Пароль 2FA":"+491234567890";return '<div class="chat-telegram-connect"><div class="chat-telegram-state"><b>Telegram account</b><span>Авторизация нужна один раз. Данные Telegram остаются на сервере.</span></div><form id="telegram-connect-form" class="chat-auth-form"><label>'+label+'</label><input id="telegram-auth-input" type="'+(step==="password"?"password":"text")+'" inputmode="'+(step==="code"?"numeric":"text")+'" autocomplete="off" placeholder="'+placeholder+'" value="'+escapeHtml(step==="phone"?telegramAuthPhone:"")+'" '+(telegramAuthBusy?"disabled":"")+'><button class="tg-button" type="submit" '+(telegramAuthBusy?"disabled":"")+'>'+(telegramAuthBusy?"…":step==="phone"?"Получить код":step==="code"?"Подтвердить код":"Подтвердить пароль")+"</button></form>"+(telegramChatError?'<p class="chat-error">'+escapeHtml(telegramChatError)+'</p>':"")+'</div>';}
 const selected=telegramChats.find(x=>x.id===telegramSelectedChatId);
-return '<div class="chat-telegram-shell"><aside class="chat-dialogs"><div class="chat-dialogs-head"><b>Telegram</b><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button></div><div class="chat-dialog-list">'+telegramChats.map(chat=>'<button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i>'+chat.unreadCount+'</i>':"")+'</button>').join("")+'</div></aside><section class="chat-conversation"><header><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></header><div class="chat-history" id="telegram-chat-history">'+telegramMessages.map(m=>'<article class="chat-tg-message '+(m.outgoing?"outgoing":"")+'"><b>'+escapeHtml(m.senderName)+'</b><p>'+telegramMessageText(m)+'</p>'+telegramMessageExpandControl(m)+'<time>'+new Date(m.date).toLocaleString()+'</time></article>').join("")+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button class="tg-button" type="submit">Отправить</button></form></section></div>';
+const orderedTelegramChats=[...telegramChats].sort((a,b)=>{
+  const af=telegramFavoriteChatIds.has(a.id)?1:0;
+  const bf=telegramFavoriteChatIds.has(b.id)?1:0;
+  return bf-af;
+});
+return '<div class="chat-telegram-shell"><aside class="chat-dialogs"><div class="chat-dialogs-head"><b>Telegram</b><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button></div><div class="chat-dialog-list">'+orderedTelegramChats.map(chat=>'<div class="chat-dialog-row"><button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i>'+chat.unreadCount+'</i>':"")+'</button><button type="button" class="chat-favorite '+(telegramFavoriteChatIds.has(chat.id)?"active":"")+'" data-chat-favorite="'+escapeHtml(chat.id)+'" aria-label="'+(telegramFavoriteChatIds.has(chat.id)?"Убрать из избранного":"Добавить в избранное")+'" title="'+(telegramFavoriteChatIds.has(chat.id)?"Убрать из избранного":"В избранное")+'">'+(telegramFavoriteChatIds.has(chat.id)?"★":"☆")+'</button></div>').join("")</div></aside><section class="chat-conversation"><header><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></header><div class="chat-history" id="telegram-chat-history">'+telegramMessages.map(m=>'<article class="chat-tg-message '+(m.outgoing?"outgoing":"")+'"><b>'+escapeHtml(m.senderName)+'</b><p>'+telegramMessageText(m)+'</p>'+telegramMessageExpandControl(m)+'<time>'+new Date(m.date).toLocaleString()+'</time></article>').join("")+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button class="tg-button" type="submit">Отправить</button></form></section></div>';
 }
 let radioBrowser:RadioBrowserClient|null=null;
 let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
@@ -653,6 +668,10 @@ function bind(){
   if(view==="chat"){
     if(telegramChatStatus==="idle")void loadTelegramChatStatus();
     document.querySelectorAll<HTMLElement>("[data-chat-id]").forEach(x=>x.onclick=()=>void loadTelegramMessages(x.dataset.chatId||""));
+    document.querySelectorAll<HTMLButtonElement>("[data-chat-favorite]").forEach(button=>button.addEventListener("click",e=>{
+      e.preventDefault();e.stopPropagation();
+      toggleTelegramFavorite(button.dataset.chatFavorite||"");
+    }));
     const refreshButton=document.querySelector<HTMLButtonElement>("[data-chat-refresh]");
     refreshButton?.addEventListener("click",e=>{
       e.preventDefault();
