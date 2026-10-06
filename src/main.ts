@@ -94,7 +94,8 @@ let chatMessages:Array<{author:string;message:string}>=[{author:"FREEzzzBot",mes
 const telegramChatClient=createTelegramChatClient();
 let telegramChats:TelegramChat[]=[];
 let telegramMessages:TelegramMessage[]=[];
-let telegramSelectedChatId="";
+const TELEGRAM_LAST_CHAT_KEY="freezzz:telegram:last-chat";
+let telegramSelectedChatId=(()=>{try{return localStorage.getItem(TELEGRAM_LAST_CHAT_KEY)||"";}catch{return "";}})();
 let telegramChatStatus:"idle"|"loading"|"connected"|"disconnected"|"error"="idle";
 let telegramChatError="";
 let telegramAuthStep:"phone"|"code"|"password"|"none"="phone";
@@ -102,8 +103,15 @@ let telegramAuthBusy=false;
 let telegramAuthPhone="";
 let telegramChatLoadToken=0;
 async function loadTelegramChatStatus(){telegramChatStatus="loading";telegramChatError="";render();try{const status=await telegramChatClient.getStatus();telegramChatStatus=status.connected?"connected":"disconnected";if(status.connected){telegramAuthStep="none";await loadTelegramChats();}else if(status.pending==="code")telegramAuthStep="code";else if(status.pending==="password")telegramAuthStep="password";}catch(error){telegramChatStatus="error";telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
-async function loadTelegramChats(){const token=++telegramChatLoadToken;try{telegramChats=await telegramChatClient.getChats();if(token!==telegramChatLoadToken)return;if(!telegramSelectedChatId||!telegramChats.some(x=>x.id===telegramSelectedChatId))telegramSelectedChatId=telegramChats[0]?.id||"";if(telegramSelectedChatId)await loadTelegramMessages(telegramSelectedChatId);render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
-async function loadTelegramMessages(chatId:string){telegramSelectedChatId=chatId;try{telegramMessages=await telegramChatClient.getMessages(chatId,100);telegramMessages.reverse();telegramChatError="";render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
+function syncTelegramPopup(){
+  const chat=telegramChats.find(x=>x.id===telegramSelectedChatId)||null;
+  window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-sync",{detail:{
+    chat:chat?{id:chat.id,title:chat.title,kind:chat.kind,username:chat.username,lastMessage:chat.lastMessage?{text:chat.lastMessage.text,date:chat.lastMessage.date,outgoing:chat.lastMessage.outgoing}:undefined}:null,
+    messages:telegramMessages.map(m=>({id:m.id,senderName:m.senderName,text:m.text,date:m.date,outgoing:m.outgoing}))
+  }}));
+}
+async function loadTelegramChats(){const token=++telegramChatLoadToken;try{telegramChats=await telegramChatClient.getChats();if(token!==telegramChatLoadToken)return;if(!telegramSelectedChatId||!telegramChats.some(x=>x.id===telegramSelectedChatId))telegramSelectedChatId=telegramChats[0]?.id||"";if(telegramSelectedChatId)await loadTelegramMessages(telegramSelectedChatId);syncTelegramPopup();render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
+async function loadTelegramMessages(chatId:string){telegramSelectedChatId=chatId;try{telegramMessages=await telegramChatClient.getMessages(chatId,100);telegramMessages.reverse();telegramChatError="";try{localStorage.setItem(TELEGRAM_LAST_CHAT_KEY,chatId);}catch{};syncTelegramPopup();render();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_UNAVAILABLE";render();}}
 async function submitTelegramConnect(){const phone=telegramAuthPhone.trim();if(!phone)return;telegramAuthBusy=true;telegramChatError="";render();try{const result=await telegramChatClient.connect(phone);telegramAuthStep=result.awaiting==="code"?"code":"none";await loadTelegramChatStatus();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_CONNECT_FAILED";}finally{telegramAuthBusy=false;render();}}
 async function submitTelegramCode(code:string){telegramAuthBusy=true;telegramChatError="";render();try{const result=await telegramChatClient.submitCode(code.trim());telegramAuthStep=result.awaiting==="password_or_complete"?"password":"none";await waitForTelegramConnection();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_CODE_FAILED";}finally{telegramAuthBusy=false;render();}}
 async function submitTelegramPassword(password:string){telegramAuthBusy=true;telegramChatError="";render();try{await telegramChatClient.submitPassword(password);await waitForTelegramConnection();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_PASSWORD_FAILED";}finally{telegramAuthBusy=false;render();}}
@@ -628,6 +636,21 @@ function bind(){
     document.querySelector("#telegram-connect-form")?.addEventListener("submit",e=>{e.preventDefault();const input=document.querySelector<HTMLInputElement>("#telegram-auth-input");const value=input?.value.trim()||"";if(telegramAuthStep==="phone"){telegramAuthPhone=value;void submitTelegramConnect();}else if(telegramAuthStep==="code")void submitTelegramCode(value);else if(telegramAuthStep==="password")void submitTelegramPassword(value);});
     document.querySelector("#telegram-message-form")?.addEventListener("submit",async e=>{e.preventDefault();const input=document.querySelector<HTMLInputElement>("#telegram-message-input");const message=input?.value.trim()||"";if(!message||!telegramSelectedChatId)return;try{await telegramChatClient.sendMessage(telegramSelectedChatId,message);recordChatMessage(portalProfile);if(input)input.value="";await loadTelegramMessages(telegramSelectedChatId);await loadTelegramChats();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_SEND_FAILED";render();}});
   }
+  window.addEventListener("freezzz:chat-send",async event=>{
+    const detail=(event as CustomEvent<{chatId?:string;text?:string}>).detail;
+    const chatId=String(detail?.chatId||"");
+    const message=String(detail?.text||"").trim();
+    if(!chatId||!message)return;
+    try{
+      await telegramChatClient.sendMessage(chatId,message);
+      recordChatMessage(portalProfile);
+      await loadTelegramMessages(chatId);
+      await loadTelegramChats();
+    }catch(error){
+      telegramChatError=error instanceof Error?error.message:"TELEGRAM_SEND_FAILED";
+      render();
+    }
+  });
   document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
   document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
 }
