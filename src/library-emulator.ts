@@ -485,8 +485,9 @@ function loadEmulatorScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>('script[data-freezzz-emulator]');
     if (existing) {
-      if ((window as EmulatorWindow).EJS_emulator) resolve();
-      else {
+      if (existing.dataset.freezzzLoaded === "1") {
+        resolve();
+      } else {
         existing.addEventListener("load", () => resolve(), { once: true });
         existing.addEventListener("error", () => reject(new Error("EMULATORJS_LOAD_FAILED")), { once: true });
       }
@@ -496,7 +497,10 @@ function loadEmulatorScript(): Promise<void> {
     script.src = EJS_LOADER;
     script.async = true;
     script.dataset.freezzzEmulator = "1";
-    script.onload = () => resolve();
+    script.onload = () => {
+      script.dataset.freezzzLoaded = "1";
+      resolve();
+    };
     script.onerror = () => reject(new Error("EMULATORJS_LOAD_FAILED"));
     document.head.appendChild(script);
   });
