@@ -8899,3 +8899,37 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   border-bottom:0!important;
   box-shadow:none!important;
 }
+
+
+/* ================================================================
+   FINAL GAMEPAD OVERRIDE — no chassis, only floating controls
+   ================================================================ */
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-body,
+.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-body,
+.library-emulator-root .freezzz-gamepad-sms .freezzz-gp-body,
+.library-emulator-root .freezzz-gamepad-snes .freezzz-gp-body,
+.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-body{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  top:0!important;
+  left:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-body:before,
+.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-body:before,
+.library-emulator-root .freezzz-gamepad-sms .freezzz-gp-body:before,
+.library-emulator-root .freezzz-gamepad-snes .freezzz-gp-body:before,
+.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-body:before{
+  display:none!important;
+}
+.library-emulator-root .freezzz-gp-dpad,
+.library-emulator-root .freezzz-gp-face,
+.library-emulator-root .freezzz-gp-center,
+.library-emulator-root .freezzz-gp-shoulders{
+  z-index:5!important;
+}
