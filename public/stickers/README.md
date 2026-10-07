@@ -1,17 +1,27 @@
-# FREEzzz shared gamepad stickers
+# FREEzzz shared gamepad sticker/background base
 
-Upload the approved sticker assets into this folder. The selector is shared by all users; there is no user upload control.
+The approved artwork is shared by all users. There is no user sticker upload control.
 
-Required filenames:
-- `classic.png`
-- `paper-red.png`
-- `paper-blue.png`
-- `exclusive-01.gif`
-- `exclusive-02.gif`
+The selector works inline on the gamepad:
+- press **STICKER**
+- swipe left/right directly across the gamepad to preview
+- the background changes immediately
+- press **✓** to confirm the selection
 
-GIF files remain animated in the gamepad preview and after confirmation.
+## Current base
 
-Recommended source format:
-- PNG/WebP for static stickers.
-- GIF for the two exclusive animated stickers.
-- 16:9 or wider artwork works best; the gamepad uses `cover`.
+Static backgrounds:
+- `sunny-toons.jpg`
+- `monster-carnival.jpg`
+- `blue-graffiti.jpg`
+- `neon-character.jpg`
+- `sticker-bomb.jpg`
+- `retro-emboss.jpg`
+- `pop-arcade.jpg`
+
+Animated background:
+- `animated-exclusive.gif`
+
+The supplied portrait artwork was adapted to a wide **2.4:1 gamepad background format** so the controller geometry stays unchanged and the artwork does not depend on the old sticker cutter.
+
+For additional approved backgrounds, keep the same wide format and add the file to `GAMEPAD_STICKERS` in `src/library-emulator.ts`.
