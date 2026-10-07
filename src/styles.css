@@ -9362,3 +9362,38 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-face .face{
   filter:saturate(.92) contrast(1.04)!important;
 }
+
+/* ORIGINAL-PROPORTION PASS — 16/32 bit controls */
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-dpad{left:9%!important;top:34%!important;width:22%!important;height:38%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-dpad .dpad{width:38%!important;height:34%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face{right:7%!important;top:31%!important;width:30%!important;height:48%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .face{width:25%!important;height:25%!important;border-radius:50%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .y{left:37.5%!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .b{left:37.5%!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;bottom:0!important}
+
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-dpad{left:9%!important;top:34%!important;width:22%!important;height:39%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face{right:9%!important;top:31%!important;width:25%!important;height:45%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .face{width:27%!important;height:27%!important;border-radius:50%!important}
+
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-dpad{left:9%!important;top:35%!important;width:23%!important;height:39%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face{right:10%!important;top:34%!important;width:20%!important;height:40%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face .face{width:31%!important;height:31%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-shoulders{left:7%!important;right:7%!important;top:5%!important;height:18%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-shoulders .shoulder{width:15%!important;height:34%!important}
+
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-dpad{left:9%!important;top:34%!important;width:22%!important;height:40%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face{right:9%!important;top:32%!important;width:23%!important;height:43%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .face{width:25%!important;height:25%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders{left:6%!important;right:6%!important;top:4%!important;height:22%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .trigger,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder{width:11%!important;height:30%!important}
+
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-dpad{left:9%!important;top:34%!important;width:22%!important;height:40%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-face{right:9%!important;top:33%!important;width:22%!important;height:41%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-face .face{width:27%!important;height:27%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-shoulders{left:7%!important;right:7%!important;top:5%!important;height:19%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nds .freezzz-gp-shoulders .shoulder{width:14%!important;height:32%!important}
