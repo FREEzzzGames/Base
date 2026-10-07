@@ -8933,3 +8933,76 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-emulator-root .freezzz-gp-shoulders{
   z-index:5!important;
 }
+
+/* ================================================================
+   GAMEPAD V6 — NES FIRST-PASS GEOMETRY
+   Requested: compact SELECT/START, tighter A/B spacing, D-pad
+   directions moved 2px farther from the center.
+   ================================================================ */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad{
+  width:96px!important;
+  height:96px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .up{
+  left:31px!important;
+  top:-2px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .down{
+  left:31px!important;
+  top:64px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .left{
+  left:-2px!important;
+  top:31px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .right{
+  left:64px!important;
+  top:31px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad:after{
+  left:31px!important;
+  top:31px!important;
+}
+
+/* SELECT / START: half the previous width, 20% shorter. */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center{
+  width:126px!important;
+  height:30px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .select,
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .start{
+  width:28px!important;
+  min-width:28px!important;
+  height:24px!important;
+  min-height:24px!important;
+  padding:0!important;
+  font-size:7px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .select{
+  left:0!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .start{
+  right:0!important;
+}
+
+/* A / B: keep the button radius as the gap between their edges. */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face{
+  width:90px!important;
+  height:60px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face .a,
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face .b{
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  min-height:36px!important;
+  top:12px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face .b{
+  left:0!important;
+  right:auto!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face .a{
+  left:54px!important;
+  right:auto!important;
+}
