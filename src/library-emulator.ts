@@ -57,6 +57,7 @@ const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string
 };
 
 let selectedSystem: "all" | "8" | "16" | "32" = "all";
+let librarySearch = "";
 let activeGame: LibraryGame | null = null;
 let activeObjectUrl: string | null = null;
 let emulatorToken = 0;
@@ -251,9 +252,14 @@ function setOpacity(value: number): void {
 }
 
 function filteredGames(): LibraryGame[] {
-  const games = readMeta();
-  if (selectedSystem === "all") return games;
-  return games.filter(g => String(g.bits) === selectedSystem);
+  const query = librarySearch.trim().toLocaleLowerCase();
+  return readMeta().filter(game => {
+    const matchesBits = selectedSystem === "all" || String(game.bits) === selectedSystem;
+    if (!matchesBits) return false;
+    if (!query) return true;
+    return [game.name, game.fileName, SYSTEMS[game.system].label]
+      .some(value => value.toLocaleLowerCase().includes(query));
+  });
 }
 
 function systemCards(): string {
@@ -270,8 +276,11 @@ function systemCards(): string {
 
 function gameCard(game: LibraryGame): string {
   const meta = SYSTEMS[game.system];
-  return '<article class="library-game-card">' +
-    '<div class="library-game-art"><span>' + game.bits + '</span><b>' + esc(meta.label) + '</b></div>' +
+  const badge = game.lastPlayedAt ? "RECENT" : meta.label;
+  return '<article class="library-game-card library-catalog-card">' +
+    '<button type="button" class="library-game-cover" data-library-play="' + esc(game.id) + '" aria-label="Запустить ' + esc(game.name) + '">' +
+      '<span class="library-game-cover-system">' + esc(meta.label) + '</span><strong>' + game.bits + '</strong><small>' + esc(badge) + '</small>' +
+    '</button>' +
     '<div class="library-game-info"><strong title="' + esc(game.name) + '">' + esc(game.name) + '</strong><small>' + esc(game.fileName) + ' · ' + formatSize(game.size) + '</small></div>' +
     '<div class="library-game-actions"><button type="button" class="tg-button" data-library-play="' + esc(game.id) + '">PLAY</button><button type="button" class="tg-button secondary" data-library-delete="' + esc(game.id) + '" aria-label="Удалить игру">×</button></div>' +
     '</article>';
@@ -279,13 +288,15 @@ function gameCard(game: LibraryGame): string {
 
 export function renderLibrary(): string {
   const games = filteredGames();
-  const opacity = Math.round(getOpacity() * 100);
+  const total = readMeta().length;
   return '<div class="content portal-layout library-portal" data-portal-layout="library">' +
     '<section class="library-shell portal-block">' +
-      '<div class="library-head"><div><h2>LIBRARY</h2><p>Локальная библиотека игр пользователя. ROM-файлы не загружаются на сервер.</p></div>' +
+      '<div class="library-head"><div><div class="library-kicker">FREEzzz // HOME BREW</div><h2>GAME LIBRARY</h2><p>' + total + ' игр · локально на устройстве · ROM-файлы не загружаются на сервер.</p></div>' +
       '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
+      '<div class="library-catalog-search"><span>⌕</span><input id="library-search" type="search" value="' + esc(librarySearch) + '" placeholder="Поиск игры, файла или системы..." autocomplete="off" spellcheck="false"><button type="button" data-library-search-clear aria-label="Очистить поиск">×</button></div>' +
       '<div class="library-filters">' + systemCards() + '</div>' +
-      '<div class="library-game-grid">' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>LIBRARY EMPTY</b><span>Добавь собственные ROM-файлы с телефона.</span></div>') + '</div>' +
+      '<div class="library-catalog-meta"><span>' + games.length + ' RESULTS</span><span>' + (selectedSystem === "all" ? "ALL GENERATIONS" : selectedSystem + "-BIT") + '</span></div>' +
+      '<div class="library-game-grid">' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>NO GAMES FOUND</b><span>Измени поиск или добавь ROM в библиотеку.</span></div>') + '</div>' +
       '<div class="library-emulator-root" id="library-emulator-root" hidden></div>' +
       '<div class="library-hint">Эмуляция выполняется в браузере. Используй ROM-файлы, которыми ты имеешь право пользоваться.</div>' +
     '</section>' +
@@ -875,6 +886,21 @@ function bindLibrary(): void {
       selectedSystem = (button.dataset.libraryFilter as typeof selectedSystem) || "all";
       renderLibraryIntoPage();
     });
+  });
+
+  const search = document.querySelector<HTMLInputElement>("#library-search");
+  search?.addEventListener("input", () => {
+    librarySearch = search.value;
+    const cursor = search.selectionStart ?? search.value.length;
+    renderLibraryIntoPage();
+    const next = document.querySelector<HTMLInputElement>("#library-search");
+    next?.focus();
+    next?.setSelectionRange(cursor, cursor);
+  });
+  document.querySelector<HTMLElement>("[data-library-search-clear]")?.addEventListener("click", () => {
+    librarySearch = "";
+    renderLibraryIntoPage();
+    document.querySelector<HTMLInputElement>("#library-search")?.focus();
   });
 
   document.querySelector<HTMLInputElement>("#library-rom-input")?.addEventListener("change", e => {
