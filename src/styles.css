@@ -6633,7 +6633,38 @@ html.visual-comfort-enabled video{
 }
 
 
+/* MAIN CHAT — remove the legacy square container and make the chat scale to the available viewport. */
+.chat-portal{
+  width:100%!important;
+  max-width:none!important;
+}
+.chat-portal .chat.portal-block{
+  width:100%!important;
+  min-height:0!important;
+  height:clamp(360px,calc(100dvh - 170px),760px)!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  overflow:hidden!important;
+}
+.chat-portal .chat-telegram-shell{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  margin:0!important;
+  border-radius:14px!important;
+}
+@media(max-width:520px){
+  .chat-portal .chat.portal-block{
+    height:clamp(360px,calc(100dvh - 170px),760px)!important;
+  }
+}
+
 /* MAIN CHAT = FLOATING CHAT VISUAL LANGUAGE */
+
 /* The full CHAT uses the same compact graphite surface as the HOME floating CHAT. */
 .chat-telegram-shell{
   border:1px solid #465560!important;
