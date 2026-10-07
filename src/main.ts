@@ -17,6 +17,7 @@ import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
 import { mountFreezzzMafia } from "./freezzz-mafia";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
+import { renderLibrary, bindLibraryView } from "./library-emulator";
 
 initTelegramBridge();
 initVisualComfort();
@@ -562,18 +563,7 @@ function render(){
   }
 
   if(view==="library"){
-    body=`
-      <div class="content portal-layout library-portal" data-portal-layout="library">
-        <section class="hero portal-block" data-portal-block="content">
-          <h2>LIBRARY</h2>
-          <p>${T("libraryLocal")}</p>
-          <div class="top-actions" style="justify-content:flex-start;margin-top:12px">
-            <button class="tg-button" id="save">${T("save")}</button>
-            <button class="tg-button secondary" id="clear">${T("clear")}</button>
-          </div>
-          <pre>${localStorage.getItem("freezzz-library")||"[]"}</pre>
-        </section>
-      </div>`;
+    body=renderLibrary();
   }
 
   app.innerHTML=`
@@ -944,8 +934,7 @@ function bind(){
       render();
     }
   });
-  document.querySelector("#save")?.addEventListener("click",function(){localStorage.setItem("freezzz-library",JSON.stringify([{id:"duck-blast",savedAt:new Date().toISOString()}]));render();});
-  document.querySelector("#clear")?.addEventListener("click",function(){localStorage.removeItem("freezzz-library");render();});
+  if(view==="library") bindLibraryView();
 }
 
 function chatEmoji(m:{author:string;message:string}):string{
