@@ -9072,3 +9072,26 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-btn{
   border-radius:6px!important;
 }
+
+/* NES GAMEPAD — remove light button frames */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-btn{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .dpad{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .select,
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .start{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-face .face{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
