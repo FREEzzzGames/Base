@@ -127,6 +127,63 @@ function detectSystem(fileName: string): SystemId | null {
   return null;
 }
 
+async function inspectZip(file: File): Promise<{ name: string; method: number; compressedSize: number; localOffset: number }[]> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const results: { name: string; method: number; compressedSize: number; localOffset: number }[] = [];
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+    if (view.getUint32(i, true) !== 0x06054b50) continue;
+    const count = view.getUint16(i + 10, true);
+    const centralOffset = view.getUint32(i + 16, true);
+    let p = centralOffset;
+    for (let n = 0; n < count && p + 46 <= bytes.length; n++) {
+      if (view.getUint32(p, true) !== 0x02014b50) break;
+      const method = view.getUint16(p + 10, true);
+      const compressedSize = view.getUint32(p + 20, true);
+      const nameLength = view.getUint16(p + 28, true);
+      const extraLength = view.getUint16(p + 30, true);
+      const commentLength = view.getUint16(p + 32, true);
+      const localOffset = view.getUint32(p + 42, true);
+      const nameBytes = bytes.subarray(p + 46, p + 46 + nameLength);
+      const name = new TextDecoder().decode(nameBytes);
+      if (!name.endsWith("/")) results.push({ name, method, compressedSize, localOffset });
+      p += 46 + nameLength + extraLength + commentLength;
+    }
+    return results;
+  }
+  return results;
+}
+
+async function extractSingleZipRom(file: File, entry: { name: string; method: number; compressedSize: number; localOffset: number }): Promise<Blob> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const p = entry.localOffset;
+  if (view.getUint32(p, true) !== 0x04034b50) throw new Error("ZIP_LOCAL_HEADER_INVALID");
+  const nameLength = view.getUint16(p + 26, true);
+  const extraLength = view.getUint16(p + 28, true);
+  const start = p + 30 + nameLength + extraLength;
+  const compressed = bytes.subarray(start, start + entry.compressedSize);
+  if (entry.method === 0) return new Blob([compressed], { type: "application/octet-stream" });
+  if (entry.method === 8 && "DecompressionStream" in window) {
+    const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return new Response(stream).blob();
+  }
+  throw new Error("ZIP_COMPRESSION_UNSUPPORTED");
+}
+
+async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob; fileName: string }> {
+  const direct = detectSystem(file.name);
+  if (direct && extensionOf(file.name) !== "zip") return { system: direct, blob: file, fileName: file.name };
+  if (extensionOf(file.name) !== "zip") throw new Error("UNSUPPORTED_ROM_FORMAT");
+  const entries = await inspectZip(file);
+  const candidates = entries.filter(entry => detectSystem(entry.name));
+  if (candidates.length !== 1) throw new Error(candidates.length ? "ZIP_MUST_CONTAIN_ONE_ROM" : "ZIP_ROM_NOT_RECOGNIZED");
+  const entry = candidates[0];
+  const system = detectSystem(entry.name);
+  if (!system) throw new Error("ZIP_ROM_NOT_RECOGNIZED");
+  return { system, blob: await extractSingleZipRom(file, entry), fileName: entry.name };
+}
+
 function uid(): string {
   return "rom-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
 }
@@ -313,22 +370,23 @@ async function importFiles(files: FileList | null): Promise<void> {
   if (!files?.length) return;
   const current = readMeta();
   for (const file of Array.from(files)) {
-    const system = detectSystem(file.name);
-    if (!system) continue;
-    const id = uid();
-    const config = SYSTEMS[system];
-    const game: LibraryGame = {
-      id,
-      name: file.name.replace(/\\.[^.]+$/, "") || file.name,
-      fileName: file.name,
-      system,
-      systemLabel: config.label,
-      bits: config.bits,
-      size: file.size,
-      addedAt: new Date().toISOString()
-    };
-    await putRom(id, file);
-    current.unshift(game);
+    try {
+      const resolved = await resolveImport(file);
+      const id = uid();
+      const config = SYSTEMS[resolved.system];
+      const game: LibraryGame = {
+        id,
+        name: resolved.fileName.replace(/\\.[^.]+$/, "") || resolved.fileName,
+        fileName: resolved.fileName,
+        system: resolved.system,
+        systemLabel: config.label,
+        bits: config.bits,
+        size: resolved.blob.size,
+        addedAt: new Date().toISOString()
+      };
+      await putRom(id, resolved.blob);
+      current.unshift(game);
+    } catch {}
   }
   writeMeta(current);
   renderLibraryIntoPage();
