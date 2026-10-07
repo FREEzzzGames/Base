@@ -29,6 +29,7 @@ type EmulatorWindow = Window & {
   EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
   EJS_ready?: () => void;
   EJS_onGameStart?: () => void;
+  EJS_onExit?: () => void;
   EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
   EJS_terminate?: () => void;
   EJS_gameID?: number;
