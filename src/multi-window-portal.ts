@@ -88,7 +88,7 @@ function render(){
     out.push('<section class="portal-mw portal-mw-chat" data-mw="chat" style="left:'+windows.chat.x+'px;top:'+windows.chat.y+'px;width:'+windows.chat.width+'px;height:'+windows.chat.height+'px;z-index:'+windows.chat.z+'">'+
       '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 '+esc(telegramPopupChat?.title||"CHAT")+'</strong><div><button data-mw-chat-open type="button" title="Открыть CHAT">↗</button><button data-mw-close="chat">×</button></div></header>'+
       '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
-        ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'"><b>'+esc(m.senderName)+'</b><span>'+popupMessageText(m)+'</span>'+popupMessageExpandControl(m)+'</p>').join("")
+        ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'" data-mw-chat-message-key="'+esc(m.id)+'"><b>'+esc(m.senderName)+'</b><span>'+popupMessageText(m)+'</span>'+popupMessageExpandControl(m)+'</p>').join("")
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
       '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandles("chat")+'</section>');
   }
@@ -145,8 +145,23 @@ function bind(){
     e.preventDefault();e.stopPropagation();
     const id=(e.currentTarget as HTMLElement).dataset.mwChatExpand||"";
     if(!id)return;
+    const list=layer?.querySelector<HTMLElement>(".portal-mw-chat-list");
+    const messageEl=(e.currentTarget as HTMLElement).closest<HTMLElement>("[data-mw-chat-message-key]");
+    const listRect=list?.getBoundingClientRect();
+    const messageRect=messageEl?.getBoundingClientRect();
+    const anchorOffset=listRect&&messageRect?messageRect.top-listRect.top:null;
     if(expandedTelegramPopupMessages.has(id))expandedTelegramPopupMessages.delete(id);else expandedTelegramPopupMessages.add(id);
     render();
+    if(anchorOffset!==null){
+      requestAnimationFrame(()=>{
+        const nextList=layer?.querySelector<HTMLElement>(".portal-mw-chat-list");
+        const nextMessage=nextList?.querySelector<HTMLElement>("[data-mw-chat-message-key=\""+CSS.escape(id)+"\"]");
+        if(!nextList||!nextMessage)return;
+        const nextListRect=nextList.getBoundingClientRect();
+        const nextMessageRect=nextMessage.getBoundingClientRect();
+        nextList.scrollTop+=nextMessageRect.top-nextListRect.top-anchorOffset;
+      });
+    }
   }));
   const popupInput=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]");
   popupInput?.addEventListener("pointerdown",e=>{e.stopPropagation();});
