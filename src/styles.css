@@ -7715,3 +7715,143 @@ html.visual-comfort-enabled video{
   .portal-workspace.portal-emulator-active .freezzz-screen-gba{aspect-ratio:3 / 2!important}
   .freezzz-gamepad-snes{height:33dvh!important;min-height:215px!important}
 }
+
+
+/* MOBILE EMULATOR FINAL SCALE / INPUT VISUALS */
+.portal-workspace.portal-emulator-active .freezzz-emulator-host{
+  grid-template-rows:auto auto auto auto!important;
+  align-content:start!important;
+  gap:0!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen{
+  width:100%!important;
+  height:min(75vw,58dvh)!important;
+  aspect-ratio:auto!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 620px)!important;
+  flex:none!important;
+  border-radius:0!important;
+  margin:0!important;
+  background:#000!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-screen-gb,
+.portal-workspace.portal-emulator-active .freezzz-screen-gba{
+  height:min(66.6667vw,52dvh)!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-ejs-player,
+.portal-workspace.portal-emulator-active .freezzz-ejs-player canvas{
+  width:100%!important;
+  height:100%!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-ejs-player canvas{
+  object-fit:contain!important;
+}
+.freezzz-custom-gamepad{
+  opacity:1!important;
+  width:100%!important;
+  height:clamp(215px,32vw,285px)!important;
+  min-height:215px!important;
+  padding:8px 10px!important;
+  margin:0!important;
+  background:#111317!important;
+  border:0!important;
+  border-radius:0!important;
+  box-sizing:border-box!important;
+}
+.freezzz-custom-gamepad .freezzz-gp-body{
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+}
+.freezzz-custom-gamepad .freezzz-gp-btn{
+  opacity:var(--freezzz-pad-opacity,.72)!important;
+}
+.freezzz-custom-gamepad .freezzz-gp-btn:active{
+  opacity:1!important;
+}
+
+/* NES: compact horizontal original-controller proportions */
+.freezzz-gamepad-nes{
+  height:clamp(205px,29vw,255px)!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-body{
+  height:78%!important;
+  top:11%!important;
+  border-radius:8px!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-dpad{
+  left:7%!important;top:25%!important;width:27%!important;height:54%!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-face{
+  right:7%!important;top:31%!important;width:24%!important;height:38%!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-face .face{
+  width:38%!important;height:62%!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-face .a{right:2%!important;top:18%!important}
+.freezzz-gamepad-nes .freezzz-gp-face .b{left:2%!important;top:18%!important}
+.freezzz-gamepad-nes .freezzz-gp-center{
+  left:39%!important;top:58%!important;width:22%!important;height:20%!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-center .select,
+.freezzz-gamepad-nes .freezzz-gp-center .start{
+  width:43%!important;height:48%!important;top:12%!important;
+  transform:rotate(0)!important;
+}
+.freezzz-gamepad-nes .freezzz-gp-center .select{left:0!important}
+.freezzz-gamepad-nes .freezzz-gp-center .start{right:0!important}
+
+/* SNES: four face buttons in true diamond + L/R at top */
+.freezzz-gamepad-snes{
+  height:clamp(220px,32vw,285px)!important;
+}
+.freezzz-gamepad-snes .freezzz-gp-body{height:86%!important;top:7%!important}
+.freezzz-gamepad-snes .freezzz-gp-dpad{left:7%!important;top:29%!important;width:27%!important;height:48%!important}
+.freezzz-gamepad-snes .freezzz-gp-face{right:7%!important;top:28%!important;width:28%!important;height:50%!important}
+.freezzz-gamepad-snes .freezzz-gp-face .face{width:31%!important;height:31%!important}
+.freezzz-gamepad-snes .freezzz-gp-face .b{left:2%!important;top:36%!important}
+.freezzz-gamepad-snes .freezzz-gp-face .a{right:2%!important;top:36%!important}
+.freezzz-gamepad-snes .freezzz-gp-face .y{left:22%!important;top:3%!important}
+.freezzz-gamepad-snes .freezzz-gp-face .x{right:22%!important;bottom:3%!important}
+.freezzz-gamepad-snes .freezzz-gp-center{top:66%!important}
+.freezzz-gamepad-snes .freezzz-gp-shoulders{top:3%!important}
+
+/* Mega Drive: six-button cluster stays compact and right-aligned */
+.freezzz-gamepad-md{
+  height:clamp(225px,33vw,295px)!important;
+}
+.freezzz-gamepad-md .freezzz-gp-body{height:88%!important;top:6%!important}
+.freezzz-gamepad-md .freezzz-gp-face{right:7%!important;top:29%!important;width:37%!important;height:50%!important}
+.freezzz-gamepad-md .freezzz-gp-dpad{left:9%!important;top:30%!important;width:28%!important;height:47%!important}
+.freezzz-gamepad-md .freezzz-gp-center{top:38%!important}
+
+/* PlayStation: preserve wide shoulder/body silhouette */
+.freezzz-gamepad-psx{
+  height:clamp(230px,35vw,315px)!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-body{height:92%!important;top:4%!important}
+.freezzz-gamepad-psx .freezzz-gp-face{right:7%!important;top:30%!important;width:28%!important;height:49%!important}
+.freezzz-gamepad-psx .freezzz-gp-dpad{left:7%!important;top:31%!important;width:28%!important;height:47%!important}
+.freezzz-gamepad-psx .freezzz-gp-center{top:51%!important}
+.freezzz-gamepad-psx .freezzz-gp-shoulders{top:4%!important}
+
+/* Never allow the opacity panel to create a visual spacer */
+.portal-workspace.portal-emulator-active .freezzz-emulator-controls{
+  margin:0!important;
+  border-radius:0!important;
+  min-height:54px!important;
+  height:54px!important;
+  padding:6px!important;
+  box-sizing:border-box!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-pad-space{display:none!important}
+@media(max-width:520px){
+  .portal-workspace.portal-emulator-active .freezzz-emulator-screen{
+    height:75vw!important;
+    max-height:none!important;
+  }
+  .portal-workspace.portal-emulator-active .freezzz-screen-gb,
+  .portal-workspace.portal-emulator-active .freezzz-screen-gba{
+    height:66.6667vw!important;
+  }
+}
