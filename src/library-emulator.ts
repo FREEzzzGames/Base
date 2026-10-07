@@ -504,8 +504,17 @@ function customGamepadMarkup(system: SystemId): string {
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
     '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
-      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Change gamepad sticker">STICKER</button>' +
-      '<input type="file" accept="image/*" class="freezzz-gp-sticker-input" data-gp-sticker-input hidden>' +
+      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Choose gamepad sticker">STICKER</button>' +
+      '<div class="freezzz-gp-sticker-picker" data-gp-sticker-picker hidden>' +
+        '<div class="freezzz-gp-sticker-picker-head"><strong>STICKERS</strong><button type="button" data-gp-sticker-close aria-label="Close">×</button></div>' +
+        '<div class="freezzz-gp-sticker-grid">' + GAMEPAD_STICKERS.map(sticker =>
+          '<button type="button" class="freezzz-gp-sticker-option" data-gp-sticker-option="' + sticker.id + '">' +
+            '<img src="' + stickerAsset(sticker) + '" alt="' + esc(sticker.name) + '" loading="lazy">' +
+            '<span>' + esc(sticker.name) + (sticker.gif ? " • GIF" : "") + '</span>' +
+          '</button>'
+        ).join("") + '</div>' +
+        '<div class="freezzz-gp-sticker-actions"><button type="button" data-gp-sticker-cancel>CANCEL</button><button type="button" data-gp-sticker-accept>AGREE</button></div>' +
+      '</div>' +
       group("freezzz-gp-dpad", dpad) +
       group("freezzz-gp-center", center) +
       group("freezzz-gp-face", face) +
@@ -803,52 +812,59 @@ function bindEmulatorControls(): void {
   });
 }
 
-async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<void> {
+function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
   const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
-  const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
+  const picker = root.querySelector<HTMLElement>("[data-gp-sticker-picker]");
   const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
-  if (!button || !input || !body) return;
+  const accept = root.querySelector<HTMLButtonElement>("[data-gp-sticker-accept]");
+  const cancel = root.querySelector<HTMLButtonElement>("[data-gp-sticker-cancel]");
+  const close = root.querySelector<HTMLButtonElement>("[data-gp-sticker-close]");
+  if (!button || !picker || !body || !accept || !cancel || !close) return;
 
-  let currentUrl: string | null = null;
+  const options = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-sticker-option]"));
+  const original = stickerById(selectedStickerId(system));
+  let committed = original;
+  let preview: GamepadSticker | null = original;
 
-  const apply = (blob: Blob | null): void => {
-    if (currentUrl) URL.revokeObjectURL(currentUrl);
-    currentUrl = null;
-    body.classList.remove("has-sticker");
-    body.style.removeProperty("--freezzz-gp-sticker");
-    if (!blob) return;
-    currentUrl = URL.createObjectURL(blob);
-    body.style.setProperty("--freezzz-gp-sticker", 'url("' + currentUrl + '")');
-    body.classList.add("has-sticker");
+  const apply = (sticker: GamepadSticker | null): void => {
+    body.classList.toggle("has-sticker", !!sticker);
+    if (sticker) body.style.setProperty("--freezzz-gp-sticker", 'url("' + stickerAsset(sticker) + '")');
+    else body.style.removeProperty("--freezzz-gp-sticker");
+    options.forEach(option => option.classList.toggle("is-selected", option.dataset.gpStickerOption === sticker?.id));
   };
 
-  try { apply(await loadGamepadSticker(system)); } catch {}
+  const open = (): void => {
+    preview = committed;
+    apply(preview);
+    picker.hidden = false;
+    root.classList.add("sticker-picker-open");
+  };
+  const closePicker = (restore: boolean): void => {
+    if (restore) apply(committed);
+    picker.hidden = true;
+    root.classList.remove("sticker-picker-open");
+  };
 
-  button.addEventListener("click", () => input.click());
-  input.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    input.value = "";
-    if (!file || !file.type.startsWith("image/") || file.size === 0) return;
-    try {
-      const probeUrl = URL.createObjectURL(file);
-      try {
-        const image = new Image();
-        await new Promise<void>((resolve, reject) => {
-          image.onload = () => resolve();
-          image.onerror = () => reject(new Error("INVALID_STICKER_IMAGE"));
-          image.src = probeUrl;
-        });
-      } finally {
-        URL.revokeObjectURL(probeUrl);
-      }
-      await saveGamepadSticker(system, file);
-      apply(file);
-    } catch {}
+  apply(committed);
+  button.addEventListener("click", open);
+  close.addEventListener("click", () => closePicker(true));
+  cancel.addEventListener("click", () => closePicker(true));
+  accept.addEventListener("click", () => {
+    if (preview) {
+      committed = preview;
+      saveSelectedSticker(system, preview.id);
+    } else {
+      committed = null;
+      try { localStorage.removeItem(stickerStorageKey(system)); } catch {}
+    }
+    closePicker(false);
   });
-
-  window.addEventListener("beforeunload", () => {
-    if (currentUrl) URL.revokeObjectURL(currentUrl);
-  }, { once: true });
+  options.forEach(option => option.addEventListener("click", () => {
+    const sticker = stickerById(option.dataset.gpStickerOption || null);
+    if (!sticker) return;
+    preview = sticker;
+    apply(sticker);
+  }));
 }
 
 function bindCustomGamepad(): void {
@@ -857,7 +873,7 @@ function bindCustomGamepad(): void {
   const system = root.dataset.gamepadSystem as SystemId | undefined;
   if (!system || !SYSTEMS[system]) return;
   root.dataset.bound = "1";
-  void bindGamepadSticker(root, system);
+  bindGamepadSticker(root, system);
 
   const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-key]"));
   const dpad = root.querySelector<HTMLElement>(".freezzz-gp-dpad");
@@ -998,30 +1014,34 @@ function bindCustomGamepad(): void {
   });
 }
 
-async function saveGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
-  const db = await openDb();
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STICKER_STORE, "readwrite");
-    tx.objectStore(STICKER_STORE).put({ id: system, blob });
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error || new Error("STICKER_SAVE_FAILED"));
-  });
-  db.close();
+type GamepadSticker = { id: string; name: string; file: string; gif?: boolean; systems?: SystemId[] };
+
+const GAMEPAD_STICKERS: GamepadSticker[] = [
+  { id: "classic", name: "CLASSIC", file: "classic.png" },
+  { id: "paper-red", name: "PAPER RED", file: "paper-red.png" },
+  { id: "paper-blue", name: "PAPER BLUE", file: "paper-blue.png" },
+  { id: "exclusive-01", name: "EXCLUSIVE 01", file: "exclusive-01.gif", gif: true },
+  { id: "exclusive-02", name: "EXCLUSIVE 02", file: "exclusive-02.gif", gif: true }
+];
+
+function stickerAsset(sticker: GamepadSticker): string {
+  return "./stickers/" + encodeURIComponent(sticker.file);
 }
 
-async function loadGamepadSticker(system: SystemId): Promise<Blob | null> {
-  const db = await openDb();
-  const blob = await new Promise<Blob | null>((resolve, reject) => {
-    const req = db.transaction(STICKER_STORE, "readonly").objectStore(STICKER_STORE).get(system);
-    req.onsuccess = () => resolve(req.result?.blob instanceof Blob ? req.result.blob : null);
-    req.onerror = () => reject(req.error || new Error("STICKER_LOAD_FAILED"));
-  });
-  db.close();
-  return blob;
+function stickerStorageKey(system: SystemId): string {
+  return "freezzz:gamepad:sticker:" + system;
 }
 
-async function makeGamepadSticker(file: File): Promise<string> {
-  return URL.createObjectURL(file);
+function selectedStickerId(system: SystemId): string | null {
+  try { return localStorage.getItem(stickerStorageKey(system)); } catch { return null; }
+}
+
+function stickerById(id: string | null): GamepadSticker | null {
+  return GAMEPAD_STICKERS.find(sticker => sticker.id === id) || null;
+}
+
+function saveSelectedSticker(system: SystemId, id: string): void {
+  try { localStorage.setItem(stickerStorageKey(system), id); } catch {}
 }
 
 
