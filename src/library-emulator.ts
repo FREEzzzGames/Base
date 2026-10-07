@@ -247,11 +247,6 @@ async function inspectSevenZip(file: File): Promise<string[]> {
     } finally {
       sevenZipOutput = null;
     }
-      .join("\n")
-      .split(/\r?\n/)
-      .map(line => line.startsWith("Path = ") ? line.slice(7).trim() : "")
-      .filter(Boolean)
-      .filter(name => name !== path && !name.endsWith("/"));
   } finally {
     try { FS.unlink(path); } catch {}
   }
