@@ -8401,3 +8401,130 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
     margin-right:0!important;
   }
 }
+
+/* ================================================================
+   HOME BREW CATALOG — adapted from the supplied RetroBox reference
+   Keep the portal's industrial visual language; borrow only the catalog UX.
+   ================================================================ */
+.library-portal .library-kicker{
+  margin-bottom:5px!important;
+  font:700 8px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:.18em!important;
+  opacity:.55!important;
+}
+.library-portal .library-head h2{letter-spacing:.06em!important}
+.library-portal .library-catalog-search{
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr) 30px!important;
+  align-items:center!important;
+  min-height:42px!important;
+  margin:0 0 9px!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  background:rgba(255,255,255,.035)!important;
+  box-sizing:border-box!important;
+}
+.library-portal .library-catalog-search>span{
+  text-align:center!important;
+  font-size:21px!important;
+  opacity:.65!important;
+}
+.library-portal .library-catalog-search input{
+  width:100%!important;
+  min-width:0!important;
+  height:40px!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  color:#fff!important;
+  font:500 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+}
+.library-portal .library-catalog-search input::placeholder{color:#fff!important;opacity:.42!important}
+.library-portal .library-catalog-search button{
+  width:30px!important;height:30px!important;border:0!important;background:transparent!important;color:#fff!important;font-size:18px!important;opacity:.6!important;
+}
+.library-portal .library-catalog-meta{
+  display:flex!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin:-2px 0 7px!important;
+  font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  opacity:.45!important;
+}
+.library-portal .library-game-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+.library-portal .library-catalog-card{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+  padding:6px!important;
+  min-height:0!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:10px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018))!important;
+  overflow:hidden!important;
+  transition:transform .12s ease,border-color .12s ease,background .12s ease!important;
+}
+.library-portal .library-catalog-card:active{transform:scale(.985)!important}
+.library-portal .library-game-cover{
+  position:relative!important;
+  width:100%!important;
+  aspect-ratio:1.35/1!important;
+  min-height:92px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(102,252,241,.18),transparent 42%),
+    linear-gradient(145deg,#171b22,#07090c)!important;
+  color:#fff!important;
+  overflow:hidden!important;
+  font:inherit!important;
+}
+.library-portal .library-game-cover:after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.07) 46%,transparent 55%)!important;
+  pointer-events:none!important;
+}
+.library-portal .library-game-cover-system{
+  position:absolute!important;
+  left:7px!important;top:6px!important;
+  max-width:75%!important;
+  padding:3px 5px!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  border-radius:4px!important;
+  background:rgba(0,0,0,.58)!important;
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.library-portal .library-game-cover strong{
+  font:900 34px/.9 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:-.08em!important;
+  opacity:.92!important;
+}
+.library-portal .library-game-cover small{
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:.12em!important;
+  opacity:.55!important;
+}
+.library-portal .library-catalog-card .library-game-info{padding:8px 3px 5px!important}
+.library-portal .library-catalog-card .library-game-info strong{font-size:12px!important}
+.library-portal .library-catalog-card .library-game-info small{font-size:7px!important;margin-top:4px!important}
+.library-portal .library-catalog-card .library-game-actions{padding:0 2px 2px!important;justify-content:stretch!important}
+.library-portal .library-catalog-card .library-game-actions .tg-button:first-child{flex:1 1 auto!important}
+.library-portal .library-catalog-card .library-game-actions .tg-button{min-height:32px!important}
+@media(max-width:520px){
+  .library-portal .library-game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .library-portal .library-catalog-card{padding:5px!important}
+  .library-portal .library-game-cover{min-height:82px!important}
+  .library-portal .library-game-cover strong{font-size:29px!important}
+  .library-portal .library-catalog-card .library-game-info{padding:7px 2px 4px!important}
+}
