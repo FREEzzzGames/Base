@@ -8318,3 +8318,20 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   justify-content:center!important;
   overflow:hidden!important;
 }
+
+/* ================================================================
+   INPUT REPAIR — MOBILE TOUCH OWNERSHIP
+   NDS bottom screen must receive touch coordinates; console buttons
+   must keep exclusive pointer ownership.
+   ================================================================ */
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player,
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player canvas{
+  touch-action:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2{
+  touch-action:none!important;
+  overscroll-behavior:contain!important;
+}
