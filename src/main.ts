@@ -894,21 +894,20 @@ function bind(){
         chatHistory.scrollTo({top:chatHistory.scrollHeight,behavior:"smooth"});
       };
       chatBottom.addEventListener("click",scrollToChatBottom);
+      const syncChatBottom=()=>{
+        const distance=chatHistory.scrollHeight-chatHistory.clientHeight-chatHistory.scrollTop;
+        setChatBottomVisible(distance>1);
+      };
       if(chatBottomSentinel&&"IntersectionObserver" in window){
         const observer=new IntersectionObserver(entries=>{
           const entry=entries[0];
-          setChatBottomVisible(!entry?.isIntersecting);
+          const overflowing=chatHistory.scrollHeight>chatHistory.clientHeight+1;
+          setChatBottomVisible(overflowing&&!entry?.isIntersecting);
         },{root:chatHistory,threshold:0.99});
         observer.observe(chatBottomSentinel);
-        requestAnimationFrame(()=>{
-          const rect=chatBottomSentinel.getBoundingClientRect();
-          const historyRect=chatHistory.getBoundingClientRect();
-          setChatBottomVisible(rect.top>historyRect.bottom);
-        });
+        chatHistory.addEventListener("scroll",syncChatBottom,{passive:true});
+        requestAnimationFrame(syncChatBottom);
       }else{
-        const syncChatBottom=()=>{
-          setChatBottomVisible(chatHistory.scrollHeight-chatHistory.clientHeight-chatHistory.scrollTop>1);
-        };
         chatHistory.addEventListener("scroll",syncChatBottom,{passive:true});
         requestAnimationFrame(syncChatBottom);
       }
