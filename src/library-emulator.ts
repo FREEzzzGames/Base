@@ -602,6 +602,17 @@ function installDefaultControls(system: SystemId): void {
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
 }
 
+function softGamepadHaptic(): void {
+  // Deliberately subtle: one 8 ms pulse, throttled to avoid continuous
+  // vibration while sliding across the D-pad.
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  const now = performance.now();
+  const state = softGamepadHaptic as typeof softGamepadHaptic & { last?: number };
+  if (now - (state.last || 0) < 35) return;
+  state.last = now;
+  try { navigator.vibrate(8); } catch {}
+}
+
 function sendCoreInput(system: SystemId, key: string, code: string | undefined, pressed: boolean): void {
   const button = getCoreButtonIndex(system, key);
   const w = window as EmulatorWindow;
@@ -915,6 +926,7 @@ function bindCustomGamepad(): void {
       activeGamepadReleases.add(release);
       releases.set(button, release);
       button.classList.add("is-pressed");
+      softGamepadHaptic();
       sendCoreInput(system, key, code, true);
     };
 
@@ -951,6 +963,7 @@ function bindCustomGamepad(): void {
     activeGamepadReleases.add(release);
     releases.set(button, release);
     button.classList.add("is-pressed");
+    softGamepadHaptic();
     sendCoreInput(system, key, code, true);
   };
 
