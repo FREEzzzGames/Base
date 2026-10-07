@@ -6952,3 +6952,113 @@ html.visual-comfort-enabled video{
 .library-emulator-error{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
 .library-emulator-error span{opacity:.65;font-size:12px}
 @media (max-width:520px){.freezzz-emulator-host{min-height:calc(100vh - 96px);grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr)}.freezzz-emulator-head span{display:none}.freezzz-pad-title{font-size:9px}.freezzz-pad-title input{width:78px}.library-game-grid{grid-template-columns:1fr}}
+
+
+/* MOBILE EMULATOR TOUCH GAMEPAD */
+.freezzz-emulator-screen{position:relative!important;isolation:isolate!important}
+.freezzz-touch-controls{
+  position:absolute!important;
+  inset:auto 10px 10px 10px!important;
+  height:38%!important;
+  min-height:150px!important;
+  z-index:100!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  touch-action:none!important;
+}
+.freezzz-touch-dpad{
+  width:min(34vw,190px)!important;
+  height:min(34vw,190px)!important;
+  max-width:190px!important;
+  max-height:190px!important;
+  min-width:145px!important;
+  min-height:145px!important;
+  position:relative!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+}
+.freezzz-touch-actions{
+  width:min(38vw,220px)!important;
+  height:min(34vw,190px)!important;
+  max-width:220px!important;
+  max-height:190px!important;
+  min-width:155px!important;
+  min-height:145px!important;
+  position:relative!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+}
+.freezzz-touch-btn{
+  position:absolute!important;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  min-height:52px!important;
+  padding:0!important;
+  border:1px solid rgba(102,252,241,.48)!important;
+  border-radius:50%!important;
+  background:rgba(7,14,18,var(--freezzz-pad-opacity,.72))!important;
+  color:#fff!important;
+  font:700 14px/1 inherit!important;
+  text-shadow:0 1px 3px #000!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.freezzz-touch-btn.pressed,
+.freezzz-touch-btn:active{
+  transform:scale(.92)!important;
+  background:rgba(102,252,241,var(--freezzz-pad-opacity,.72))!important;
+  color:#061014!important;
+}
+.freezzz-touch-dpad .up{left:50%!important;top:0!important;transform:translateX(-50%)!important}
+.freezzz-touch-dpad .down{left:50%!important;bottom:0!important;transform:translateX(-50%)!important}
+.freezzz-touch-dpad .left{left:0!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-dpad .right{right:0!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-dpad .up:active,.freezzz-touch-dpad .up.pressed{transform:translateX(-50%) scale(.92)!important}
+.freezzz-touch-dpad .down:active,.freezzz-touch-dpad .down.pressed{transform:translateX(-50%) scale(.92)!important}
+.freezzz-touch-dpad .left:active,.freezzz-touch-dpad .left.pressed{transform:translateY(-50%) scale(.92)!important}
+.freezzz-touch-dpad .right:active,.freezzz-touch-dpad .right.pressed{transform:translateY(-50%) scale(.92)!important}
+.freezzz-touch-actions .a{right:0!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-actions .b{right:62px!important;top:calc(50% + 18px)!important}
+.freezzz-touch-actions .x{right:62px!important;top:calc(50% - 70px)!important}
+.freezzz-touch-actions .y{right:124px!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-actions .c{right:0!important;top:calc(50% - 72px)!important}
+.freezzz-touch-actions .z{right:0!important;top:calc(50% + 70px)!important}
+.freezzz-touch-actions .l,.freezzz-touch-actions .r{top:0!important}
+.freezzz-touch-actions .l{left:0!important}
+.freezzz-touch-actions .r{left:62px!important}
+.freezzz-touch-actions .cross{right:0!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-actions .circle{right:62px!important;top:calc(50% + 18px)!important}
+.freezzz-touch-actions .triangle{right:62px!important;top:calc(50% - 70px)!important}
+.freezzz-touch-actions .square{right:124px!important;top:50%!important;transform:translateY(-50%)!important}
+.freezzz-touch-actions .l1{left:0!important;top:0!important}
+.freezzz-touch-actions .r1{left:62px!important;top:0!important}
+.freezzz-touch-actions .select{left:18px!important;bottom:0!important;width:66px!important;height:34px!important;border-radius:10px!important;font-size:9px!important}
+.freezzz-touch-actions .start{left:94px!important;bottom:0!important;width:66px!important;height:34px!important;border-radius:10px!important;font-size:9px!important}
+.freezzz-touch-actions .select:active,.freezzz-touch-actions .select.pressed,
+.freezzz-touch-actions .start:active,.freezzz-touch-actions .start.pressed{
+  transform:scale(.94)!important;
+}
+@media(max-width:520px){
+  .freezzz-touch-controls{inset:auto 6px 6px 6px!important;height:42%!important;min-height:145px!important}
+  .freezzz-touch-dpad{width:150px!important;height:150px!important;min-width:150px!important;min-height:150px!important}
+  .freezzz-touch-actions{width:166px!important;height:150px!important;min-width:166px!important;min-height:150px!important}
+  .freezzz-touch-btn{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;font-size:12px!important}
+  .freezzz-touch-actions .b{right:54px!important}
+  .freezzz-touch-actions .x{right:54px!important}
+  .freezzz-touch-actions .y{right:108px!important}
+  .freezzz-touch-actions .c{right:0!important}
+  .freezzz-touch-actions .z{right:0!important}
+  .freezzz-touch-actions .l,.freezzz-touch-actions .r{top:0!important}
+  .freezzz-touch-actions .r{left:54px!important}
+  .freezzz-touch-actions .l1{left:0!important}.freezzz-touch-actions .r1{left:54px!important}
+}
