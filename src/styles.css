@@ -8803,3 +8803,99 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-portal .library-game-actions .tg-button{
   border-radius:4px!important;
 }
+
+
+/* ================================================================
+   FINAL MOBILE EMULATOR UI — controls without controller frames
+   The virtual buttons are floating catalog controls. No chassis,
+   card, border, separator or oversized gamepad panel.
+   ================================================================ */
+.library-emulator-root .freezzz-custom-gamepad,
+.library-emulator-root .freezzz-gamepad-nes,
+.library-emulator-root .freezzz-gamepad-gb,
+.library-emulator-root .freezzz-gamepad-sms,
+.library-emulator-root .freezzz-gamepad-md,
+.library-emulator-root .freezzz-gamepad-snes,
+.library-emulator-root .freezzz-gamepad-gba,
+.library-emulator-root .freezzz-gamepad-psx,
+.library-emulator-root .freezzz-gamepad-nds{
+  width:100%!important;
+  height:150px!important;
+  min-height:150px!important;
+  max-height:150px!important;
+  margin:0!important;
+  padding:8px 12px!important;
+  background:#000!important;
+  border:0!important;
+  border-top:0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  overflow:hidden!important;
+}
+.library-emulator-root .freezzz-gp-body{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  top:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+.library-emulator-root .freezzz-gp-body:before,
+.library-emulator-root .freezzz-gp-body:after{
+  display:none!important;
+}
+.library-emulator-root .freezzz-gp-btn{
+  border:1px solid rgba(255,255,255,.22)!important;
+  background:rgba(38,41,46,.92)!important;
+  box-shadow:none!important;
+  border-radius:5px!important;
+  text-shadow:none!important;
+}
+.library-emulator-root .freezzz-gp-btn.is-pressed{
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .face,
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .face{
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder,
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-shoulders .shoulder{
+  box-shadow:none!important;
+}
+
+/* Remove visual separators around the control and info areas. */
+.library-emulator-root .freezzz-emulator-controls{
+  border:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  background:#000!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+.library-emulator-root .freezzz-pad-title{
+  border:0!important;
+  background:#000!important;
+  box-shadow:none!important;
+}
+
+/* The emulator stack itself must not paint a horizontal frame. */
+.library-emulator-root .freezzz-emulator-host,
+.library-emulator-root .freezzz-emulator-screen{
+  border:0!important;
+  box-shadow:none!important;
+}
+.library-emulator-root .freezzz-emulator-head{
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
