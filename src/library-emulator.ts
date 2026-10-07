@@ -240,8 +240,7 @@ async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob
   // Disc-based PlayStation games commonly need both .cue and .bin files.
   // Preserve a multi-file PSX ZIP so EmulatorJS can extract the whole archive.
   if (system === "psx" && candidates.length > 1) {
-    const bootEntry = candidates.find(entry => /\.(m3u|cue)$/i.test(entry.name)) || candidates[0];
-    return { system, blob: file, fileName: bootEntry.name };
+    return { system, blob: file, fileName: file.name };
   }
 
   if (candidates.length !== 1) throw new Error("ZIP_MUST_CONTAIN_ONE_ROM");
