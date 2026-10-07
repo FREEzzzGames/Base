@@ -7,7 +7,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/freezzz_icon"
+        android:icon="@drawable/freezzz_photo"
         android:label="@string/app_name"
         android:roundIcon="@drawable/freezzz_icon"
         android:supportsRtl="true"
