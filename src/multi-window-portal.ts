@@ -2,7 +2,6 @@ import { streams } from "./portal-ui";
 import { liveEmbedUrl } from "./live-runtime";
 
 type MiniId = "live" | "chat" | "radio";
-type ResizeDir = "n"|"e"|"s"|"w"|"ne"|"nw"|"se"|"sw";
 type MiniWindow = { open:boolean; x:number; y:number; width:number; height:number; z:number; minWidth:number; minHeight:number };
 
 const windows:Record<MiniId,MiniWindow> = {
@@ -63,25 +62,26 @@ function open(id:MiniId){
 }
 function close(id:MiniId){windows[id].open=false;render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
-function resizeHandles(id:MiniId){
-  return ["n","e","s","w","ne","nw","se","sw"].map(dir=>'<span class="portal-mw-resize portal-mw-resize-'+dir+'" data-mw-resize="'+id+'" data-resize-dir="'+dir+'"></span>').join("");
+function resizeHandle(id:MiniId){
+  return '<span class="portal-mw-resize portal-mw-resize-se" data-mw-resize="'+id+'" aria-hidden="true"></span>';
 }
-function resizeWindow(id:MiniId,dir:ResizeDir,startX:number,startY:number,startW:number,startH:number,startLeft:number,startTop:number,evX:number,evY:number){
+function resizeWindow(id:MiniId,startX:number,startY:number,startW:number,startH:number,evX:number,evY:number){
   const w=windows[id];
-  const dx=evX-startX,dy=evY-startY;
-  const minW=w.minWidth,minH=w.minHeight;
-  const maxW=Math.max(minW,window.innerWidth-8);
-  const maxH=Math.max(minH,window.innerHeight-16);
-  let width=startW,height=startH,left=startLeft,top=startTop;
-  if(dir.includes("e"))width=Math.min(maxW,Math.max(minW,startW+dx));
-  if(dir.includes("s"))height=Math.min(maxH,Math.max(minH,startH+dy));
-  if(dir.includes("w")){const next=Math.min(maxW,Math.max(minW,startW-dx));width=next;left=startLeft+(startW-next);}
-  if(dir.includes("n")){const next=Math.min(maxH,Math.max(minH,startH-dy));height=next;top=startTop+(startH-next);}
-  left=Math.max(4,Math.min(Math.max(4,window.innerWidth-width-4),left));
-  top=Math.max(4,Math.min(Math.max(4,window.innerHeight-height-70),top));
-  w.width=width;w.height=height;w.x=left;w.y=top;
+  const width=Math.min(
+    Math.max(w.minWidth,startW+(evX-startX)),
+    Math.max(w.minWidth,window.innerWidth-8)
+  );
+  const height=Math.min(
+    Math.max(w.minHeight,startH+(evY-startY)),
+    Math.max(w.minHeight,window.innerHeight-16)
+  );
+  w.width=width;
+  w.height=height;
   const el=layer?.querySelector<HTMLElement>('[data-mw="'+id+'"]');
-  if(el){el.style.width=width+"px";el.style.height=height+"px";el.style.left=left+"px";el.style.top=top+"px";}
+  if(el){
+    el.style.width=width+"px";
+    el.style.height=height+"px";
+  }
 }
 
 function render(){
@@ -96,7 +96,7 @@ function render(){
         '<button data-mw-source="twitch" class="'+(liveSource==="twitch"?"active":"")+'">T</button>'+
         '<button data-mw-source="youtube" class="'+(liveSource==="youtube"?"active":"")+'">Y</button>'+
         '<button data-mw-close="live">×</button></div></header>'+
-        '<div class="portal-mw-live-body">'+(src?'<iframe src="'+esc(src)+'" title="'+esc(s.name)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>':'LIVE unavailable')+'</div>'+resizeHandles("live")+'</section>');
+        '<div class="portal-mw-live-body">'+(src?'<iframe src="'+esc(src)+'" title="'+esc(s.name)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>':'LIVE unavailable')+'</div>'+resizeHandle("live")+'</section>');
     }
   }
   if(windows.chat.open){
@@ -105,7 +105,7 @@ function render(){
       '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
         ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'" data-mw-chat-message-key="'+esc(m.id)+'"><b>'+esc(m.senderName)+'</b><span>'+popupMessageText(m)+'</span>'+popupMessageExpandControl(m)+'</p>').join("")
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
-      '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandles("chat")+'</section>');
+      '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandle("chat")+'</section>');
   }
   if(windows.radio.open){
     out.push('<section class="portal-mw portal-mw-radio" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
@@ -148,11 +148,11 @@ function bind(){
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-resize]").forEach(h=>h.onpointerdown=e=>{
     e.preventDefault();e.stopPropagation();
-    const id=h.dataset.mwResize as MiniId,dir=h.dataset.resizeDir as ResizeDir,w=windows[id],pointer=e as PointerEvent;
+    const id=h.dataset.mwResize as MiniId,w=windows[id],pointer=e as PointerEvent;
     focus(id);
-    const sx=pointer.clientX,sy=pointer.clientY,sw=w.width,sh=w.height,sl=w.x,st=w.y;
+    const sx=pointer.clientX,sy=pointer.clientY,sw=w.width,sh=w.height;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
-    const move=(ev:PointerEvent)=>resizeWindow(id,dir,sx,sy,sw,sh,sl,st,ev.clientX,ev.clientY);
+    const move=(ev:PointerEvent)=>resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);
     const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}};
     h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
   });
