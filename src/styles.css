@@ -9445,3 +9445,27 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-portal .library-game-cover{
   background:rgba(8,12,15,.92)!important;
 }
+
+
+/* LIVE STICKER PREVIEW — image layer, including animated GIF skins */
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-body.has-sticker{
+  background-image:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-image{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-body:not(.has-sticker) .freezzz-gp-sticker-image{
+  display:none!important;
+}
