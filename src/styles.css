@@ -7004,3 +7004,232 @@ html.visual-comfort-enabled video{
 .library-emulator-error{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
 .library-emulator-error span{opacity:.65;font-size:12px}
 @media (max-width:520px){.freezzz-emulator-host{min-height:calc(100vh - 96px);grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr)}.freezzz-emulator-head span{display:none}.freezzz-pad-title{font-size:9px}.freezzz-pad-title input{width:78px}.library-game-grid{grid-template-columns:1fr}}
+
+
+/* CONSOLE GAMEPADS — custom touch layer below the emulator screen */
+.portal-workspace.portal-emulator-active .library-emulator-root,
+.portal-workspace.portal-emulator-active .freezzz-emulator-host{
+  background:#090b0f!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-emulator-host{
+  grid-template-rows:auto minmax(220px,1fr) auto auto!important;
+  overflow:hidden!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen{
+  position:relative!important;
+  min-height:220px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  background:#000!important;
+  border-bottom:1px solid rgba(255,255,255,.14)!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen .ejs_menu,
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen .ejs_settings,
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen .ejs_virtualGamepad,
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen [class*="virtualGamepad"]{
+  display:none!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-ejs-player{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+}
+.freezzz-custom-gamepad{
+  position:relative!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  height:min(38dvh,330px)!important;
+  min-height:225px!important;
+  padding:10px 12px 8px!important;
+  box-sizing:border-box!important;
+  opacity:var(--freezzz-pad-opacity,.72);
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  overflow:hidden!important;
+  background:#17191d!important;
+  border-top:1px solid rgba(255,255,255,.12)!important;
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+}
+.freezzz-gp-body{
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:680px!important;
+  margin:0 auto!important;
+}
+.freezzz-gp-btn{
+  position:absolute!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0!important;
+  border:2px solid rgba(255,255,255,.42)!important;
+  background:rgba(35,38,44,.94)!important;
+  color:#e9edf2!important;
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.34),0 2px 5px rgba(0,0,0,.5)!important;
+  font-family:Arial,sans-serif!important;
+  font-weight:700!important;
+  font-size:clamp(11px,2.7vw,16px)!important;
+  line-height:1!important;
+  text-shadow:0 1px 1px #000!important;
+  -webkit-tap-highlight-color:transparent!important;
+  touch-action:none!important;
+  user-select:none!important;
+  z-index:3!important;
+}
+.freezzz-gp-btn:active{
+  transform:translateY(2px)!important;
+  background:rgba(75,79,87,.98)!important;
+  box-shadow:inset 0 2px 0 rgba(0,0,0,.35)!important;
+}
+.freezzz-gp-dpad{
+  position:absolute!important;
+  left:2%!important;
+  top:25%!important;
+  width:28%!important;
+  height:54%!important;
+}
+.freezzz-gp-dpad .dpad{
+  width:33%!important;
+  height:38%!important;
+  border-radius:7px!important;
+  background:#25282e!important;
+}
+.freezzz-gp-dpad .up{left:33%;top:0}
+.freezzz-gp-dpad .down{left:33%;bottom:0}
+.freezzz-gp-dpad .left{left:0;top:31%}
+.freezzz-gp-dpad .right{right:0;top:31%}
+.freezzz-gp-dpad:after{
+  content:"";
+  position:absolute;
+  left:33%;top:31%;
+  width:33%;height:38%;
+  background:#25282e;
+  z-index:1;
+}
+.freezzz-gp-center{
+  position:absolute!important;
+  left:39%!important;
+  top:54%!important;
+  width:22%!important;
+  height:20%!important;
+  z-index:2!important;
+}
+.freezzz-gp-center .select,
+.freezzz-gp-center .start,
+.freezzz-gp-center .mode{
+  position:absolute!important;
+  width:42%!important;
+  height:48%!important;
+  border-radius:7px!important;
+  background:#30343b!important;
+  font-size:clamp(8px,2vw,12px)!important;
+}
+.freezzz-gp-center .select{left:0;top:15%;transform:rotate(-24deg)}
+.freezzz-gp-center .start{right:0;top:15%;transform:rotate(24deg)}
+.freezzz-gp-center .mode{left:29%;top:15%;width:42%!important}
+.freezzz-gp-face{
+  position:absolute!important;
+  right:3%!important;
+  top:25%!important;
+  width:28%!important;
+  height:50%!important;
+}
+.freezzz-gp-face .face{
+  width:34%!important;
+  height:34%!important;
+  border-radius:50%!important;
+}
+.freezzz-gp-face .a{right:3%;top:31%;background:#a42c35!important}
+.freezzz-gp-face .b{left:3%;top:31%;background:#34383f!important}
+.freezzz-gp-face .c{right:17%;top:0;background:#34383f!important}
+.freezzz-gp-face .cross{right:3%;top:31%;background:#34383f!important}
+.freezzz-gp-face .circle{right:3%;top:31%;background:#34383f!important}
+.freezzz-gp-face .square{left:3%;top:31%;background:#34383f!important}
+.freezzz-gp-face .triangle{right:18%;top:0;background:#34383f!important}
+.freezzz-gp-shoulders{
+  position:absolute!important;
+  left:4%!important;
+  right:4%!important;
+  top:3%!important;
+  height:19%!important;
+}
+.freezzz-gp-shoulders .shoulder,
+.freezzz-gp-shoulders .trigger{
+  width:18%!important;
+  height:72%!important;
+  border-radius:12px!important;
+  background:#292d34!important;
+  font-size:clamp(9px,2vw,12px)!important;
+}
+.freezzz-gp-shoulders .l{left:4%;top:0}
+.freezzz-gp-shoulders .r{right:4%;top:0}
+.freezzz-gp-shoulders .l1{left:0;top:0}
+.freezzz-gp-shoulders .r1{right:0;top:0}
+.freezzz-gp-shoulders .l2{left:14%;top:0}
+.freezzz-gp-shoulders .r2{right:14%;top:0}
+
+/* Original-controller silhouettes */
+.freezzz-gamepad-nes .freezzz-gp-body{
+  max-width:600px!important;
+  background:#cfcfd1;
+  border-radius:18px;
+  box-shadow:inset 0 0 0 2px #777,0 8px 18px #000;
+}
+.freezzz-gamepad-nes .freezzz-gp-dpad{left:7%;top:30%;width:28%;height:46%}
+.freezzz-gamepad-nes .freezzz-gp-face{right:7%;top:31%;width:25%;height:40%}
+.freezzz-gamepad-gb .freezzz-gp-body{
+  max-width:360px!important;
+  border-radius:28px;
+  background:#b6b7bd;
+  box-shadow:inset 0 0 0 3px #777,0 8px 18px #000;
+}
+.freezzz-gamepad-gb .freezzz-gp-dpad{left:7%;top:34%;width:32%;height:38%}
+.freezzz-gamepad-gb .freezzz-gp-face{right:7%;top:34%;width:30%;height:38%}
+.freezzz-gamepad-gb .freezzz-gp-center{left:36%;top:78%;width:28%;height:17%}
+.freezzz-gamepad-sms .freezzz-gp-body{
+  max-width:600px!important;
+  border-radius:30px 30px 45px 45px;
+  background:#dedfe1;
+  box-shadow:inset 0 0 0 2px #888,0 8px 18px #000;
+}
+.freezzz-gamepad-md .freezzz-gp-body{
+  max-width:660px!important;
+  border-radius:48% 48% 18% 18%;
+  background:#25272b;
+  box-shadow:inset 0 0 0 2px #555,0 8px 18px #000;
+}
+.freezzz-gamepad-snes .freezzz-gp-body{
+  max-width:650px!important;
+  border-radius:34% 34% 42% 42%;
+  background:#c8c9cb;
+  box-shadow:inset 0 0 0 2px #777,0 8px 18px #000;
+}
+.freezzz-gamepad-gba .freezzz-gp-body{
+  max-width:650px!important;
+  border-radius:22px 22px 35px 35px;
+  background:#6e617f;
+  box-shadow:inset 0 0 0 2px #443b50,0 8px 18px #000;
+}
+.freezzz-gamepad-psx .freezzz-gp-body{
+  max-width:700px!important;
+  border-radius:24px;
+  background:#c4c5c8;
+  box-shadow:inset 0 0 0 2px #777,0 8px 18px #000;
+}
+.freezzz-gamepad-psx .freezzz-gp-face .face{border-radius:50%!important}
+.freezzz-gamepad-psx .freezzz-gp-face .cross{background:#d6d7d9!important;color:#54a8df!important}
+.freezzz-gamepad-psx .freezzz-gp-face .circle{background:#d6d7d9!important;color:#e05b62!important}
+.freezzz-gamepad-psx .freezzz-gp-face .square{background:#d6d7d9!important;color:#e56b9b!important}
+.freezzz-gamepad-psx .freezzz-gp-face .triangle{background:#d6d7d9!important;color:#58a36d!important}
+.freezzz-gamepad-psx .freezzz-gp-shoulders{top:4%!important}
+@media (max-width:520px){
+  .freezzz-custom-gamepad{height:34dvh!important;min-height:210px!important;padding:7px!important}
+  .freezzz-gp-btn{border-width:1px!important}
+}
