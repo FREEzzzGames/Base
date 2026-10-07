@@ -924,20 +924,6 @@ function bindLibrary(): void {
     });
   });
 
-  document.querySelector<HTMLElement>("[data-library-exit]")?.addEventListener("click", () => {
-    emulatorToken++;
-    removeExistingEmulator();
-    renderLibraryIntoPage();
-  });
-
-  const opacity = document.querySelector<HTMLInputElement>("[data-library-opacity]");
-  const opacityValue = document.querySelector<HTMLElement>("[data-library-opacity-value]");
-  opacity?.addEventListener("input", () => {
-    const value = Math.min(100, Math.max(20, Number(opacity.value) || 72));
-    setOpacity(value / 100);
-    if (opacityValue) opacityValue.textContent = value + "%";
-
-  });
 }
 
 export function bindLibraryView(): void {
