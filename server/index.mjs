@@ -242,7 +242,8 @@ async function getClient(userId) {
 function normalizeDialog(dialog) {
   const entity = dialog.entity;
   const id = String(entity?.id ?? dialog.id);
-  const unreadCount = Number(dialog.unreadCount || 0);
+  const rawUnreadCount = Number(dialog.unreadCount || 0);
+  const unreadCount = Number.isFinite(rawUnreadCount) ? Math.max(0, Math.floor(rawUnreadCount)) : 0;
   let kind = "private";
   if (entity?.className === "Channel") kind = entity.broadcast ? "channel" : "supergroup";
   else if (entity?.className === "Chat") kind = "group";
@@ -447,6 +448,8 @@ const server = http.createServer(async (req, res) => {
         const client = await getClient(user.id);
         const entity = await client.getEntity(chatId);
         const messages = await client.getMessages(entity, { limit });
+        const latestMessage = messages[0];
+        if(latestMessage) await client.markAsRead(entity, latestMessage);
         return sendJson(res, 200, messages.map(message => normalizeMessage(message, chatId)), responseOrigin);
       }
 
