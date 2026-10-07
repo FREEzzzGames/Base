@@ -803,7 +803,13 @@ function bindCustomGamepad(): void {
   if (!system || !SYSTEMS[system]) return;
   root.dataset.bound = "1";
 
-  root.querySelectorAll<HTMLButtonElement>("[data-gp-key]").forEach(button => {
+  const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-key]"));
+  const dpad = root.querySelector<HTMLElement>(".freezzz-gp-dpad");
+  const dpadButtons = Array.from(dpad?.querySelectorAll<HTMLButtonElement>("[data-gp-key]") || []);
+  const dpadPointers = new Map<number, HTMLButtonElement>();
+  const releases = new Map<HTMLButtonElement, () => void>();
+
+  buttons.forEach(button => {
     const key = button.dataset.gpKey || "";
     const code = button.dataset.gpCode || undefined;
     let pressed = false;
@@ -813,6 +819,7 @@ function bindCustomGamepad(): void {
       pressed = false;
       button.classList.remove("is-pressed");
       activeGamepadReleases.delete(release);
+      releases.delete(button);
       sendCoreInput(system, key, code, false);
     };
 
@@ -820,6 +827,7 @@ function bindCustomGamepad(): void {
       if (pressed) return;
       pressed = true;
       activeGamepadReleases.add(release);
+      releases.set(button, release);
       button.classList.add("is-pressed");
       sendCoreInput(system, key, code, true);
     };
@@ -840,6 +848,95 @@ function bindCustomGamepad(): void {
       if (event.pointerType === "mouse" && event.buttons === 0) release();
     });
     button.addEventListener("contextmenu", event => event.preventDefault());
+  });
+
+  if (!dpad || dpadButtons.length === 0) return;
+
+  const releaseDpadPointer = (pointerId: number) => {
+    const current = dpadPointers.get(pointerId);
+    if (current) releases.get(current)?.();
+    dpadPointers.delete(pointerId);
+  };
+
+  const directionAt = (clientX: number, clientY: number): HTMLButtonElement | null => {
+    const rect = dpad.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+
+    const centers = dpadButtons.map(button => {
+      const r = button.getBoundingClientRect();
+      return {
+        button,
+        x: r.left + r.width / 2,
+        y: r.top + r.height / 2
+      };
+    });
+
+    let best: { button: HTMLButtonElement; distance: number } | null = null;
+    for (const item of centers) {
+      const dx = clientX - item.x;
+      const dy = clientY - item.y;
+      const distance = Math.hypot(dx, dy);
+      if (!best || distance < best.distance) best = { button: item.button, distance };
+    }
+
+    // Keep the finger inside the D-pad interaction area; within it,
+    // select the nearest direction so the user can slide between arrows.
+    const margin = Math.min(rect.width, rect.height) * 0.18;
+    if (clientX < rect.left - margin || clientX > rect.right + margin ||
+        clientY < rect.top - margin || clientY > rect.bottom + margin) {
+      return null;
+    }
+    return best && best.distance <= Math.max(28, Math.min(rect.width, rect.height) * 0.34)
+      ? best.button
+      : null;
+  };
+
+  const setDpadDirection = (pointerId: number, clientX: number, clientY: number) => {
+    const next = directionAt(clientX, clientY);
+    const current = dpadPointers.get(pointerId);
+    if (next === current) return;
+
+    if (current) releases.get(current)?.();
+    if (next) {
+      releases.get(next) ? (() => {
+        const key = next.dataset.gpKey || "";
+        if (!releases.has(next)) return;
+        next.classList.add("is-pressed");
+        sendCoreInput(system, key, next.dataset.gpCode || undefined, true);
+      })() : undefined;
+      // The normal button release function is not reused for a fresh press,
+      // so register the same state through the button's existing handlers.
+      const key = next.dataset.gpKey || "";
+      const code = next.dataset.gpCode || undefined;
+      next.classList.add("is-pressed");
+      sendCoreInput(system, key, code, true);
+      dpadPointers.set(pointerId, next);
+    } else {
+      dpadPointers.delete(pointerId);
+    }
+  };
+
+  dpad.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dpad.setPointerCapture?.(event.pointerId);
+    setDpadDirection(event.pointerId, event.clientX, event.clientY);
+  }, { capture: true, passive: false });
+
+  dpad.addEventListener("pointermove", event => {
+    if (!dpadPointers.has(event.pointerId)) return;
+    event.preventDefault();
+    setDpadDirection(event.pointerId, event.clientX, event.clientY);
+  }, { passive: false });
+
+  const endDpad = (event: PointerEvent) => {
+    event.preventDefault();
+    releaseDpadPointer(event.pointerId);
+  };
+  dpad.addEventListener("pointerup", endDpad, { capture: true, passive: false });
+  dpad.addEventListener("pointercancel", endDpad, { capture: true, passive: false });
+  dpad.addEventListener("lostpointercapture", event => {
+    releaseDpadPointer(event.pointerId);
   });
 }
 
