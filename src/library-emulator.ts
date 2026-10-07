@@ -472,27 +472,124 @@ function installDefaultControls(system: SystemId): void {
 
 function sendCoreInput(system: SystemId, key: string, code: string | undefined, pressed: boolean): void {
   const button = getCoreButtonIndex(system, key);
-  const emulator = (window as EmulatorWindow).EJS_emulator;
+  const w = window as EmulatorWindow;
+  const emulator = w.EJS_emulator;
   const simulateInput = emulator?.gameManager?.simulateInput;
+
+  // Keep both input paths active. On mobile EmulatorJS builds the internal
+  // simulateInput method can exist without reaching the active core.
   if (button >= 0 && typeof simulateInput === "function") {
-    try {
-      simulateInput(0, button, pressed ? 1 : 0);
-      return;
-    } catch {}
+    try { simulateInput(0, button, pressed ? 1 : 0); } catch {}
   }
+
   const type = pressed ? "keydown" : "keyup";
-  const event = new KeyboardEvent(type, {
-    key: keyboardValue(key),
-    code: keyboardCode(key, code),
-    bubbles: true,
-    cancelable: true
-  });
   const keyCode = keyboardKeyCode(key);
-  try {
-    Object.defineProperty(event, "keyCode", { value: keyCode, configurable: true });
-    Object.defineProperty(event, "which", { value: keyCode, configurable: true });
-  } catch {}
-  (document.querySelector<HTMLElement>("#freezzz-ejs-player") || document).dispatchEvent(event);
+  const makeEvent = (): KeyboardEvent => {
+    const event = new KeyboardEvent(type, {
+      key: keyboardValue(key),
+      code: keyboardCode(key, code),
+      bubbles: true,
+      cancelable: true
+    });
+    try {
+      Object.defineProperty(event, "keyCode", { value: keyCode, configurable: true });
+      Object.defineProperty(event, "which", { value: keyCode, configurable: true });
+    } catch {}
+    return event;
+  };
+
+  const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
+  if (player) player.dispatchEvent(makeEvent());
+  document.dispatchEvent(makeEvent());
+}
+
+function bindNdsTouch(): void {
+  const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
+  if (!player || player.dataset.ndsTouchBound === "1") return;
+  if (activeGame?.system !== "nds") return;
+
+  player.dataset.ndsTouchBound = "1";
+  player.style.touchAction = "none";
+
+  let active = false;
+  let activeCanvas: HTMLCanvasElement | null = null;
+
+  const canvases = (): HTMLCanvasElement[] =>
+    Array.from(player.querySelectorAll<HTMLCanvasElement>("canvas"))
+      .filter(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        return rect.width > 1 && rect.height > 1;
+      });
+
+  const pickTouchCanvas = (clientX: number, clientY: number): HTMLCanvasElement | null => {
+    const list = canvases();
+    if (!list.length) return null;
+
+    const containing = list
+      .filter(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        return clientX >= rect.left && clientX <= rect.right &&
+          clientY >= rect.top && clientY <= rect.bottom;
+      })
+      .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top);
+
+    if (containing.length > 1) return containing[0];
+    if (containing.length === 1) {
+      const canvas = containing[0];
+      const rect = canvas.getBoundingClientRect();
+      // If both DS screens share one canvas, only the lower half is touch input.
+      if (list.length === 1 && clientY < rect.top + rect.height * 0.48) return null;
+      return canvas;
+    }
+    return null;
+  };
+
+  const emitMouse = (
+    type: "mousedown" | "mousemove" | "mouseup",
+    canvas: HTMLCanvasElement,
+    event: PointerEvent
+  ): void => {
+    canvas.dispatchEvent(new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      screenX: event.screenX,
+      screenY: event.screenY,
+      button: 0,
+      buttons: type === "mouseup" ? 0 : 1
+    }));
+  };
+
+  player.addEventListener("pointerdown", event => {
+    if (event.pointerType === "mouse") return;
+    const canvas = pickTouchCanvas(event.clientX, event.clientY);
+    if (!canvas) return;
+    event.preventDefault();
+    event.stopPropagation();
+    active = true;
+    activeCanvas = canvas;
+    player.setPointerCapture?.(event.pointerId);
+    emitMouse("mousedown", canvas, event);
+  }, { capture: true, passive: false });
+
+  player.addEventListener("pointermove", event => {
+    if (!active || !activeCanvas || event.pointerType === "mouse") return;
+    event.preventDefault();
+    emitMouse("mousemove", activeCanvas, event);
+  }, { capture: true, passive: false });
+
+  const releaseTouch = (event: PointerEvent): void => {
+    if (!active || !activeCanvas || event.pointerType === "mouse") return;
+    event.preventDefault();
+    emitMouse("mouseup", activeCanvas, event);
+    active = false;
+    activeCanvas = null;
+  };
+
+  player.addEventListener("pointerup", releaseTouch, { capture: true, passive: false });
+  player.addEventListener("pointercancel", releaseTouch, { capture: true, passive: false });
 }
 
 function bindEmulatorControls(): void {
@@ -677,7 +774,9 @@ async function startGame(game: LibraryGame): Promise<void> {
     };
     installDefaultControls(game.system);
     w.EJS_ready = () => {
-      if (token === emulatorToken) bindCustomGamepad();
+      if (token !== emulatorToken) return;
+      bindCustomGamepad();
+      if (game.system === "nds") bindNdsTouch();
     };
     bindEmulatorControls();
 
@@ -687,6 +786,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
     bindCustomGamepad();
+    if (game.system === "nds") bindNdsTouch();
 
 
   } catch (error) {
