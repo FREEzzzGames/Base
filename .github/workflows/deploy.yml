@@ -35,6 +35,7 @@ jobs:
       - name: Build
         env:
           GITHUB_SHA: ${{ github.sha }}
+          VITE_BUILD_ID: ${{ github.sha }}
         run: npm run build
 
       - name: Release smoke test
