@@ -399,19 +399,41 @@ function bindCustomGamepad(): void {
   if (!root) return;
   const system = root.dataset.gamepadSystem as SystemId | undefined;
   if (!system) return;
+
   root.querySelectorAll<HTMLElement>("[data-gp-key]").forEach(button => {
     const key = button.dataset.gpKey || "";
     let pressed = false;
+
+    const release = () => {
+      if (!pressed) return;
+      pressed = false;
+      button.classList.remove("is-pressed");
+      try { sendCoreInput(system, key, false); } catch {}
+    };
+
     const send = (next: boolean) => {
       if (next === pressed) return;
       pressed = next;
-      if (sendCoreInput(system, key, next)) return;
+      button.classList.toggle("is-pressed", next);
+
+      const canvas = document.querySelector<HTMLElement>("#freezzz-ejs-player canvas");
+      if (next) {
+        canvas?.focus?.({ preventScroll: true });
+        try {
+          if (sendCoreInput(system, key, true)) return;
+        } catch {}
+      } else {
+        try {
+          if (sendCoreInput(system, key, false)) return;
+        } catch {}
+      }
+
       const code = button.dataset.gpCode || "";
-      document.dispatchEvent(new KeyboardEvent(next ? "keydown" : "keyup", {
+      window.dispatchEvent(new KeyboardEvent(next ? "keydown" : "keyup", {
         key, code, bubbles: true, cancelable: true
       }));
     };
-    const release = () => send(false);
+
     button.addEventListener("pointerdown", e => {
       e.preventDefault();
       button.setPointerCapture?.(e.pointerId);
@@ -422,6 +444,9 @@ function bindCustomGamepad(): void {
       release();
     });
     button.addEventListener("pointercancel", release);
+    button.addEventListener("pointerleave", e => {
+      if (e.buttons === 0) release();
+    });
     button.addEventListener("lostpointercapture", release);
     button.addEventListener("contextmenu", e => e.preventDefault());
   });
@@ -519,7 +544,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_virtualGamepad = false;
     w.EJS_controlScheme = SYSTEMS[game.system].core;
     w.EJS_askBeforeExit = false;
-    w.EJS_noAutoFocus = true;
+    w.EJS_noAutoFocus = false;
     w.EJS_color = "#66FCF1";
     w.EJS_hideSettings = true;
 
