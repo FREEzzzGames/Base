@@ -8335,3 +8335,69 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   touch-action:none!important;
   overscroll-behavior:contain!important;
 }
+
+
+/* ================================================================
+   NINTENDO DS — PORTRAIT FIRST / FULL-WIDTH DUAL SCREEN
+   The DS framebuffer is 256x384 in top-bottom mode (2:3).
+   Keep it full-width so side margins are only the portal safe-area.
+   ================================================================ */
+.library-emulator-root .freezzz-screen-nds{
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:2 / 3!important;
+  flex:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#000!important;
+}
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  display:block!important;
+  overflow:hidden!important;
+  background:#000!important;
+}
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player canvas{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  display:block!important;
+  image-rendering:auto!important;
+}
+
+/* Do not reserve horizontal desktop-style space around the DS image. */
+.library-emulator-root .freezzz-emulator-host{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+.library-emulator-root .freezzz-screen-nds + .freezzz-custom-gamepad{
+  margin-top:0!important;
+}
+
+/* The bottom LCD is the only part that should receive stylus/touch input. */
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player,
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player canvas{
+  touch-action:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+
+/* On portrait phones, remove accidental side gutters from the emulator layer. */
+@media (max-width:600px){
+  .library-emulator-root .freezzz-emulator-screen.freezzz-screen-nds{
+    width:100vw!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+}
