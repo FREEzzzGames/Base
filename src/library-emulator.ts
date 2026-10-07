@@ -368,7 +368,7 @@ function bindCustomGamepad(): void {
       if (type === "keydown" && pressed) return;
       if (type === "keyup" && !pressed) return;
       pressed = type === "keydown";
-      window.dispatchEvent(new KeyboardEvent(type, {
+      document.dispatchEvent(new KeyboardEvent(type, {
         key,
         code,
         bubbles: true,
