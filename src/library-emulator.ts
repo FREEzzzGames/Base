@@ -565,7 +565,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     const w = window as EmulatorWindow;
     w.EJS_player = "#freezzz-ejs-player";
     w.EJS_gameUrl = activeObjectUrl;
-    w.EJS_gameName = game.name.replace(/[\\/:*?"<>|]/g, "_").slice(0, 80);
+    w.EJS_gameName = game.fileName.slice(0, 160);
     w.EJS_core = SYSTEMS[game.system].core;
     w.EJS_pathtodata = EJS_DATA;
     w.EJS_startOnLoaded = true;
