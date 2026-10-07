@@ -451,7 +451,11 @@ function sendCoreInput(key: string, code: string | undefined, pressed: boolean):
     Object.defineProperty(event, "keyCode", { value: keyCode, configurable: true });
     Object.defineProperty(event, "which", { value: keyCode, configurable: true });
   } catch {}
-  const target = document.querySelector<HTMLElement>("#freezzz-ejs-player") || document;
+  // EmulatorJS listens on its own parent (.ejs_parent), not on the player host.
+  // Dispatching on #freezzz-ejs-player is insufficient on mobile and was the reason
+  // the custom controls looked active but did not reach the core.
+  const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
+  const target = player?.querySelector<HTMLElement>(".ejs_parent") || player || document;
   target.dispatchEvent(event);
 }
 
@@ -497,17 +501,20 @@ function bindCustomGamepad(): void {
 
     button.addEventListener("pointerdown", event => {
       event.preventDefault();
+      if (event.pointerType === "mouse" && event.button !== 0) return;
       button.setPointerCapture?.(event.pointerId);
       press();
-    });
+    }, { passive: false });
+
     button.addEventListener("pointerup", event => {
       event.preventDefault();
       release();
-    });
+    }, { passive: false });
+
     button.addEventListener("pointercancel", release);
     button.addEventListener("lostpointercapture", release);
     button.addEventListener("pointerleave", event => {
-      if (event.buttons === 0) release();
+      if (event.pointerType === "mouse" && event.buttons === 0) release();
     });
     button.addEventListener("contextmenu", event => event.preventDefault());
   });
