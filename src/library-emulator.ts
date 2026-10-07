@@ -210,6 +210,50 @@ async function repairLegacyLibraryEntries(): Promise<void> {
   }
 }
 
+let sevenZipModulePromise: Promise<any> | null = null;
+
+async function inspectSevenZip(file: File): Promise<string[]> {
+  if (!sevenZipModulePromise) {
+    sevenZipModulePromise = import("7z-wasm").then(mod => {
+      const factory = mod.default || mod;
+      return factory({
+        noInitialRun: true,
+        print: () => {},
+        printErr: () => {}
+      });
+    });
+  }
+
+  const sevenZip = await sevenZipModulePromise;
+  const FS = sevenZip.FS;
+  const path = "/freezzz-input.7z";
+  const bytes = new Uint8Array(await file.arrayBuffer());
+
+  try {
+    try { FS.unlink(path); } catch {}
+    FS.writeFile(path, bytes);
+
+    const output: string[] = [];
+    const originalPrint = sevenZip.print;
+    sevenZip.print = (line: string) => output.push(String(line));
+    try {
+      // -slt emits machine-readable "Path = ..." records.
+      await sevenZip.callMain(["l", "-slt", path]);
+    } finally {
+      sevenZip.print = originalPrint;
+    }
+
+    return output
+      .join("\n")
+      .split(/\r?\n/)
+      .map(line => line.startsWith("Path = ") ? line.slice(7).trim() : "")
+      .filter(Boolean)
+      .filter(name => name !== path && !name.endsWith("/"));
+  } finally {
+    try { FS.unlink(path); } catch {}
+  }
+}
+
 async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob; fileName: string }> {
   const direct = detectSystem(file.name);
   const ext = extensionOf(file.name);
@@ -219,13 +263,46 @@ async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob
   }
 
   if (ext === "7z") {
-    // EmulatorJS can extract 7z archives itself, but the core still has to be
-    // selected before boot. Never silently guess PSX for an arbitrary archive.
-    // Support the common "game.nds.7z" / "game.gba.7z" naming convention.
-    const innerName = file.name.replace(/\.7z$/i, "");
-    const innerSystem = detectSystem(innerName);
-    if (!innerSystem) throw new Error("7Z_SYSTEM_UNKNOWN");
-    return { system: innerSystem, blob: file, fileName: file.name };
+    // EmulatorJS performs the final extraction at boot, but we must select the
+    // correct core first. Inspect the 7z directory in-browser instead of
+    // guessing from the outer archive name.
+    const innerHint = file.name.replace(/\.7z$/i, "");
+    const hintedSystem = detectSystem(innerHint);
+
+    let entries: string[] = [];
+    try {
+      entries = await inspectSevenZip(file);
+    } catch {
+      // Keep the useful legacy path for archives named "game.nds.7z", etc.
+      if (hintedSystem) {
+        return { system: hintedSystem, blob: file, fileName: file.name };
+      }
+      throw new Error("7Z_READ_FAILED");
+    }
+
+    const candidates = entries.filter(name => detectSystem(name));
+    if (!candidates.length) {
+      if (hintedSystem) {
+        return { system: hintedSystem, blob: file, fileName: file.name };
+      }
+      throw new Error("7Z_ROM_NOT_RECOGNIZED");
+    }
+
+    const systems = Array.from(new Set(
+      candidates.map(name => detectSystem(name)).filter(Boolean)
+    )) as SystemId[];
+
+    if (systems.length !== 1) throw new Error("7Z_MULTIPLE_SYSTEMS_UNSUPPORTED");
+    if (candidates.length !== 1) {
+      // A PSX archive can legitimately contain several disc files (CUE/BIN).
+      // Keep the archive intact and let EmulatorJS extract the complete set.
+      if (systems[0] === "psx") {
+        return { system: "psx", blob: file, fileName: file.name };
+      }
+      throw new Error("7Z_MULTIPLE_ROMS_UNSUPPORTED");
+    }
+
+    return { system: systems[0], blob: file, fileName: file.name };
   }
 
   if (ext !== "zip") throw new Error("UNSUPPORTED_ROM_FORMAT");
