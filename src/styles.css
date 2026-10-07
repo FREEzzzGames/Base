@@ -9245,22 +9245,25 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-emulator-root .freezzz-custom-gamepad.has-sticker .freezzz-gp-shoulders{
   z-index:10!important;
 }
-.library-emulator-root .freezzz-custom-gamepad.has-sticker .freezzz-gp-sticker-button{
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button{
   position:absolute!important;
-  right:8px!important;
-  top:6px!important;
+  left:4px!important;
+  top:4px!important;
+  right:auto!important;
   z-index:60!important;
-  width:52px!important;
-  height:26px!important;
-  min-width:52px!important;
-  min-height:26px!important;
+  width:26px!important;
+  height:13px!important;
+  min-width:26px!important;
+  min-height:13px!important;
   padding:0!important;
+  margin:0!important;
   border:0!important;
-  border-radius:6px!important;
-  background:rgba(20,20,20,.62)!important;
-  color:#fff!important;
-  font:700 8px/1 Arial,sans-serif!important;
-  box-shadow:0 3px 8px rgba(0,0,0,.35)!important;
+  border-radius:3px!important;
+  background:rgba(20,20,20,.58)!important;
+  color:#e00000!important;
+  font:700 4px/1 Arial,sans-serif!important;
+  letter-spacing:-.15px!important;
+  box-shadow:0 1px 3px rgba(0,0,0,.35)!important;
   cursor:pointer!important;
   pointer-events:auto!important;
   touch-action:manipulation!important;
