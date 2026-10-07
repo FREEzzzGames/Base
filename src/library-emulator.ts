@@ -476,17 +476,12 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
 
 function customGamepadMarkup(system: SystemId): string {
   const bindings = gamepadBindings(system);
-
   const button = (x: TouchBinding): string =>
     '<button type="button" class="freezzz-gp-btn ' + (x.cls || "") +
     '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") +
     '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
 
-  const dpad: TouchBinding[] = [];
-  const center: TouchBinding[] = [];
-  const face: TouchBinding[] = [];
-  const shoulders: TouchBinding[] = [];
-
+  const dpad: TouchBinding[] = [], center: TouchBinding[] = [], face: TouchBinding[] = [], shoulders: TouchBinding[] = [];
   for (const binding of bindings) {
     const cls = binding.cls || "";
     if (cls.includes("dpad")) dpad.push(binding);
@@ -495,32 +490,22 @@ function customGamepadMarkup(system: SystemId): string {
     else if (cls.includes("shoulder") || cls.includes("trigger")) shoulders.push(binding);
     else center.push(binding);
   }
-
   const group = (name: string, items: TouchBinding[]): string =>
-    items.length
-      ? '<div class="' + name + '">' + items.map(button).join("") + '</div>'
-      : "";
+    items.length ? '<div class="' + name + '">' + items.map(button).join("") + '</div>' : "";
 
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
     '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
-      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Choose gamepad sticker">STICKER</button>' +
-      '<div class="freezzz-gp-sticker-picker" data-gp-sticker-picker hidden>' +
-        '<div class="freezzz-gp-sticker-picker-head"><strong>STICKERS</strong><button type="button" data-gp-sticker-close aria-label="Close">×</button></div>' +
-        '<div class="freezzz-gp-sticker-grid">' + GAMEPAD_STICKERS.map(sticker =>
-          '<button type="button" class="freezzz-gp-sticker-option" data-gp-sticker-option="' + sticker.id + '">' +
-            '<img src="' + stickerAsset(sticker) + '" alt="' + esc(sticker.name) + '" loading="lazy">' +
-            '<span>' + esc(sticker.name) + (sticker.gif ? " • GIF" : "") + '</span>' +
-          '</button>'
-        ).join("") + '</div>' +
-        '<div class="freezzz-gp-sticker-actions"><button type="button" data-gp-sticker-cancel>CANCEL</button><button type="button" data-gp-sticker-accept>AGREE</button></div>' +
+      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Change gamepad sticker">STICKER</button>' +
+      '<div class="freezzz-gp-sticker-swipe" data-gp-sticker-swipe hidden>' +
+        '<span class="freezzz-gp-sticker-name" data-gp-sticker-name></span>' +
+        '<button type="button" data-gp-sticker-prev aria-label="Previous sticker">‹</button>' +
+        '<button type="button" data-gp-sticker-next aria-label="Next sticker">›</button>' +
+        '<button type="button" data-gp-sticker-accept aria-label="Confirm sticker">✓</button>' +
       '</div>' +
-      group("freezzz-gp-dpad", dpad) +
-      group("freezzz-gp-center", center) +
-      group("freezzz-gp-face", face) +
-      group("freezzz-gp-shoulders", shoulders) +
-    '</div>' +
-  '</div>';
+      group("freezzz-gp-dpad", dpad) + group("freezzz-gp-center", center) +
+      group("freezzz-gp-face", face) + group("freezzz-gp-shoulders", shoulders) +
+    '</div></div>';
 }
 
 function getCoreButtonIndex(system: SystemId, key: string): number {
@@ -814,57 +799,73 @@ function bindEmulatorControls(): void {
 
 function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
   const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
-  const picker = root.querySelector<HTMLElement>("[data-gp-sticker-picker]");
+  const swipe = root.querySelector<HTMLElement>("[data-gp-sticker-swipe]");
   const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
+  const name = root.querySelector<HTMLElement>("[data-gp-sticker-name]");
+  const prev = root.querySelector<HTMLButtonElement>("[data-gp-sticker-prev]");
+  const next = root.querySelector<HTMLButtonElement>("[data-gp-sticker-next]");
   const accept = root.querySelector<HTMLButtonElement>("[data-gp-sticker-accept]");
-  const cancel = root.querySelector<HTMLButtonElement>("[data-gp-sticker-cancel]");
-  const close = root.querySelector<HTMLButtonElement>("[data-gp-sticker-close]");
-  if (!button || !picker || !body || !accept || !cancel || !close) return;
+  if (!button || !swipe || !body || !name || !prev || !next || !accept) return;
 
-  const options = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-sticker-option]"));
-  const original = stickerById(selectedStickerId(system));
-  let committed = original;
-  let preview: GamepadSticker | null = original;
+  const stickers = GAMEPAD_STICKERS;
+  let committedIndex = Math.max(0, stickers.findIndex(s => s.id === selectedStickerId(system)));
+  let previewIndex = committedIndex;
+  let touchStartX = 0;
+  let dragging = false;
 
-  const apply = (sticker: GamepadSticker | null): void => {
-    body.classList.toggle("has-sticker", !!sticker);
-    if (sticker) body.style.setProperty("--freezzz-gp-sticker", 'url("' + stickerAsset(sticker) + '")');
-    else body.style.removeProperty("--freezzz-gp-sticker");
-    options.forEach(option => option.classList.toggle("is-selected", option.dataset.gpStickerOption === sticker?.id));
-  };
-
-  const open = (): void => {
-    preview = committed;
-    apply(preview);
-    picker.hidden = false;
-    root.classList.add("sticker-picker-open");
-  };
-  const closePicker = (restore: boolean): void => {
-    if (restore) apply(committed);
-    picker.hidden = true;
-    root.classList.remove("sticker-picker-open");
-  };
-
-  apply(committed);
-  button.addEventListener("click", open);
-  close.addEventListener("click", () => closePicker(true));
-  cancel.addEventListener("click", () => closePicker(true));
-  accept.addEventListener("click", () => {
-    if (preview) {
-      committed = preview;
-      saveSelectedSticker(system, preview.id);
-    } else {
-      committed = null;
-      try { localStorage.removeItem(stickerStorageKey(system)); } catch {}
-    }
-    closePicker(false);
-  });
-  options.forEach(option => option.addEventListener("click", () => {
-    const sticker = stickerById(option.dataset.gpStickerOption || null);
+  const apply = (index: number): void => {
+    const sticker = stickers[index];
     if (!sticker) return;
-    preview = sticker;
-    apply(sticker);
-  }));
+    body.classList.add("has-sticker");
+    body.style.setProperty("--freezzz-gp-sticker", 'url("' + stickerAsset(sticker) + '")');
+    name.textContent = sticker.name + (sticker.gif ? " • GIF" : "");
+  };
+  const show = (): void => {
+    apply(previewIndex);
+    swipe.hidden = false;
+  };
+  const step = (direction: number): void => {
+    previewIndex = (previewIndex + direction + stickers.length) % stickers.length;
+    apply(previewIndex);
+  };
+  const close = (): void => { swipe.hidden = true; };
+  
+  button.addEventListener("click", () => { previewIndex = committedIndex; show(); });
+  prev.addEventListener("click", () => step(-1));
+  next.addEventListener("click", () => step(1));
+  accept.addEventListener("click", () => {
+    committedIndex = previewIndex;
+    saveSelectedSticker(system, stickers[committedIndex].id);
+    close();
+  });
+
+  body.addEventListener("touchstart", event => {
+    if (swipe.hidden) return;
+    const touch = event.changedTouches[0];
+    touchStartX = touch.clientX;
+    dragging = true;
+  }, { passive: true });
+  body.addEventListener("touchend", event => {
+    if (!dragging || swipe.hidden) return;
+    dragging = false;
+    const dx = event.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) < 28) return;
+    step(dx < 0 ? 1 : -1);
+  }, { passive: true });
+  body.addEventListener("pointerdown", event => {
+    if (swipe.hidden || event.pointerType === "touch") return;
+    touchStartX = event.clientX;
+    dragging = true;
+  }, { passive: true });
+  body.addEventListener("pointerup", event => {
+    if (!dragging || swipe.hidden || event.pointerType === "touch") return;
+    dragging = false;
+    const dx = event.clientX - touchStartX;
+    if (Math.abs(dx) >= 28) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  const saved = stickers[committedIndex];
+  if (saved) apply(committedIndex);
 }
 
 function bindCustomGamepad(): void {
