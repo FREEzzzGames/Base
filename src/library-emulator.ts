@@ -309,6 +309,7 @@ function removeExistingEmulator(): void {
   document.querySelectorAll("script[data-freezzz-emulator]").forEach(x => x.remove());
   const host = document.querySelector<HTMLElement>(".freezzz-emulator-host");
   host?.remove();
+  document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
   activeGame = null;
 }
 
@@ -366,6 +367,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     head.hidden = true;
     root.hidden = false;
     root.innerHTML = emulatorMarkup(game);
+    document.querySelector(".portal-workspace")?.classList.add("portal-emulator-active");
 
     const w = window as EmulatorWindow;
     w.EJS_player = "#freezzz-ejs-player";
