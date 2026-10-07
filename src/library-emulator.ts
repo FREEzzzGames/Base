@@ -828,8 +828,19 @@ async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<
   input.addEventListener("change", async () => {
     const file = input.files?.[0];
     input.value = "";
-    if (!file || !file.type.startsWith("image/")) return;
+    if (!file || !file.type.startsWith("image/") || file.size === 0) return;
     try {
+      const probeUrl = URL.createObjectURL(file);
+      try {
+        const image = new Image();
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("INVALID_STICKER_IMAGE"));
+          image.src = probeUrl;
+        });
+      } finally {
+        URL.revokeObjectURL(probeUrl);
+      }
       await saveGamepadSticker(system, file);
       apply(file);
     } catch {}
