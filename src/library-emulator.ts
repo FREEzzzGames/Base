@@ -24,7 +24,7 @@ type EmulatorWindow = Window & {
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
   EJS_hideSettings?: string[];
-  EJS_defaultControls?: Record<number, Record<number, { value: number; value2?: string }>>;
+  EJS_defaultControls?: Record<number, Record<number, { value: string; value2?: string }>>;
   EJS_defaultOptions?: Record<string, string | number | boolean>;
   EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
   EJS_ready?: () => void;
