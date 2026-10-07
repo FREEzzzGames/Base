@@ -14,3 +14,6 @@ npm run build
 npm run dev
 
 See LAW-2.0.md for the 31-stage development law. The original portal-economy Stage 21 remains permanently excluded.
+
+## Deployment
+Production GitHub Pages deployment is handled exclusively by `.github/workflows/ci.yml`.
