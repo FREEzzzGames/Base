@@ -396,11 +396,21 @@ function keyboardCode(key: string, code?: string): string {
 
 function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
-  const controls: Record<number, { value: string }> = {};
-  for (const binding of gamepadBindings(system)) {
+  const bindings = gamepadBindings(system);
+  const controls: Record<number, { value: string; value2?: string }> = {};
+  const seenKeys = new Set<string>();
+  const seenIndices = new Set<number>();
+
+  for (const binding of bindings) {
     const index = getCoreButtonIndex(system, binding.key);
-    if (index >= 0) controls[index] = { value: keyboardValue(binding.key) };
+    if (index < 0) throw new Error("UNMAPPED_GAMEPAD_BUTTON:" + system + ":" + binding.key);
+    if (seenKeys.has(binding.key)) throw new Error("DUPLICATE_GAMEPAD_KEY:" + system + ":" + binding.key);
+    if (seenIndices.has(index)) throw new Error("DUPLICATE_GAMEPAD_INDEX:" + system + ":" + index);
+    seenKeys.add(binding.key);
+    seenIndices.add(index);
+    controls[index] = { value: keyboardValue(binding.key), value2: binding.label };
   }
+
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
 }
 
