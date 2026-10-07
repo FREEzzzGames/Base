@@ -32,7 +32,7 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = "roms";
 const META_KEY = "freezzz:library:games";
 const OPACITY_KEY = "freezzz:library:gamepad-opacity";
@@ -340,10 +340,10 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
 
 function customGamepadMarkup(system: SystemId): string {
   const bindings = gamepadBindings(system);
-  return '<div class="freezzz-custom-gamepad freezzz-gamepad-' + system + '" data-gamepad-system="' + system + '">' +
+  return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system + '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
       '<div class="freezzz-gp-dpad">' +
-        bindings.filter(x => x.cls?.includes("dpad")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
+        bindings.filter(x => x.cls?.includes("dpad")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '" aria-label="' + esc(x.label) + '">' + x.label + '</button>').join("") +
       '</div>' +
       '<div class="freezzz-gp-center">' +
         bindings.filter(x => ["select","start","mode"].some(c => x.cls?.includes(c))).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
@@ -389,7 +389,7 @@ function keyboardValue(key: string): string {
 
 function keyboardCode(key: string, code?: string): string {
   if (code) return code;
-  if (/^\\d$/.test(key)) return "Digit" + key;
+  if (/^\d$/.test(key)) return "Digit" + key;
   if (key.length === 1) return "Key" + key.toUpperCase();
   return key;
 }
@@ -532,7 +532,13 @@ function loadEmulatorScript(): Promise<void> {
   });
 }
 
-async function startGame(game: LibraryGame): Promise<void> {
+async function stableGameId(id: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i++) hash = Math.imul(hash ^ id.charCodeAt(i), 16777619);
+  return hash >>> 0;
+}
+
+function startGame(game: LibraryGame): Promise<void> {
   const token = ++emulatorToken;
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
   const list = document.querySelector<HTMLElement>(".library-game-grid");
@@ -565,9 +571,11 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_controlScheme = SYSTEMS[game.system].core;
     w.EJS_browserMode = "mobile";
     w.EJS_askBeforeExit = false;
-    w.EJS_noAutoFocus = false;
+    w.EJS_noAutoFocus = true;
     w.EJS_color = "#66FCF1";
     w.EJS_hideSettings = [];
+    w.EJS_gameID = stableGameId(game.id);
+    w.EJS_disableCue = false;
     w.EJS_Buttons = {
       playPause: false,
       restart: false,
