@@ -6937,7 +6937,7 @@ html.visual-comfort-enabled video{
 .library-empty{min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed rgba(255,255,255,.16);border-radius:12px;opacity:.72}.library-empty span{font-size:12px;text-align:center}
 .library-hint{margin-top:12px;font-size:10px;opacity:.45}
 .library-emulator-root[hidden]{display:none}
-.freezzz-emulator-host{--freezzz-pad-opacity:.72;display:grid;grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr);min-height:calc(100vh - 110px);gap:8px;overflow:hidden;touch-action:manipulation}
+.portal-workspace.portal-emulator-active .portal-toolbar,.portal-workspace.portal-emulator-active .portal-hud-toggle{display:none!important}.portal-workspace.portal-emulator-active main{padding-bottom:0!important}.portal-workspace.portal-emulator-active{padding-bottom:0!important}.freezzz-emulator-host{--freezzz-pad-opacity:.72;display:grid;grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr);min-height:calc(100vh - 110px);gap:8px;overflow:hidden;touch-action:manipulation}
 .freezzz-emulator-head{display:flex;align-items:center;gap:8px;min-width:0}.freezzz-emulator-head strong{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.freezzz-emulator-head span{font-size:10px;opacity:.55;white-space:nowrap}
 .freezzz-emulator-screen{position:relative;min-height:0;border:1px solid rgba(102,252,241,.18);border-radius:10px;overflow:hidden;background:#05070a;display:flex;align-items:center;justify-content:center}
 .freezzz-ejs-player{width:100%;height:100%;min-height:0;position:relative}
