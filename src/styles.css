@@ -8228,9 +8228,8 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:17%!important;top:15px!important}
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:17%!important;top:15px!important}
 
-/* Never let generic button positioning leak into the physical clusters. */
+/* Never let generic button flow leak into the physical clusters. */
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn{
   position:absolute!important;
   float:none!important;
-  inset:auto!important;
 }
