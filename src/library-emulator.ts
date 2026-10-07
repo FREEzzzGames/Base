@@ -218,7 +218,6 @@ async function inspectSevenZip(file: File): Promise<string[]> {
     sevenZipModulePromise = import("7z-wasm").then(mod => {
       const factory = mod.default || mod;
       return factory({
-        noInitialRun: true,
         print: (line: string) => sevenZipOutput?.push(String(line)),
         printErr: () => {}
       });
