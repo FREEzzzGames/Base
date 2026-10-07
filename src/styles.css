@@ -7020,15 +7020,15 @@ html.visual-comfort-enabled video{
 .freezzz-gp-btn.is-pressed{filter:brightness(1.35)!important;transform:scale(.96)!important;opacity:1!important}
 
 /* Shared d-pad: four clickable arms + matching center, without a dark overlay. */
-.freezzz-gp-dpad{position:absolute!important;left:7%!important;top:30%!important;width:27%!important;height:48%!important}
-.freezzz-gp-dpad .dpad{width:34%!important;height:38%!important;border-radius:5px!important;background:#34383e!important}
-.freezzz-gp-dpad .up{left:33%!important;top:0!important}
-.freezzz-gp-dpad .down{left:33%!important;bottom:0!important}
-.freezzz-gp-dpad .left{left:0!important;top:31%!important}
-.freezzz-gp-dpad .right{right:0!important;top:31%!important}
+.freezzz-gp-dpad{position:absolute!important;left:8%!important;top:31%!important;width:22%!important;height:42%!important}
+.freezzz-gp-dpad .dpad{width:29%!important;height:32%!important;border-radius:5px!important;background:#34383e!important}
+.freezzz-gp-dpad .up{left:35.5%!important;top:0!important}
+.freezzz-gp-dpad .down{left:35.5%!important;bottom:0!important}
+.freezzz-gp-dpad .left{left:0!important;top:34%!important}
+.freezzz-gp-dpad .right{right:0!important;top:34%!important}
 .freezzz-gp-dpad:after{
-  content:""!important;position:absolute!important;left:33%!important;top:31%!important;
-  width:34%!important;height:38%!important;border-radius:5px!important;
+  content:""!important;position:absolute!important;left:35.5%!important;top:34%!important;
+  width:29%!important;height:32%!important;border-radius:5px!important;
   background:#34383e!important;z-index:1!important;pointer-events:none!important;
 }
 
@@ -7040,31 +7040,31 @@ html.visual-comfort-enabled video{
 }
 .freezzz-gp-center .select{left:2%!important}.freezzz-gp-center .start{right:2%!important}.freezzz-gp-center .mode{left:30%!important;width:40%!important}
 
-.freezzz-gp-face{position:absolute!important;right:7%!important;top:29%!important;width:28%!important;height:50%!important}
-.freezzz-gp-face .face{width:31%!important;height:31%!important;border-radius:50%!important}
-.freezzz-gp-face .a{right:0!important;top:34%!important}
-.freezzz-gp-face .b{left:0!important;top:34%!important}
+.freezzz-gp-face{position:absolute!important;right:8%!important;top:31%!important;width:23%!important;height:44%!important}
+.freezzz-gp-face .face{width:27%!important;height:27%!important;border-radius:50%!important}
+.freezzz-gp-face .a{right:0!important;top:37%!important}
+.freezzz-gp-face .b{left:0!important;top:37%!important}
 .freezzz-gp-face .c{right:17%!important;top:0!important}
 .freezzz-gp-face .x{left:0!important;top:0!important}
-.freezzz-gp-face .y{left:35%!important;top:0!important}
+.freezzz-gp-face .y{left:36.5%!important;top:0!important}
 .freezzz-gp-face .z{right:0!important;top:0!important}
-.freezzz-gp-face .cross{right:35%!important;bottom:0!important}
-.freezzz-gp-face .circle{right:0!important;top:34%!important}
-.freezzz-gp-face .square{left:0!important;top:34%!important}
-.freezzz-gp-face .triangle{right:35%!important;top:0!important}
+.freezzz-gp-face .cross{right:36.5%!important;bottom:0!important}
+.freezzz-gp-face .circle{right:0!important;top:37%!important}
+.freezzz-gp-face .square{left:0!important;top:37%!important}
+.freezzz-gp-face .triangle{right:36.5%!important;top:0!important}
 
-.freezzz-gp-shoulders{position:absolute!important;left:5%!important;right:5%!important;top:3%!important;height:22%!important;z-index:8!important}
+.freezzz-gp-shoulders{position:absolute!important;left:5%!important;right:5%!important;top:3%!important;height:21%!important;z-index:8!important}
 .freezzz-gp-shoulders .shoulder,.freezzz-gp-shoulders .trigger{
-  position:absolute!important;width:16%!important;height:42%!important;margin:0!important;
+  position:absolute!important;width:11%!important;height:32%!important;margin:0!important;
   border-radius:7px!important;background:#34383e!important;color:#f0f2f4!important;
   font-size:clamp(8px,1.8vw,11px)!important;
 }
-.freezzz-gp-shoulders .l2{left:2%!important;top:0!important}
-.freezzz-gp-shoulders .r2{right:2%!important;top:0!important}
-.freezzz-gp-shoulders .l1{left:12%!important;top:52%!important}
-.freezzz-gp-shoulders .r1{right:12%!important;top:52%!important}
-.freezzz-gp-shoulders .l{left:10%!important;top:0!important}
-.freezzz-gp-shoulders .r{right:10%!important;top:0!important}
+.freezzz-gp-shoulders .l2{left:0!important;top:0!important}
+.freezzz-gp-shoulders .r2{right:0!important;top:0!important}
+.freezzz-gp-shoulders .l1{left:17%!important;top:56%!important}
+.freezzz-gp-shoulders .r1{right:17%!important;top:56%!important}
+.freezzz-gp-shoulders .l{left:6%!important;top:0!important}
+.freezzz-gp-shoulders .r{right:6%!important;top:0!important}
 
 /* NES / Dendy */
 .freezzz-gamepad-nes{height:clamp(205px,30vw,260px)!important}
@@ -7078,8 +7078,8 @@ html.visual-comfort-enabled video{
   transform:translateX(-50%)!important;color:#666!important;font:700 clamp(9px,2vw,13px)/1 Arial,sans-serif!important;
   letter-spacing:.08em!important;white-space:nowrap!important;z-index:2!important;
 }
-.freezzz-gamepad-nes .freezzz-gp-dpad{left:8%!important;top:29%!important;width:27%!important;height:51%!important}
-.freezzz-gamepad-nes .freezzz-gp-face{right:8%!important;top:30%!important;width:24%!important;height:45%!important}
+.freezzz-gamepad-nes .freezzz-gp-dpad{left:9%!important;top:31%!important;width:23%!important;height:44%!important}
+.freezzz-gamepad-nes .freezzz-gp-face{right:9%!important;top:31%!important;width:21%!important;height:43%!important}
 .freezzz-gamepad-nes .freezzz-gp-face .face{width:38%!important;height:48%!important;background:#a92737!important;border:2px solid #741723!important}
 .freezzz-gamepad-nes .freezzz-gp-face .a{right:2%!important;top:26%!important}
 .freezzz-gamepad-nes .freezzz-gp-face .b{left:2%!important;top:26%!important}
@@ -7105,11 +7105,11 @@ html.visual-comfort-enabled video{
   content:"SEGA  MEGA DRIVE"!important;position:absolute!important;left:50%!important;top:9%!important;transform:translateX(-50%)!important;
   color:#d5d5d5!important;font:700 clamp(10px,2.2vw,15px)/1 Arial,sans-serif!important;letter-spacing:.08em!important;white-space:nowrap!important;z-index:2!important;
 }
-.freezzz-gamepad-md .freezzz-gp-dpad{left:9%!important;top:31%!important;width:27%!important;height:47%!important}
-.freezzz-gamepad-md .freezzz-gp-face{right:7%!important;top:30%!important;width:34%!important;height:49%!important}
-.freezzz-gamepad-md .freezzz-gp-face .face{width:27%!important;height:31%!important;background:linear-gradient(180deg,#404348,#17181b)!important;border:1px solid #08090a!important}
-.freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .y{left:36.5%!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
-.freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .b{left:36.5%!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;bottom:0!important}
+.freezzz-gamepad-md .freezzz-gp-dpad{left:10%!important;top:32%!important;width:22%!important;height:43%!important}
+.freezzz-gamepad-md .freezzz-gp-face{right:7%!important;top:31%!important;width:30%!important;height:47%!important}
+.freezzz-gamepad-md .freezzz-gp-face .face{width:22%!important;height:27%!important;background:linear-gradient(180deg,#404348,#17181b)!important;border:1px solid #08090a!important}
+.freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .y{left:39%!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
+.freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .b{left:39%!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;bottom:0!important}
 .freezzz-gamepad-md .freezzz-gp-center{left:40%!important;top:48%!important;width:20%!important;height:15%!important}
 .freezzz-gamepad-md .freezzz-gp-center .mode,.freezzz-gamepad-md .freezzz-gp-center .start{
   width:42%!important;height:45%!important;top:27%!important;background:#111216!important;border:1px solid #050506!important;color:#bfc1c4!important;font-size:clamp(7px,1.5vw,10px)!important;
@@ -7138,9 +7138,9 @@ html.visual-comfort-enabled video{
   content:"SONY  •  PlayStation"!important;position:absolute!important;left:50%!important;top:13%!important;transform:translateX(-50%)!important;
   color:#8b8d92!important;font:700 clamp(10px,2.2vw,15px)/1 Arial,sans-serif!important;letter-spacing:.05em!important;white-space:nowrap!important;z-index:2!important;
 }
-.freezzz-gamepad-psx .freezzz-gp-dpad{left:7%!important;top:31%!important;width:27%!important;height:46%!important}
-.freezzz-gamepad-psx .freezzz-gp-face{right:7%!important;top:31%!important;width:27%!important;height:47%!important}
-.freezzz-gamepad-psx .freezzz-gp-face .face{width:33%!important;height:33%!important;background:#d4d6d9!important;border:1px solid #8f9297!important}
+.freezzz-gamepad-psx .freezzz-gp-dpad{left:9%!important;top:33%!important;width:22%!important;height:42%!important}
+.freezzz-gamepad-psx .freezzz-gp-face{right:9%!important;top:33%!important;width:23%!important;height:43%!important}
+.freezzz-gamepad-psx .freezzz-gp-face .face{width:27%!important;height:27%!important;background:#d4d6d9!important;border:1px solid #8f9297!important}
 .freezzz-gamepad-psx .freezzz-gp-face .cross{right:34%!important;bottom:0!important;color:#4f91c6!important}
 .freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:34%!important;color:#c85c61!important}
 .freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:34%!important;color:#cf75a1!important}
@@ -7150,12 +7150,12 @@ html.visual-comfort-enabled video{
   width:38%!important;height:44%!important;top:28%!important;background:#55585d!important;color:#dfe1e4!important;font-size:clamp(7px,1.5vw,10px)!important;
 }
 .freezzz-gamepad-psx .freezzz-gp-center .select{left:2%!important}.freezzz-gamepad-psx .freezzz-gp-center .start{right:2%!important}
-.freezzz-gamepad-psx .freezzz-gp-shoulders{left:5%!important;right:5%!important;top:4%!important;height:25%!important}
+.freezzz-gamepad-psx .freezzz-gp-shoulders{left:5%!important;right:5%!important;top:4%!important;height:22%!important}
 .freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder,.freezzz-gamepad-psx .freezzz-gp-shoulders .trigger{
-  width:15%!important;height:38%!important;border-radius:7px!important;background:#bfc1c5!important;border:1px solid #888b90!important;color:#4c4e53!important;
+  width:11%!important;height:30%!important;border-radius:7px!important;background:#bfc1c5!important;border:1px solid #888b90!important;color:#4c4e53!important;
 }
-.freezzz-gamepad-psx .freezzz-gp-shoulders .l2{left:3%!important;top:0!important}.freezzz-gamepad-psx .freezzz-gp-shoulders .r2{right:3%!important;top:0!important}
-.freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:13%!important;top:55%!important}.freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:13%!important;top:55%!important}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .l2{left:0!important;top:0!important}.freezzz-gamepad-psx .freezzz-gp-shoulders .r2{right:0!important;top:0!important}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:16%!important;top:58%!important}.freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:16%!important;top:58%!important}
 
 .freezzz-emulator-controls{
   position:relative!important;z-index:30!important;width:100%!important;height:54px!important;min-height:54px!important;
