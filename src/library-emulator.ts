@@ -297,7 +297,7 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
   if (system === "sms") return [
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
     { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
-    { key:"Shift",code:"ShiftLeft",label:"1",cls:"face b" }, { key:"z",code:"KeyZ",label:"2",cls:"face a" }
+    { key:"x",code:"KeyX",label:"1",cls:"face b" }, { key:"z",code:"KeyZ",label:"2",cls:"face a" }
   ];
   if (system === "md") return [
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
@@ -366,7 +366,7 @@ function getCoreButtonIndex(system: SystemId, key: string): number {
   const maps: Record<SystemId, Record<string, number>> = {
     nes: { Shift: 2, Enter: 3, x: 0, z: 8 },
     gb:  { Shift: 2, Enter: 3, x: 0, z: 8 },
-    sms: { Shift: 2, Enter: 3, x: 0, z: 8 },
+    sms: { x: 0, z: 8 },
     md:  { Shift: 2, Enter: 3, x: 0, z: 8, c: 10, a: 9, s: 1, d: 11 },
     snes:{ Shift: 2, Enter: 3, x: 0, z: 8, a: 1, s: 9, q: 10, e: 11 },
     gba: { Shift: 2, Enter: 3, x: 0, z: 8, a: 10, s: 11 },
@@ -411,6 +411,22 @@ function sendCoreInput(key: string, code: string | undefined, pressed: boolean):
     bubbles: true,
     cancelable: true
   }));
+}
+
+function bindEmulatorControls(): void {
+  document.querySelector<HTMLElement>("[data-library-exit]")?.addEventListener("click", () => {
+    emulatorToken++;
+    removeExistingEmulator();
+    renderLibraryIntoPage();
+  });
+
+  const opacity = document.querySelector<HTMLInputElement>("[data-library-opacity]");
+  const opacityValue = document.querySelector<HTMLElement>("[data-library-opacity-value]");
+  opacity?.addEventListener("input", () => {
+    const value = Math.min(100, Math.max(20, Number(opacity.value) || 72));
+    setOpacity(value / 100);
+    if (opacityValue) opacityValue.textContent = value + "%";
+  });
 }
 
 function bindCustomGamepad(): void {
@@ -566,6 +582,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_ready = () => {
       if (token === emulatorToken) bindCustomGamepad();
     };
+    bindEmulatorControls();
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
     writeMeta(games);
