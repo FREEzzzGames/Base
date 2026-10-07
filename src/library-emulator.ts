@@ -496,6 +496,7 @@ function customGamepadMarkup(system: SystemId): string {
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
     '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
+      '<img class="freezzz-gp-sticker-image" data-gp-sticker-image alt="" aria-hidden="true" draggable="false">' +
       '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Change gamepad sticker">STICKER</button>' +
       '<div class="freezzz-gp-sticker-swipe" data-gp-sticker-swipe hidden>' +
         '<span class="freezzz-gp-sticker-name" data-gp-sticker-name></span>' +
@@ -801,11 +802,12 @@ function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
   const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
   const swipe = root.querySelector<HTMLElement>("[data-gp-sticker-swipe]");
   const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
+  const stickerImage = root.querySelector<HTMLImageElement>("[data-gp-sticker-image]");
   const name = root.querySelector<HTMLElement>("[data-gp-sticker-name]");
   const prev = root.querySelector<HTMLButtonElement>("[data-gp-sticker-prev]");
   const next = root.querySelector<HTMLButtonElement>("[data-gp-sticker-next]");
   const accept = root.querySelector<HTMLButtonElement>("[data-gp-sticker-accept]");
-  if (!button || !swipe || !body || !name || !prev || !next || !accept) return;
+  if (!button || !swipe || !body || !stickerImage || !name || !prev || !next || !accept) return;
 
   const stickers = GAMEPAD_STICKERS;
   let committedIndex = Math.max(0, stickers.findIndex(s => s.id === selectedStickerId(system)));
@@ -816,8 +818,12 @@ function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
   const apply = (index: number): void => {
     const sticker = stickers[index];
     if (!sticker) return;
+    const url = stickerAsset(sticker);
     body.classList.add("has-sticker");
-    body.style.setProperty("--freezzz-gp-sticker", 'url("' + stickerAsset(sticker) + '")');
+    body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
+    stickerImage.src = url;
+    stickerImage.alt = sticker.name;
+    stickerImage.dataset.stickerId = sticker.id;
     name.textContent = sticker.name + (sticker.gif ? " • GIF" : "");
   };
   const show = (): void => {
@@ -1029,7 +1035,7 @@ const GAMEPAD_STICKERS: GamepadSticker[] = [
 ];
 
 function stickerAsset(sticker: GamepadSticker): string {
-  return "./stickers/" + encodeURIComponent(sticker.file);
+  return new URL("stickers/" + encodeURIComponent(sticker.file), document.baseURI).href;
 }
 
 function stickerStorageKey(system: SystemId): string {
