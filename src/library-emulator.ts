@@ -31,6 +31,8 @@ type EmulatorWindow = Window & {
   EJS_terminate?: () => void;
   EJS_gameID?: number;
   EJS_disableCue?: boolean;
+  EJS_dontExtractRom?: boolean;
+  EJS_emulator?: { started?: boolean; gameManager?: { simulateInput?: (player: number, button: number, value: number) => void } };
 };
 
 const DB_NAME = "freezzz-library";
@@ -344,18 +346,7 @@ function customGamepadMarkup(system: SystemId): string {
   const bindings = gamepadBindings(system);
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system + '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
-      '<div class="freezzz-gp-dpad">' +
-        bindings.filter(x => x.cls?.includes("dpad")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '" aria-label="' + esc(x.label) + '">' + x.label + '</button>').join("") +
-      '</div>' +
-      '<div class="freezzz-gp-center">' +
-        bindings.filter(x => ["select","start","mode"].some(c => x.cls?.includes(c))).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
-      '</div>' +
-      '<div class="freezzz-gp-face">' +
-        bindings.filter(x => x.cls?.includes("face")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
-      '</div>' +
-      '<div class="freezzz-gp-shoulders">' +
-        bindings.filter(x => x.cls?.includes("shoulder") || x.cls?.includes("trigger")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
-      '</div>' +
+      bindings.map(x => '<button type="button" class="freezzz-gp-btn ' + (x.cls || "") + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '" aria-label="' + esc(x.label) + '">' + x.label + '</button>').join("") +
     '</div>' +
   '</div>';
 }
@@ -438,7 +429,16 @@ function installDefaultControls(system: SystemId): void {
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
 }
 
-function sendCoreInput(key: string, code: string | undefined, pressed: boolean): void {
+function sendCoreInput(system: SystemId, key: string, code: string | undefined, pressed: boolean): void {
+  const button = getCoreButtonIndex(system, key);
+  const emulator = (window as EmulatorWindow).EJS_emulator;
+  const simulateInput = emulator?.gameManager?.simulateInput;
+  if (button >= 0 && typeof simulateInput === "function") {
+    try {
+      simulateInput(0, button, pressed ? 1 : 0);
+      return;
+    } catch {}
+  }
   const type = pressed ? "keydown" : "keyup";
   const event = new KeyboardEvent(type, {
     key: keyboardValue(key),
@@ -451,12 +451,7 @@ function sendCoreInput(key: string, code: string | undefined, pressed: boolean):
     Object.defineProperty(event, "keyCode", { value: keyCode, configurable: true });
     Object.defineProperty(event, "which", { value: keyCode, configurable: true });
   } catch {}
-  // EmulatorJS listens on its own parent (.ejs_parent), not on the player host.
-  // Dispatching on #freezzz-ejs-player is insufficient on mobile and was the reason
-  // the custom controls looked active but did not reach the core.
-  const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
-  const target = player?.querySelector<HTMLElement>(".ejs_parent") || player || document;
-  target.dispatchEvent(event);
+  (document.querySelector<HTMLElement>("#freezzz-ejs-player") || document).dispatchEvent(event);
 }
 
 function bindEmulatorControls(): void {
@@ -489,14 +484,14 @@ function bindCustomGamepad(): void {
       if (!pressed) return;
       pressed = false;
       button.classList.remove("is-pressed");
-      sendCoreInput(key, code, false);
+      sendCoreInput(system, key, code, false);
     };
 
     const press = () => {
       if (pressed) return;
       pressed = true;
       button.classList.add("is-pressed");
-      sendCoreInput(key, code, true);
+      sendCoreInput(system, key, code, true);
     };
 
     button.addEventListener("pointerdown", event => {
@@ -617,6 +612,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_hideSettings = [];
     w.EJS_gameID = stableGameId(game.id);
     w.EJS_disableCue = false;
+    w.EJS_dontExtractRom = true;
     w.EJS_Buttons = {
       playPause: false,
       restart: false,
