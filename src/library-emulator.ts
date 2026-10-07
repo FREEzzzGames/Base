@@ -390,7 +390,8 @@ function bindCustomGamepad(): void {
     button.addEventListener("contextmenu", e => e.preventDefault());
   });
 }
-\nfunction emulatorMarkup(game: LibraryGame): string {
+
+function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
     '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(gamepadLabel(game)) + '</span></header>' +
@@ -492,7 +493,8 @@ async function startGame(game: LibraryGame): Promise<void> {
 
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
-    bindCustomGamepad();\n    window.setTimeout(applyEmulatorGamepadFixes, 300);
+    bindCustomGamepad();
+    window.setTimeout(applyEmulatorGamepadFixes, 300);
     window.setTimeout(applyEmulatorGamepadFixes, 1200);
   } catch (error) {
     root.hidden = false;
