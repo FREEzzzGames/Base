@@ -287,14 +287,117 @@ function gamepadLabel(game: LibraryGame): string {
   return "NES";
 }
 
-function emulatorMarkup(game: LibraryGame): string {
+
+type TouchBinding = { key: string; code?: string; label: string; cls?: string };
+
+function gamepadBindings(system: SystemId): TouchBinding[] {
+  if (system === "nes") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" }
+  ];
+  if (system === "gb") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" }
+  ];
+  if (system === "sms") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"1",cls:"face b" }, { key:"z",code:"KeyZ",label:"2",cls:"face a" }
+  ];
+  if (system === "md") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"MODE",cls:"mode" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" }, { key:"c",code:"KeyC",label:"C",cls:"face c" }
+  ];
+  if (system === "gba") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" },
+    { key:"a",code:"KeyA",label:"L",cls:"shoulder l" }, { key:"s",code:"KeyS",label:"R",cls:"shoulder r" }
+  ];
+  if (system === "psx") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"z",code:"KeyZ",label:"×",cls:"face cross" }, { key:"x",code:"KeyX",label:"○",cls:"face circle" },
+    { key:"a",code:"KeyA",label:"□",cls:"face square" }, { key:"s",code:"KeyS",label:"△",cls:"face triangle" },
+    { key:"q",code:"KeyQ",label:"L1",cls:"shoulder l1" }, { key:"e",code:"KeyE",label:"R1",cls:"shoulder r1" },
+    { key:"1",code:"Digit1",label:"L2",cls:"trigger l2" }, { key:"3",code:"Digit3",label:"R2",cls:"trigger r2" }
+  ];
+  return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" }
+  ];
+}
+
+function customGamepadMarkup(system: SystemId): string {
+  const bindings = gamepadBindings(system);
+  return '<div class="freezzz-custom-gamepad freezzz-gamepad-' + system + '" data-gamepad-system="' + system + '">' +
+    '<div class="freezzz-gp-body">' +
+      '<div class="freezzz-gp-dpad">' +
+        bindings.filter(x => x.cls?.includes("dpad")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
+      '</div>' +
+      '<div class="freezzz-gp-center">' +
+        bindings.filter(x => ["select","start","mode"].some(c => x.cls?.includes(c))).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
+      '</div>' +
+      '<div class="freezzz-gp-face">' +
+        bindings.filter(x => x.cls?.includes("face")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
+      '</div>' +
+      '<div class="freezzz-gp-shoulders">' +
+        bindings.filter(x => x.cls?.includes("shoulder") || x.cls?.includes("trigger")).map(x => '<button type="button" class="freezzz-gp-btn ' + x.cls + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '">' + x.label + '</button>').join("") +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindCustomGamepad(): void {
+  document.querySelectorAll<HTMLElement>("[data-gp-key]").forEach(button => {
+    const key = button.dataset.gpKey || "";
+    const code = button.dataset.gpCode || "";
+    let pressed = false;
+    const send = (type: "keydown" | "keyup") => {
+      if (!key) return;
+      if (type === "keydown" && pressed) return;
+      if (type === "keyup" && !pressed) return;
+      pressed = type === "keydown";
+      window.dispatchEvent(new KeyboardEvent(type, {
+        key,
+        code,
+        bubbles: true,
+        cancelable: true,
+        repeat: type === "keydown" && pressed
+      }));
+    };
+    button.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      button.setPointerCapture?.(e.pointerId);
+      send("keydown");
+    });
+    button.addEventListener("pointerup", e => {
+      e.preventDefault();
+      send("keyup");
+    });
+    button.addEventListener("pointercancel", () => send("keyup"));
+    button.addEventListener("lostpointercapture", () => send("keyup"));
+    button.addEventListener("contextmenu", e => e.preventDefault());
+  });
+}
+\nfunction emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
     '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(gamepadLabel(game)) + '</span></header>' +
     '<div class="freezzz-emulator-screen"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
+    customGamepadMarkup(game.system) +
     '<div class="freezzz-emulator-controls">' +
       '<div class="freezzz-pad-title"><span>' + esc(gamepadLabel(game)) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
-      '<div class="freezzz-pad-space"><span>Touch controls are built into the portal and work independently of the emulator menu.</span></div>' +
     '</div>' +
   '</div>';
 }
@@ -377,19 +480,19 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_core = SYSTEMS[game.system].core;
     w.EJS_pathtodata = EJS_DATA;
     w.EJS_startOnLoaded = true;
-    w.EJS_virtualGamepad = true;
+    w.EJS_virtualGamepad = false;
     w.EJS_controlScheme = SYSTEMS[game.system].core;
     w.EJS_askBeforeExit = false;
     w.EJS_noAutoFocus = true;
     w.EJS_color = "#66FCF1";
-    w.EJS_hideSettings = false;
+    w.EJS_hideSettings = true;
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
     writeMeta(games);
 
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
-    window.setTimeout(applyEmulatorGamepadFixes, 300);
+    bindCustomGamepad();\n    window.setTimeout(applyEmulatorGamepadFixes, 300);
     window.setTimeout(applyEmulatorGamepadFixes, 1200);
   } catch (error) {
     root.hidden = false;
