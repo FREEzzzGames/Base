@@ -313,7 +313,8 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
     { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
     { key:"Shift",code:"ShiftLeft",label:"MODE",cls:"mode" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
-    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" }, { key:"c",code:"KeyC",label:"C",cls:"face c" }
+    { key:"z",code:"KeyZ",label:"A",cls:"face a" }, { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"c",code:"KeyC",label:"C",cls:"face c" },
+    { key:"a",code:"KeyA",label:"X",cls:"face x" }, { key:"s",code:"KeyS",label:"Y",cls:"face y" }, { key:"d",code:"KeyD",label:"Z",cls:"face z" }
   ];
   if (system === "gba") return [
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
