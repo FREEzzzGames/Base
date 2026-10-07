@@ -62,6 +62,7 @@ let selectedSystem: "all" | "8" | "16" | "32" = "all";
 let librarySearch = "";
 let activeGame: LibraryGame | null = null;
 let emulatorToken = 0;
+const activeGamepadReleases = new Set<() => void>();
 
 function readMeta(): LibraryGame[] {
   try {
@@ -545,46 +546,58 @@ function sendCoreInput(system: SystemId, key: string, code: string | undefined, 
 
 function bindNdsTouch(): void {
   const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
-  if (!player || activeGame?.system !== "nds" || player.dataset.ndsTouchBound === "1") return;
+  const screen = document.querySelector<HTMLElement>(".freezzz-screen-nds");
+  const layer = screen?.querySelector<HTMLElement>(".freezzz-nds-touch-layer");
+  if (!player || !screen || !layer || activeGame?.system !== "nds" || layer.dataset.bound === "1") return;
 
-  player.dataset.ndsTouchBound = "1";
-  player.style.touchAction = "none";
+  layer.dataset.bound = "1";
+  layer.style.touchAction = "none";
 
   let active = false;
-  let activeCanvas: HTMLCanvasElement | null = null;
   let activePointerId: number | null = null;
+  let activeCanvas: HTMLCanvasElement | null = null;
 
   const canvases = (): HTMLCanvasElement[] =>
-    Array.from(player.querySelectorAll<HTMLCanvasElement>("canvas"))
-      .filter(canvas => {
-        const rect = canvas.getBoundingClientRect();
-        return rect.width > 1 && rect.height > 1;
-      });
+    Array.from(player.querySelectorAll<HTMLCanvasElement>("canvas")).filter(canvas => {
+      const rect = canvas.getBoundingClientRect();
+      return rect.width > 2 && rect.height > 2;
+    });
 
-  const pickTouchCanvas = (clientX: number, clientY: number): HTMLCanvasElement | null => {
+  const resolveTouchTarget = (): { canvas: HTMLCanvasElement; rect: DOMRect } | null => {
     const list = canvases();
     if (!list.length) return null;
 
-    const containing = list.filter(canvas => {
-      const rect = canvas.getBoundingClientRect();
-      return clientX >= rect.left && clientX <= rect.right &&
-        clientY >= rect.top && clientY <= rect.bottom;
-    });
-
-    if (containing.length > 1) {
-      return containing.sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top)[0];
+    // If EmulatorJS exposes two canvases, the lower one is the touchscreen.
+    if (list.length > 1) {
+      const canvas = list.slice().sort((a, b) =>
+        b.getBoundingClientRect().top - a.getBoundingClientRect().top
+      )[0];
+      return { canvas, rect: canvas.getBoundingClientRect() };
     }
 
-    if (containing.length === 1) {
-      const canvas = containing[0];
-      const rect = canvas.getBoundingClientRect();
-      // When EmulatorJS renders both DS screens into one canvas, only the
-      // lower half is the touchscreen. The upper screen remains display-only.
-      if (list.length === 1 && clientY < rect.top + rect.height * 0.5) return null;
-      return canvas;
-    }
+    // In the normal DS top-bottom composition there is one framebuffer.
+    // Only its lower half is touch-sensitive.
+    const canvas = list[0];
+    const rect = canvas.getBoundingClientRect();
+    return {
+      canvas,
+      rect: new DOMRect(rect.left, rect.top + rect.height * 0.5, rect.width, rect.height * 0.5)
+    };
+  };
 
-    return null;
+  const syncLayer = (): void => {
+    const target = resolveTouchTarget();
+    const screenRect = screen.getBoundingClientRect();
+    if (!target) {
+      layer.hidden = true;
+      return;
+    }
+    const r = target.rect;
+    layer.hidden = false;
+    layer.style.left = Math.max(0, r.left - screenRect.left) + "px";
+    layer.style.top = Math.max(0, r.top - screenRect.top) + "px";
+    layer.style.width = Math.min(screenRect.width, r.width) + "px";
+    layer.style.height = Math.min(screenRect.height, r.height) + "px";
   };
 
   const emitMouse = (
@@ -592,12 +605,18 @@ function bindNdsTouch(): void {
     canvas: HTMLCanvasElement,
     event: PointerEvent
   ): void => {
+    const canvasRect = canvas.getBoundingClientRect();
+    const layerRect = layer.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (event.clientX - layerRect.left) / Math.max(1, layerRect.width)));
+    const ny = Math.max(0, Math.min(1, (event.clientY - layerRect.top) / Math.max(1, layerRect.height)));
+    const clientX = canvasRect.left + nx * canvasRect.width;
+    const clientY = canvasRect.top + ny * canvasRect.height;
     canvas.dispatchEvent(new MouseEvent(type, {
       bubbles: true,
       cancelable: true,
       view: window,
-      clientX: event.clientX,
-      clientY: event.clientY,
+      clientX,
+      clientY,
       screenX: event.screenX,
       screenY: event.screenY,
       button: 0,
@@ -605,45 +624,53 @@ function bindNdsTouch(): void {
     }));
   };
 
-  const releaseTouch = (event: PointerEvent): void => {
+  const release = (event: PointerEvent): void => {
     if (!active || !activeCanvas || event.pointerId !== activePointerId) return;
     event.preventDefault();
     emitMouse("mouseup", activeCanvas, event);
     active = false;
     activeCanvas = null;
     activePointerId = null;
+    syncLayer();
   };
 
-  player.addEventListener("pointerdown", event => {
+  const begin = (event: PointerEvent): void => {
     if (event.pointerType === "mouse" || active) return;
-    const canvas = pickTouchCanvas(event.clientX, event.clientY);
-    if (!canvas) return;
+    syncLayer();
+    if (layer.hidden) return;
+    const target = resolveTouchTarget();
+    if (!target) return;
 
     event.preventDefault();
     event.stopPropagation();
     active = true;
-    activeCanvas = canvas;
     activePointerId = event.pointerId;
-    player.setPointerCapture?.(event.pointerId);
-    emitMouse("mousedown", canvas, event);
-  }, { capture: true, passive: false });
+    activeCanvas = target.canvas;
+    layer.setPointerCapture?.(event.pointerId);
+    emitMouse("mousedown", target.canvas, event);
+  };
 
-  player.addEventListener("pointermove", event => {
+  layer.addEventListener("pointerdown", begin, { capture: true, passive: false });
+  layer.addEventListener("pointermove", event => {
     if (!active || !activeCanvas || event.pointerId !== activePointerId || event.pointerType === "mouse") return;
     event.preventDefault();
     emitMouse("mousemove", activeCanvas, event);
   }, { capture: true, passive: false });
-
-  player.addEventListener("pointerup", releaseTouch, { capture: true, passive: false });
-  player.addEventListener("pointercancel", releaseTouch, { capture: true, passive: false });
-  player.addEventListener("lostpointercapture", event => {
-    if (active && event.pointerId === activePointerId && activeCanvas) {
+  layer.addEventListener("pointerup", release, { capture: true, passive: false });
+  layer.addEventListener("pointercancel", release, { capture: true, passive: false });
+  layer.addEventListener("lostpointercapture", event => {
+    if (active && activeCanvas && event.pointerId === activePointerId) {
       emitMouse("mouseup", activeCanvas, event);
       active = false;
       activeCanvas = null;
       activePointerId = null;
     }
   }, { capture: true });
+
+  const resize = () => syncLayer();
+  window.addEventListener("resize", resize, { passive: true });
+  new ResizeObserver(resize).observe(screen);
+  syncLayer();
 }
 
 function bindEmulatorControls(): void {
@@ -678,12 +705,14 @@ function bindCustomGamepad(): void {
       if (!pressed) return;
       pressed = false;
       button.classList.remove("is-pressed");
+      activeGamepadReleases.delete(release);
       sendCoreInput(system, key, code, false);
     };
 
     const press = () => {
       if (pressed) return;
       pressed = true;
+      activeGamepadReleases.add(release);
       button.classList.add("is-pressed");
       sendCoreInput(system, key, code, true);
     };
@@ -711,7 +740,10 @@ function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
     '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(SYSTEMS[game.system].label) + '</span></header>' +
-    '<div class="freezzz-emulator-screen freezzz-screen-' + game.system + '"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
+    '<div class="freezzz-emulator-screen freezzz-screen-' + game.system + '">' +
+      '<div id="freezzz-ejs-player" class="freezzz-ejs-player"></div>' +
+      (game.system === "nds" ? '<div class="freezzz-nds-touch-layer" aria-label="Nintendo DS touchscreen"></div>' : '') +
+    '</div>' +
     customGamepadMarkup(game.system) +
     '<div class="freezzz-emulator-controls">' +
       '<div class="freezzz-pad-title"><span>' + esc(SYSTEMS[game.system].label) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
@@ -729,6 +761,8 @@ function cleanupEmulatorDom(): void {
 
 function removeExistingEmulator(): void {
   const w = window as EmulatorWindow;
+  activeGamepadReleases.forEach(release => release());
+  activeGamepadReleases.clear();
   const oldHost = document.querySelector<HTMLElement>(".freezzz-emulator-host");
   try { w.EJS_terminate?.(); } catch {}
 
@@ -785,6 +819,11 @@ function stableGameId(id: string): number {
 
 async function startGame(game: LibraryGame): Promise<void> {
   const token = ++emulatorToken;
+  // Close the previous game immediately. Do not keep an old emulator alive
+  // while IndexedDB is reading the next ROM.
+  activeGamepadReleases.forEach(release => release());
+  activeGamepadReleases.clear();
+  removeExistingEmulator();
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
   const list = document.querySelector<HTMLElement>(".library-game-grid");
   const filters = document.querySelector<HTMLElement>(".library-filters");
@@ -794,7 +833,6 @@ async function startGame(game: LibraryGame): Promise<void> {
   try {
     const blob = await getRom(game.id);
     if (token !== emulatorToken) return;
-    removeExistingEmulator();
     activeGame = game;
     // EmulatorJS 4.1+ accepts File objects directly; keep the original ROM filename/extension.
     const emulatorRom = new File([blob], game.fileName, { type: blob.type || "application/octet-stream" });
