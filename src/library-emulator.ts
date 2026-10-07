@@ -65,6 +65,7 @@ let activeGame: LibraryGame | null = null;
 let activeRomUrl: string | null = null;
 let emulatorToken = 0;
 const activeGamepadReleases = new Set<() => void>();
+let legacyRepairPromise: Promise<void> | null = null;
 
 function readMeta(): LibraryGame[] {
   try {
@@ -191,6 +192,8 @@ async function extractSingleZipRom(file: File, entry: { name: string; method: nu
 }
 
 async function repairLegacyLibraryEntries(): Promise<void> {
+  if (legacyRepairPromise) return legacyRepairPromise;
+  legacyRepairPromise = (async () => {
   const games = readMeta();
   let changed = false;
   for (const game of games) {
@@ -214,6 +217,8 @@ async function repairLegacyLibraryEntries(): Promise<void> {
     writeMeta(games);
     renderLibraryIntoPage();
   }
+  })().finally(() => { legacyRepairPromise = null; });
+  return legacyRepairPromise;
 }
 
 let sevenZipModulePromise: Promise<any> | null = null;
@@ -858,6 +863,7 @@ function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
     if (Math.abs(dx) < 28) return;
     step(dx < 0 ? 1 : -1);
   }, { passive: true });
+  body.addEventListener("touchcancel", () => { dragging = false; }, { passive: true });
   body.addEventListener("pointerdown", event => {
     if (swipe.hidden || event.pointerType === "touch") return;
     touchStartX = event.clientX;
@@ -869,6 +875,7 @@ function bindGamepadSticker(root: HTMLElement, system: SystemId): void {
     const dx = event.clientX - touchStartX;
     if (Math.abs(dx) >= 28) step(dx < 0 ? 1 : -1);
   }, { passive: true });
+  body.addEventListener("pointercancel", () => { dragging = false; }, { passive: true });
 
   const saved = stickers[committedIndex];
   if (saved) apply(committedIndex);
@@ -1321,7 +1328,8 @@ function bindLibrary(): void {
   });
 
   document.querySelector<HTMLInputElement>("#library-rom-input")?.addEventListener("change", e => {
-    void importFiles((e.target as HTMLInputElement).files);
+    const input = e.target as HTMLInputElement;
+    void importFiles(input.files).finally(() => { input.value = ""; });
   });
 
   document.querySelectorAll<HTMLElement>("[data-library-play]").forEach(button => {
