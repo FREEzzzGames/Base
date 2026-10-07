@@ -332,6 +332,14 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
     { key:"q",code:"KeyQ",label:"L1",cls:"shoulder l1" }, { key:"e",code:"KeyE",label:"R1",cls:"shoulder r1" },
     { key:"1",code:"Digit1",label:"L2",cls:"trigger l2" }, { key:"3",code:"Digit3",label:"R2",cls:"trigger r2" }
   ];
+  if (system === "snes") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"x",code:"KeyX",label:"B",cls:"face b" }, { key:"z",code:"KeyZ",label:"A",cls:"face a" },
+    { key:"a",code:"KeyA",label:"Y",cls:"face y" }, { key:"s",code:"KeyS",label:"X",cls:"face x" },
+    { key:"q",code:"KeyQ",label:"L",cls:"shoulder l" }, { key:"e",code:"KeyE",label:"R",cls:"shoulder r" }
+  ];
   return [
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
     { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
@@ -397,7 +405,7 @@ function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
     '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(gamepadLabel(game)) + '</span></header>' +
-    '<div class="freezzz-emulator-screen"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
+    '<div class="freezzz-emulator-screen freezzz-screen-' + game.system + '"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
     customGamepadMarkup(game.system) +
     '<div class="freezzz-emulator-controls">' +
       '<div class="freezzz-pad-title"><span>' + esc(gamepadLabel(game)) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
