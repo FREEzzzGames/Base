@@ -40,8 +40,9 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE = "roms";
+const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
 const OPACITY_KEY = "freezzz:library:gamepad-opacity";
 const EJS_DATA = "https://cdn.emulatorjs.org/4.2.3/data/";
@@ -85,6 +86,7 @@ function openDb(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
+      if (!db.objectStoreNames.contains(STICKER_STORE)) db.createObjectStore(STICKER_STORE, { keyPath: "id" });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
@@ -111,6 +113,31 @@ async function getRom(id: string): Promise<Blob> {
       value instanceof Blob ? resolve(value) : reject(new Error("ROM_NOT_FOUND"));
     };
     request.onerror = () => reject(request.error || new Error("LIBRARY_ROM_READ_FAILED"));
+  });
+  db.close();
+  return blob;
+}
+
+async function putGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STICKER_STORE, "readwrite");
+    tx.objectStore(STICKER_STORE).put({ id: system, blob });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error || new Error("LIBRARY_STICKER_WRITE_FAILED"));
+  });
+  db.close();
+}
+
+async function getGamepadSticker(system: SystemId): Promise<Blob | null> {
+  const db = await openDb();
+  const blob = await new Promise<Blob | null>((resolve, reject) => {
+    const request = db.transaction(STICKER_STORE, "readonly").objectStore(STICKER_STORE).get(system);
+    request.onsuccess = () => {
+      const value = request.result?.blob;
+      resolve(value instanceof Blob ? value : null);
+    };
+    request.onerror = () => reject(request.error || new Error("LIBRARY_STICKER_READ_FAILED"));
   });
   db.close();
   return blob;
@@ -499,6 +526,8 @@ function customGamepadMarkup(system: SystemId): string {
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
     '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
+      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Change gamepad sticker">STICKER</button>' +
+      '<input type="file" accept="image/*" class="freezzz-gp-sticker-input" data-gp-sticker-input hidden>' +
       group("freezzz-gp-dpad", dpad) +
       group("freezzz-gp-center", center) +
       group("freezzz-gp-face", face) +
@@ -802,6 +831,7 @@ function bindCustomGamepad(): void {
   const system = root.dataset.gamepadSystem as SystemId | undefined;
   if (!system || !SYSTEMS[system]) return;
   root.dataset.bound = "1";
+  void bindGamepadSticker(root, system);
 
   const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-key]"));
   const dpad = root.querySelector<HTMLElement>(".freezzz-gp-dpad");
@@ -940,7 +970,37 @@ function bindCustomGamepad(): void {
   dpad.addEventListener("lostpointercapture", event => {
     releaseDpadPointer(event.pointerId);
   });
+}async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<void> {
+  const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
+  const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
+  const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
+  if (!body || !button || !input) return;
+
+  const apply = (blob: Blob | null) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const previous = body.dataset.stickerUrl;
+    if (previous) URL.revokeObjectURL(previous);
+    body.dataset.stickerUrl = url;
+    body.style.setProperty("--freezzz-gp-sticker", "url(\"" + url + "\")");
+    root.classList.add("has-sticker");
+  };
+
+  try { apply(await getGamepadSticker(system)); } catch {}
+
+  button.addEventListener("click", () => input.click());
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    try {
+      await putGamepadSticker(system, file);
+      apply(file);
+    } catch {}
+    input.value = "";
+  });
 }
+
+
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
