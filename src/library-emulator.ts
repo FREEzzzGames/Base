@@ -344,9 +344,38 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
 
 function customGamepadMarkup(system: SystemId): string {
   const bindings = gamepadBindings(system);
-  return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system + '" data-gamepad-system="' + system + '">' +
+
+  const button = (x: TouchBinding): string =>
+    '<button type="button" class="freezzz-gp-btn ' + (x.cls || "") +
+    '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") +
+    '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
+
+  const dpad: TouchBinding[] = [];
+  const center: TouchBinding[] = [];
+  const face: TouchBinding[] = [];
+  const shoulders: TouchBinding[] = [];
+
+  for (const binding of bindings) {
+    const cls = binding.cls || "";
+    if (cls.includes("dpad")) dpad.push(binding);
+    else if (cls.includes("face")) face.push(binding);
+    else if (cls === "select" || cls === "start" || cls === "mode") center.push(binding);
+    else if (cls.includes("shoulder") || cls.includes("trigger")) shoulders.push(binding);
+    else center.push(binding);
+  }
+
+  const group = (name: string, items: TouchBinding[]): string =>
+    items.length
+      ? '<div class="' + name + '">' + items.map(button).join("") + '</div>'
+      : "";
+
+  return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
+    '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
-      bindings.map(x => '<button type="button" class="freezzz-gp-btn ' + (x.cls || "") + '" data-gp-key="' + x.key + '" data-gp-code="' + (x.code || "") + '" aria-label="' + esc(x.label) + '">' + x.label + '</button>').join("") +
+      group("freezzz-gp-dpad", dpad) +
+      group("freezzz-gp-center", center) +
+      group("freezzz-gp-face", face) +
+      group("freezzz-gp-shoulders", shoulders) +
     '</div>' +
   '</div>';
 }
