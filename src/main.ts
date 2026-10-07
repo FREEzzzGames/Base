@@ -138,6 +138,10 @@ function telegramMessageExpandControl(message:TelegramMessage):string{
   const expanded=expandedTelegramMessages.has(telegramMessageKey(message));
   return '<button class="chat-message-expand" type="button" data-chat-expand="'+escapeHtml(telegramMessageKey(message))+'" aria-expanded="'+expanded+'">'+(expanded?"Свернуть":"Развернуть")+'</button>';
 }
+function formatTelegramUnreadCount(value:number):string{
+  const count=Number.isFinite(value)?Math.max(0,Math.floor(value)):0;
+  return count>99?"99+":String(count);
+}
 
 async function loadTelegramChatStatus(){
   telegramChatStatus="loading";
@@ -224,6 +228,8 @@ async function loadTelegramMessages(chatId:string){
     const messages=await telegramChatClient.getMessages(chatId,10);
     if(token!==telegramMessageLoadToken)return;
     telegramMessages=[...messages].reverse().slice(-10);
+    const selectedChat=telegramChats.find(chat=>chat.id===chatId);
+    if(selectedChat)selectedChat.unreadCount=0;
     try{localStorage.setItem(TELEGRAM_LAST_CHAT_KEY,chatId);}catch{}
     syncTelegramPopup();
     render();
@@ -327,7 +333,7 @@ function renderTelegramChat(){
 
   const chatRows=orderedTelegramChats.map(chat=>{
     const favorite=telegramFavoriteChatIds.has(chat.id);
-    return '<div class="chat-dialog-row"><button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i>'+chat.unreadCount+'</i>':"")+'</button><button type="button" class="chat-favorite '+(favorite?"active":"")+'" data-chat-favorite="'+escapeHtml(chat.id)+'" aria-label="'+(favorite?"Убрать из избранного":"Добавить в избранное")+'" title="'+(favorite?"Убрать из избранного":"В избранное")+'">'+(favorite?"★":"☆")+'</button></div>';
+    return '<div class="chat-dialog-row"><button type="button" class="chat-dialog '+(chat.id===telegramSelectedChatId?"active":"")+'" data-chat-id="'+escapeHtml(chat.id)+'"><span class="chat-dialog-title">'+escapeHtml(chat.title)+'</span><small>'+escapeHtml(chat.lastMessage?.text||"")+'</small>'+(chat.unreadCount?'<i aria-label="Непрочитанных сообщений: '+formatTelegramUnreadCount(chat.unreadCount)+'">'+formatTelegramUnreadCount(chat.unreadCount)+'</i>':"")+'</button><button type="button" class="chat-favorite '+(favorite?"active":"")+'" data-chat-favorite="'+escapeHtml(chat.id)+'" aria-label="'+(favorite?"Убрать из избранного":"Добавить в избранное")+'" title="'+(favorite?"Убрать из избранного":"В избранное")+'">'+(favorite?"★":"☆")+'</button></div>';
   }).join("");
 
   const messages=telegramMessages.map(message=>{
