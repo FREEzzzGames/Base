@@ -8233,3 +8233,88 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   position:absolute!important;
   float:none!important;
 }
+
+
+/* ================================================================
+   NINTENDO DS — dual-screen core + physical control layout
+   ================================================================ */
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-body{
+  width:calc(100% - 46px)!important;
+  height:132px!important;
+  border-radius:16px 16px 24px 24px!important;
+  background:linear-gradient(#34383d,#1b1d21)!important;
+  border:2px solid #08090a!important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -7px 12px rgba(0,0,0,.5),0 6px 12px #000!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-body:before{
+  content:"NINTENDO  DS"!important;
+  position:absolute!important;
+  left:50%!important;
+  top:7%!important;
+  transform:translateX(-50%)!important;
+  color:#cfd2d5!important;
+  font:700 8px/1 Arial,sans-serif!important;
+  letter-spacing:.08em!important;
+  z-index:4!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-dpad{
+  left:8%!important;
+  top:57%!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face{
+  right:8%!important;
+  top:57%!important;
+  width:108px!important;
+  height:82px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .face{
+  width:34px!important;height:34px!important;
+  min-width:34px!important;min-height:34px!important;
+  background:linear-gradient(#4a4d52,#1b1d21)!important;
+  border-color:#08090a!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .y{
+  left:0!important;top:23px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .x{
+  left:37px!important;top:0!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .b{
+  left:37px!important;top:46px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .a{
+  left:74px!important;top:23px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-center{
+  top:75%!important;
+  width:126px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-shoulders{
+  position:absolute!important;
+  left:7%!important;right:7%!important;top:-10px!important;
+  height:38px!important;
+  z-index:45!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-shoulders .shoulder{
+  position:absolute!important;
+  top:0!important;
+  width:44px!important;height:28px!important;
+  min-width:44px!important;min-height:28px!important;
+}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-shoulders .l{left:0!important}
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-shoulders .r{right:0!important}
+
+/* DS output is two screens; don't force it into the single-screen 16:9 box. */
+.library-emulator-root .freezzz-screen-nds{
+  aspect-ratio:auto!important;
+  height:auto!important;
+  min-height:320px!important;
+}
+.library-emulator-root .freezzz-screen-nds #freezzz-ejs-player{
+  width:100%!important;
+  min-height:320px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+}
