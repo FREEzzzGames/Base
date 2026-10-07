@@ -25,6 +25,7 @@ type EmulatorWindow = Window & {
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
   EJS_hideSettings?: boolean;
+  EJS_defaultControls?: Record<number, Record<number, { value: string; value2?: string }>>;
   EJS_terminate?: () => void;
   EJS_emulator?: { gameManager?: { simulateInput?: (player: number, button: number, value: number) => void } };
 };
@@ -385,12 +386,43 @@ function getCoreButtonIndex(system: SystemId, key: string): number {
   return maps[system][key] ?? -1;
 }
 
-function sendCoreInput(system: SystemId, key: string, pressed: boolean): boolean {
+function keyboardValue(key: string): string {
+  const values: Record<string, string> = {
+    ArrowUp: "up arrow",
+    ArrowDown: "down arrow",
+    ArrowLeft: "left arrow",
+    ArrowRight: "right arrow",
+    Shift: "shift",
+    Enter: "enter"
+  };
+  return values[key] || key.toLowerCase();
+}
+
+function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
-  const button = getCoreButtonIndex(system, key);
-  const simulateInput = w.EJS_emulator?.gameManager?.simulateInput;
-  if (button < 0 || typeof simulateInput !== "function") return false;
-  simulateInput(0, button, pressed ? 1 : 0);
+  const controls: Record<number, { value: string }> = {};
+  const bindings = gamepadBindings(system);
+  for (const binding of bindings) {
+    const index = getCoreButtonIndex(system, binding.key);
+    if (index >= 0) controls[index] = { value: keyboardValue(binding.key) };
+  }
+  w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
+}
+
+function sendCoreInput(system: SystemId, key: string, pressed: boolean): boolean {
+  // Use EmulatorJS's keyboard input path as the primary transport.
+  // simulateInput() is an internal API and is known to be unreliable on
+  // mobile after focus changes (EmulatorJS issue #978).
+  const canvas = document.querySelector<HTMLElement>("#freezzz-ejs-player canvas");
+  const target: HTMLElement | Document = canvas || document;
+  try { canvas?.focus?.({ preventScroll: true }); } catch {}
+  const event = new KeyboardEvent(pressed ? "keydown" : "keyup", {
+    key: keyboardValue(key),
+    code: key.length === 1 ? "Key" + key.toUpperCase() : key,
+    bubbles: true,
+    cancelable: true
+  });
+  target.dispatchEvent(event);
   return true;
 }
 
@@ -543,6 +575,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_startOnLoaded = true;
     w.EJS_virtualGamepad = false;
     w.EJS_controlScheme = SYSTEMS[game.system].core;
+    installDefaultControls(game.system);
     w.EJS_askBeforeExit = false;
     w.EJS_noAutoFocus = false;
     w.EJS_color = "#66FCF1";
