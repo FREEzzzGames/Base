@@ -32,6 +32,18 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 
+import java.util.Base64
+
+tasks.register("restorePhotoIcon") {
+    doLast {
+        val source = rootProject.file("icon/freezzz_icon.b64")
+        val target = project.file("src/main/res/drawable/freezzz_photo.png")
+        target.parentFile.mkdirs()
+        target.writeBytes(Base64.getDecoder().decode(source.readText().trim()))
+    }
+}
+tasks.named("preBuild").configure { dependsOn("restorePhotoIcon") }
+
 dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-ktx:1.11.0")
