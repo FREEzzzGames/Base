@@ -6281,33 +6281,46 @@ html.visual-comfort-enabled video{
   opacity:.4;
 }
 
+.chat-bottom-sentinel{
+  display:block;
+  width:1px;
+  height:1px;
+  flex:0 0 1px;
+  margin:0;
+  padding:0;
+  pointer-events:none;
+}
 .chat-scroll-bottom{
   position:absolute;
-  right:10px;
+  left:50%;
   bottom:10px;
-  width:30px;
-  height:30px;
-  border:1px solid rgba(51,144,236,.55);
+  width:36px;
+  height:36px;
+  min-width:36px;
+  min-height:36px;
+  transform:translateX(-50%);
+  border:1px solid rgba(255,255,255,.26);
   border-radius:50%;
-  background:rgba(12,18,26,.92);
+  background:rgba(0,0,0,.88);
   color:#fff;
-  font:700 18px/1 monospace;
+  font:600 19px/1 system-ui,sans-serif;
   display:grid;
   place-items:center;
   cursor:pointer;
   z-index:3;
-  box-shadow:0 5px 16px rgba(0,0,0,.35);
+  box-shadow:0 4px 14px rgba(0,0,0,.38);
   touch-action:manipulation;
   opacity:1;
-  transform:translateY(0);
   transition:opacity .16s ease,transform .16s ease;
 }
 .chat-scroll-bottom.is-hidden{
   opacity:0;
-  transform:translateY(6px);
+  transform:translate(-50%,6px);
   pointer-events:none;
 }
-.chat-scroll-bottom:active{transform:translateY(1px)}
+.chat-scroll-bottom:active{
+  transform:translate(-50%,1px);
+}
 
 .chat-message-expand,
 .portal-mw-chat-expand{
