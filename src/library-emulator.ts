@@ -858,26 +858,35 @@ function emulatorMarkup(game: LibraryGame): string {
 }
 
 function cleanupEmulatorDom(): void {
-  // EmulatorJS normally renders inside EJS_player, but older/mobile builds
-  // can leave an ejs_parent/ejs_container behind after termination.
-  document.querySelectorAll<HTMLElement>(".ejs_parent, .ejs_container").forEach(node => {
-    if (!node.closest(".freezzz-emulator-host")) node.remove();
-  });
+  // EmulatorJS can append its runtime outside #library-emulator-root.
+  // Remove every known runtime node so a second game can never render on top
+  // of the previous one.
+  document.querySelectorAll<HTMLElement>(".ejs_parent, .ejs_container, .ejs_menu, .ejs_settings, .ejs_context_menu, .ejs_virtualGamepad").forEach(node => node.remove());
+  document.querySelectorAll<HTMLElement>("[id^="ejs_"]").forEach(node => node.remove());
 }
 
 function removeExistingEmulator(): void {
   const w = window as EmulatorWindow;
   activeGamepadReleases.forEach(release => release());
   activeGamepadReleases.clear();
-  const oldHost = document.querySelector<HTMLElement>(".freezzz-emulator-host");
+
+  // Invalidate the previous global callback BEFORE terminate(). Otherwise an
+  // old emulator may call the newly assigned EJS_onExit while a new game is
+  // already booting.
+  w.EJS_onExit = undefined;
+  w.EJS_ready = undefined;
+  w.EJS_onGameStart = undefined;
+
   try { w.EJS_terminate?.(); } catch {}
 
-  // Remove the complete previous emulator before another game can be created.
-  oldHost?.remove();
-  document.querySelectorAll("script[data-freezzz-emulator]").forEach(x => x.remove());
+  document.querySelectorAll<HTMLElement>(".freezzz-emulator-host").forEach(node => node.remove());
   cleanupEmulatorDom();
-  // Clear every EmulatorJS global that can leak a previous core/game into the
-  // next boot. This is especially important when switching DS <-> console.
+
+  // The EmulatorJS loader initializes from window globals only once. Remove
+  // its script after every shutdown so the next game gets a completely fresh
+  // loader/core instead of reusing the previous instance.
+  document.querySelectorAll<HTMLScriptElement>("script[data-freezzz-emulator]").forEach(script => script.remove());
+
   w.EJS_player = undefined;
   w.EJS_gameUrl = undefined;
   w.EJS_gameName = undefined;
@@ -886,6 +895,7 @@ function removeExistingEmulator(): void {
   w.EJS_defaultOptions = undefined;
   w.EJS_ready = undefined;
   w.EJS_onGameStart = undefined;
+  w.EJS_onExit = undefined;
   w.EJS_emulator = undefined;
 
   document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
