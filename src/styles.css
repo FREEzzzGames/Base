@@ -8646,3 +8646,160 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   cursor:crosshair!important;
   -webkit-tap-highlight-color:transparent!important;
 }
+
+
+/* ================================================================
+   FINAL EMULATOR/CATALOG PASS
+   - No borders, gutters or framed edges around emulator screens.
+   - Each core gets a native-ish aspect ratio so the canvas fills the
+     available width instead of leaving side bars inside a 16:9 box.
+   - Library remains a compact two-column game catalog.
+   ================================================================ */
+.library-emulator-root .freezzz-emulator-screen,
+.library-emulator-root .freezzz-emulator-screen *{
+  box-sizing:border-box!important;
+}
+.library-emulator-root .freezzz-emulator-screen{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-left:0!important;
+  border-right:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:#000!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.library-emulator-root .freezzz-emulator-screen #freezzz-ejs-player,
+.library-emulator-root .freezzz-emulator-screen .ejs_parent,
+.library-emulator-root .freezzz-emulator-screen .ejs_container{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  background:#000!important;
+  overflow:hidden!important;
+}
+.library-emulator-root .freezzz-emulator-screen canvas{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  object-fit:fill!important;
+}
+
+/* Native canvas proportions: the screen itself grows with the canvas. */
+.library-emulator-root .freezzz-screen-nes,
+.library-emulator-root .freezzz-screen-sms,
+.library-emulator-root .freezzz-screen-md,
+.library-emulator-root .freezzz-screen-snes,
+.library-emulator-root .freezzz-screen-psx{
+  aspect-ratio:4 / 3!important;
+}
+.library-emulator-root .freezzz-screen-gb{
+  aspect-ratio:10 / 9!important;
+}
+.library-emulator-root .freezzz-screen-gba{
+  aspect-ratio:3 / 2!important;
+}
+.library-emulator-root .freezzz-screen-nds{
+  aspect-ratio:2 / 3!important;
+}
+
+/* Catalog chrome: compact, card-first, no oversized application panels. */
+.library-portal .library-shell{
+  background:#000!important;
+}
+.library-portal .library-head{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin:0 0 10px!important;
+  padding:0!important;
+}
+.library-portal .library-head h2{
+  margin:0!important;
+  font-size:clamp(18px,5vw,24px)!important;
+  line-height:1!important;
+}
+.library-portal .library-head p{
+  margin:5px 0 0!important;
+  font-size:9px!important;
+  opacity:.48!important;
+}
+.library-portal .library-add-button{
+  flex:0 0 auto!important;
+  min-height:34px!important;
+  padding:0 10px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:9px!important;
+}
+.library-portal .library-filters{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  margin:0 0 8px!important;
+}
+.library-portal .library-filter{
+  min-width:0!important;
+  min-height:30px!important;
+  padding:0 4px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-radius:5px!important;
+  background:#080a0d!important;
+  color:#fff!important;
+  font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+}
+.library-portal .library-filter.active{
+  border-color:rgba(102,252,241,.7)!important;
+  background:rgba(102,252,241,.09)!important;
+}
+.library-portal .library-game-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.library-portal .library-catalog-card{
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:7px!important;
+  padding:5px!important;
+  background:#07090c!important;
+}
+.library-portal .library-game-cover{
+  aspect-ratio:1.45 / 1!important;
+  min-height:76px!important;
+  border-radius:5px!important;
+}
+.library-portal .library-game-info strong{
+  display:block!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.library-portal .library-game-actions{
+  display:flex!important;
+  gap:4px!important;
+}
+.library-portal .library-game-actions .tg-button{
+  border-radius:4px!important;
+}
