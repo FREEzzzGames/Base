@@ -665,16 +665,29 @@ function emulatorMarkup(game: LibraryGame): string {
   '</div>';
 }
 
+function cleanupEmulatorDom(): void {
+  // EmulatorJS normally renders inside EJS_player, but older/mobile builds
+  // can leave an ejs_parent/ejs_container behind after termination.
+  document.querySelectorAll<HTMLElement>(".ejs_parent, .ejs_container").forEach(node => {
+    if (!node.closest(".freezzz-emulator-host")) node.remove();
+  });
+}
+
 function removeExistingEmulator(): void {
   const w = window as EmulatorWindow;
+  const oldHost = document.querySelector<HTMLElement>(".freezzz-emulator-host");
   try { w.EJS_terminate?.(); } catch {}
+
   if (activeObjectUrl) {
     URL.revokeObjectURL(activeObjectUrl);
     activeObjectUrl = null;
   }
+
+  // Remove the complete previous emulator before another game can be created.
+  oldHost?.remove();
   document.querySelectorAll("script[data-freezzz-emulator]").forEach(x => x.remove());
-  const host = document.querySelector<HTMLElement>(".freezzz-emulator-host");
-  host?.remove();
+  cleanupEmulatorDom();
+
   document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
   activeGame = null;
 }
@@ -773,6 +786,14 @@ async function startGame(game: LibraryGame): Promise<void> {
       exitEmulation: false
     };
     installDefaultControls(game.system);
+    w.EJS_onExit = () => {
+      if (token !== emulatorToken) return;
+      cleanupEmulatorDom();
+      document.querySelector<HTMLElement>(".freezzz-emulator-host")?.remove();
+      document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
+      activeGame = null;
+      renderLibraryIntoPage();
+    };
     w.EJS_ready = () => {
       if (token !== emulatorToken) return;
       bindCustomGamepad();
