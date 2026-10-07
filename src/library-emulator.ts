@@ -852,6 +852,22 @@ function bindCustomGamepad(): void {
 
   if (!dpad || dpadButtons.length === 0) return;
 
+  const dpadPress = (button: HTMLButtonElement) => {
+    if (releases.has(button)) return;
+    const key = button.dataset.gpKey || "";
+    const code = button.dataset.gpCode || undefined;
+    const release = () => {
+      button.classList.remove("is-pressed");
+      activeGamepadReleases.delete(release);
+      releases.delete(button);
+      sendCoreInput(system, key, code, false);
+    };
+    activeGamepadReleases.add(release);
+    releases.set(button, release);
+    button.classList.add("is-pressed");
+    sendCoreInput(system, key, code, true);
+  };
+
   const releaseDpadPointer = (pointerId: number) => {
     const current = dpadPointers.get(pointerId);
     if (current) releases.get(current)?.();
@@ -862,30 +878,21 @@ function bindCustomGamepad(): void {
     const rect = dpad.getBoundingClientRect();
     if (!rect.width || !rect.height) return null;
 
-    const centers = dpadButtons.map(button => {
-      const r = button.getBoundingClientRect();
-      return {
-        button,
-        x: r.left + r.width / 2,
-        y: r.top + r.height / 2
-      };
-    });
-
     let best: { button: HTMLButtonElement; distance: number } | null = null;
-    for (const item of centers) {
-      const dx = clientX - item.x;
-      const dy = clientY - item.y;
+    for (const button of dpadButtons) {
+      const r = button.getBoundingClientRect();
+      const dx = clientX - (r.left + r.width / 2);
+      const dy = clientY - (r.top + r.height / 2);
       const distance = Math.hypot(dx, dy);
-      if (!best || distance < best.distance) best = { button: item.button, distance };
+      if (!best || distance < best.distance) best = { button, distance };
     }
 
-    // Keep the finger inside the D-pad interaction area; within it,
-    // select the nearest direction so the user can slide between arrows.
     const margin = Math.min(rect.width, rect.height) * 0.18;
     if (clientX < rect.left - margin || clientX > rect.right + margin ||
         clientY < rect.top - margin || clientY > rect.bottom + margin) {
       return null;
     }
+
     return best && best.distance <= Math.max(28, Math.min(rect.width, rect.height) * 0.34)
       ? best.button
       : null;
@@ -897,19 +904,9 @@ function bindCustomGamepad(): void {
     if (next === current) return;
 
     if (current) releases.get(current)?.();
+
     if (next) {
-      releases.get(next) ? (() => {
-        const key = next.dataset.gpKey || "";
-        if (!releases.has(next)) return;
-        next.classList.add("is-pressed");
-        sendCoreInput(system, key, next.dataset.gpCode || undefined, true);
-      })() : undefined;
-      // The normal button release function is not reused for a fresh press,
-      // so register the same state through the button's existing handlers.
-      const key = next.dataset.gpKey || "";
-      const code = next.dataset.gpCode || undefined;
-      next.classList.add("is-pressed");
-      sendCoreInput(system, key, code, true);
+      dpadPress(next);
       dpadPointers.set(pointerId, next);
     } else {
       dpadPointers.delete(pointerId);
@@ -917,8 +914,9 @@ function bindCustomGamepad(): void {
   };
 
   dpad.addEventListener("pointerdown", event => {
-    event.preventDefault();
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
     dpad.setPointerCapture?.(event.pointerId);
     setDpadDirection(event.pointerId, event.clientX, event.clientY);
   }, { capture: true, passive: false });
@@ -926,20 +924,23 @@ function bindCustomGamepad(): void {
   dpad.addEventListener("pointermove", event => {
     if (!dpadPointers.has(event.pointerId)) return;
     event.preventDefault();
+    event.stopPropagation();
     setDpadDirection(event.pointerId, event.clientX, event.clientY);
-  }, { passive: false });
+  }, { capture: true, passive: false });
 
   const endDpad = (event: PointerEvent) => {
+    if (!dpadPointers.has(event.pointerId)) return;
     event.preventDefault();
+    event.stopPropagation();
     releaseDpadPointer(event.pointerId);
   };
+
   dpad.addEventListener("pointerup", endDpad, { capture: true, passive: false });
   dpad.addEventListener("pointercancel", endDpad, { capture: true, passive: false });
   dpad.addEventListener("lostpointercapture", event => {
     releaseDpadPointer(event.pointerId);
   });
 }
-
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
