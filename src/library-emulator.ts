@@ -453,9 +453,10 @@ async function startGame(game: LibraryGame): Promise<void> {
     removeExistingEmulator();
     activeGame = game;
     activeObjectUrl = URL.createObjectURL(blob);
-    list.hidden = true;
-    filters.hidden = true;
-    head.hidden = true;
+    // Keep the library rendered underneath; the emulator is a modal layer above it.
+    list.hidden = false;
+    filters.hidden = false;
+    head.hidden = false;
     root.hidden = false;
     root.innerHTML = emulatorMarkup(game);
     document.querySelector(".portal-workspace")?.classList.add("portal-emulator-active");
