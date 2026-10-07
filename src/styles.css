@@ -5275,7 +5275,8 @@ button,
 .portal-hud-toggle{
   position:absolute!important;
   left:50%!important;
-  bottom:84px!important;
+  top:8px!important;
+  bottom:auto!important;
   transform:translateX(-50%)!important;
   z-index:1200!important;
   width:32px!important;height:24px!important;
@@ -5292,7 +5293,7 @@ button,
   text-shadow:0 1px 4px rgba(0,0,0,.85)!important;
   pointer-events:none!important;
 }
-.portal-workspace.portal-hud-hidden .portal-hud-toggle{bottom:2px!important}
+.portal-workspace.portal-hud-hidden .portal-hud-toggle{top:8px!important;bottom:auto!important}
 .portal-hud-toggle[data-portal-pressed="true"]{background:transparent!important;box-shadow:none!important}
 
 /* HUD TOGGLE — use the same outlined SVG language as HOME icons. */
