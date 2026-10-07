@@ -40,7 +40,7 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 const STORE = "roms";
 const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
@@ -83,10 +83,12 @@ function writeMeta(games: LibraryGame[]): void {
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
       if (!db.objectStoreNames.contains(STICKER_STORE)) db.createObjectStore(STICKER_STORE, { keyPath: "id" });
+      const oldVersion = (event as IDBVersionChangeEvent).oldVersion;
+      if (oldVersion < 7) db.transaction.objectStore(STICKER_STORE).clear();
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
