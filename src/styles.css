@@ -6919,6 +6919,28 @@ html.visual-comfort-enabled video{
 }
 
 
+/* LIBRARY EMULATOR — modal overlay above the game list */
+.library-emulator-root{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2000!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:max(8px,var(--safe-top,0px)) max(8px,var(--tg-content-safe-area-inset-right,0px)) max(8px,var(--safe-bottom,0px)) max(8px,var(--tg-content-safe-area-inset-left,0px))!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  background:#000!important;
+}
+.library-emulator-root .freezzz-emulator-host{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.library-emulator-root[hidden]{display:none!important}
 /* FREEzzz LIBRARY / RETRO EMULATOR */
 .library-portal{padding-bottom:18px}
 .library-shell{overflow:hidden}
