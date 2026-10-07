@@ -7038,7 +7038,7 @@ html.visual-comfort-enabled video{
   margin:0!important;transform:none!important;border-radius:5px!important;
   background:#30343b!important;font-size:clamp(7px,1.5vw,10px)!important;
 }
-.freezzz-gp-center .select{left:2%!important}.freezzz-gp-center .start{right:2%!important}.freezzz-gp-center .mode{left:30%!important;width:40%!important}
+.freezzz-gp-center .select{left:0!important}.freezzz-gp-center .start{right:0!important}.freezzz-gp-center .mode{left:30%!important;width:40%!important}
 
 .freezzz-gp-face{position:absolute!important;right:8%!important;top:31%!important;width:23%!important;height:44%!important}
 .freezzz-gp-face .face{width:27%!important;height:27%!important;border-radius:50%!important}
@@ -7119,7 +7119,7 @@ html.visual-comfort-enabled video{
 /* SNES */
 .freezzz-gamepad-snes{height:clamp(220px,32vw,285px)!important}
 .freezzz-gamepad-snes .freezzz-gp-body{height:86%!important;top:7%!important;max-width:680px!important;border-radius:28px 28px 38% 38% / 28px 28px 48% 48%!important;background:linear-gradient(180deg,#d7d8da,#bfc1c5)!important;border:2px solid #8f9195!important;box-shadow:inset 0 3px 0 rgba(255,255,255,.8),inset 0 -9px 16px rgba(0,0,0,.18),0 7px 16px rgba(0,0,0,.6)!important}
-.freezzz-gamepad-snes .freezzz-gp-face .face{width:31%!important;height:31%!important;background:#6e4a92!important;border:2px solid #4b3266!important}
+.freezzz-gamepad-snes .freezzz-gp-face .face{width:27%!important;height:27%!important;background:#6e4a92!important;border:2px solid #4b3266!important}
 .freezzz-gamepad-snes .freezzz-gp-center{top:66%!important}
 
 /* GBA */
@@ -7141,10 +7141,10 @@ html.visual-comfort-enabled video{
 .freezzz-gamepad-psx .freezzz-gp-dpad{left:9%!important;top:33%!important;width:22%!important;height:42%!important}
 .freezzz-gamepad-psx .freezzz-gp-face{right:9%!important;top:33%!important;width:23%!important;height:43%!important}
 .freezzz-gamepad-psx .freezzz-gp-face .face{width:27%!important;height:27%!important;background:#d4d6d9!important;border:1px solid #8f9297!important}
-.freezzz-gamepad-psx .freezzz-gp-face .cross{right:34%!important;bottom:0!important;color:#4f91c6!important}
-.freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:34%!important;color:#c85c61!important}
-.freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:34%!important;color:#cf75a1!important}
-.freezzz-gamepad-psx .freezzz-gp-face .triangle{right:34%!important;top:0!important;color:#62a36e!important}
+.freezzz-gamepad-psx .freezzz-gp-face .cross{right:36.5%!important;bottom:0!important;color:#4f91c6!important}
+.freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:37%!important;color:#c85c61!important}
+.freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:37%!important;color:#cf75a1!important}
+.freezzz-gamepad-psx .freezzz-gp-face .triangle{right:36.5%!important;top:0!important;color:#62a36e!important}
 .freezzz-gamepad-psx .freezzz-gp-center{left:40%!important;top:55%!important;width:20%!important;height:16%!important}
 .freezzz-gamepad-psx .freezzz-gp-center .select,.freezzz-gamepad-psx .freezzz-gp-center .start{
   width:38%!important;height:44%!important;top:28%!important;background:#55585d!important;color:#dfe1e4!important;font-size:clamp(7px,1.5vw,10px)!important;
