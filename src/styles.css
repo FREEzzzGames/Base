@@ -8528,3 +8528,44 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   .library-portal .library-game-cover strong{font-size:29px!important}
   .library-portal .library-catalog-card .library-game-info{padding:7px 2px 4px!important}
 }
+
+
+/* EMULATOR INPUT V3 — explicit Nintendo DS touchscreen ownership */
+.library-emulator-root .freezzz-screen-nds{
+  position:relative!important;
+  touch-action:none!important;
+}
+.library-emulator-root .freezzz-screen-nds .freezzz-nds-touch-layer{
+  position:absolute!important;
+  z-index:35!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  touch-action:none!important;
+  pointer-events:auto!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+.library-emulator-root .freezzz-screen-nds .freezzz-nds-touch-layer[hidden]{display:none!important}
+.library-emulator-root .freezzz-screen-nds .freezzz-ejs-player,
+.library-emulator-root .freezzz-screen-nds .freezzz-ejs-player canvas{
+  pointer-events:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad{
+  isolation:isolate!important;
+}
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-btn{
+  pointer-events:auto!important;
+}
+@media(max-width:600px){
+  .library-emulator-root .freezzz-emulator-head{
+    height:48px!important;
+    min-height:48px!important;
+  }
+  .library-emulator-root .freezzz-emulator-head .tg-button{
+    min-height:38px!important;
+  }
+}
