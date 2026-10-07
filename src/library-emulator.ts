@@ -473,6 +473,8 @@ function bindEmulatorControls(): void {
 function bindCustomGamepad(): void {
   const root = document.querySelector<HTMLElement>(".freezzz-custom-gamepad");
   if (!root || root.dataset.bound === "1") return;
+  const system = root.dataset.gamepadSystem as SystemId | undefined;
+  if (!system || !SYSTEMS[system]) return;
   root.dataset.bound = "1";
 
   root.querySelectorAll<HTMLButtonElement>("[data-gp-key]").forEach(button => {
@@ -500,12 +502,10 @@ function bindCustomGamepad(): void {
       button.setPointerCapture?.(event.pointerId);
       press();
     }, { passive: false });
-
     button.addEventListener("pointerup", event => {
       event.preventDefault();
       release();
     }, { passive: false });
-
     button.addEventListener("pointercancel", release);
     button.addEventListener("lostpointercapture", release);
     button.addEventListener("pointerleave", event => {
