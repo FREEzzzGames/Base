@@ -88,7 +88,7 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
       if (!db.objectStoreNames.contains(STICKER_STORE)) db.createObjectStore(STICKER_STORE, { keyPath: "id" });
       const oldVersion = (event as IDBVersionChangeEvent).oldVersion;
-      if (oldVersion < 7) db.transaction.objectStore(STICKER_STORE).clear();
+      if (oldVersion < 7) request.transaction?.objectStore(STICKER_STORE).clear();
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
@@ -801,6 +801,43 @@ function bindEmulatorControls(): void {
     setOpacity(value / 100);
     if (opacityValue) opacityValue.textContent = value + "%";
   });
+}
+
+async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<void> {
+  const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
+  const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
+  const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
+  if (!button || !input || !body) return;
+
+  let currentUrl: string | null = null;
+
+  const apply = (blob: Blob | null): void => {
+    if (currentUrl) URL.revokeObjectURL(currentUrl);
+    currentUrl = null;
+    body.classList.remove("has-sticker");
+    body.style.removeProperty("--freezzz-gp-sticker");
+    if (!blob) return;
+    currentUrl = URL.createObjectURL(blob);
+    body.style.setProperty("--freezzz-gp-sticker", 'url("' + currentUrl + '")');
+    body.classList.add("has-sticker");
+  };
+
+  try { apply(await loadGamepadSticker(system)); } catch {}
+
+  button.addEventListener("click", () => input.click());
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    try {
+      await saveGamepadSticker(system, file);
+      apply(file);
+    } catch {}
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (currentUrl) URL.revokeObjectURL(currentUrl);
+  }, { once: true });
 }
 
 function bindCustomGamepad(): void {
