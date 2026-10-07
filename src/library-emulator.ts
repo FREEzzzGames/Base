@@ -59,7 +59,6 @@ const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string
 let selectedSystem: "all" | "8" | "16" | "32" = "all";
 let librarySearch = "";
 let activeGame: LibraryGame | null = null;
-let activeObjectUrl: string | null = null;
 let emulatorToken = 0;
 
 function readMeta(): LibraryGame[] {
@@ -696,11 +695,6 @@ function removeExistingEmulator(): void {
   const oldHost = document.querySelector<HTMLElement>(".freezzz-emulator-host");
   try { w.EJS_terminate?.(); } catch {}
 
-  if (activeObjectUrl) {
-    URL.revokeObjectURL(activeObjectUrl);
-    activeObjectUrl = null;
-  }
-
   // Remove the complete previous emulator before another game can be created.
   oldHost?.remove();
   document.querySelectorAll("script[data-freezzz-emulator]").forEach(x => x.remove());
@@ -754,7 +748,6 @@ async function startGame(game: LibraryGame): Promise<void> {
     if (token !== emulatorToken) return;
     removeExistingEmulator();
     activeGame = game;
-    activeObjectUrl = null;
     // EmulatorJS 4.1+ accepts File objects directly; keep the original ROM filename/extension.
     const emulatorRom = new File([blob], game.fileName, { type: blob.type || "application/octet-stream" });
     // Keep the library rendered underneath; the emulator is a modal layer above it.
