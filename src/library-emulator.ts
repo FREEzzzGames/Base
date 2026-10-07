@@ -29,6 +29,8 @@ type EmulatorWindow = Window & {
   EJS_ready?: () => void;
   EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
   EJS_terminate?: () => void;
+  EJS_gameID?: number;
+  EJS_disableCue?: boolean;
 };
 
 const DB_NAME = "freezzz-library";
@@ -532,13 +534,13 @@ function loadEmulatorScript(): Promise<void> {
   });
 }
 
-async function stableGameId(id: string): number {
+function stableGameId(id: string): number {
   let hash = 2166136261;
   for (let i = 0; i < id.length; i++) hash = Math.imul(hash ^ id.charCodeAt(i), 16777619);
   return hash >>> 0;
 }
 
-function startGame(game: LibraryGame): Promise<void> {
+async function startGame(game: LibraryGame): Promise<void> {
   const token = ++emulatorToken;
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
   const list = document.querySelector<HTMLElement>(".library-game-grid");
