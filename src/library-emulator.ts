@@ -238,13 +238,16 @@ async function inspectSevenZip(file: File): Promise<string[]> {
     try {
       // -slt emits machine-readable "Path = ..." records.
       await sevenZip.callMain(["l", "-slt", path]);
+      const output = sevenZipOutput || [];
+      return output
+        .join("\n")
+        .split(/\r?\n/)
+        .map(line => line.startsWith("Path = ") ? line.slice(7).trim() : "")
+        .filter(Boolean)
+        .filter(name => name !== path && !name.endsWith("/"));
     } finally {
-      const output = sevenZipOutput;
       sevenZipOutput = null;
-      return output || [];
     }
-
-    return []
       .join("\n")
       .split(/\r?\n/)
       .map(line => line.startsWith("Path = ") ? line.slice(7).trim() : "")
