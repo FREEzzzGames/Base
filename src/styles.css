@@ -6822,3 +6822,29 @@ html.visual-comfort-enabled video{
   border-bottom:1px solid rgba(102,252,241,.25)!important;
   pointer-events:none!important;
 }
+
+
+/* CHAT message expand/collapse control — text-only yellow treatment. */
+.chat-message-expand,
+.portal-mw-chat-expand{
+  border:0!important;
+  background:transparent!important;
+  color:#ffd21a!important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.95),
+    0 0 5px rgba(0,0,0,.85)!important;
+  box-shadow:none!important;
+}
+.chat-message-expand:hover,
+.portal-mw-chat-expand:hover{
+  color:#ffe36a!important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.98),
+    0 0 7px rgba(0,0,0,.92)!important;
+}
+.chat-message-expand:active,
+.portal-mw-chat-expand:active{
+  color:#ffec91!important;
+  background:transparent!important;
+  text-shadow:0 1px 3px rgba(0,0,0,1)!important;
+}
