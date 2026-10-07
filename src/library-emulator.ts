@@ -52,8 +52,8 @@ const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string
   sms:  { label: "Master System", bits: 8, core: "segaMS", exts: ["sms"] },
   md:   { label: "Mega Drive / Genesis", bits: 16, core: "segaMD", exts: ["md", "gen", "smd", "sg"] },
   snes: { label: "SNES", bits: 16, core: "snes", exts: ["sfc", "smc", "fig", "swc"] },
-  gba:  { label: "Game Boy Advance", bits: 16, core: "gba", exts: ["gba"] },
-  psx:  { label: "PlayStation", bits: 32, core: "psx", exts: ["bin", "cue", "iso", "img", "pbp", "chd", "m3u", "7z"] },
+  gba:  { label: "Game Boy Advance", bits: 32, core: "gba", exts: ["gba"] },
+  psx:  { label: "PlayStation", bits: 32, core: "psx", exts: ["bin", "cue", "iso", "img", "pbp", "chd", "m3u"] },
   nds:  { label: "Nintendo DS", bits: 32, core: "nds", exts: ["nds"] }
 };
 
