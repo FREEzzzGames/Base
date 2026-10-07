@@ -209,8 +209,14 @@ async function repairLegacyLibraryEntries(): Promise<void> {
 
 async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob; fileName: string }> {
   const direct = detectSystem(file.name);
-  if (direct && extensionOf(file.name) !== "zip") return { system: direct, blob: file, fileName: file.name };
-  if (extensionOf(file.name) !== "zip") throw new Error("UNSUPPORTED_ROM_FORMAT");
+  const ext = extensionOf(file.name);
+  if (direct && ext !== "zip") return { system: direct, blob: file, fileName: file.name };
+  if (ext === "7z") {
+    // Keep the 7z container intact. EmulatorJS performs the archive extraction
+    // before handing the ROM to the selected core.
+    return { system: direct || "psx", blob: file, fileName: file.name };
+  }
+  if (ext !== "zip") throw new Error("UNSUPPORTED_ROM_FORMAT");
   const entries = await inspectZip(file);
   const candidates = entries.filter(entry => detectSystem(entry.name));
   if (candidates.length !== 1) throw new Error(candidates.length ? "ZIP_MUST_CONTAIN_ONE_ROM" : "ZIP_ROM_NOT_RECOGNIZED");
@@ -277,7 +283,7 @@ export function renderLibrary(): string {
   return '<div class="content portal-layout library-portal" data-portal-layout="library">' +
     '<section class="library-shell portal-block">' +
       '<div class="library-head"><div><h2>LIBRARY</h2><p>Локальная библиотека игр пользователя. ROM-файлы не загружаются на сервер.</p></div>' +
-      '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip" multiple hidden>+ ADD ROM</label></div>' +
+      '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
       '<div class="library-filters">' + systemCards() + '</div>' +
       '<div class="library-game-grid">' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>LIBRARY EMPTY</b><span>Добавь собственные ROM-файлы с телефона.</span></div>') + '</div>' +
       '<div class="library-emulator-root" id="library-emulator-root" hidden></div>' +
@@ -777,7 +783,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_gameID = stableGameId(game.id);
     w.EJS_disableCue = false;
     w.EJS_mouse = game.system === "nds";
-    w.EJS_dontExtractRom = true;
+    w.EJS_dontExtractRom = extensionOf(game.fileName) !== "7z";
     w.EJS_Buttons = {
       playPause: false,
       restart: false,
