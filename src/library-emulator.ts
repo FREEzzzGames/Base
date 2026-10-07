@@ -40,7 +40,7 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const STORE = "roms";
 const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
@@ -1014,7 +1014,7 @@ async function saveGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STICKER_STORE, "readwrite");
-    tx.objectStore(STICKER_STORE).put({ id: system, blob });
+    tx.objectStore(STICKER_STORE).put({ id: system, blob, version: 2 });
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error || new Error("STICKER_SAVE_FAILED"));
   });
@@ -1025,7 +1025,7 @@ async function loadGamepadSticker(system: SystemId): Promise<Blob | null> {
   const db = await openDb();
   const blob = await new Promise<Blob | null>((resolve, reject) => {
     const req = db.transaction(STICKER_STORE, "readonly").objectStore(STICKER_STORE).get(system);
-    req.onsuccess = () => resolve(req.result?.blob instanceof Blob ? req.result.blob : null);
+    req.onsuccess = () => resolve(req.result?.version === 2 && req.result.blob instanceof Blob ? req.result.blob : null);
     req.onerror = () => reject(req.error || new Error("STICKER_LOAD_FAILED"));
   });
   db.close();
