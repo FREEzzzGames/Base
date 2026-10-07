@@ -396,6 +396,28 @@ function keyboardCode(key: string, code?: string): string {
   return key;
 }
 
+function keyboardKeyCode(key: string): number {
+  const codes: Record<string, number> = {
+    ArrowLeft: 37,
+    ArrowUp: 38,
+    ArrowRight: 39,
+    ArrowDown: 40,
+    Shift: 16,
+    Enter: 13,
+    x: 88,
+    z: 90,
+    c: 67,
+    a: 65,
+    s: 83,
+    d: 68,
+    q: 81,
+    e: 69,
+    "1": 49,
+    "3": 51
+  };
+  return codes[key] ?? 0;
+}
+
 function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
   const bindings = gamepadBindings(system);
