@@ -26,7 +26,7 @@ type EmulatorWindow = Window & {
   EJS_color?: string;
   EJS_hideSettings?: boolean;
   EJS_terminate?: () => void;
-  EJS_emulator?: unknown;
+  EJS_emulator?: { gameManager?: { simulateInput?: (player: number, button: number, value: number) => void } };
 };
 
 const DB_NAME = "freezzz-library";
@@ -368,39 +368,61 @@ function customGamepadMarkup(system: SystemId): string {
   '</div>';
 }
 
+function getCoreButtonIndex(system: SystemId, key: string): number {
+  const common: Record<string, number> = {
+    ArrowUp: 4, ArrowDown: 5, ArrowLeft: 6, ArrowRight: 7,
+    Shift: 2, Enter: 3, x: 0, z: 8, a: 9, s: 10, d: 11, q: 12, e: 13
+  };
+  if (system === "md") {
+    return ({ z: 8, x: 0, c: 12, a: 9, s: 1, d: 13 } as Record<string, number>)[key] ?? common[key] ?? -1;
+  }
+  if (system === "psx") {
+    return ({ z: 0, x: 1, a: 2, s: 3, q: 10, e: 11, "1": 12, "3": 13 } as Record<string, number>)[key] ?? common[key] ?? -1;
+  }
+  return common[key] ?? -1;
+}
+
+function sendCoreInput(system: SystemId, key: string, pressed: boolean): boolean {
+  const w = window as EmulatorWindow;
+  const button = getCoreButtonIndex(system, key);
+  const simulateInput = w.EJS_emulator?.gameManager?.simulateInput;
+  if (button < 0 || typeof simulateInput !== "function") return false;
+  simulateInput(0, button, pressed ? 1 : 0);
+  return true;
+}
+
 function bindCustomGamepad(): void {
-  document.querySelectorAll<HTMLElement>("[data-gp-key]").forEach(button => {
+  const root = document.querySelector<HTMLElement>(".freezzz-custom-gamepad");
+  if (!root) return;
+  const system = root.dataset.gamepadSystem as SystemId | undefined;
+  if (!system) return;
+  root.querySelectorAll<HTMLElement>("[data-gp-key]").forEach(button => {
     const key = button.dataset.gpKey || "";
-    const code = button.dataset.gpCode || "";
     let pressed = false;
-    const send = (type: "keydown" | "keyup") => {
-      if (!key) return;
-      if (type === "keydown" && pressed) return;
-      if (type === "keyup" && !pressed) return;
-      pressed = type === "keydown";
-      document.dispatchEvent(new KeyboardEvent(type, {
-        key,
-        code,
-        bubbles: true,
-        cancelable: true,
-        repeat: type === "keydown" && pressed
+    const send = (next: boolean) => {
+      if (next === pressed) return;
+      pressed = next;
+      if (sendCoreInput(system, key, next)) return;
+      const code = button.dataset.gpCode || "";
+      document.dispatchEvent(new KeyboardEvent(next ? "keydown" : "keyup", {
+        key, code, bubbles: true, cancelable: true
       }));
     };
+    const release = () => send(false);
     button.addEventListener("pointerdown", e => {
       e.preventDefault();
       button.setPointerCapture?.(e.pointerId);
-      send("keydown");
+      send(true);
     });
     button.addEventListener("pointerup", e => {
       e.preventDefault();
-      send("keyup");
+      release();
     });
-    button.addEventListener("pointercancel", () => send("keyup"));
-    button.addEventListener("lostpointercapture", () => send("keyup"));
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("lostpointercapture", release);
     button.addEventListener("contextmenu", e => e.preventDefault());
   });
 }
-
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
