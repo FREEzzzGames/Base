@@ -45,7 +45,22 @@ let layer:HTMLDivElement|null=null;
 
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
 function focus(id:MiniId){windows[id].z=nextZ++;}
-function open(id:MiniId){windows[id].open=true;focus(id);if(id==="chat"){window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));}render();}
+function fitWindow(id:MiniId){
+  const w=windows[id];
+  const maxWidth=Math.max(w.minWidth,window.innerWidth-8);
+  const maxHeight=Math.max(w.minHeight,window.innerHeight-16);
+  w.width=Math.min(Math.max(w.width,w.minWidth),maxWidth);
+  w.height=Math.min(Math.max(w.height,w.minHeight),maxHeight);
+  w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
+  w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-8),w.y));
+}
+function open(id:MiniId){
+  fitWindow(id);
+  windows[id].open=true;
+  focus(id);
+  if(id==="chat")window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));
+  render();
+}
 function close(id:MiniId){windows[id].open=false;render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandles(id:MiniId){
@@ -56,7 +71,7 @@ function resizeWindow(id:MiniId,dir:ResizeDir,startX:number,startY:number,startW
   const dx=evX-startX,dy=evY-startY;
   const minW=w.minWidth,minH=w.minHeight;
   const maxW=Math.max(minW,window.innerWidth-8);
-  const maxH=Math.max(minH,window.innerHeight-78);
+  const maxH=Math.max(minH,window.innerHeight-16);
   let width=startW,height=startH,left=startLeft,top=startTop;
   if(dir.includes("e"))width=Math.min(maxW,Math.max(minW,startW+dx));
   if(dir.includes("s"))height=Math.min(maxH,Math.max(minH,startH+dy));
@@ -115,7 +130,7 @@ function bind(){
     try{h.setPointerCapture(pointer.pointerId);}catch{}
     const move=(ev:PointerEvent)=>{
       const maxX=Math.max(4,window.innerWidth-w.width-4);
-      const maxY=Math.max(4,window.innerHeight-w.height-70);
+      const maxY=Math.max(4,window.innerHeight-w.height-8);
       w.x=Math.max(4,Math.min(maxX,ox+ev.clientX-sx));
       w.y=Math.max(4,Math.min(maxY,oy+ev.clientY-sy));
       const el=layer?.querySelector<HTMLElement>('[data-mw="'+id+'"]');
@@ -226,14 +241,11 @@ export function initMultiWindowPortal(){
     window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:savedId}}));
   }
   const clampWindows=()=>{
-    (Object.keys(windows) as MiniId[]).forEach(id=>{
-      const w=windows[id];
-      w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
-      w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-70),w.y));
-    });
+    (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
     render();
   };
   window.addEventListener("resize",clampWindows,{passive:true});
+  window.visualViewport?.addEventListener("resize",clampWindows,{passive:true});
   render();
 }
 if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",initMultiWindowPortal,{once:true});
