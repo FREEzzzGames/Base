@@ -24,7 +24,7 @@ type EmulatorWindow = Window & {
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
   EJS_hideSettings?: string[];
-  EJS_defaultControls?: Record<number, Record<number, { value: string; value2?: string }>>;
+  EJS_defaultControls?: Record<number, Record<number, { value: number; value2?: string }>>;
   EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
   EJS_ready?: () => void;
   EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
@@ -399,7 +399,7 @@ function keyboardCode(key: string, code?: string): string {
 function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
   const bindings = gamepadBindings(system);
-  const controls: Record<number, { value: string; value2?: string }> = {};
+  const controls: Record<number, { value: number; value2?: string }> = {};
   const seenKeys = new Set<string>();
   const seenIndices = new Set<number>();
 
@@ -410,19 +410,27 @@ function installDefaultControls(system: SystemId): void {
     if (seenIndices.has(index)) throw new Error("DUPLICATE_GAMEPAD_INDEX:" + system + ":" + index);
     seenKeys.add(binding.key);
     seenIndices.add(index);
-    controls[index] = { value: keyboardValue(binding.key), value2: binding.label };
+    controls[index] = { value: keyboardKeyCode(binding.key), value2: binding.label };
   }
 
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
 }
 
 function sendCoreInput(key: string, code: string | undefined, pressed: boolean): void {
-  document.dispatchEvent(new KeyboardEvent(pressed ? "keydown" : "keyup", {
+  const type = pressed ? "keydown" : "keyup";
+  const event = new KeyboardEvent(type, {
     key: keyboardValue(key),
     code: keyboardCode(key, code),
     bubbles: true,
     cancelable: true
-  }));
+  });
+  const keyCode = keyboardKeyCode(key);
+  try {
+    Object.defineProperty(event, "keyCode", { value: keyCode, configurable: true });
+    Object.defineProperty(event, "which", { value: keyCode, configurable: true });
+  } catch {}
+  const target = document.querySelector<HTMLElement>("#freezzz-ejs-player") || document;
+  target.dispatchEvent(event);
 }
 
 function bindEmulatorControls(): void {
