@@ -28,6 +28,7 @@ type EmulatorWindow = Window & {
   EJS_defaultOptions?: Record<string, string | number | boolean>;
   EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
   EJS_ready?: () => void;
+  EJS_onGameStart?: () => void;
   EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
   EJS_terminate?: () => void;
   EJS_gameID?: number;
@@ -42,7 +43,7 @@ const DB_VERSION = 2;
 const STORE = "roms";
 const META_KEY = "freezzz:library:games";
 const OPACITY_KEY = "freezzz:library:gamepad-opacity";
-const EJS_DATA = "https://cdn.emulatorjs.org/stable/data/";
+const EJS_DATA = "https://cdn.emulatorjs.org/4.2.3/data/";
 const EJS_LOADER = EJS_DATA + "loader.js";
 
 const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string; exts: string[] }> = {
@@ -210,19 +211,41 @@ async function repairLegacyLibraryEntries(): Promise<void> {
 async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob; fileName: string }> {
   const direct = detectSystem(file.name);
   const ext = extensionOf(file.name);
-  if (direct && ext !== "zip") return { system: direct, blob: file, fileName: file.name };
-  if (ext === "7z") {
-    // Keep the 7z container intact. EmulatorJS performs the archive extraction
-    // before handing the ROM to the selected core.
-    return { system: direct || "psx", blob: file, fileName: file.name };
+
+  if (direct && ext !== "zip" && ext !== "7z") {
+    return { system: direct, blob: file, fileName: file.name };
   }
+
+  if (ext === "7z") {
+    // EmulatorJS can extract 7z archives itself, but the core still has to be
+    // selected before boot. Never silently guess PSX for an arbitrary archive.
+    // Support the common "game.nds.7z" / "game.gba.7z" naming convention.
+    const innerName = file.name.replace(/\.7z$/i, "");
+    const innerSystem = detectSystem(innerName);
+    if (!innerSystem) throw new Error("7Z_SYSTEM_UNKNOWN");
+    return { system: innerSystem, blob: file, fileName: file.name };
+  }
+
   if (ext !== "zip") throw new Error("UNSUPPORTED_ROM_FORMAT");
+
   const entries = await inspectZip(file);
   const candidates = entries.filter(entry => detectSystem(entry.name));
-  if (candidates.length !== 1) throw new Error(candidates.length ? "ZIP_MUST_CONTAIN_ONE_ROM" : "ZIP_ROM_NOT_RECOGNIZED");
+  if (!candidates.length) throw new Error("ZIP_ROM_NOT_RECOGNIZED");
+
+  const systems = Array.from(new Set(candidates.map(entry => detectSystem(entry.name)).filter(Boolean))) as SystemId[];
+  if (systems.length !== 1) throw new Error("ZIP_MULTIPLE_SYSTEMS_UNSUPPORTED");
+
+  const system = systems[0];
+
+  // Disc-based PlayStation games commonly need both .cue and .bin files.
+  // Preserve a multi-file PSX ZIP so EmulatorJS can extract the whole archive.
+  if (system === "psx" && candidates.length > 1) {
+    const bootEntry = candidates.find(entry => /\.(m3u|cue)$/i.test(entry.name)) || candidates[0];
+    return { system, blob: file, fileName: bootEntry.name };
+  }
+
+  if (candidates.length !== 1) throw new Error("ZIP_MUST_CONTAIN_ONE_ROM");
   const entry = candidates[0];
-  const system = detectSystem(entry.name);
-  if (!system) throw new Error("ZIP_ROM_NOT_RECOGNIZED");
   return { system, blob: await extractSingleZipRom(file, entry), fileName: entry.name };
 }
 
@@ -522,14 +545,14 @@ function sendCoreInput(system: SystemId, key: string, code: string | undefined, 
 
 function bindNdsTouch(): void {
   const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
-  if (!player || player.dataset.ndsTouchBound === "1") return;
-  if (activeGame?.system !== "nds") return;
+  if (!player || activeGame?.system !== "nds" || player.dataset.ndsTouchBound === "1") return;
 
   player.dataset.ndsTouchBound = "1";
   player.style.touchAction = "none";
 
   let active = false;
   let activeCanvas: HTMLCanvasElement | null = null;
+  let activePointerId: number | null = null;
 
   const canvases = (): HTMLCanvasElement[] =>
     Array.from(player.querySelectorAll<HTMLCanvasElement>("canvas"))
@@ -542,22 +565,25 @@ function bindNdsTouch(): void {
     const list = canvases();
     if (!list.length) return null;
 
-    const containing = list
-      .filter(canvas => {
-        const rect = canvas.getBoundingClientRect();
-        return clientX >= rect.left && clientX <= rect.right &&
-          clientY >= rect.top && clientY <= rect.bottom;
-      })
-      .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top);
+    const containing = list.filter(canvas => {
+      const rect = canvas.getBoundingClientRect();
+      return clientX >= rect.left && clientX <= rect.right &&
+        clientY >= rect.top && clientY <= rect.bottom;
+    });
 
-    if (containing.length > 1) return containing[0];
+    if (containing.length > 1) {
+      return containing.sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top)[0];
+    }
+
     if (containing.length === 1) {
       const canvas = containing[0];
       const rect = canvas.getBoundingClientRect();
-      // If both DS screens share one canvas, only the lower half is touch input.
-      if (list.length === 1 && clientY < rect.top + rect.height * 0.48) return null;
+      // When EmulatorJS renders both DS screens into one canvas, only the
+      // lower half is the touchscreen. The upper screen remains display-only.
+      if (list.length === 1 && clientY < rect.top + rect.height * 0.5) return null;
       return canvas;
     }
+
     return null;
   };
 
@@ -579,34 +605,45 @@ function bindNdsTouch(): void {
     }));
   };
 
+  const releaseTouch = (event: PointerEvent): void => {
+    if (!active || !activeCanvas || event.pointerId !== activePointerId) return;
+    event.preventDefault();
+    emitMouse("mouseup", activeCanvas, event);
+    active = false;
+    activeCanvas = null;
+    activePointerId = null;
+  };
+
   player.addEventListener("pointerdown", event => {
-    if (event.pointerType === "mouse") return;
+    if (event.pointerType === "mouse" || active) return;
     const canvas = pickTouchCanvas(event.clientX, event.clientY);
     if (!canvas) return;
+
     event.preventDefault();
     event.stopPropagation();
     active = true;
     activeCanvas = canvas;
+    activePointerId = event.pointerId;
     player.setPointerCapture?.(event.pointerId);
     emitMouse("mousedown", canvas, event);
   }, { capture: true, passive: false });
 
   player.addEventListener("pointermove", event => {
-    if (!active || !activeCanvas || event.pointerType === "mouse") return;
+    if (!active || !activeCanvas || event.pointerId !== activePointerId || event.pointerType === "mouse") return;
     event.preventDefault();
     emitMouse("mousemove", activeCanvas, event);
   }, { capture: true, passive: false });
 
-  const releaseTouch = (event: PointerEvent): void => {
-    if (!active || !activeCanvas || event.pointerType === "mouse") return;
-    event.preventDefault();
-    emitMouse("mouseup", activeCanvas, event);
-    active = false;
-    activeCanvas = null;
-  };
-
   player.addEventListener("pointerup", releaseTouch, { capture: true, passive: false });
   player.addEventListener("pointercancel", releaseTouch, { capture: true, passive: false });
+  player.addEventListener("lostpointercapture", event => {
+    if (active && event.pointerId === activePointerId && activeCanvas) {
+      emitMouse("mouseup", activeCanvas, event);
+      active = false;
+      activeCanvas = null;
+      activePointerId = null;
+    }
+  }, { capture: true });
 }
 
 function bindEmulatorControls(): void {
@@ -699,6 +736,17 @@ function removeExistingEmulator(): void {
   oldHost?.remove();
   document.querySelectorAll("script[data-freezzz-emulator]").forEach(x => x.remove());
   cleanupEmulatorDom();
+  // Clear every EmulatorJS global that can leak a previous core/game into the
+  // next boot. This is especially important when switching DS <-> console.
+  w.EJS_player = undefined;
+  w.EJS_gameUrl = undefined;
+  w.EJS_gameName = undefined;
+  w.EJS_core = undefined;
+  w.EJS_defaultControls = undefined;
+  w.EJS_defaultOptions = undefined;
+  w.EJS_ready = undefined;
+  w.EJS_onGameStart = undefined;
+  w.EJS_emulator = undefined;
 
   document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
   activeGame = null;
@@ -817,11 +865,13 @@ async function startGame(game: LibraryGame): Promise<void> {
       activeGame = null;
       renderLibraryIntoPage();
     };
-    w.EJS_ready = () => {
+    const bindInputSurface = () => {
       if (token !== emulatorToken) return;
       bindCustomGamepad();
       if (game.system === "nds") bindNdsTouch();
     };
+    w.EJS_ready = bindInputSurface;
+    w.EJS_onGameStart = bindInputSurface;
     bindEmulatorControls();
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
@@ -829,10 +879,7 @@ async function startGame(game: LibraryGame): Promise<void> {
 
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
-    bindCustomGamepad();
-    if (game.system === "nds") bindNdsTouch();
-
-
+    bindInputSurface();
   } catch (error) {
     root.hidden = false;
     root.innerHTML = '<div class="library-emulator-error"><b>EMULATOR ERROR</b><span>' + esc(error instanceof Error ? error.message : String(error)) + '</span><button type="button" class="tg-button secondary" data-library-exit>BACK</button></div>';
