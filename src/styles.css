@@ -7251,3 +7251,157 @@ html.visual-comfort-enabled video{
 .freezzz-gamepad-sms .freezzz-gp-face .a{right:0!important;top:38%!important}
 .freezzz-gamepad-gb .freezzz-gp-face .b,
 .freezzz-gamepad-sms .freezzz-gp-face .b{left:0!important;top:38%!important}
+
+
+/* LIBRARY CONTROLLER V2 — isolated geometry layer.
+   Added after legacy controller rules so V2 wins by specificity. */
+.freezzz-custom-gamepad.freezzz-gamepad-v2{
+  height:clamp(210px,34vw,300px)!important;
+  min-height:210px!important;
+  max-height:300px!important;
+  padding:8px!important;
+  overflow:hidden!important;
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  opacity:1!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-body{
+  width:100%!important;
+  height:100%!important;
+  top:0!important;
+  max-width:760px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn{
+  box-sizing:border-box!important;
+  touch-action:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  opacity:var(--freezzz-pad-opacity,.72)!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn.is-pressed{
+  opacity:1!important;
+  filter:brightness(1.35)!important;
+  transform:scale(.94)!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad{
+  left:8%!important;top:34%!important;width:25%!important;height:40%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad .dpad{
+  width:38%!important;height:34%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad .up{left:31%!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad .down{left:31%!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad .left{left:0!important;top:33%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-dpad .right{right:0!important;top:33%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center{
+  left:39%!important;top:56%!important;width:22%!important;height:18%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .select,
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .start,
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .mode{
+  width:36%!important;height:34%!important;top:33%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .select,
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .mode{left:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-center .start{right:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-face{
+  right:8%!important;top:32%!important;width:27%!important;height:44%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-face .face{
+  width:30%!important;height:30%!important;border-radius:50%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders{
+  left:5%!important;right:5%!important;top:4%!important;height:22%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .shoulder,
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .trigger{
+  width:12%!important;height:34%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .l2{left:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .r2{right:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .l1{left:18%!important;top:58%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .r1{right:18%!important;top:58%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .l{left:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-shoulders .r{right:0!important;top:0!important}
+
+/* Mega Drive: six buttons stay inside the right safe area. */
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face{
+  right:7%!important;top:31%!important;width:29%!important;height:47%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .face{
+  width:25%!important;height:27%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .y{left:37.5%!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;right:auto!important;top:auto!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .b{left:37.5%!important;right:auto!important;top:auto!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;left:auto!important;top:auto!important;bottom:0!important}
+
+/* PlayStation: diamond is separated and SELECT/START remain central. */
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face{
+  right:9%!important;top:34%!important;width:24%!important;height:42%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .face{
+  width:24%!important;height:24%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .triangle{right:38%!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:38%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:38%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-face .cross{right:38%!important;left:auto!important;top:auto!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-center{
+  left:39%!important;top:58%!important;width:22%!important;height:15%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-center .select,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-center .start{
+  width:34%!important;height:40%!important;top:30%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-center .select{left:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-center .start{right:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders{
+  top:4%!important;height:24%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .trigger{
+  width:12%!important;height:31%!important;top:0!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder{
+  width:12%!important;height:31%!important;top:56%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .l2{left:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .r2{right:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:17%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:17%!important}
+
+/* SNES / GBA / GB / SMS */
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face{
+  right:9%!important;top:32%!important;width:25%!important;height:43%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .face{width:25%!important;height:25%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .y{left:0!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .x{right:0!important;left:auto!important;top:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .b{left:0!important;top:auto!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-snes .freezzz-gp-face .a{right:0!important;left:auto!important;top:auto!important;bottom:0!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gb .freezzz-gp-face,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-sms .freezzz-gp-face{
+  right:9%!important;top:34%!important;width:22%!important;height:40%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face .face,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gb .freezzz-gp-face .face,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-sms .freezzz-gp-face .face{
+  width:29%!important;height:29%!important;
+}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face .a,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gb .freezzz-gp-face .a,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-sms .freezzz-gp-face .a{right:0!important;top:38%!important}
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gba .freezzz-gp-face .b,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-gb .freezzz-gp-face .b,
+.freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-sms .freezzz-gp-face .b{left:0!important;top:38%!important}
+@media(max-width:520px){
+  .freezzz-custom-gamepad.freezzz-gamepad-v2{height:230px!important;min-height:230px!important;padding:6px!important}
+  .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn{font-size:10px!important}
+}
