@@ -7766,7 +7766,6 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 }
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn.is-pressed{
   filter:brightness(1.3)!important;
-  transform:scale(.94)!important;
   opacity:1!important;
 }
 
