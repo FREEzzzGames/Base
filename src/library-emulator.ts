@@ -40,7 +40,7 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE = "roms";
 const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
