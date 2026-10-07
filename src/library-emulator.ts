@@ -291,12 +291,103 @@ function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
     '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(gamepadLabel(game)) + '</span></header>' +
-    '<div class="freezzz-emulator-screen"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
+    '<div class="freezzz-emulator-screen"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div>' + customTouchControls(game.system) + '</div>' +
     '<div class="freezzz-emulator-controls">' +
       '<div class="freezzz-pad-title"><span>' + esc(gamepadLabel(game)) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
-      '<div class="freezzz-pad-space"><span>Virtual gamepad is provided by the selected emulator core</span></div>' +
+      '<div class="freezzz-pad-space"><span>Touch controls are built into the portal and work independently of the emulator menu.</span></div>' +
     '</div>' +
   '</div>';
+}
+
+type TouchButton = { label: string; key: string; className?: string };
+
+function touchLayout(system: SystemId): TouchButton[] {
+  if (system === "md") return [
+    {label:"↑",key:"ArrowUp",className:"up"},{label:"↓",key:"ArrowDown",className:"down"},
+    {label:"←",key:"ArrowLeft",className:"left"},{label:"→",key:"ArrowRight",className:"right"},
+    {label:"A",key:"z",className:"a"},{label:"B",key:"x",className:"b"},{label:"C",key:"c",className:"c"},
+    {label:"X",key:"a",className:"x"},{label:"Y",key:"s",className:"y"},{label:"Z",key:"d",className:"z"},
+    {label:"START",key:"Enter",className:"start"}
+  ];
+  if (system === "psx") return [
+    {label:"↑",key:"ArrowUp",className:"up"},{label:"↓",key:"ArrowDown",className:"down"},
+    {label:"←",key:"ArrowLeft",className:"left"},{label:"→",key:"ArrowRight",className:"right"},
+    {label:"□",key:"a",className:"square"},{label:"△",key:"s",className:"triangle"},
+    {label:"○",key:"x",className:"circle"},{label:"×",key:"z",className:"cross"},
+    {label:"L1",key:"q",className:"l1"},{label:"R1",key:"w",className:"r1"},
+    {label:"SELECT",key:"Shift",className:"select"},{label:"START",key:"Enter",className:"start"}
+  ];
+  if (system === "gba") return [
+    {label:"↑",key:"ArrowUp",className:"up"},{label:"↓",key:"ArrowDown",className:"down"},
+    {label:"←",key:"ArrowLeft",className:"left"},{label:"→",key:"ArrowRight",className:"right"},
+    {label:"B",key:"z",className:"b"},{label:"A",key:"x",className:"a"},
+    {label:"L",key:"a",className:"l"},{label:"R",key:"s",className:"r"},
+    {label:"SELECT",key:"Shift",className:"select"},{label:"START",key:"Enter",className:"start"}
+  ];
+  return [
+    {label:"↑",key:"ArrowUp",className:"up"},{label:"↓",key:"ArrowDown",className:"down"},
+    {label:"←",key:"ArrowLeft",className:"left"},{label:"→",key:"ArrowRight",className:"right"},
+    {label:"B",key:"z",className:"b"},{label:"A",key:"x",className:"a"},
+    {label:"SELECT",key:"Shift",className:"select"},{label:"START",key:"Enter",className:"start"}
+  ];
+}
+
+function customTouchControls(system: SystemId): string {
+  const buttons = touchLayout(system);
+  return '<div class="freezzz-touch-controls" aria-label="Touch gamepad">' +
+    '<div class="freezzz-touch-dpad">' +
+      buttons.filter(b => ["up","down","left","right"].includes(b.className || "")).map(b => '<button type="button" class="freezzz-touch-btn ' + b.className + '" data-touch-key="' + b.key + '">' + b.label + '</button>').join("") +
+    '</div>' +
+    '<div class="freezzz-touch-actions">' +
+      buttons.filter(b => !["up","down","left","right"].includes(b.className || "")).map(b => '<button type="button" class="freezzz-touch-btn ' + (b.className || "") + '" data-touch-key="' + b.key + '">' + b.label + '</button>').join("") +
+    '</div>' +
+  '</div>';
+}
+
+function bindCustomTouchControls(): void {
+  const root = document.querySelector<HTMLElement>(".freezzz-emulator-host");
+  if (!root) return;
+  const active = new Map<number, string>();
+  const press = (button: HTMLElement) => {
+    const key = button.dataset.touchKey;
+    if (!key) return;
+    const code = key.length === 1 ? "Key" + key.toUpperCase() : key;
+    const event = new KeyboardEvent("keydown", {key, code, bubbles:true, cancelable:true});
+    window.dispatchEvent(event);
+    button.classList.add("pressed");
+  };
+  const release = (button: HTMLElement) => {
+    const key = button.dataset.touchKey;
+    if (!key) return;
+    const code = key.length === 1 ? "Key" + key.toUpperCase() : key;
+    window.dispatchEvent(new KeyboardEvent("keyup", {key, code, bubbles:true, cancelable:true}));
+    button.classList.remove("pressed");
+  };
+  root.querySelectorAll<HTMLElement>("[data-touch-key]").forEach(button => {
+    button.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      try { button.setPointerCapture((e as PointerEvent).pointerId); } catch {}
+      active.set((e as PointerEvent).pointerId, button.dataset.touchKey || "");
+      press(button);
+    });
+    button.addEventListener("pointerup", e => {
+      e.preventDefault();
+      release(button);
+      active.delete((e as PointerEvent).pointerId);
+    });
+    button.addEventListener("pointercancel", e => {
+      e.preventDefault();
+      release(button);
+      active.delete((e as PointerEvent).pointerId);
+    });
+    button.addEventListener("pointerleave", e => {
+      const id = (e as PointerEvent).pointerId;
+      if (active.has(id) && (e as PointerEvent).buttons === 0) {
+        release(button);
+        active.delete(id);
+      }
+    });
+  });
 }
 
 function removeExistingEmulator(): void {
@@ -387,6 +478,7 @@ async function startGame(game: LibraryGame): Promise<void> {
 
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
+    bindCustomTouchControls();
     window.setTimeout(applyEmulatorGamepadFixes, 300);
     window.setTimeout(applyEmulatorGamepadFixes, 1200);
   } catch (error) {
