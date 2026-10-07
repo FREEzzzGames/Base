@@ -494,7 +494,8 @@ function keyboardKeyCode(key: string): number {
 function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
   const bindings = gamepadBindings(system);
-  const controls: Record<number, { value: number; value2?: string }> = {};
+  // EmulatorJS expects keyboard mappings as event.key strings, not numeric keyCodes.
+  const controls: Record<number, { value: string; value2?: string }> = {};
   const seenKeys = new Set<string>();
   const seenIndices = new Set<number>();
 
@@ -505,7 +506,14 @@ function installDefaultControls(system: SystemId): void {
     if (seenIndices.has(index)) throw new Error("DUPLICATE_GAMEPAD_INDEX:" + system + ":" + index);
     seenKeys.add(binding.key);
     seenIndices.add(index);
-    controls[index] = { value: keyboardKeyCode(binding.key), value2: binding.label };
+    const value = keyboardValue(binding.key);
+    const value2: Record<number, string> = {
+      0: "BUTTON_2", 1: "BUTTON_4", 2: "SELECT", 3: "START",
+      4: "DPAD_UP", 5: "DPAD_DOWN", 6: "DPAD_LEFT", 7: "DPAD_RIGHT",
+      8: "BUTTON_1", 9: "BUTTON_3", 10: "LEFT_TOP_SHOULDER",
+      11: "RIGHT_TOP_SHOULDER", 12: "LEFT_BOTTOM_SHOULDER", 13: "RIGHT_BOTTOM_SHOULDER"
+    };
+    controls[index] = { value, value2: value2[index] || binding.label };
   }
 
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
@@ -540,8 +548,10 @@ function sendCoreInput(system: SystemId, key: string, code: string | undefined, 
   };
 
   const player = document.querySelector<HTMLElement>("#freezzz-ejs-player");
-  if (player) player.dispatchEvent(makeEvent());
+  const target = player || document.body || document.documentElement;
+  target.dispatchEvent(makeEvent());
   document.dispatchEvent(makeEvent());
+  window.dispatchEvent(makeEvent());
 }
 
 function bindNdsTouch(): void {
@@ -557,26 +567,21 @@ function bindNdsTouch(): void {
   let activePointerId: number | null = null;
   let activeCanvas: HTMLCanvasElement | null = null;
 
-  const canvases = (): HTMLCanvasElement[] =>
+  const visibleCanvases = (): HTMLCanvasElement[] =>
     Array.from(player.querySelectorAll<HTMLCanvasElement>("canvas")).filter(canvas => {
       const rect = canvas.getBoundingClientRect();
       return rect.width > 2 && rect.height > 2;
     });
 
   const resolveTouchTarget = (): { canvas: HTMLCanvasElement; rect: DOMRect } | null => {
-    const list = canvases();
+    const list = visibleCanvases();
     if (!list.length) return null;
-
-    // If EmulatorJS exposes two canvases, the lower one is the touchscreen.
     if (list.length > 1) {
       const canvas = list.slice().sort((a, b) =>
         b.getBoundingClientRect().top - a.getBoundingClientRect().top
       )[0];
       return { canvas, rect: canvas.getBoundingClientRect() };
     }
-
-    // In the normal DS top-bottom composition there is one framebuffer.
-    // Only its lower half is touch-sensitive.
     const canvas = list[0];
     const rect = canvas.getBoundingClientRect();
     return {
@@ -588,79 +593,103 @@ function bindNdsTouch(): void {
   const syncLayer = (): void => {
     const target = resolveTouchTarget();
     const screenRect = screen.getBoundingClientRect();
-    if (!target) {
+    if (!target || !screenRect.width || !screenRect.height) {
       layer.hidden = true;
       return;
     }
     const r = target.rect;
+    const left = Math.max(0, r.left - screenRect.left);
+    const top = Math.max(0, r.top - screenRect.top);
+    const width = Math.max(1, Math.min(screenRect.right - (screenRect.left + left), r.width));
+    const height = Math.max(1, Math.min(screenRect.bottom - (screenRect.top + top), r.height));
     layer.hidden = false;
-    layer.style.left = Math.max(0, r.left - screenRect.left) + "px";
-    layer.style.top = Math.max(0, r.top - screenRect.top) + "px";
-    layer.style.width = Math.min(screenRect.width, r.width) + "px";
-    layer.style.height = Math.min(screenRect.height, r.height) + "px";
+    layer.style.left = left + "px";
+    layer.style.top = top + "px";
+    layer.style.width = width + "px";
+    layer.style.height = height + "px";
   };
 
-  const emitMouse = (
-    type: "mousedown" | "mousemove" | "mouseup",
-    canvas: HTMLCanvasElement,
-    event: PointerEvent
-  ): void => {
-    const canvasRect = canvas.getBoundingClientRect();
+  const emit = (type: "down" | "move" | "up", event: PointerEvent): void => {
+    if (!activeCanvas) return;
+    const canvas = activeCanvas;
     const layerRect = layer.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
     const nx = Math.max(0, Math.min(1, (event.clientX - layerRect.left) / Math.max(1, layerRect.width)));
     const ny = Math.max(0, Math.min(1, (event.clientY - layerRect.top) / Math.max(1, layerRect.height)));
     const clientX = canvasRect.left + nx * canvasRect.width;
     const clientY = canvasRect.top + ny * canvasRect.height;
-    canvas.dispatchEvent(new MouseEvent(type, {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-      clientX,
-      clientY,
-      screenX: event.screenX,
-      screenY: event.screenY,
-      button: 0,
-      buttons: type === "mouseup" ? 0 : 1
-    }));
+    const buttons = type === "up" ? 0 : 1;
+
+    try {
+      canvas.dispatchEvent(new PointerEvent(
+        type === "down" ? "pointerdown" : type === "move" ? "pointermove" : "pointerup",
+        {
+          bubbles: true,
+          cancelable: true,
+          pointerId: event.pointerId,
+          pointerType: "touch",
+          isPrimary: true,
+          clientX,
+          clientY,
+          screenX: event.screenX,
+          screenY: event.screenY,
+          button: 0,
+          buttons
+        }
+      ));
+    } catch {}
+
+    canvas.dispatchEvent(new MouseEvent(
+      type === "down" ? "mousedown" : type === "move" ? "mousemove" : "mouseup",
+      {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX,
+        clientY,
+        screenX: event.screenX,
+        screenY: event.screenY,
+        button: 0,
+        buttons
+      }
+    ));
   };
 
   const release = (event: PointerEvent): void => {
     if (!active || !activeCanvas || event.pointerId !== activePointerId) return;
     event.preventDefault();
-    emitMouse("mouseup", activeCanvas, event);
+    emit("up", event);
     active = false;
     activeCanvas = null;
     activePointerId = null;
+    try { layer.releasePointerCapture?.(event.pointerId); } catch {}
     syncLayer();
   };
 
   const begin = (event: PointerEvent): void => {
     if (event.pointerType === "mouse" || active) return;
     syncLayer();
-    if (layer.hidden) return;
-    const target = resolveTouchTarget();
-    if (!target) return;
-
+    if (layer.hidden || !resolveTouchTarget()) return;
     event.preventDefault();
     event.stopPropagation();
     active = true;
     activePointerId = event.pointerId;
-    activeCanvas = target.canvas;
-    layer.setPointerCapture?.(event.pointerId);
-    emitMouse("mousedown", target.canvas, event);
+    activeCanvas = resolveTouchTarget()!.canvas;
+    try { layer.setPointerCapture?.(event.pointerId); } catch {}
+    emit("down", event);
   };
 
   layer.addEventListener("pointerdown", begin, { capture: true, passive: false });
   layer.addEventListener("pointermove", event => {
     if (!active || !activeCanvas || event.pointerId !== activePointerId || event.pointerType === "mouse") return;
     event.preventDefault();
-    emitMouse("mousemove", activeCanvas, event);
+    emit("move", event);
   }, { capture: true, passive: false });
   layer.addEventListener("pointerup", release, { capture: true, passive: false });
   layer.addEventListener("pointercancel", release, { capture: true, passive: false });
   layer.addEventListener("lostpointercapture", event => {
     if (active && activeCanvas && event.pointerId === activePointerId) {
-      emitMouse("mouseup", activeCanvas, event);
+      emit("up", event);
       active = false;
       activeCanvas = null;
       activePointerId = null;
@@ -669,7 +698,9 @@ function bindNdsTouch(): void {
 
   const resize = () => syncLayer();
   window.addEventListener("resize", resize, { passive: true });
-  new ResizeObserver(resize).observe(screen);
+  window.visualViewport?.addEventListener("resize", resize, { passive: true });
+  window.visualViewport?.addEventListener("scroll", resize, { passive: true });
+  if ("ResizeObserver" in window) new ResizeObserver(resize).observe(screen);
   syncLayer();
 }
 
