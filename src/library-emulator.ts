@@ -23,6 +23,7 @@ type EmulatorWindow = Window & {
   EJS_askBeforeExit?: boolean;
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
+  EJS_hideSettings?: boolean;
   EJS_terminate?: () => void;
   EJS_emulator?: unknown;
 };
