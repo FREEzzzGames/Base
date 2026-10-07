@@ -117,7 +117,6 @@ function render(){
 }
 
 function bind(){
-  window.addEventListener("freezzz:close-chat-popup",()=>close("chat"));
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";render();
@@ -233,6 +232,7 @@ export function initMultiWindowPortal(){
   layer.className="portal-mw-layer";
   document.body.append(layer);
   intercept();
+  window.addEventListener("freezzz:close-chat-popup",()=>close("chat"));
   window.addEventListener("freezzz:telegram-chat-sync",event=>{
     const detail=(event as CustomEvent<{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}>).detail;
     syncTelegramPopup(detail);
