@@ -117,6 +117,7 @@ function render(){
 }
 
 function bind(){
+  window.addEventListener("freezzz:close-chat-popup",()=>close("chat"));
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";render();
@@ -190,7 +191,7 @@ function bind(){
   });
   layer?.querySelector<HTMLElement>("[data-mw-chat-open]")?.addEventListener("click",e=>{
     e.preventDefault();e.stopPropagation();
-    window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"chat"}}));
+    window.dispatchEvent(new CustomEvent("freezzz:open-chat-selector"));
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-radio]").forEach(b=>b.onclick=()=>{
     window.dispatchEvent(new CustomEvent("freezzz:radio-mini",{detail:{action:b.dataset.mwRadio||"play"}}));
