@@ -500,6 +500,8 @@ function customGamepadMarkup(system: SystemId): string {
   return '<div class="freezzz-custom-gamepad freezzz-gamepad-v2 freezzz-gamepad-' + system +
     '" data-gamepad-system="' + system + '">' +
     '<div class="freezzz-gp-body">' +
+      '<button type="button" class="freezzz-gp-sticker-button" data-gp-sticker aria-label="Change gamepad sticker">STICKER</button>' +
+      '<input type="file" accept="image/*" class="freezzz-gp-sticker-input" data-gp-sticker-input hidden>' +
       group("freezzz-gp-dpad", dpad) +
       group("freezzz-gp-center", center) +
       group("freezzz-gp-face", face) +
@@ -803,6 +805,7 @@ function bindCustomGamepad(): void {
   const system = root.dataset.gamepadSystem as SystemId | undefined;
   if (!system || !SYSTEMS[system]) return;
   root.dataset.bound = "1";
+  void bindGamepadSticker(root, system);
 
   const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-gp-key]"));
   const dpad = root.querySelector<HTMLElement>(".freezzz-gp-dpad");
@@ -942,6 +945,107 @@ function bindCustomGamepad(): void {
     releaseDpadPointer(event.pointerId);
   });
 }
+function stickerControlHoles(system: SystemId, width: number, height: number): Array<{x:number;y:number;w:number;h:number;r:number}> {
+  const scale = Math.min(width / 1200, height / 500);
+  const sx = width / 1200;
+  const sy = height / 500;
+  const hole = (x:number,y:number,w:number,h:number,r:number) => ({
+    x:x*sx,y:y*sy,w:w*sx,h:h*sy,r:r*scale
+  });
+  if (system === "nds") {
+    return [
+      hole(55,70,330,330,34), hole(825,115,300,300,150),
+      hole(535,355,130,65,18), hole(685,355,130,65,18)
+    ];
+  }
+  if (system === "md") {
+    return [
+      hole(55,75,350,350,32), hole(865,100,260,260,130),
+      hole(1010,100,140,140,70), hole(500,350,150,65,18), hole(675,350,150,65,18)
+    ];
+  }
+  if (system === "snes") {
+    return [
+      hole(55,75,350,350,32), hole(855,85,290,290,145),
+      hole(500,350,150,65,18), hole(675,350,150,65,18)
+    ];
+  }
+  if (system === "gb" || system === "gba") {
+    return [
+      hole(70,100,310,310,34), hole(820,110,300,300,150),
+      hole(500,350,150,65,18), hole(675,350,150,65,18)
+    ];
+  }
+  return [
+    hole(70,75,350,350,34), hole(855,95,300,290,145),
+    hole(500,350,150,65,18), hole(675,350,150,65,18)
+  ];
+}
+
+async function makeGamepadSticker(file: File, system: SystemId): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const width = 1200;
+  const height = 500;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("STICKER_CANVAS_UNAVAILABLE");
+
+  const sourceRatio = bitmap.width / bitmap.height;
+  const targetRatio = width / height;
+  let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
+  if (sourceRatio > targetRatio) {
+    sw = bitmap.height * targetRatio;
+    sx = (bitmap.width - sw) / 2;
+  } else if (sourceRatio < targetRatio) {
+    sh = bitmap.width / targetRatio;
+    sy = (bitmap.height - sh) / 2;
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
+
+  // The control layer remains independent. Clear its zones from the sticker
+  // so the uploaded artwork naturally becomes a decal around the controls.
+  ctx.globalCompositeOperation = "destination-out";
+  for (const h of stickerControlHoles(system, width, height)) {
+    ctx.beginPath();
+    ctx.roundRect(h.x, h.y, h.w, h.h, h.r);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+  bitmap.close();
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(value => value ? resolve(value) : reject(new Error("STICKER_ENCODE_FAILED")), "image/png", 1);
+  });
+  return URL.createObjectURL(blob);
+}
+
+async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<void> {
+  const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
+  const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
+  const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
+  if (!body || !button || !input) return;
+
+  button.addEventListener("click", () => input.click());
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    try {
+      const url = await makeGamepadSticker(file, system);
+      const previous = body.dataset.stickerUrl;
+      if (previous) URL.revokeObjectURL(previous);
+      body.dataset.stickerUrl = url;
+      body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
+      root.classList.add("has-sticker");
+    } catch {}
+    input.value = "";
+  });
+}
+
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
