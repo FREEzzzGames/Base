@@ -5,7 +5,6 @@ type LibraryGame = {
   name: string;
   fileName: string;
   system: SystemId;
-  systemLabel: string;
   bits: 8 | 16 | 32;
   size: number;
   addedAt: string;
@@ -24,10 +23,12 @@ type EmulatorWindow = Window & {
   EJS_askBeforeExit?: boolean;
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
-  EJS_hideSettings?: boolean;
+  EJS_hideSettings?: string[];
   EJS_defaultControls?: Record<number, Record<number, { value: string; value2?: string }>>;
+  EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
+  EJS_ready?: () => void;
+  EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
   EJS_terminate?: () => void;
-  EJS_emulator?: { gameManager?: { simulateInput?: (player: number, button: number, value: number) => void } };
 };
 
 const DB_NAME = "freezzz-library";
@@ -185,7 +186,6 @@ async function repairLegacyLibraryEntries(): Promise<void> {
       if (game.system !== resolved.system || game.fileName !== resolved.fileName || game.size !== resolved.blob.size) {
         await putRom(game.id, resolved.blob);
         game.system = resolved.system;
-        game.systemLabel = config.label;
         game.bits = config.bits;
         game.fileName = resolved.fileName;
         game.name = resolved.fileName.replace(/\.[^.]+$/, "") || resolved.fileName;
@@ -270,7 +270,7 @@ export function renderLibrary(): string {
   return '<div class="content portal-layout library-portal" data-portal-layout="library">' +
     '<section class="library-shell portal-block">' +
       '<div class="library-head"><div><h2>LIBRARY</h2><p>Локальная библиотека игр пользователя. ROM-файлы не загружаются на сервер.</p></div>' +
-      '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
+      '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip" multiple hidden>+ ADD ROM</label></div>' +
       '<div class="library-filters">' + systemCards() + '</div>' +
       '<div class="library-game-grid">' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>LIBRARY EMPTY</b><span>Добавь собственные ROM-файлы с телефона.</span></div>') + '</div>' +
       '<div class="library-emulator-root" id="library-emulator-root" hidden></div>' +
@@ -278,17 +278,6 @@ export function renderLibrary(): string {
     '</section>' +
   '</div>';
 }
-
-function gamepadLabel(game: LibraryGame): string {
-  if (game.system === "md") return "MEGA DRIVE";
-  if (game.system === "snes") return "SNES";
-  if (game.system === "gba") return "GBA";
-  if (game.system === "psx") return "PLAYSTATION";
-  if (game.system === "sms") return "MASTER SYSTEM";
-  if (game.system === "gb") return "GAME BOY";
-  return "NES";
-}
-
 
 type TouchBinding = { key: string; code?: string; label: string; cls?: string };
 
@@ -377,11 +366,11 @@ function getCoreButtonIndex(system: SystemId, key: string): number {
   const maps: Record<SystemId, Record<string, number>> = {
     nes: { Shift: 2, Enter: 3, x: 0, z: 8 },
     gb:  { Shift: 2, Enter: 3, x: 0, z: 8 },
-    sms: { x: 0, z: 8 },
-    md:  { Shift: 2, Enter: 3, x: 0, z: 8, a: 9, s: 1, c: 12, d: 13 },
+    sms: { Shift: 2, Enter: 3, x: 0, z: 8 },
+    md:  { Shift: 2, Enter: 3, x: 0, z: 8, c: 10, a: 9, s: 1, d: 11 },
     snes:{ Shift: 2, Enter: 3, x: 0, z: 8, a: 1, s: 9, q: 10, e: 11 },
     gba: { Shift: 2, Enter: 3, x: 0, z: 8, a: 10, s: 11 },
-    psx: { Shift: 2, Enter: 3, z: 0, x: 1, a: 2, s: 3, q: 10, e: 11, "1": 12, "3": 13 }
+    psx: { Shift: 2, Enter: 3, z: 0, x: 8, a: 1, s: 9, q: 10, e: 11, "1": 12, "3": 13 }
   };
   return maps[system][key] ?? -1;
 }
@@ -398,99 +387,82 @@ function keyboardValue(key: string): string {
   return values[key] || key.toLowerCase();
 }
 
+function keyboardCode(key: string, code?: string): string {
+  if (code) return code;
+  if (/^\\d$/.test(key)) return "Digit" + key;
+  if (key.length === 1) return "Key" + key.toUpperCase();
+  return key;
+}
+
 function installDefaultControls(system: SystemId): void {
   const w = window as EmulatorWindow;
   const controls: Record<number, { value: string }> = {};
-  const bindings = gamepadBindings(system);
-  for (const binding of bindings) {
+  for (const binding of gamepadBindings(system)) {
     const index = getCoreButtonIndex(system, binding.key);
     if (index >= 0) controls[index] = { value: keyboardValue(binding.key) };
   }
   w.EJS_defaultControls = { 0: controls, 1: {}, 2: {}, 3: {} };
 }
 
-function sendCoreInput(system: SystemId, key: string, pressed: boolean): boolean {
-  // Use EmulatorJS's keyboard input path as the primary transport.
-  // simulateInput() is an internal API and is known to be unreliable on
-  // mobile after focus changes (EmulatorJS issue #978).
-  const canvas = document.querySelector<HTMLElement>("#freezzz-ejs-player canvas");
-  const target: HTMLElement | Document = canvas || document;
-  try { canvas?.focus?.({ preventScroll: true }); } catch {}
-  const event = new KeyboardEvent(pressed ? "keydown" : "keyup", {
+function sendCoreInput(key: string, code: string | undefined, pressed: boolean): void {
+  document.dispatchEvent(new KeyboardEvent(pressed ? "keydown" : "keyup", {
     key: keyboardValue(key),
-    code: key.length === 1 ? "Key" + key.toUpperCase() : key,
+    code: keyboardCode(key, code),
     bubbles: true,
     cancelable: true
-  });
-  target.dispatchEvent(event);
-  return true;
+  }));
 }
 
 function bindCustomGamepad(): void {
   const root = document.querySelector<HTMLElement>(".freezzz-custom-gamepad");
-  if (!root) return;
-  const system = root.dataset.gamepadSystem as SystemId | undefined;
-  if (!system) return;
+  if (!root || root.dataset.bound === "1") return;
+  root.dataset.bound = "1";
 
-  root.querySelectorAll<HTMLElement>("[data-gp-key]").forEach(button => {
+  root.querySelectorAll<HTMLButtonElement>("[data-gp-key]").forEach(button => {
     const key = button.dataset.gpKey || "";
+    const code = button.dataset.gpCode || undefined;
     let pressed = false;
 
     const release = () => {
       if (!pressed) return;
       pressed = false;
       button.classList.remove("is-pressed");
-      try { sendCoreInput(system, key, false); } catch {}
+      sendCoreInput(key, code, false);
     };
 
-    const send = (next: boolean) => {
-      if (next === pressed) return;
-      pressed = next;
-      button.classList.toggle("is-pressed", next);
-
-      const canvas = document.querySelector<HTMLElement>("#freezzz-ejs-player canvas");
-      if (next) {
-        canvas?.focus?.({ preventScroll: true });
-        try {
-          if (sendCoreInput(system, key, true)) return;
-        } catch {}
-      } else {
-        try {
-          if (sendCoreInput(system, key, false)) return;
-        } catch {}
-      }
-
-      const code = button.dataset.gpCode || "";
-      window.dispatchEvent(new KeyboardEvent(next ? "keydown" : "keyup", {
-        key, code, bubbles: true, cancelable: true
-      }));
+    const press = () => {
+      if (pressed) return;
+      pressed = true;
+      button.classList.add("is-pressed");
+      sendCoreInput(key, code, true);
     };
 
-    button.addEventListener("pointerdown", e => {
-      e.preventDefault();
-      button.setPointerCapture?.(e.pointerId);
-      send(true);
+    button.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      button.setPointerCapture?.(event.pointerId);
+      press();
     });
-    button.addEventListener("pointerup", e => {
-      e.preventDefault();
+    button.addEventListener("pointerup", event => {
+      event.preventDefault();
       release();
     });
     button.addEventListener("pointercancel", release);
-    button.addEventListener("pointerleave", e => {
-      if (e.buttons === 0) release();
-    });
     button.addEventListener("lostpointercapture", release);
-    button.addEventListener("contextmenu", e => e.preventDefault());
+    button.addEventListener("pointerleave", event => {
+      if (event.buttons === 0) release();
+    });
+    button.addEventListener("contextmenu", event => event.preventDefault());
   });
 }
+
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
   return '<div class="freezzz-emulator-host" style="--freezzz-pad-opacity:' + (opacity / 100) + '">' +
-    '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(gamepadLabel(game)) + '</span></header>' +
+    '<header class="freezzz-emulator-head"><button type="button" class="tg-button secondary" data-library-exit>← LIBRARY</button><strong>' + esc(game.name) + '</strong><span>' + esc(SYSTEMS[game.system].label) + '</span></header>' +
     '<div class="freezzz-emulator-screen freezzz-screen-' + game.system + '"><div id="freezzz-ejs-player" class="freezzz-ejs-player"></div></div>' +
     customGamepadMarkup(game.system) +
     '<div class="freezzz-emulator-controls">' +
-      '<div class="freezzz-pad-title"><span>' + esc(gamepadLabel(game)) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
+      '<div class="freezzz-pad-title"><span>' + esc(SYSTEMS[game.system].label) + ' GAMEPAD</span><label>Opacity <input data-library-opacity type="range" min="20" max="100" value="' + opacity + '"><b data-library-opacity-value>' + opacity + '%</b></label></div>' +
     '</div>' +
   '</div>';
 }
@@ -530,20 +502,6 @@ function loadEmulatorScript(): Promise<void> {
   });
 }
 
-function applyEmulatorGamepadFixes(): void {
-  const root = document.querySelector<HTMLElement>(".freezzz-emulator-host");
-  if (!root) return;
-  const opacity = String(getOpacity());
-  root.style.setProperty("--freezzz-pad-opacity", opacity);
-  root.querySelectorAll<HTMLElement>(".ejs_virtualGamepad_left,.ejs_virtualGamepad_right,.ejs_virtualGamepad").forEach(el => {
-    el.style.opacity = opacity;
-    el.style.touchAction = "none";
-  });
-  root.querySelectorAll<HTMLElement>(".ejs_virtualGamepad_left,.ejs_virtualGamepad_right").forEach(el => {
-    el.addEventListener("touchstart", e => e.preventDefault(), { passive: false });
-  });
-}
-
 async function startGame(game: LibraryGame): Promise<void> {
   const token = ++emulatorToken;
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
@@ -575,11 +533,35 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_startOnLoaded = true;
     w.EJS_virtualGamepad = false;
     w.EJS_controlScheme = SYSTEMS[game.system].core;
-    installDefaultControls(game.system);
+    w.EJS_browserMode = "mobile";
     w.EJS_askBeforeExit = false;
     w.EJS_noAutoFocus = false;
     w.EJS_color = "#66FCF1";
-    w.EJS_hideSettings = true;
+    w.EJS_hideSettings = [];
+    w.EJS_Buttons = {
+      playPause: false,
+      restart: false,
+      mute: false,
+      settings: false,
+      fullscreen: false,
+      saveState: false,
+      loadState: false,
+      screenRecord: false,
+      gamepad: false,
+      cheat: false,
+      volume: false,
+      saveSavFiles: false,
+      loadSavFiles: false,
+      quickSave: false,
+      quickLoad: false,
+      screenshot: false,
+      cacheManager: false,
+      exitEmulation: false
+    };
+    installDefaultControls(game.system);
+    w.EJS_ready = () => {
+      if (token === emulatorToken) bindCustomGamepad();
+    };
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
     writeMeta(games);
@@ -587,8 +569,8 @@ async function startGame(game: LibraryGame): Promise<void> {
     await loadEmulatorScript();
     if (token !== emulatorToken) return;
     bindCustomGamepad();
-    window.setTimeout(applyEmulatorGamepadFixes, 300);
-    window.setTimeout(applyEmulatorGamepadFixes, 1200);
+
+
   } catch (error) {
     root.hidden = false;
     root.innerHTML = '<div class="library-emulator-error"><b>EMULATOR ERROR</b><span>' + esc(error instanceof Error ? error.message : String(error)) + '</span><button type="button" class="tg-button secondary" data-library-exit>BACK</button></div>';
@@ -608,7 +590,6 @@ async function importFiles(files: FileList | null): Promise<void> {
         name: resolved.fileName.replace(/\\.[^.]+$/, "") || resolved.fileName,
         fileName: resolved.fileName,
         system: resolved.system,
-        systemLabel: config.label,
         bits: config.bits,
         size: resolved.blob.size,
         addedAt: new Date().toISOString()
@@ -671,7 +652,7 @@ function bindLibrary(): void {
     const value = Math.min(100, Math.max(20, Number(opacity.value) || 72));
     setOpacity(value / 100);
     if (opacityValue) opacityValue.textContent = value + "%";
-    applyEmulatorGamepadFixes();
+
   });
 }
 
