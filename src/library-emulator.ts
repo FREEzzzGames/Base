@@ -948,40 +948,66 @@ function bindCustomGamepad(): void {
   });
 }
 function stickerControlHoles(system: SystemId, width: number, height: number): Array<{x:number;y:number;w:number;h:number;r:number}> {
-  const scale = Math.min(width / 1200, height / 500);
+  // These are the ORIGINAL gamepad coordinates. The sticker is cut around
+  // the controls; the controls themselves are never repositioned by sticker mode.
   const sx = width / 1200;
   const sy = height / 500;
-  const hole = (x:number,y:number,w:number,h:number,r:number) => ({
-    x:x*sx,y:y*sy,w:w*sx,h:h*sy,r:r*scale
-  });
-  if (system === "nds") {
-    return [
-      hole(55,70,330,330,34), hole(825,115,300,300,150),
-      hole(535,355,130,65,18), hole(685,355,130,65,18)
-    ];
-  }
-  if (system === "md") {
-    return [
-      hole(55,75,350,350,32), hole(865,100,260,260,130),
-      hole(1010,100,140,140,70), hole(500,350,150,65,18), hole(675,350,150,65,18)
-    ];
-  }
+  const holes: Array<{x:number;y:number;w:number;h:number;r:number}> = [];
+  const add = (x:number,y:number,w:number,h:number,r:number = 5) =>
+    holes.push({x:x*sx,y:y*sy,w:w*sx,h:h*sy,r:Math.min(sx,sy)*r});
+
+  // Original common D-pad: left 8%, centered vertically, 112x112, 37px cells.
+  const dpadX = 1200 * 0.08;
+  const dpadY = 250 - 56;
+  add(dpadX + 37, dpadY, 37, 37);
+  add(dpadX + 37, dpadY + 74, 37, 37);
+  add(dpadX, dpadY + 37, 37, 37);
+  add(dpadX + 74, dpadY + 37, 37, 37);
+  add(dpadX + 37, dpadY + 37, 37, 37);
+
+  // Original SELECT / START geometry.
+  const centerX = 600 - 63;
+  const centerY = 360 - 17;
+  add(centerX, centerY + 2, 56, 30, 6);
+  add(centerX + 70, centerY + 2, 56, 30, 6);
+
   if (system === "snes") {
-    return [
-      hole(55,75,350,350,32), hole(855,85,290,290,145),
-      hole(500,350,150,65,18), hole(675,350,150,65,18)
-    ];
+    const x = 1200 - 96 - 112;
+    const y = 250 - 46;
+    add(x, y + 27, 38, 38, 12);      // Y
+    add(x + 74, y + 27, 38, 38, 12); // X
+    add(x + 37, y, 38, 38, 12);      // B
+    add(x + 37, y + 54, 38, 38, 12); // A
+  } else if (system === "md") {
+    const x = 1200 - 84 - 126;
+    const y = 250 - 41;
+    for (const [dx, dy] of [[0,0],[45,0],[90,0],[0,46],[45,46],[90,46]]) {
+      add(x + dx, y + dy, 36, 36, 10);
+    }
+  } else if (system === "psx") {
+    const x = 1200 - 84 - 112;
+    const y = 250 - 54;
+    add(x + 38, y, 36, 36, 12);
+    add(x, y + 36, 36, 36, 12);
+    add(x + 76, y + 36, 36, 36, 12);
+    add(x + 38, y + 72, 36, 36, 12);
+  } else if (system === "nds") {
+    // DS uses the same original face geometry as the pre-sticker layout.
+    const x = 1200 - 96 - 108;
+    const y = 285 - 41;
+    add(x, y + 23, 34, 34, 12);
+    add(x + 37, y, 34, 34, 12);
+    add(x + 37, y + 46, 34, 34, 12);
+    add(x + 74, y + 23, 34, 34, 12);
+  } else {
+    // NES / SMS / GB / GBA: original two-button geometry.
+    const x = 1200 - 84 - 90;
+    const y = 250 - 30 + 12;
+    add(x, y, 36, 36, 12);
+    add(x + 50, y, 36, 36, 12);
   }
-  if (system === "gb" || system === "gba") {
-    return [
-      hole(70,100,310,310,34), hole(820,110,300,300,150),
-      hole(500,350,150,65,18), hole(675,350,150,65,18)
-    ];
-  }
-  return [
-    hole(70,75,350,350,34), hole(855,95,300,290,145),
-    hole(500,350,150,65,18), hole(675,350,150,65,18)
-  ];
+
+  return holes;
 }
 
 async function saveGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
