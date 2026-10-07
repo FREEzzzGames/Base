@@ -9487,3 +9487,74 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   user-select:none!important;-webkit-user-drag:none!important
 }
 .library-emulator-root .freezzz-custom-gamepad .freezzz-gp-body:not(.has-sticker) .freezzz-gp-sticker-image{display:none!important}
+
+
+/* EMULATOR ACTIVE VIEWPORT — never let the library disclaimer cover controls */
+.library-shell:has(.library-emulator-root:not([hidden])) .library-hint{
+  display:none!important;
+}
+.library-shell:has(.library-emulator-root:not([hidden])){
+  overflow:visible!important;
+}
+.library-emulator-root{
+  z-index:10000!important;
+}
+.library-emulator-root .freezzz-emulator-host{
+  position:relative!important;
+  z-index:10001!important;
+  min-height:100%!important;
+  height:100%!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+}
+.library-emulator-root .freezzz-custom-gamepad{
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:240px!important;
+  height:clamp(240px,34vw,320px)!important;
+  max-height:none!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-body{
+  overflow:visible!important;
+}
+
+/* Minimum 2px visual clearance between independent controls. */
+.library-emulator-root .freezzz-gp-btn{
+  margin:0!important;
+}
+.library-emulator-root .freezzz-gp-dpad .dpad{
+  width:27%!important;
+  height:30%!important;
+}
+.library-emulator-root .freezzz-gp-dpad .up,
+.library-emulator-root .freezzz-gp-dpad .down{
+  left:36.5%!important;
+}
+.library-emulator-root .freezzz-gp-dpad .left{
+  left:0!important;
+  top:35%!important;
+}
+.library-emulator-root .freezzz-gp-dpad .right{
+  right:0!important;
+  top:35%!important;
+}
+.library-emulator-root .freezzz-gp-dpad:after{
+  left:36.5%!important;
+  top:35%!important;
+  width:27%!important;
+  height:30%!important;
+}
+.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-face .face,
+.library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .face,
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .face,
+.library-emulator-root .freezzz-gamepad-nds .freezzz-gp-face .face{
+  width:24%!important;
+  height:24%!important;
+}
+.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-face .a,
+.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-face .b{
+  top:38%!important;
+}
