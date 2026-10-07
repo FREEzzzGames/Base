@@ -9129,3 +9129,37 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   width:31px!important;
   height:31px!important;
 }
+
+/* NES D-PAD — scale the complete aligned block by 20% */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad{
+  width:112px!important;
+  height:112px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .dpad{
+  width:37px!important;
+  height:37px!important;
+  min-width:37px!important;
+  min-height:37px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .up{
+  left:37px!important;
+  top:0!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .down{
+  left:37px!important;
+  top:74px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .left{
+  left:0!important;
+  top:37px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .right{
+  left:74px!important;
+  top:37px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad:after{
+  left:37px!important;
+  top:37px!important;
+  width:37px!important;
+  height:37px!important;
+}
