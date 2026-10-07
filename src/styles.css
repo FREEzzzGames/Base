@@ -9164,210 +9164,34 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   height:37px!important;
 }
 
-/* ================================================================
-   NES GAMEPAD V7 — STICKER MODE
-   Custom sticker fills the physical shell; touch buttons sit exactly
-   over the reserved control areas of the artwork.
-   ================================================================ */
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker{
-  background:#090b0e!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-body{
-  width:100%!important;
-  height:100%!important;
-  max-width:none!important;
-  border-radius:18px!important;
+
+/* STICKER MODE: background only. The original control geometry is untouched.
+   The sticker cutter uses these exact control coordinates. */
+.library-emulator-root .freezzz-custom-gamepad.has-sticker .freezzz-gp-body{
   background-image:var(--freezzz-gp-sticker)!important;
   background-size:100% 100%!important;
   background-position:center!important;
   background-repeat:no-repeat!important;
-  border:0!important;
-  box-shadow:none!important;
 }
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad{
-  left:8.6%!important;
-  top:9%!important;
-  width:31%!important;
-  height:82%!important;
-  transform:none!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .dpad{
-  width:34%!important;
-  height:28%!important;
-  min-width:0!important;
-  min-height:0!important;
-  border-radius:7px!important;
-  background:rgba(20,23,29,.08)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .up{
-  left:33%!important;top:0!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .down{
-  left:33%!important;top:72%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .left{
-  left:0!important;top:36%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .right{
-  left:66%!important;top:36%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad:after{
-  left:33%!important;top:36%!important;width:34%!important;height:28%!important;
-  border-radius:7px!important;background:rgba(20,23,29,.04)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center{
-  left:50%!important;
-  top:73%!important;
-  width:17%!important;
-  height:17%!important;
-  transform:translate(-50%,-50%)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .select,
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .start{
-  width:42%!important;
-  min-width:0!important;
-  height:62%!important;
-  min-height:0!important;
-  top:19%!important;
-  border-radius:10px!important;
-  background:rgba(20,23,29,.12)!important;
-  color:rgba(255,255,255,.96)!important;
-  font-size:clamp(7px,1.2vw,11px)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .select{left:0!important}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .start{right:0!important}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face{
-  right:8%!important;
-  top:50%!important;
-  width:27%!important;
-  height:34%!important;
-  transform:translateY(-50%)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .face{
-  width:35%!important;
-  height:78%!important;
-  min-width:0!important;
-  min-height:0!important;
-  border-radius:12px!important;
-  background:rgba(20,23,29,.10)!important;
-  color:rgba(255,255,255,.92)!important;
-  font-size:clamp(9px,1.7vw,14px)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .b{
-  left:0!important;top:11%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .a{
-  left:65%!important;top:11%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-sticker-button{
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button{
   position:absolute!important;
-  right:1.5%!important;
-  top:2%!important;
+  right:8px!important;
+  top:6px!important;
   z-index:60!important;
-  width:42px!important;
-  height:24px!important;
-  min-width:42px!important;
-  min-height:24px!important;
+  width:52px!important;
+  height:26px!important;
+  min-width:52px!important;
+  min-height:26px!important;
   padding:0!important;
   border:0!important;
   border-radius:6px!important;
-  background:rgba(0,0,0,.55)!important;
+  background:rgba(0,0,0,.5)!important;
   color:#fff!important;
-  font:700 7px/1 Arial,sans-serif!important;
-  opacity:.9!important;
+  font:700 8px/1 Arial,sans-serif!important;
   cursor:pointer!important;
 }
-.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button{
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button,
+.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-input{
   pointer-events:auto!important;
   touch-action:manipulation!important;
 }
-
-
-/* FINAL STICKER TEMPLATE ALIGNMENT — NES
-   Coordinates are normalized to the generated 1200x500 decal template.
-   Interactive controls occupy the same geometry as the decal's reserved zones. */
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-body{
-  position:relative!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad{
-  position:absolute!important;
-  left:4.6%!important;
-  top:14%!important;
-  width:27.5%!important;
-  height:72%!important;
-  transform:none!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .dpad{
-  position:absolute!important;
-  width:34%!important;
-  height:33%!important;
-  min-width:0!important;
-  min-height:0!important;
-  border-radius:7px!important;
-  background:rgba(20,23,29,.18)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .up{
-  left:33%!important;top:0!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .down{
-  left:33%!important;top:67%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .left{
-  left:0!important;top:33%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad .right{
-  left:66%!important;top:33%!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-dpad:after{
-  left:33%!important;top:33%!important;width:34%!important;height:33%!important;
-  border-radius:7px!important;background:rgba(20,23,29,.12)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face{
-  position:absolute!important;
-  right:6.5%!important;
-  top:23%!important;
-  width:25%!important;
-  height:60%!important;
-  transform:none!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .face{
-  position:absolute!important;
-  width:35%!important;
-  height:56%!important;
-  min-width:0!important;
-  min-height:0!important;
-  top:22%!important;
-  border-radius:50%!important;
-  background:rgba(20,23,29,.18)!important;
-  color:#fff!important;
-  font-size:clamp(9px,1.7vw,14px)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .b{
-  left:0!important;right:auto!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-face .a{
-  left:65%!important;right:auto!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center{
-  position:absolute!important;
-  left:44.6%!important;
-  top:71%!important;
-  width:13.5%!important;
-  height:13%!important;
-  transform:none!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .select,
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .start{
-  position:absolute!important;
-  top:0!important;
-  width:46%!important;
-  min-width:0!important;
-  height:100%!important;
-  min-height:0!important;
-  border-radius:8px!important;
-  background:rgba(20,23,29,.18)!important;
-  color:#fff!important;
-  font-size:clamp(7px,1.2vw,11px)!important;
-}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .select{left:0!important;right:auto!important}
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes.has-sticker .freezzz-gp-center .start{right:0!important;left:auto!important}
