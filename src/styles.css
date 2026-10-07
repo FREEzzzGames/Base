@@ -9006,3 +9006,69 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   left:54px!important;
   right:auto!important;
 }
+
+/* ================================================================
+   NES GAMEPAD — FINAL COMPACT CONTROL PASS
+   SELECT + START centered side-by-side; rounded controls;
+   D-pad buttons reduced by 10%.
+   ================================================================ */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center{
+  left:50%!important;
+  top:72%!important;
+  width:72px!important;
+  height:28px!important;
+  transform:translate(-50%,-50%)!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .select,
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .start{
+  position:absolute!important;
+  top:2px!important;
+  width:30px!important;
+  min-width:30px!important;
+  height:24px!important;
+  min-height:24px!important;
+  padding:0!important;
+  border-radius:6px!important;
+  font-size:7px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .select{
+  left:0!important;
+  right:auto!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-center .start{
+  left:auto!important;
+  right:0!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .dpad{
+  width:31px!important;
+  height:31px!important;
+  min-width:31px!important;
+  min-height:31px!important;
+  border-radius:5px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .up{
+  left:32px!important;
+  top:0!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .down{
+  left:32px!important;
+  top:62px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .left{
+  left:0!important;
+  top:32px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad .right{
+  left:62px!important;
+  top:32px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-dpad:after{
+  left:32px!important;
+  top:32px!important;
+  width:31px!important;
+  height:31px!important;
+  border-radius:5px!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2.freezzz-gamepad-nes .freezzz-gp-btn{
+  border-radius:6px!important;
+}
