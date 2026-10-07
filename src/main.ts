@@ -340,7 +340,7 @@ function renderTelegramChat(){
     return '<article class="chat-tg-message '+(message.outgoing?"outgoing":"")+'" data-chat-message-key="'+escapeHtml(telegramMessageKey(message))+'"><b>'+escapeHtml(message.senderName)+'</b><p>'+telegramMessageText(message)+'</p>'+telegramMessageExpandControl(message)+'<time>'+new Date(message.date).toLocaleString()+'</time></article>';
   }).join("");
 
-  return '<div class="chat-telegram-shell"><aside class="chat-dialogs '+(telegramDialogsOpen?"is-open":"")+'"><div class="chat-dialogs-head"><b>Диалоги</b><div><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button><button type="button" class="chat-dialogs-close" data-chat-dialogs-close aria-label="Закрыть список чатов" title="Закрыть">×</button></div></div><div class="chat-dialog-list">'+chatRows+'</div></aside><section class="chat-conversation"><header><button type="button" class="chat-dialogs-toggle" data-chat-dialogs aria-label="Открыть список чатов" title="Чаты">☰</button><div class="chat-conversation-title"><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></div></header><div class="chat-history" id="telegram-chat-history">'+messages+'<button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button type="submit" aria-label="Отправить" title="Отправить">↗</button></form></section></div>';
+  return '<div class="chat-telegram-shell"><aside class="chat-dialogs '+(telegramDialogsOpen?"is-open":"")+'"><div class="chat-dialogs-head"><b>Диалоги</b><div><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button><button type="button" class="chat-dialogs-close" data-chat-dialogs-close aria-label="Закрыть список чатов" title="Закрыть">×</button></div></div><div class="chat-dialog-list">'+chatRows+'</div></aside><section class="chat-conversation"><header><button type="button" class="chat-dialogs-toggle" data-chat-dialogs aria-label="Открыть список чатов" title="Чаты">☰</button><div class="chat-conversation-title"><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></div></header><div class="chat-history" id="telegram-chat-history">'+messages+'<span class="chat-bottom-sentinel" data-chat-bottom-sentinel aria-hidden="true"></span><button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button type="submit" aria-label="Отправить" title="Отправить">↗</button></form></section></div>';
 }
 
 let radioBrowser:RadioBrowserClient|null=null;
@@ -885,16 +885,33 @@ function bind(){
     }));
     const chatHistory=document.querySelector<HTMLElement>("#telegram-chat-history");
     const chatBottom=document.querySelector<HTMLButtonElement>("[data-chat-bottom]");
+    const chatBottomSentinel=document.querySelector<HTMLElement>("[data-chat-bottom-sentinel]");
     if(chatHistory&&chatBottom){
-      const syncChatBottom=()=>{
-        const distance=chatHistory.scrollHeight-chatHistory.clientHeight-chatHistory.scrollTop;
-        chatBottom.classList.toggle("is-hidden",distance<=24);
+      const setChatBottomVisible=(visible:boolean)=>{
+        chatBottom.classList.toggle("is-hidden",!visible);
       };
-      chatHistory.addEventListener("scroll",syncChatBottom,{passive:true});
-      chatBottom.addEventListener("click",()=>{
+      const scrollToChatBottom=()=>{
         chatHistory.scrollTo({top:chatHistory.scrollHeight,behavior:"smooth"});
-      });
-      requestAnimationFrame(syncChatBottom);
+      };
+      chatBottom.addEventListener("click",scrollToChatBottom);
+      if(chatBottomSentinel&&"IntersectionObserver" in window){
+        const observer=new IntersectionObserver(entries=>{
+          const entry=entries[0];
+          setChatBottomVisible(!entry?.isIntersecting);
+        },{root:chatHistory,threshold:0.99});
+        observer.observe(chatBottomSentinel);
+        requestAnimationFrame(()=>{
+          const rect=chatBottomSentinel.getBoundingClientRect();
+          const historyRect=chatHistory.getBoundingClientRect();
+          setChatBottomVisible(rect.top>historyRect.bottom);
+        });
+      }else{
+        const syncChatBottom=()=>{
+          setChatBottomVisible(chatHistory.scrollHeight-chatHistory.clientHeight-chatHistory.scrollTop>1);
+        };
+        chatHistory.addEventListener("scroll",syncChatBottom,{passive:true});
+        requestAnimationFrame(syncChatBottom);
+      }
     }
     document.querySelector("[data-chat-retry]")?.addEventListener("click",()=>void loadTelegramChatStatus());
     document.querySelector("#telegram-connect-form")?.addEventListener("submit",e=>{e.preventDefault();const input=document.querySelector<HTMLInputElement>("#telegram-auth-input");const value=input?.value.trim()||"";if(telegramAuthStep==="phone"){telegramAuthPhone=value;void submitTelegramConnect();}else if(telegramAuthStep==="code")void submitTelegramCode(value);else if(telegramAuthStep==="password")void submitTelegramPassword(value);});
