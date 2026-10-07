@@ -862,7 +862,7 @@ function cleanupEmulatorDom(): void {
   // Remove every known runtime node so a second game can never render on top
   // of the previous one.
   document.querySelectorAll<HTMLElement>(".ejs_parent, .ejs_container, .ejs_menu, .ejs_settings, .ejs_context_menu, .ejs_virtualGamepad").forEach(node => node.remove());
-  document.querySelectorAll<HTMLElement>("[id^="ejs_"]").forEach(node => node.remove());
+  document.querySelectorAll<HTMLElement>('[id^="ejs_"]').forEach(node => node.remove());
 }
 
 function removeExistingEmulator(): void {
