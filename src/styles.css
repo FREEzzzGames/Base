@@ -7707,40 +7707,38 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 
 
 /* ================================================================
-   CONSOLE GAMEPAD V3 — REBUILT FROM HARDWARE PROPORTIONS
-   One controller = one physical layout. Keep input DOM unchanged.
+   CONSOLE GAMEPAD V4 — MOBILE RENDERING SCALE
+   Physical proportions first; touch targets second; no overlap.
    ================================================================ */
 
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2{
-  position:relative!important;
-  box-sizing:border-box!important;
+  flex:0 0 184px!important;
   width:100%!important;
-  height:214px!important;
-  min-height:214px!important;
-  max-height:214px!important;
+  height:184px!important;
+  min-height:184px!important;
+  max-height:184px!important;
   padding:0!important;
   margin:0!important;
   overflow:hidden!important;
   background:#090b0e!important;
   border:0!important;
+  box-sizing:border-box!important;
   touch-action:none!important;
-  user-select:none!important;
-  -webkit-user-select:none!important;
-  -webkit-touch-callout:none!important;
 }
 
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-body{
   position:absolute!important;
   left:50%!important;
   top:50%!important;
-  width:calc(100% - 56px)!important;
-  height:144px!important;
+  width:calc(100% - 54px)!important;
+  height:132px!important;
   margin:0!important;
   transform:translate(-50%,-50%)!important;
-  overflow:visible!important;
   box-sizing:border-box!important;
-  border-radius:18px!important;
+  overflow:visible!important;
+  border-radius:12px!important;
 }
+
 .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn{
   position:absolute!important;
   display:flex!important;
@@ -7751,9 +7749,14 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   padding:0!important;
   min-width:32px!important;
   min-height:32px!important;
-  border:1px solid rgba(0,0,0,.62)!important;
-  font:700 10px/1 Arial,sans-serif!important;
-  text-shadow:0 1px 1px rgba(0,0,0,.8)!important;
+  width:38px!important;
+  height:38px!important;
+  border:1px solid rgba(0,0,0,.65)!important;
+  border-radius:4px!important;
+  background:#30343a!important;
+  color:#f2f3f4!important;
+  font:700 9px/1 Arial,sans-serif!important;
+  text-shadow:0 1px 1px #000!important;
   touch-action:none!important;
   user-select:none!important;
   -webkit-user-select:none!important;
@@ -7767,446 +7770,245 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   opacity:1!important;
 }
 
-/* shared geometry primitives */
+/* D-pad: fixed visual size with four independent touch buttons. */
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad{
   position:absolute!important;
-  left:10%!important; top:50%!important;
-  width:18%!important; height:52%!important;
+  left:10%!important;
+  top:50%!important;
+  width:21%!important;
+  height:70px!important;
   transform:translateY(-50%)!important;
   z-index:10!important;
 }
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .dpad{
-  width:29%!important;height:31%!important;
+  width:36px!important;
+  height:23px!important;
+  min-width:36px!important;
+  min-height:23px!important;
   border-radius:2px!important;
-  background:#292b2f!important;
+  background:#292c31!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 3px rgba(0,0,0,.45)!important;
 }
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .up{left:35.5%!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .down{left:35.5%!important;bottom:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .left{left:0!important;top:34.5%!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .right{right:0!important;top:34.5%!important}
+.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .up{left:50%!important;top:0!important;transform:translateX(-50%)!important}
+.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .down{left:50%!important;bottom:0!important;transform:translateX(-50%)!important}
+.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .left{left:0!important;top:50%!important;transform:translateY(-50%)!important}
+.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad .right{right:0!important;top:50%!important;transform:translateY(-50%)!important}
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-dpad:after{
-  content:""!important;position:absolute!important;left:35.5%!important;top:34.5%!important;
-  width:29%!important;height:31%!important;border-radius:2px!important;
-  background:#292b2f!important;pointer-events:none!important;z-index:1!important;
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:36px!important;
+  height:23px!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:2px!important;
+  background:#292c31!important;
+  pointer-events:none!important;
+  z-index:1!important;
 }
 
+/* Select / Start. */
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center{
-  position:absolute!important;left:50%!important;top:70%!important;
-  width:19%!important;height:26%!important;
+  position:absolute!important;
+  left:50%!important;
+  top:72%!important;
+  width:150px!important;
+  height:34px!important;
   transform:translate(-50%,-50%)!important;
-  z-index:12!important;
+  z-index:15!important;
 }
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .select,
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .start,
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .mode{
-  top:50%!important;width:42%!important;height:34px!important;
+  width:62px!important;
+  height:30px!important;
+  min-width:62px!important;
+  min-height:30px!important;
+  top:50%!important;
   transform:translateY(-50%)!important;
   border-radius:4px!important;
-  background:#3b3d40!important;color:#e8e8e8!important;
+  background:#3a3d42!important;
+  color:#eee!important;
   font-size:8px!important;
 }
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .select{left:0!important}
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .start{right:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .mode{left:29%!important;width:42%!important}
+.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-center .mode{left:44px!important}
 
+/* Generic face group. */
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face{
-  position:absolute!important;right:9%!important;top:50%!important;
-  width:22%!important;height:64%!important;
+  position:absolute!important;
+  right:9%!important;
+  top:50%!important;
+  width:25%!important;
+  height:82px!important;
   transform:translateY(-50%)!important;
   z-index:10!important;
 }
 .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .face{
-  position:absolute!important;
-  min-width:34px!important;min-height:34px!important;
-  width:29%!important;height:29%!important;
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  min-height:34px!important;
   border-radius:50%!important;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.2),0 2px 3px rgba(0,0,0,.5)!important;
 }
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .a{right:0!important;top:36%!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .b{left:0!important;top:36%!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .x{left:0!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .y{left:35.5%!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .z{right:0!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .c{right:0!important;bottom:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .cross{left:35.5%!important;bottom:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .circle{right:0!important;top:36%!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .square{left:0!important;top:36%!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-face .triangle{left:35.5%!important;top:0!important}
 
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders{
-  position:absolute!important;left:5%!important;right:5%!important;top:-10px!important;height:44px!important;
-  z-index:30!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .shoulder,
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .trigger{
-  position:absolute!important;width:12%!important;height:30px!important;
-  min-width:38px!important;min-height:30px!important;
-  border-radius:5px!important;background:#bfc1c5!important;color:#3e4146!important;
-  font-size:9px!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .l2{left:0!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .r2{right:0!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .l1{left:16%!important;top:13px!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .r1{right:16%!important;top:13px!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .l{left:5%!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-shoulders .r{right:5%!important;top:0!important}
-
-/* NES — original flat rectangular controller */
+/* NES — authentic broad rectangular shell and compact controls. */
 .library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body{
-  width:calc(100% - 56px)!important;height:132px!important;
+  width:calc(100% - 52px)!important;
+  height:124px!important;
   border-radius:3px!important;
-  background:#d7d7d5!important;
-  border:2px solid #8f908e!important;
-  box-shadow:inset 0 2px 0 #f4f4f2,inset 0 -5px 8px rgba(0,0,0,.14),0 5px 10px rgba(0,0,0,.5)!important;
+  background:#d8d8d6!important;
+  border:2px solid #90918f!important;
+  box-shadow:inset 0 2px 0 #f5f5f3,inset 0 -5px 8px rgba(0,0,0,.14),0 5px 10px rgba(0,0,0,.5)!important;
 }
 .library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body:after{
-  content:""!important;position:absolute!important;left:4%!important;right:4%!important;top:19%!important;bottom:12%!important;
+  content:""!important;
+  position:absolute!important;
+  left:4%!important;right:4%!important;top:20%!important;bottom:11%!important;
   background:#24262a!important;border-radius:2px!important;z-index:0!important;
 }
 .library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body:before{
-  content:"Nintendo  GAMEPAD"!important;position:absolute!important;left:50%!important;top:6%!important;
-  transform:translateX(-50%)!important;color:#4d4e50!important;font:700 8px/1 Arial,sans-serif!important;z-index:3!important;
+  content:"Nintendo  GAMEPAD"!important;
+  position:absolute!important;left:50%!important;top:5%!important;
+  transform:translateX(-50%)!important;color:#555!important;
+  font:700 8px/1 Arial,sans-serif!important;z-index:3!important;white-space:nowrap!important;
 }
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-dpad{left:11%!important;top:54%!important;width:20%!important;height:48%!important}
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-dpad .dpad{background:#111317!important}
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face{right:11%!important;top:53%!important;width:20%!important;height:52%!important}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-dpad{
+  left:10%!important;top:58%!important;width:22%!important;height:68px!important;
+}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-dpad .dpad{
+  width:34px!important;height:22px!important;min-width:34px!important;min-height:22px!important;background:#111317!important;
+}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face{
+  right:10%!important;top:58%!important;width:20%!important;height:58px!important;
+}
 .library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face .face{
-  width:34%!important;height:34%!important;min-width:38px!important;min-height:38px!important;
-  background:#a92938!important;border:2px solid #671923!important;color:#f3d9dd!important;
+  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+  background:#a92a39!important;border:2px solid #681a24!important;color:#f5dfe2!important;
 }
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face .b{left:0!important;top:33%!important}
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face .a{right:0!important;top:33%!important}
-.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-center{top:74%!important;width:21%!important}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face .b{left:0!important;top:50%!important;transform:translateY(-50%)!important}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-face .a{right:0!important;top:50%!important;transform:translateY(-50%)!important}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-center{top:72%!important;width:140px!important}
 .library-emulator-root .freezzz-gamepad-nes .freezzz-gp-shoulders{display:none!important}
 
-/* Game Boy — vertical shell */
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-body{
-  width:190px!important;height:194px!important;border-radius:18px 18px 12px 12px!important;
-  background:#aaa9a1!important;border:2px solid #696861!important;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 12px #000!important;
-}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-body:before{
-  content:"GAME BOY"!important;position:absolute!important;left:50%!important;top:8%!important;transform:translateX(-50%)!important;
-  color:#27372d!important;font:900 11px/1 Arial,sans-serif!important;z-index:3!important;
-}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-dpad{left:12%!important;top:48%!important;width:34%!important;height:34%!important}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-face{right:12%!important;top:53%!important;width:34%!important;height:30%!important}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-face .face{width:32%!important;height:32%!important;min-width:30px!important;min-height:30px!important;background:#4e2c59!important;border-color:#302036!important}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-center{top:80%!important;width:40%!important}
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-center .select,
-.library-emulator-root .freezzz-gamepad-gb .freezzz-gp-center .start{height:28px!important;font-size:6px!important}
-
-/* Master System — long rectangular pad */
+/* Master System — long pad, two action buttons. */
 .library-emulator-root .freezzz-gamepad-sms .freezzz-gp-body{
-  width:calc(100% - 80px)!important;height:120px!important;border-radius:9px!important;
+  width:calc(100% - 74px)!important;height:112px!important;border-radius:9px!important;
   background:#dededc!important;border:2px solid #8f908e!important;
   box-shadow:inset 0 2px 0 #fff,inset 0 -5px 8px rgba(0,0,0,.14),0 5px 10px #000!important;
 }
-.library-emulator-root .freezzz-gamepad-sms .freezzz-gp-dpad{left:9%!important}
-.library-emulator-root .freezzz-gamepad-sms .freezzz-gp-face{right:12%!important}
+.library-emulator-root .freezzz-gamepad-sms .freezzz-gp-face{right:12%!important;width:19%!important}
 .library-emulator-root .freezzz-gamepad-sms .freezzz-gp-face .face{background:#22252a!important;color:#fff!important}
 
-/* Mega Drive 6-button — authentic two-row 3+3 face cluster */
+/* Mega Drive — 6 buttons, 3+3, no overlap. */
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-body{
-  width:calc(100% - 52px)!important;height:142px!important;
-  border-radius:34px 34px 25px 25px!important;
-  background:linear-gradient(#292b2f,#151619)!important;
-  border:2px solid #08090a!important;
+  width:calc(100% - 48px)!important;height:130px!important;
+  border-radius:32px 32px 24px 24px!important;
+  background:linear-gradient(#292b2f,#151619)!important;border:2px solid #08090a!important;
   box-shadow:inset 0 2px 0 rgba(255,255,255,.12),inset 0 -8px 14px rgba(0,0,0,.55),0 6px 12px #000!important;
 }
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-body:before{
-  content:"SEGA  MEGA DRIVE"!important;position:absolute!important;left:50%!important;top:7%!important;
+  content:"SEGA  MEGA DRIVE"!important;position:absolute!important;left:50%!important;top:6%!important;
   transform:translateX(-50%)!important;color:#d7d7d7!important;font:700 9px/1 Arial,sans-serif!important;letter-spacing:.06em!important;z-index:3!important;
 }
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-dpad{left:9%!important;top:55%!important;width:19%!important;height:52%!important}
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face{right:8%!important;top:52%!important;width:29%!important;height:57%!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-dpad{left:9%!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face{
+  right:7%!important;width:31%!important;height:76px!important;
+}
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .face{
-  width:25%!important;height:29%!important;min-width:34px!important;min-height:34px!important;
+  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
   background:linear-gradient(#47494d,#17181b)!important;color:#fff!important;border:1px solid #050506!important;
 }
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .y{left:37.5%!important;top:0!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .y{left:50%!important;top:0!important;transform:translateX(-50%)!important}
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;bottom:0!important}
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .b{left:37.5%!important;bottom:0!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .b{left:50%!important;bottom:0!important;transform:translateX(-50%)!important}
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;bottom:0!important}
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center{top:70%!important;width:19%!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center{top:72%!important;width:140px!important}
 .library-emulator-root .freezzz-gamepad-md .freezzz-gp-center .mode,
-.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center .start{height:30px!important;font-size:7px!important;background:#0d0f12!important;color:#bbb!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center .start{
+  width:58px!important;min-width:58px!important;height:28px!important;font-size:7px!important;background:#0d0f12!important;color:#bbb!important;
+}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center .mode{left:0!important}
+.library-emulator-root .freezzz-gamepad-md .freezzz-gp-center .start{right:0!important}
 
-/* SNES — rounded shell, four-button diamond */
+/* SNES — four-button diamond. */
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-body{
-  width:calc(100% - 56px)!important;height:138px!important;border-radius:16px 16px 28px 28px!important;
+  width:calc(100% - 54px)!important;height:128px!important;border-radius:15px 15px 24px 24px!important;
   background:#c9c9cc!important;border:2px solid #8d8f95!important;
   box-shadow:inset 0 2px 0 #f4f4f4,0 5px 11px #000!important;
 }
-.library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face{right:9%!important}
+.library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face{right:9%!important;width:20%!important;height:74px!important}
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .face{
-  width:27%!important;height:27%!important;min-width:32px!important;min-height:32px!important;
-  background:#684a86!important;border-color:#443058!important;
+  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;background:#684a86!important;border-color:#443058!important;
 }
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .y{left:0!important;top:0!important}
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .x{right:0!important;top:0!important}
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .b{left:0!important;bottom:0!important}
 .library-emulator-root .freezzz-gamepad-snes .freezzz-gp-face .a{right:0!important;bottom:0!important}
 
-/* GBA — compact horizontal shell with shoulder buttons */
+/* GBA — compact shell with L/R at top. */
 .library-emulator-root .freezzz-gamepad-gba .freezzz-gp-body{
-  width:calc(100% - 76px)!important;height:138px!important;border-radius:19px 19px 28px 28px!important;
-  background:#665c72!important;border:2px solid #403847!important;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.12),0 6px 12px #000!important;
+  width:calc(100% - 72px)!important;height:128px!important;border-radius:18px 18px 27px 27px!important;
+  background:#665c72!important;border:2px solid #403847!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.12),0 6px 12px #000!important;
 }
 .library-emulator-root .freezzz-gamepad-gba .freezzz-gp-face{right:10%!important}
 .library-emulator-root .freezzz-gamepad-gba .freezzz-gp-face .face{background:#242126!important;color:#fff!important}
-.library-emulator-root .freezzz-gamepad-gba .freezzz-gp-shoulders{top:-12px!important}
 
-/* PS1 — DualShock-era proportions: long shell, separated triggers */
+/* PS1 — narrower authentic shell; triggers separated from face cluster. */
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-body{
-  width:calc(100% - 44px)!important;height:146px!important;border-radius:20px 20px 34px 34px!important;
+  width:calc(100% - 128px)!important;height:138px!important;border-radius:20px 20px 31px 31px!important;
   background:#d9dade!important;border:2px solid #96999e!important;
   box-shadow:inset 0 2px 0 #fff,inset 0 -6px 10px rgba(0,0,0,.13),0 6px 12px #000!important;
 }
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-body:before{
   content:"SONY  PlayStation"!important;position:absolute!important;left:50%!important;top:7%!important;
-  transform:translateX(-50%)!important;color:#73767b!important;font:800 8px/1 Arial,sans-serif!important;z-index:3!important;
+  transform:translateX(-50%)!important;color:#73767b!important;font:800 8px/1 Arial,sans-serif!important;z-index:3!important;white-space:nowrap!important;
 }
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-dpad{left:8%!important;top:57%!important;width:20%!important;height:48%!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face{right:8%!important;top:55%!important;width:22%!important;height:61%!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-dpad{left:7%!important;top:59%!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face{right:7%!important;top:58%!important;width:23%!important;height:74px!important}
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .face{
-  width:29%!important;height:29%!important;min-width:31px!important;min-height:31px!important;
+  width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;
   background:#d0d2d5!important;border-color:#8c8f95!important;color:#4d5157!important;
 }
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .triangle{left:35.5%!important;top:0!important;color:#4e8b59!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:36%!important;color:#b24d56!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:36%!important;color:#a95787!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .cross{left:35.5%!important;bottom:0!important;color:#4c7ead!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-center{top:72%!important;width:23%!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .triangle{left:50%!important;top:0!important;transform:translateX(-50%)!important;color:#4e8b59!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .circle{right:0!important;top:50%!important;transform:translateY(-50%)!important;color:#b24d56!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .square{left:0!important;top:50%!important;transform:translateY(-50%)!important;color:#a95787!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-face .cross{left:50%!important;bottom:0!important;transform:translateX(-50%)!important;color:#4c7ead!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-center{top:74%!important;width:138px!important}
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-center .select,
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-center .start{height:30px!important;font-size:7px!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-center .start{width:58px!important;min-width:58px!important;height:28px!important;font-size:7px!important}
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders{
-  top:-13px!important;height:52px!important;left:4%!important;right:4%!important;
+  left:4%!important;right:4%!important;top:-8px!important;height:48px!important;z-index:30!important;
 }
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .trigger,
 .library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder{
-  width:11%!important;height:29px!important;min-width:40px!important;
+  width:44px!important;height:28px!important;min-width:44px!important;min-height:28px!important;
 }
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:16%!important;top:15px!important}
-.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:16%!important;top:15px!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .l2{left:0!important;top:0!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .r2{right:0!important;top:0!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .l1{left:17%!important;top:15px!important}
+.library-emulator-root .freezzz-gamepad-psx .freezzz-gp-shoulders .r1{right:17%!important;top:15px!important}
 
-/* Mobile: never stretch the physical controller into a pill. */
+/* Touch-safe and no inherited legacy geometry. */
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2,
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 *{
+  -webkit-touch-callout:none!important;
+}
+.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-btn{
+  pointer-events:auto!important;
+}
+
 @media(max-width:520px){
   .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2{
-    height:205px!important;min-height:205px!important;max-height:205px!important;
+    flex-basis:176px!important;height:176px!important;min-height:176px!important;max-height:176px!important;
   }
   .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2 .freezzz-gp-body{
-    width:calc(100% - 42px)!important;
+    width:calc(100% - 34px)!important;
   }
   .library-emulator-root .freezzz-gamepad-gb .freezzz-gp-body{
-    width:178px!important;height:188px!important;
-  }
-}
-
-
-/* ================================================================
-   LIBRARY GAMEPADS — COMPLETE REWRITE
-   Direct-button geometry. No shared console shell geometry.
-   ================================================================ */
-.library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2{
-  position:relative!important;
-  box-sizing:border-box!important;
-  width:100%!important;
-  height:220px!important;
-  min-height:220px!important;
-  max-height:220px!important;
-  padding:0!important;
-  margin:0!important;
-  background:#080a0d!important;
-  overflow:hidden!important;
-  opacity:var(--freezzz-pad-opacity,.72)!important;
-  touch-action:none!important;
-  user-select:none!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-body{
-  position:absolute!important;
-  left:50%!important;
-  top:50%!important;
-  transform:translate(-50%,-50%)!important;
-  width:min(92vw,640px)!important;
-  height:154px!important;
-  margin:0!important;
-  padding:0!important;
-  overflow:visible!important;
-  border-radius:12px!important;
-  box-sizing:border-box!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-body:before{
-  position:absolute!important;
-  left:50%!important;
-  top:14px!important;
-  transform:translateX(-50%)!important;
-  white-space:nowrap!important;
-  pointer-events:none!important;
-  z-index:1!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-btn{
-  position:absolute!important;
-  box-sizing:border-box!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  margin:0!important;
-  padding:0!important;
-  min-width:0!important;
-  min-height:0!important;
-  font:700 10px/1 Arial,sans-serif!important;
-  border-radius:5px!important;
-  border:1px solid rgba(0,0,0,.65)!important;
-  box-shadow:inset 0 1px rgba(255,255,255,.28),0 2px 4px rgba(0,0,0,.55)!important;
-  z-index:3!important;
-  touch-action:none!important;
-  -webkit-user-select:none!important;
-  user-select:none!important;
-  -webkit-tap-highlight-color:transparent!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-btn.is-pressed{
-  transform:translateY(2px)!important;
-  filter:brightness(.78)!important;
-  box-shadow:inset 0 2px 3px rgba(0,0,0,.55)!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .dpad{
-  background:#292b2f!important;color:#fff!important;
-}
-.library-emulator-root .freezzz-gamepad-v2 .select,
-.library-emulator-root .freezzz-gamepad-v2 .start,
-.library-emulator-root .freezzz-gamepad-v2 .mode{
-  background:#42454a!important;color:#eee!important;
-}
-
-/* NES — original rectangular two-tone controller */
-.freezzz-gamepad-nes .freezzz-gp-body{
-  background:linear-gradient(#d8d9d7,#c3c4c2)!important;
-  border:2px solid #8f918f!important;
-  border-radius:5px!important;
-  box-shadow:inset 0 2px #f4f4f3,inset 0 -5px 9px rgba(0,0,0,.13),0 5px 14px #000!important;
-}
-.freezzz-gamepad-nes .freezzz-gp-body:before{
-  content:"Nintendo  GAMEPAD"!important;color:#555!important;font-size:10px!important;letter-spacing:.04em!important;
-}
-.freezzz-gamepad-nes .dpad{background:#303236!important}
-.freezzz-gamepad-nes .up,.freezzz-gamepad-nes .down{left:12%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-nes .up{top:56px!important}.freezzz-gamepad-nes .down{top:86px!important}
-.freezzz-gamepad-nes .left,.freezzz-gamepad-nes .right{top:71px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-nes .left{left:9%!important}.freezzz-gamepad-nes .right{left:calc(9% + 30px)!important}
-.freezzz-gamepad-nes .face{top:78px!important;width:34px!important;height:34px!important;border-radius:50%!important;background:#a72b39!important;color:#f7dfe2!important;border-color:#691522!important}
-.freezzz-gamepad-nes .b{right:14%!important}.freezzz-gamepad-nes .a{right:8%!important}
-.freezzz-gamepad-nes .select,.freezzz-gamepad-nes .start{
-  top:105px!important;width:48px!important;height:12px!important;border-radius:7px!important;font-size:6px!important;
-}
-.freezzz-gamepad-nes .select{left:40%!important}.freezzz-gamepad-nes .start{left:50%!important}
-
-/* GAME BOY — compact vertical handheld */
-.freezzz-gamepad-gb .freezzz-gp-body{
-  width:250px!important;height:190px!important;border-radius:18px!important;
-  background:linear-gradient(#b4b6b0,#8c8f89)!important;border:2px solid #555853!important;
-  box-shadow:inset 0 2px #d9dbd6,0 5px 14px #000!important;
-}
-.freezzz-gamepad-gb .freezzz-gp-body:before{content:"GAME BOY"!important;color:#26382d!important}
-.freezzz-gamepad-gb .up,.freezzz-gamepad-gb .down{left:12%!important;width:24px!important;height:32px!important}
-.freezzz-gamepad-gb .up{top:68px!important}.freezzz-gamepad-gb .down{top:100px!important}
-.freezzz-gamepad-gb .left,.freezzz-gamepad-gb .right{top:84px!important;width:32px!important;height:32px!important}
-.freezzz-gamepad-gb .left{left:7%!important}.freezzz-gamepad-gb .right{left:calc(7% + 32px)!important}
-.freezzz-gamepad-gb .face{width:34px!important;height:34px!important;border-radius:50%!important;background:#4d285f!important;color:#fff!important}
-.freezzz-gamepad-gb .b{right:23%!important;top:92px!important}.freezzz-gamepad-gb .a{right:9%!important;top:80px!important}
-.freezzz-gamepad-gb .select,.freezzz-gamepad-gb .start{top:137px!important;width:45px!important;height:13px!important;border-radius:8px!important;font-size:6px!important}
-.freezzz-gamepad-gb .select{left:38%!important}.freezzz-gamepad-gb .start{left:55%!important}
-
-/* MASTER SYSTEM — long 2-button pad */
-.freezzz-gamepad-sms .freezzz-gp-body{
-  background:linear-gradient(#e1e2e1,#c4c5c4)!important;border:2px solid #858785!important;
-  border-radius:12px 12px 22px 22px!important;box-shadow:inset 0 2px #fff,0 5px 14px #000!important;
-}
-.freezzz-gamepad-sms .up,.freezzz-gamepad-sms .down{left:12%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-sms .up{top:55px!important}.freezzz-gamepad-sms .down{top:85px!important}
-.freezzz-gamepad-sms .left,.freezzz-gamepad-sms .right{top:70px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-sms .left{left:9%!important}.freezzz-gamepad-sms .right{left:calc(9% + 30px)!important}
-.freezzz-gamepad-sms .face{top:73px!important;width:36px!important;height:36px!important;border-radius:50%!important;background:#22252a!important;color:#fff!important}
-.freezzz-gamepad-sms .b{right:18%!important}.freezzz-gamepad-sms .a{right:10%!important}
-
-/* MEGA DRIVE — six separate round buttons, two rows */
-.freezzz-gamepad-md .freezzz-gp-body{
-  background:linear-gradient(#2b2d31,#15171a)!important;border:2px solid #08090a!important;
-  border-radius:38px 38px 20px 20px!important;box-shadow:inset 0 2px rgba(255,255,255,.12),0 6px 14px #000!important;
-}
-.freezzz-gamepad-md .freezzz-gp-body:before{content:"SEGA  MEGA DRIVE"!important;color:#ddd!important}
-.freezzz-gamepad-md .up,.freezzz-gamepad-md .down{left:11%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-md .up{top:55px!important}.freezzz-gamepad-md .down{top:85px!important}
-.freezzz-gamepad-md .left,.freezzz-gamepad-md .right{top:70px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-md .left{left:8%!important}.freezzz-gamepad-md .right{left:calc(8% + 30px)!important}
-.freezzz-gamepad-md .face{width:34px!important;height:34px!important;border-radius:50%!important;background:linear-gradient(#4b4d51,#18191c)!important;color:#fff!important}
-.freezzz-gamepad-md .x{right:17%!important;top:48px!important}.freezzz-gamepad-md .y{right:12%!important;top:48px!important}.freezzz-gamepad-md .z{right:7%!important;top:48px!important}
-.freezzz-gamepad-md .a{right:17%!important;top:91px!important}.freezzz-gamepad-md .b{right:12%!important;top:91px!important}.freezzz-gamepad-md .c{right:7%!important;top:91px!important}
-.freezzz-gamepad-md .mode,.freezzz-gamepad-md .start{top:112px!important;width:43px!important;height:13px!important;border-radius:8px!important;font-size:6px!important}
-.freezzz-gamepad-md .mode{left:40%!important}.freezzz-gamepad-md .start{left:50%!important}
-
-/* SNES — wider curved shell, ABXY diamond */
-.freezzz-gamepad-snes .freezzz-gp-body{
-  background:linear-gradient(#dadbde,#bfc1c5)!important;border:2px solid #92949a!important;
-  border-radius:14px 14px 28px 28px!important;box-shadow:inset 0 2px #fff,0 6px 14px #000!important;
-}
-.freezzz-gamepad-snes .freezzz-gp-body:before{content:"SUPER NINTENDO  GAMEPAD"!important;color:#6d6f74!important}
-.freezzz-gamepad-snes .up,.freezzz-gamepad-snes .down{left:11%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-snes .up{top:55px!important}.freezzz-gamepad-snes .down{top:85px!important}
-.freezzz-gamepad-snes .left,.freezzz-gamepad-snes .right{top:70px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-snes .left{left:8%!important}.freezzz-gamepad-snes .right{left:calc(8% + 30px)!important}
-.freezzz-gamepad-snes .face{width:31px!important;height:31px!important;border-radius:50%!important;background:#69468a!important;color:#fff!important;border-color:#482e60!important}
-.freezzz-gamepad-snes .y{right:17%!important;top:71px!important}.freezzz-gamepad-snes .x{right:12%!important;top:52px!important}
-.freezzz-gamepad-snes .b{right:17%!important;top:103px!important}.freezzz-gamepad-snes .a{right:12%!important;top:84px!important}
-.freezzz-gamepad-snes .select,.freezzz-gamepad-snes .start{top:112px!important;width:43px!important;height:13px!important;border-radius:8px!important;font-size:6px!important}
-.freezzz-gamepad-snes .select{left:40%!important}.freezzz-gamepad-snes .start{left:50%!important}
-
-/* GBA — handheld-like shell with L/R */
-.freezzz-gamepad-gba .freezzz-gp-body{
-  background:linear-gradient(#746a80,#544c60)!important;border:2px solid #3e3745!important;
-  border-radius:24px 24px 32px 32px!important;box-shadow:inset 0 2px rgba(255,255,255,.12),0 6px 14px #000!important;
-}
-.freezzz-gamepad-gba .freezzz-gp-body:before{content:"GAME BOY ADVANCE"!important;color:#2c2634!important}
-.freezzz-gamepad-gba .shoulder{top:9px!important;width:70px!important;height:18px!important;border-radius:7px!important;background:#423b4a!important;color:#eee!important}
-.freezzz-gamepad-gba .l{left:8%!important}.freezzz-gamepad-gba .r{right:8%!important}
-.freezzz-gamepad-gba .up,.freezzz-gamepad-gba .down{left:11%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-gba .up{top:55px!important}.freezzz-gamepad-gba .down{top:85px!important}
-.freezzz-gamepad-gba .left,.freezzz-gamepad-gba .right{top:70px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-gba .left{left:8%!important}.freezzz-gamepad-gba .right{left:calc(8% + 30px)!important}
-.freezzz-gamepad-gba .face{top:73px!important;width:35px!important;height:35px!important;border-radius:50%!important;background:#29252d!important;color:#fff!important}
-.freezzz-gamepad-gba .b{right:18%!important}.freezzz-gamepad-gba .a{right:10%!important}
-.freezzz-gamepad-gba .select,.freezzz-gamepad-gba .start{top:113px!important;width:43px!important;height:13px!important;border-radius:8px!important;font-size:6px!important}
-.freezzz-gamepad-gba .select{left:40%!important}.freezzz-gamepad-gba .start{left:50%!important}
-
-/* PS1 — original DualShock-style silhouette, four separated shape buttons */
-.freezzz-gamepad-psx .freezzz-gp-body{
-  background:linear-gradient(#e4e5e7,#c6c8cc)!important;border:2px solid #999ca1!important;
-  border-radius:20px 20px 42px 42px!important;box-shadow:inset 0 2px #fff,0 6px 14px #000!important;
-}
-.freezzz-gamepad-psx .freezzz-gp-body:before{content:"SONY PlayStation"!important;color:#777b82!important}
-.freezzz-gamepad-psx .up,.freezzz-gamepad-psx .down{left:11%!important;width:7%!important;height:30px!important}
-.freezzz-gamepad-psx .up{top:55px!important}.freezzz-gamepad-psx .down{top:85px!important}
-.freezzz-gamepad-psx .left,.freezzz-gamepad-psx .right{top:70px!important;width:30px!important;height:30px!important}
-.freezzz-gamepad-psx .left{left:8%!important}.freezzz-gamepad-psx .right{left:calc(8% + 30px)!important}
-.freezzz-gamepad-psx .face{width:32px!important;height:32px!important;border-radius:50%!important;background:#d5d7da!important;color:#333!important;border-color:#888c91!important}
-.freezzz-gamepad-psx .triangle{right:13%!important;top:50px!important;color:#57915e!important}.freezzz-gamepad-psx .circle{right:8%!important;top:82px!important;color:#b84e57!important}
-.freezzz-gamepad-psx .square{right:18%!important;top:82px!important;color:#b85d8e!important}.freezzz-gamepad-psx .cross{right:13%!important;top:114px!important;color:#4f83b3!important}
-.freezzz-gamepad-psx .select,.freezzz-gamepad-psx .start{top:112px!important;width:43px!important;height:13px!important;border-radius:8px!important;font-size:6px!important}
-.freezzz-gamepad-psx .select{left:40%!important}.freezzz-gamepad-psx .start{left:50%!important}
-.freezzz-gamepad-psx .trigger{top:8px!important;width:58px!important;height:18px!important;border-radius:7px!important;background:#c1c3c7!important;color:#50535a!important}
-.freezzz-gamepad-psx .l2{left:6%!important}.freezzz-gamepad-psx .r2{right:6%!important}
-.freezzz-gamepad-psx .l1{left:17%!important;top:28px!important}.freezzz-gamepad-psx .r1{right:17%!important;top:28px!important}
-
-/* Compact phones */
-@media(max-width:520px){
-  .library-emulator-root .freezzz-custom-gamepad.freezzz-gamepad-v2{
-    height:220px!important;min-height:220px!important;max-height:220px!important;
-  }
-  .library-emulator-root .freezzz-gamepad-v2 .freezzz-gp-body{
-    width:92vw!important;height:154px!important;
+    width:174px!important;height:180px!important;
   }
 }
