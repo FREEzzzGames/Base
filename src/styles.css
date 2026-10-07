@@ -9245,6 +9245,18 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .library-emulator-root .freezzz-custom-gamepad .freezzz-gp-body.has-sticker .freezzz-gp-shoulders{
   z-index:10!important;
 }
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body.has-sticker{
+  background-image:var(--freezzz-gp-sticker)!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  background-color:transparent!important;
+}
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body.has-sticker::before,
+.library-emulator-root .freezzz-gamepad-nes .freezzz-gp-body.has-sticker::after{
+  display:none!important;
+  content:none!important;
+}
 .library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button{
   position:absolute!important;
   left:4px!important;
