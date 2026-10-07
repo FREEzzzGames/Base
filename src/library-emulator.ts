@@ -211,6 +211,7 @@ async function repairLegacyLibraryEntries(): Promise<void> {
 }
 
 let sevenZipModulePromise: Promise<any> | null = null;
+let sevenZipOutput: string[] | null = null;
 
 async function inspectSevenZip(file: File): Promise<string[]> {
   if (!sevenZipModulePromise) {
@@ -218,7 +219,7 @@ async function inspectSevenZip(file: File): Promise<string[]> {
       const factory = mod.default || mod;
       return factory({
         noInitialRun: true,
-        print: () => {},
+        print: (line: string) => sevenZipOutput?.push(String(line)),
         printErr: () => {}
       });
     });
@@ -233,17 +234,17 @@ async function inspectSevenZip(file: File): Promise<string[]> {
     try { FS.unlink(path); } catch {}
     FS.writeFile(path, bytes);
 
-    const output: string[] = [];
-    const originalPrint = sevenZip.print;
-    sevenZip.print = (line: string) => output.push(String(line));
+    sevenZipOutput = [];
     try {
       // -slt emits machine-readable "Path = ..." records.
       await sevenZip.callMain(["l", "-slt", path]);
     } finally {
-      sevenZip.print = originalPrint;
+      const output = sevenZipOutput;
+      sevenZipOutput = null;
+      return output || [];
     }
 
-    return output
+    return []
       .join("\n")
       .split(/\r?\n/)
       .map(line => line.startsWith("Path = ") ? line.slice(7).trim() : "")
