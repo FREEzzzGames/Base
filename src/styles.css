@@ -7855,3 +7855,151 @@ html.visual-comfort-enabled video{
     height:66.6667vw!important;
   }
 }
+
+/* FINAL CONSOLE CONTROLLER ALIGNMENT / TOUCH LAYER */
+.portal-workspace.portal-emulator-active .freezzz-emulator-host{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  align-content:start!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-emulator-screen{
+  position:relative!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  flex:none!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-ejs-player{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-ejs-player canvas{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  object-fit:contain!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-custom-gamepad{
+  position:relative!important;
+  z-index:20!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  margin:0!important;
+  border:0!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-custom-gamepad .freezzz-gp-body{
+  box-sizing:border-box!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-custom-gamepad .freezzz-gp-btn{
+  touch-action:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  cursor:pointer!important;
+  transform-origin:center!important;
+}
+.portal-workspace.portal-emulator-active .freezzz-custom-gamepad .freezzz-gp-btn.is-pressed{
+  filter:brightness(1.35)!important;
+  transform:scale(.96)!important;
+  opacity:1!important;
+}
+
+/* Mega Drive 6-button: keep START/MODE in the real center gap, not under A/B/C. */
+.freezzz-gamepad-md .freezzz-gp-center{
+  left:39%!important;
+  top:43%!important;
+  width:17%!important;
+  height:20%!important;
+  z-index:8!important;
+}
+.freezzz-gamepad-md .freezzz-gp-center .mode,
+.freezzz-gamepad-md .freezzz-gp-center .start{
+  position:absolute!important;
+  width:43%!important;
+  height:34%!important;
+  top:34%!important;
+  margin:0!important;
+  transform:none!important;
+  font-size:clamp(7px,1.5vw,10px)!important;
+}
+.freezzz-gamepad-md .freezzz-gp-center .mode{
+  left:0!important;
+}
+.freezzz-gamepad-md .freezzz-gp-center .start{
+  right:0!important;
+}
+
+/* PlayStation: two clean shoulder rows, L2/R2 behind L1/R1 instead of overlapping. */
+.freezzz-gamepad-psx .freezzz-gp-shoulders{
+  left:5%!important;
+  right:5%!important;
+  top:4%!important;
+  height:24%!important;
+  z-index:8!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .shoulder,
+.freezzz-gamepad-psx .freezzz-gp-shoulders .trigger{
+  position:absolute!important;
+  width:18%!important;
+  height:48%!important;
+  margin:0!important;
+  border-radius:7px!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .l2{
+  left:2%!important;
+  top:0!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .r2{
+  right:2%!important;
+  top:0!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .l1{
+  left:12%!important;
+  top:48%!important;
+}
+.freezzz-gamepad-psx .freezzz-gp-shoulders .r1{
+  right:12%!important;
+  top:48%!important;
+}
+
+/* Controller frames remain fully inside the viewport on narrow Telegram WebViews. */
+@media (max-width:520px){
+  .portal-workspace.portal-emulator-active .freezzz-custom-gamepad{
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+  .freezzz-gamepad-nes .freezzz-gp-body{
+    width:100%!important;
+    height:78%!important;
+    top:11%!important;
+  }
+  .freezzz-gamepad-md .freezzz-gp-body{
+    width:100%!important;
+    height:88%!important;
+    top:6%!important;
+  }
+  .freezzz-gamepad-psx .freezzz-gp-body{
+    width:100%!important;
+    height:92%!important;
+    top:4%!important;
+  }
+}
