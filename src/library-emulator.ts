@@ -369,17 +369,20 @@ function customGamepadMarkup(system: SystemId): string {
 }
 
 function getCoreButtonIndex(system: SystemId, key: string): number {
-  const common: Record<string, number> = {
-    ArrowUp: 4, ArrowDown: 5, ArrowLeft: 6, ArrowRight: 7,
-    Shift: 2, Enter: 3, x: 0, z: 8, a: 9, s: 10, d: 11, q: 12, e: 13
+  const dpad: Record<string, number> = {
+    ArrowUp: 4, ArrowDown: 5, ArrowLeft: 6, ArrowRight: 7
   };
-  if (system === "md") {
-    return ({ z: 8, x: 0, c: 12, a: 9, s: 1, d: 13 } as Record<string, number>)[key] ?? common[key] ?? -1;
-  }
-  if (system === "psx") {
-    return ({ z: 0, x: 1, a: 2, s: 3, q: 10, e: 11, "1": 12, "3": 13 } as Record<string, number>)[key] ?? common[key] ?? -1;
-  }
-  return common[key] ?? -1;
+  if (dpad[key] !== undefined) return dpad[key];
+  const maps: Record<SystemId, Record<string, number>> = {
+    nes: { Shift: 2, Enter: 3, x: 0, z: 8 },
+    gb:  { Shift: 2, Enter: 3, x: 0, z: 8 },
+    sms: { x: 0, z: 8 },
+    md:  { Shift: 2, Enter: 3, x: 0, z: 8, a: 9, s: 1, c: 12, d: 13 },
+    snes:{ Shift: 2, Enter: 3, x: 0, z: 8, a: 1, s: 9, q: 10, e: 11 },
+    gba: { Shift: 2, Enter: 3, x: 0, z: 8, a: 10, s: 11 },
+    psx: { Shift: 2, Enter: 3, z: 0, x: 1, a: 2, s: 3, q: 10, e: 11, "1": 12, "3": 13 }
+  };
+  return maps[system][key] ?? -1;
 }
 
 function sendCoreInput(system: SystemId, key: string, pressed: boolean): boolean {
