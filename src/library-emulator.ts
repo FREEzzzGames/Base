@@ -1018,11 +1018,14 @@ function bindCustomGamepad(): void {
 type GamepadSticker = { id: string; name: string; file: string; gif?: boolean; systems?: SystemId[] };
 
 const GAMEPAD_STICKERS: GamepadSticker[] = [
-  { id: "classic", name: "CLASSIC", file: "classic.png" },
-  { id: "paper-red", name: "PAPER RED", file: "paper-red.png" },
-  { id: "paper-blue", name: "PAPER BLUE", file: "paper-blue.png" },
-  { id: "exclusive-01", name: "EXCLUSIVE 01", file: "exclusive-01.gif", gif: true },
-  { id: "exclusive-02", name: "EXCLUSIVE 02", file: "exclusive-02.gif", gif: true }
+  { id: "sunny-toons", name: "SUNNY TOONS", file: "sunny-toons.jpg" },
+  { id: "monster-carnival", name: "MONSTER CARNIVAL", file: "monster-carnival.jpg" },
+  { id: "blue-graffiti", name: "BLUE GRAFFITI", file: "blue-graffiti.jpg" },
+  { id: "neon-character", name: "NEON CHARACTER", file: "neon-character.jpg" },
+  { id: "sticker-bomb", name: "STICKER BOMB", file: "sticker-bomb.jpg" },
+  { id: "retro-emboss", name: "RETRO EMBOSS", file: "retro-emboss.jpg" },
+  { id: "pop-arcade", name: "POP ARCADE", file: "pop-arcade.jpg" },
+  { id: "animated-exclusive", name: "ANIMATED EXCLUSIVE", file: "animated-exclusive.gif", gif: true }
 ];
 
 function stickerAsset(sticker: GamepadSticker): string {
