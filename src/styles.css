@@ -7063,6 +7063,8 @@ html.visual-comfort-enabled video{
 .freezzz-gp-shoulders .r2{right:2%!important;top:0!important}
 .freezzz-gp-shoulders .l1{left:12%!important;top:52%!important}
 .freezzz-gp-shoulders .r1{right:12%!important;top:52%!important}
+.freezzz-gp-shoulders .l{left:10%!important;top:0!important}
+.freezzz-gp-shoulders .r{right:10%!important;top:0!important}
 
 /* NES / Dendy */
 .freezzz-gamepad-nes{height:clamp(205px,30vw,260px)!important}
