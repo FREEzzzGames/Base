@@ -40,8 +40,9 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE = "roms";
+const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
 const OPACITY_KEY = "freezzz:library:gamepad-opacity";
 const EJS_DATA = "https://cdn.emulatorjs.org/4.2.3/data/";
@@ -85,6 +86,7 @@ function openDb(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
+      if (!db.objectStoreNames.contains(STICKER_STORE)) db.createObjectStore(STICKER_STORE, { keyPath: "id" });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
@@ -982,10 +984,32 @@ function stickerControlHoles(system: SystemId, width: number, height: number): A
   ];
 }
 
+async function saveGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STICKER_STORE, "readwrite");
+    tx.objectStore(STICKER_STORE).put({ id: system, blob });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error || new Error("STICKER_SAVE_FAILED"));
+  });
+  db.close();
+}
+
+async function loadGamepadSticker(system: SystemId): Promise<Blob | null> {
+  const db = await openDb();
+  const blob = await new Promise<Blob | null>((resolve, reject) => {
+    const req = db.transaction(STICKER_STORE, "readonly").objectStore(STICKER_STORE).get(system);
+    req.onsuccess = () => resolve(req.result?.blob instanceof Blob ? req.result.blob : null);
+    req.onerror = () => reject(req.error || new Error("STICKER_LOAD_FAILED"));
+  });
+  db.close();
+  return blob;
+}
+
 async function makeGamepadSticker(file: File, system: SystemId): Promise<string> {
   const bitmap = await createImageBitmap(file);
-  const width = 1200;
-  const height = 500;
+  const width = 2400;
+  const height = 1000;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -1030,6 +1054,16 @@ async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<
   const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
   if (!body || !button || !input) return;
 
+  try {
+    const saved = await loadGamepadSticker(system);
+    if (saved) {
+      const url = URL.createObjectURL(saved);
+      body.dataset.stickerUrl = url;
+      body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
+      root.classList.add("has-sticker");
+    }
+  } catch {}
+
   button.addEventListener("click", () => input.click());
   input.addEventListener("change", async () => {
     const file = input.files?.[0];
@@ -1041,6 +1075,8 @@ async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<
       body.dataset.stickerUrl = url;
       body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
       root.classList.add("has-sticker");
+      const response = await fetch(url);
+      await saveGamepadSticker(system, await response.blob());
     } catch {}
     input.value = "";
   });
