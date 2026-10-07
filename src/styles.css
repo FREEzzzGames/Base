@@ -6916,3 +6916,39 @@ html.visual-comfort-enabled video{
   max-height:none!important;
   margin:0!important;
 }
+
+
+/* FREEzzz LIBRARY / RETRO EMULATOR */
+.library-portal{padding-bottom:18px}
+.library-shell{overflow:hidden}
+.library-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.library-head h2{margin:0 0 6px}
+.library-head p{margin:0;max-width:620px}
+.library-add-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;cursor:pointer;white-space:nowrap}
+.library-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0}
+.library-filter{min-height:40px;padding:8px 13px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(0,0,0,.22);color:inherit;font:inherit;cursor:pointer}
+.library-filter.active{border-color:rgba(102,252,241,.7);background:rgba(102,252,241,.12)}
+.library-game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.library-game-card{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.25)}
+.library-game-art{height:62px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(102,252,241,.18),rgba(0,0,0,.5));border:1px solid rgba(102,252,241,.22)}
+.library-game-art span{font-size:18px;font-weight:800}.library-game-art b{font-size:8px;letter-spacing:.08em;text-align:center}
+.library-game-info{min-width:0}.library-game-info strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.library-game-info small{display:block;margin-top:4px;opacity:.58;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.library-game-actions{grid-column:1/-1;display:flex;gap:7px}.library-game-actions .tg-button:first-child{flex:1}
+.library-empty{min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed rgba(255,255,255,.16);border-radius:12px;opacity:.72}.library-empty span{font-size:12px;text-align:center}
+.library-hint{margin-top:12px;font-size:10px;opacity:.45}
+.library-emulator-root[hidden]{display:none}
+.freezzz-emulator-host{--freezzz-pad-opacity:.72;display:grid;grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr);min-height:calc(100vh - 110px);gap:8px;overflow:hidden;touch-action:manipulation}
+.freezzz-emulator-head{display:flex;align-items:center;gap:8px;min-width:0}.freezzz-emulator-head strong{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.freezzz-emulator-head span{font-size:10px;opacity:.55;white-space:nowrap}
+.freezzz-emulator-screen{position:relative;min-height:0;border:1px solid rgba(102,252,241,.18);border-radius:10px;overflow:hidden;background:#05070a;display:flex;align-items:center;justify-content:center}
+.freezzz-ejs-player{width:100%;height:100%;min-height:0;position:relative}
+.freezzz-ejs-player canvas{max-width:100%;max-height:100%;object-fit:contain}
+.freezzz-emulator-controls{min-height:0;position:relative;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(0,0,0,.24);overflow:hidden;padding:7px}
+.freezzz-pad-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;opacity:.8;position:relative;z-index:20}.freezzz-pad-title label{display:flex;align-items:center;gap:5px}.freezzz-pad-title input{width:92px;accent-color:#66FCF1}.freezzz-pad-title b{width:34px;text-align:right}
+.freezzz-pad-space{height:calc(100% - 28px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;opacity:.35;text-align:center;pointer-events:none}
+.freezzz-emulator-host .ejs_virtualGamepad_left,.freezzz-emulator-host .ejs_virtualGamepad_right,.freezzz-emulator-host .ejs_virtualGamepad{opacity:var(--freezzz-pad-opacity)!important;touch-action:none!important}
+.freezzz-emulator-host .ejs_virtualGamepad_left,.freezzz-emulator-host .ejs_virtualGamepad_right{position:absolute!important;top:34px!important;bottom:3px!important;max-height:none!important}
+.freezzz-emulator-host .ejs_virtualGamepad_left{left:2%!important}.freezzz-emulator-host .ejs_virtualGamepad_right{right:2%!important}
+.freezzz-emulator-host .ejs_menu_bar{z-index:50!important}
+.library-emulator-error{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.library-emulator-error span{opacity:.65;font-size:12px}
+@media (max-width:520px){.freezzz-emulator-host{min-height:calc(100vh - 96px);grid-template-rows:auto minmax(60%,62%) minmax(38%,1fr)}.freezzz-emulator-head span{display:none}.freezzz-pad-title{font-size:9px}.freezzz-pad-title input{width:78px}.library-game-grid{grid-template-columns:1fr}}
