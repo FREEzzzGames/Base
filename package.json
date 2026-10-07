@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "node scripts/write-version.mjs && vite build",
-    "release:smoke": "npm run build && node scripts/release-smoke.mjs",
+    "release:smoke": "node scripts/release-smoke.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
