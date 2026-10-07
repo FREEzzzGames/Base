@@ -1,4 +1,4 @@
-type SystemId = "nes" | "gb" | "sms" | "md" | "snes" | "gba" | "psx";
+type SystemId = "nes" | "gb" | "sms" | "md" | "snes" | "gba" | "psx" | "nds";
 
 type LibraryGame = {
   id: string;
@@ -31,6 +31,7 @@ type EmulatorWindow = Window & {
   EJS_terminate?: () => void;
   EJS_gameID?: number;
   EJS_disableCue?: boolean;
+  EJS_mouse?: boolean;
   EJS_dontExtractRom?: boolean;
   EJS_emulator?: { started?: boolean; gameManager?: { simulateInput?: (player: number, button: number, value: number) => void } };
 };
@@ -334,6 +335,14 @@ function gamepadBindings(system: SystemId): TouchBinding[] {
     { key:"a",code:"KeyA",label:"Y",cls:"face y" }, { key:"s",code:"KeyS",label:"X",cls:"face x" },
     { key:"q",code:"KeyQ",label:"L",cls:"shoulder l" }, { key:"e",code:"KeyE",label:"R",cls:"shoulder r" }
   ];
+  if (system === "nds") return [
+    { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
+    { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
+    { key:"Shift",code:"ShiftLeft",label:"SELECT",cls:"select" }, { key:"Enter",code:"Enter",label:"START",cls:"start" },
+    { key:"z",code:"KeyZ",label:"A",cls:"face a" }, { key:"x",code:"KeyX",label:"B",cls:"face b" },
+    { key:"a",code:"KeyA",label:"Y",cls:"face y" }, { key:"s",code:"KeyS",label:"X",cls:"face x" },
+    { key:"q",code:"KeyQ",label:"L",cls:"shoulder l" }, { key:"w",code:"KeyW",label:"R",cls:"shoulder r" }
+  ];
   return [
     { key:"ArrowUp",code:"ArrowUp",label:"↑",cls:"dpad up" }, { key:"ArrowDown",code:"ArrowDown",label:"↓",cls:"dpad down" },
     { key:"ArrowLeft",code:"ArrowLeft",label:"←",cls:"dpad left" }, { key:"ArrowRight",code:"ArrowRight",label:"→",cls:"dpad right" },
@@ -392,6 +401,7 @@ function getCoreButtonIndex(system: SystemId, key: string): number {
     md:  { Shift: 2, Enter: 3, x: 0, z: 8, c: 10, a: 9, s: 1, d: 11 },
     snes:{ Shift: 2, Enter: 3, x: 0, z: 8, a: 1, s: 9, q: 10, e: 11 },
     gba: { Shift: 2, Enter: 3, x: 0, z: 8, a: 10, s: 11 },
+    nds: { Shift: 2, Enter: 3, x: 0, z: 8, a: 1, s: 9, q: 10, w: 11 },
     psx: { Shift: 2, Enter: 3, z: 0, x: 8, a: 1, s: 9, q: 10, e: 11, "1": 12, "3": 13 }
   };
   return maps[system][key] ?? -1;
@@ -432,6 +442,7 @@ function keyboardKeyCode(key: string): number {
     d: 68,
     q: 81,
     e: 69,
+    w: 87,
     "1": 49,
     "3": 51
   };
@@ -641,6 +652,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_hideSettings = [];
     w.EJS_gameID = stableGameId(game.id);
     w.EJS_disableCue = false;
+    w.EJS_mouse = game.system === "nds";
     w.EJS_dontExtractRom = true;
     w.EJS_Buttons = {
       playPause: false,
