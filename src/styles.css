@@ -6879,3 +6879,40 @@ html.visual-comfort-enabled video{
   background:transparent!important;
   text-shadow:0 1px 3px rgba(0,0,0,1)!important;
 }
+
+
+/* MAIN CHAT FINAL FRAME/SCALE PASS — no legacy square container around the conversation. */
+.chat-portal{
+  height:100%!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.chat-portal > .section-head{
+  flex:0 0 auto!important;
+  margin-bottom:8px!important;
+}
+.chat-portal > .chat.portal-block{
+  flex:1 1 auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+.chat-portal > .chat.portal-block > .chat-telegram-shell{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+}
