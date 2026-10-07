@@ -740,6 +740,14 @@ function setHudHidden(hidden:boolean){
 function toggleHud(){
   setHudHidden(!hudHidden);
 }
+window.addEventListener("freezzz:open-chat-selector",()=>{
+  windowsCloseChatPopup();
+  telegramDialogsOpen=true;
+  portalEvents.emit("navigation:changed",{view:"chat"});
+});
+function windowsCloseChatPopup(){
+  window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
+}
 function bind(){
   if(view==="radio"){
     document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
