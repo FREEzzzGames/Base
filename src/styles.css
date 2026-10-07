@@ -9165,8 +9165,7 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 }
 
 
-/* STICKER MODE: background only. The original control geometry is untouched.
-   The sticker cutter uses these exact control coordinates. */
+/* STICKER MODE: preserve the original controls exactly. */
 .library-emulator-root .freezzz-custom-gamepad.has-sticker .freezzz-gp-body{
   background-image:var(--freezzz-gp-sticker)!important;
   background-size:100% 100%!important;
@@ -9189,9 +9188,6 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   color:#fff!important;
   font:700 8px/1 Arial,sans-serif!important;
   cursor:pointer!important;
-}
-.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-button,
-.library-emulator-root .freezzz-custom-gamepad .freezzz-gp-sticker-input{
   pointer-events:auto!important;
   touch-action:manipulation!important;
 }
