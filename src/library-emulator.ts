@@ -25,6 +25,7 @@ type EmulatorWindow = Window & {
   EJS_color?: string;
   EJS_hideSettings?: string[];
   EJS_defaultControls?: Record<number, Record<number, { value: number; value2?: string }>>;
+  EJS_defaultOptions?: Record<string, string | number | boolean>;
   EJS_Buttons?: Record<string, boolean | { visible?: boolean }>;
   EJS_ready?: () => void;
   EJS_browserMode?: "mobile" | "desktop" | 1 | 2;
@@ -752,6 +753,18 @@ async function startGame(game: LibraryGame): Promise<void> {
     w.EJS_gameUrl = emulatorRom;
     w.EJS_gameName = game.fileName.slice(0, 160);
     w.EJS_core = SYSTEMS[game.system].core;
+    if (game.system === "nds") {
+      // melonDS/libretro: force the physical DS layout on every fresh launch.
+      // This keeps the top screen above the touchscreen instead of inheriting a
+      // previously selected horizontal layout from EmulatorJS.
+      w.EJS_defaultOptions = {
+        melonds_screen_layout: "top-bottom",
+        melonds_screen_gap: "0",
+        melonds_touch_mode: "touch"
+      };
+    } else {
+      w.EJS_defaultOptions = {};
+    }
     w.EJS_pathtodata = EJS_DATA;
     w.EJS_startOnLoaded = true;
     w.EJS_virtualGamepad = false;
