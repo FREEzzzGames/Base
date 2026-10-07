@@ -13,7 +13,7 @@ type LibraryGame = {
 
 type EmulatorWindow = Window & {
   EJS_player?: string;
-  EJS_gameUrl?: string;
+  EJS_gameUrl?: string | File;
   EJS_gameName?: string;
   EJS_core?: string;
   EJS_pathtodata?: string;
@@ -553,7 +553,9 @@ async function startGame(game: LibraryGame): Promise<void> {
     if (token !== emulatorToken) return;
     removeExistingEmulator();
     activeGame = game;
-    activeObjectUrl = URL.createObjectURL(blob);
+    activeObjectUrl = null;
+    // EmulatorJS 4.1+ accepts File objects directly; keep the original ROM filename/extension.
+    const emulatorRom = new File([blob], game.fileName, { type: blob.type || "application/octet-stream" });
     // Keep the library rendered underneath; the emulator is a modal layer above it.
     list.hidden = false;
     filters.hidden = false;
@@ -564,7 +566,7 @@ async function startGame(game: LibraryGame): Promise<void> {
 
     const w = window as EmulatorWindow;
     w.EJS_player = "#freezzz-ejs-player";
-    w.EJS_gameUrl = activeObjectUrl;
+    w.EJS_gameUrl = emulatorRom;
     w.EJS_gameName = game.fileName.slice(0, 160);
     w.EJS_core = SYSTEMS[game.system].core;
     w.EJS_pathtodata = EJS_DATA;
