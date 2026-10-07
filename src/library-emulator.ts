@@ -43,7 +43,7 @@ const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string
   md:   { label: "Mega Drive / Genesis", bits: 16, core: "segaMD", exts: ["md", "gen", "smd", "sg"] },
   snes: { label: "SNES", bits: 16, core: "snes", exts: ["sfc", "smc", "fig", "swc"] },
   gba:  { label: "Game Boy Advance", bits: 16, core: "gba", exts: ["gba"] },
-  psx:  { label: "PlayStation", bits: 32, core: "psx", exts: ["bin", "cue", "iso", "img", "pbp", "chd", "m3u", "zip", "7z"] }
+  psx:  { label: "PlayStation", bits: 32, core: "psx", exts: ["bin", "cue", "iso", "img", "pbp", "chd", "m3u", "7z"] }
 };
 
 let selectedSystem: "all" | "8" | "16" | "32" = "all";
@@ -169,6 +169,33 @@ async function extractSingleZipRom(file: File, entry: { name: string; method: nu
     return new Response(stream).blob();
   }
   throw new Error("ZIP_COMPRESSION_UNSUPPORTED");
+}
+
+async function repairLegacyLibraryEntries(): Promise<void> {
+  const games = readMeta();
+  let changed = false;
+  for (const game of games) {
+    if (extensionOf(game.fileName) !== "zip") continue;
+    try {
+      const blob = await getRom(game.id);
+      const resolved = await resolveImport(new File([blob], game.fileName, { type: blob.type || "application/zip" }));
+      const config = SYSTEMS[resolved.system];
+      if (game.system !== resolved.system || game.fileName !== resolved.fileName || game.size !== resolved.blob.size) {
+        await putRom(game.id, resolved.blob);
+        game.system = resolved.system;
+        game.systemLabel = config.label;
+        game.bits = config.bits;
+        game.fileName = resolved.fileName;
+        game.name = resolved.fileName.replace(/\.[^.]+$/, "") || resolved.fileName;
+        game.size = resolved.blob.size;
+        changed = true;
+      }
+    } catch {}
+  }
+  if (changed) {
+    writeMeta(games);
+    renderLibraryIntoPage();
+  }
 }
 
 async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob; fileName: string }> {
@@ -400,6 +427,8 @@ function renderLibraryIntoPage(): void {
 }
 
 function bindLibrary(): void {
+  void repairLegacyLibraryEntries();
+
   document.querySelectorAll<HTMLElement>("[data-library-filter]").forEach(button => {
     button.addEventListener("click", () => {
       selectedSystem = (button.dataset.libraryFilter as typeof selectedSystem) || "all";
