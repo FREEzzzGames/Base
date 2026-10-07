@@ -20,6 +20,7 @@ type EmulatorWindow = Window & {
   EJS_pathtodata?: string;
   EJS_startOnLoaded?: boolean;
   EJS_virtualGamepad?: boolean;
+  EJS_controlScheme?: string;
   EJS_askBeforeExit?: boolean;
   EJS_noAutoFocus?: boolean;
   EJS_color?: string;
