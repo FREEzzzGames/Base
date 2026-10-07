@@ -40,7 +40,7 @@ type EmulatorWindow = Window & {
 };
 
 const DB_NAME = "freezzz-library";
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const STORE = "roms";
 const STICKER_STORE = "stickers";
 const META_KEY = "freezzz:library:games";
@@ -947,74 +947,12 @@ function bindCustomGamepad(): void {
     releaseDpadPointer(event.pointerId);
   });
 }
-function stickerControlHoles(system: SystemId, width: number, height: number): Array<{x:number;y:number;w:number;h:number;r:number}> {
-  // These are the ORIGINAL gamepad coordinates. The sticker is cut around
-  // the controls; the controls themselves are never repositioned by sticker mode.
-  const sx = width / 1200;
-  const sy = height / 500;
-  const holes: Array<{x:number;y:number;w:number;h:number;r:number}> = [];
-  const add = (x:number,y:number,w:number,h:number,r:number = 5) =>
-    holes.push({x:x*sx,y:y*sy,w:w*sx,h:h*sy,r:Math.min(sx,sy)*r});
-
-  // Original common D-pad: left 8%, centered vertically, 112x112, 37px cells.
-  const dpadX = 1200 * 0.08;
-  const dpadY = 250 - 56;
-  add(dpadX + 37, dpadY, 37, 37);
-  add(dpadX + 37, dpadY + 74, 37, 37);
-  add(dpadX, dpadY + 37, 37, 37);
-  add(dpadX + 74, dpadY + 37, 37, 37);
-  add(dpadX + 37, dpadY + 37, 37, 37);
-
-  // Original SELECT / START geometry.
-  const centerX = 600 - 63;
-  const centerY = 360 - 17;
-  add(centerX, centerY + 2, 56, 30, 6);
-  add(centerX + 70, centerY + 2, 56, 30, 6);
-
-  if (system === "snes") {
-    const x = 1200 - 96 - 112;
-    const y = 250 - 46;
-    add(x, y + 27, 38, 38, 12);      // Y
-    add(x + 74, y + 27, 38, 38, 12); // X
-    add(x + 37, y, 38, 38, 12);      // B
-    add(x + 37, y + 54, 38, 38, 12); // A
-  } else if (system === "md") {
-    const x = 1200 - 84 - 126;
-    const y = 250 - 41;
-    for (const [dx, dy] of [[0,0],[45,0],[90,0],[0,46],[45,46],[90,46]]) {
-      add(x + dx, y + dy, 36, 36, 10);
-    }
-  } else if (system === "psx") {
-    const x = 1200 - 84 - 112;
-    const y = 250 - 54;
-    add(x + 38, y, 36, 36, 12);
-    add(x, y + 36, 36, 36, 12);
-    add(x + 76, y + 36, 36, 36, 12);
-    add(x + 38, y + 72, 36, 36, 12);
-  } else if (system === "nds") {
-    // DS uses the same original face geometry as the pre-sticker layout.
-    const x = 1200 - 96 - 108;
-    const y = 285 - 41;
-    add(x, y + 23, 34, 34, 12);
-    add(x + 37, y, 34, 34, 12);
-    add(x + 37, y + 46, 34, 34, 12);
-    add(x + 74, y + 23, 34, 34, 12);
-  } else {
-    // NES / SMS / GB / GBA: original two-button geometry.
-    const x = 1200 - 84 - 90;
-    const y = 250 - 30 + 12;
-    add(x, y, 36, 36, 12);
-    add(x + 50, y, 36, 36, 12);
-  }
-
-  return holes;
-}
 
 async function saveGamepadSticker(system: SystemId, blob: Blob): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STICKER_STORE, "readwrite");
-    tx.objectStore(STICKER_STORE).put({ id: system, blob, version: 2 });
+    tx.objectStore(STICKER_STORE).put({ id: system, blob });
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error || new Error("STICKER_SAVE_FAILED"));
   });
@@ -1025,88 +963,17 @@ async function loadGamepadSticker(system: SystemId): Promise<Blob | null> {
   const db = await openDb();
   const blob = await new Promise<Blob | null>((resolve, reject) => {
     const req = db.transaction(STICKER_STORE, "readonly").objectStore(STICKER_STORE).get(system);
-    req.onsuccess = () => resolve(req.result?.version === 2 && req.result.blob instanceof Blob ? req.result.blob : null);
+    req.onsuccess = () => resolve(req.result?.blob instanceof Blob ? req.result.blob : null);
     req.onerror = () => reject(req.error || new Error("STICKER_LOAD_FAILED"));
   });
   db.close();
   return blob;
 }
 
-async function makeGamepadSticker(file: File, system: SystemId): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const width = 2400;
-  const height = 1000;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("STICKER_CANVAS_UNAVAILABLE");
-
-  const sourceRatio = bitmap.width / bitmap.height;
-  const targetRatio = width / height;
-  let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
-  if (sourceRatio > targetRatio) {
-    sw = bitmap.height * targetRatio;
-    sx = (bitmap.width - sw) / 2;
-  } else if (sourceRatio < targetRatio) {
-    sh = bitmap.width / targetRatio;
-    sy = (bitmap.height - sh) / 2;
-  }
-
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
-
-  // The control layer remains independent. Clear its zones from the sticker
-  // so the uploaded artwork naturally becomes a decal around the controls.
-  ctx.globalCompositeOperation = "destination-out";
-  for (const h of stickerControlHoles(system, width, height)) {
-    ctx.beginPath();
-    ctx.roundRect(h.x, h.y, h.w, h.h, h.r);
-    ctx.fill();
-  }
-  ctx.globalCompositeOperation = "source-over";
-  bitmap.close();
-
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(value => value ? resolve(value) : reject(new Error("STICKER_ENCODE_FAILED")), "image/png", 1);
-  });
-  return URL.createObjectURL(blob);
+async function makeGamepadSticker(file: File): Promise<string> {
+  return URL.createObjectURL(file);
 }
 
-async function bindGamepadSticker(root: HTMLElement, system: SystemId): Promise<void> {
-  const body = root.querySelector<HTMLElement>(".freezzz-gp-body");
-  const button = root.querySelector<HTMLButtonElement>("[data-gp-sticker]");
-  const input = root.querySelector<HTMLInputElement>("[data-gp-sticker-input]");
-  if (!body || !button || !input) return;
-
-  try {
-    const saved = await loadGamepadSticker(system);
-    if (saved) {
-      const url = URL.createObjectURL(saved);
-      body.dataset.stickerUrl = url;
-      body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
-      root.classList.add("has-sticker");
-    }
-  } catch {}
-
-  button.addEventListener("click", () => input.click());
-  input.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    if (!file || !file.type.startsWith("image/")) return;
-    try {
-      const url = await makeGamepadSticker(file, system);
-      const previous = body.dataset.stickerUrl;
-      if (previous) URL.revokeObjectURL(previous);
-      body.dataset.stickerUrl = url;
-      body.style.setProperty("--freezzz-gp-sticker", 'url("' + url + '")');
-      root.classList.add("has-sticker");
-      const response = await fetch(url);
-      await saveGamepadSticker(system, await response.blob());
-    } catch {}
-    input.value = "";
-  });
-}
 
 function emulatorMarkup(game: LibraryGame): string {
   const opacity = Math.round(getOpacity() * 100);
