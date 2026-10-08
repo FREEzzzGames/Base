@@ -1,274 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ЭХО-9: Три из Трёх</title>
+<meta name="theme-color" content="#21160f">
+<title>ЭХО-9: Три из Трёх — Анимационная Книга</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;700;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;background:#05030f;color:#e8e4ff;font-family:Nunito,sans-serif}
-body{overflow-x:hidden}.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle 3s infinite ease-in-out}@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
-.wrap{position:relative;z-index:1;max-width:900px;margin:auto;padding:28px 16px 40px}
-.cover{text-align:center;padding:35px 10px 70px;min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
-h1{font:900 clamp(2.2rem,10vw,6rem) Orbitron,sans-serif;letter-spacing:.15em;background:linear-gradient(90deg,#7af8ff,#b06bff,#ff6ec7,#ffe36e,#7af8ff);background-size:400% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite;filter:drop-shadow(0 0 25px #b06bff99)}
-@keyframes shine{to{background-position:400% 0}}.sub{margin-top:10px;letter-spacing:.3em;text-transform:uppercase;color:#a99bd8}
-.logline{max-width:650px;margin:25px auto 0;line-height:1.7;color:#c9c1ee}.heroes{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:35px}.hero{width:145px;padding:15px 8px;border:1px solid #4a3a7a;border-radius:18px;background:#140c2d99;cursor:pointer;transition:.25s}.hero:hover{transform:translateY(-5px);border-color:#7af8ff}.avatar{height:80px;display:grid;place-items:center;font-size:52px}.name{font:700 .85rem Orbitron;color:#fff}.role{font-size:.72rem;color:#8d82c2;margin-top:5px}.scroll{margin-top:35px;color:#7a6fb0;letter-spacing:.15em;animation:bounce 2s infinite}@keyframes bounce{50%{transform:translateY(8px);opacity:.6}}
-.book-title{text-align:center;font:700 clamp(1.3rem,4vw,2.2rem) Orbitron;color:#b06bff;letter-spacing:.15em;margin-bottom:25px}
-.nav{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:25px}.ep{width:38px;height:38px;border:2px solid #4a3a7a;background:#1e143dcc;color:#a99bd8;border-radius:10px;font-weight:800;cursor:pointer}.ep.active{background:linear-gradient(135deg,#b06bff,#ff6ec7);border-color:transparent;color:#fff}
-.page{background:linear-gradient(160deg,#140c2de8,#231446db);border:1px solid #b06bff40;border-radius:20px;padding:clamp(20px,5vw,45px);box-shadow:0 0 55px #b06bff26;min-height:430px}.num{font:700 .72rem Orbitron;color:#7af8ff;letter-spacing:.25em}.title{font:700 clamp(1.25rem,4vw,2rem) Orbitron;color:#fff;line-height:1.3;margin:9px 0 22px}.text{font-size:1rem;line-height:1.8;color:#cfc7ee;white-space:pre-wrap}.scene{display:block;margin:22px 0 8px;color:#ffb347;font:700 .76rem Orbitron;letter-spacing:.12em}.char{color:#ffe36e;font-weight:900}.paren{color:#8d82c2;font-style:italic}.nav2{display:flex;gap:10px;margin-top:18px}.nav2 button{flex:1;padding:13px;border:2px solid #4a3a7a;border-radius:12px;background:#1e143dcc;color:#cfc7ee;font:700 .75rem Orbitron;cursor:pointer}.nav2 button:disabled{opacity:.3}.footer{text-align:center;color:#6a5f99;padding:45px 0 10px;font-size:.8rem}.quote{color:#b06bff;font:700 .9rem Orbitron;margin-bottom:10px}
-@media(max-width:600px){.wrap{padding-left:10px;padding-right:10px}.hero{width:110px}.avatar{font-size:42px}.text{font-size:.94rem}}
-</style></head>
+:root{--ink:#261a12;--paper:#d9c39a;--paper2:#c9ad7c;--dark:#17100c;--red:#8d3928;--gold:#d9a84d;--mist:#8b806f}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#120d09;color:var(--ink);font-family:"Cormorant Garamond",serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.11;z-index:50;background-image:radial-gradient(#fff 0.6px,transparent .7px),radial-gradient(#000 .6px,transparent .7px);background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
+.book{width:min(980px,100%);margin:auto;background:var(--paper);box-shadow:0 0 80px #000}
+.cover{min-height:100svh;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px 22px;background:linear-gradient(180deg,#d8c39d,#c5a978)}
+.cover:after{content:"";position:absolute;inset:20px;border:1px solid #563b25;opacity:.5;pointer-events:none}
+.kicker{font:20px "Special Elite",monospace;letter-spacing:.28em;text-transform:uppercase;position:relative;z-index:2}
+h1{font:400 clamp(70px,18vw,170px)/.78 "Bebas Neue",sans-serif;letter-spacing:.03em;margin:18px 0 8px;position:relative;z-index:2;text-shadow:3px 3px 0 #9c8155}
+.subtitle{font:clamp(20px,4vw,30px);font-style:italic;position:relative;z-index:2}
+.cover-note{margin-top:34px;max-width:580px;font:14px "Special Elite",monospace;line-height:1.7;position:relative;z-index:2}
+.sun{position:absolute;width:clamp(180px,35vw,330px);height:clamp(180px,35vw,330px);border-radius:50%;background:#d99739;right:-8%;top:8%;box-shadow:0 0 70px #e0a84e;animation:pulse 6s ease-in-out infinite}
+.mountain{position:absolute;bottom:-5px;left:-10%;width:120%;height:42%;background:#493727;clip-path:polygon(0 100%,0 76%,16% 52%,29% 73%,46% 29%,64% 68%,77% 43%,100% 72%,100% 100%);opacity:.9}
+.ship{position:absolute;left:8%;bottom:25%;width:110px;height:42px;border-bottom:13px solid #38291e;border-radius:0 0 55px 55px;transform:rotate(-3deg);animation:float 5s ease-in-out infinite}
+.ship:before{content:"";position:absolute;width:4px;height:85px;background:#38291e;left:50%;bottom:7px}
+.ship:after{content:"";position:absolute;left:52%;bottom:46px;border-style:solid;border-width:0 0 42px 48px;border-color:transparent transparent #64452c transparent}
+@keyframes float{50%{transform:translateY(-12px) rotate(2deg)}}@keyframes pulse{50%{transform:scale(1.06);opacity:.88}}
+.chapter{position:relative;padding:90px clamp(20px,7vw,75px);border-top:1px solid #806442;background:linear-gradient(180deg,#dcc79f,#cdb583)}
+.chapter:nth-of-type(even){background:linear-gradient(180deg,#c9b07e,#ddc89e)}
+.chapter-head{display:flex;gap:18px;align-items:baseline;border-bottom:2px solid #493727;padding-bottom:12px;margin-bottom:30px}
+.num{font:32px "Special Elite",monospace;color:var(--red)}
+h2{font:400 clamp(42px,9vw,82px)/.9 "Bebas Neue",sans-serif;letter-spacing:.04em;margin:0}
+.scene{height:min(55vw,430px);min-height:250px;position:relative;overflow:hidden;border:4px solid #3a291c;background:#211913;margin:0 -10px 30px;box-shadow:inset 0 0 80px #000}
+.story{font-size:clamp(20px,3vw,27px);line-height:1.45;max-width:780px;margin:auto}
+.story p{margin:0 0 1em}.voice{font:14px "Special Elite",monospace;letter-spacing:.08em;color:#6b2d20}
+.scene:before,.scene:after{content:"";position:absolute;pointer-events:none}
+.s1{background:linear-gradient(#10181c 0 58%,#30261c 58%);}.s1:before{width:170px;height:170px;border-radius:50%;background:#d8b45e;left:15%;top:13%;box-shadow:0 0 60px #d8b45e}.s1:after{inset:auto 0 0;height:45%;background:#463322;clip-path:polygon(0 100%,0 55%,20% 30%,37% 62%,58% 20%,73% 52%,100% 36%,100% 100%)}
+.capsule{position:absolute;width:70px;height:120px;border:5px solid #a7a28b;border-radius:40px;left:50%;top:48%;transform:translate(-50%,-50%);background:#293338;box-shadow:0 0 25px #9be5db;animation:rise 4s ease-in-out infinite}
+@keyframes rise{50%{transform:translate(-50%,-54%) scale(1.03)}}
+.s2{background:radial-gradient(circle at 50% 70%,#ff9f38 0 7%,#6c2d19 8%,#21130e 25%,#0d1114 60%)}.s2:before{width:240px;height:80px;border-radius:50%;background:#211712;left:50%;bottom:-35px;transform:translateX(-50%);box-shadow:0 -25px 50px #ff7132}
+.fire{position:absolute;width:42px;height:75px;background:#ffbd43;border-radius:50% 50% 45% 45%;left:50%;bottom:45px;transform:translateX(-50%);filter:blur(.5px);animation:fire 1s infinite alternate}.fire:after{content:"";position:absolute;width:20px;height:45px;background:#fff1a4;left:11px;bottom:0;border-radius:50%}
+@keyframes fire{to{transform:translateX(-50%) scaleY(1.14) rotate(3deg)}}
+.s3{background:#18271e;}.s3:before{inset:0;background:repeating-linear-gradient(75deg,transparent 0 38px,#2d4a2c 39px 70px),linear-gradient(#182c27,#0e1713);opacity:.9}.eye{position:absolute;width:14px;height:14px;border-radius:50%;background:#e7bf55;box-shadow:0 0 18px #e7bf55;animation:blink 4s infinite}.eye.a{left:27%;top:42%}.eye.b{left:69%;top:55%}@keyframes blink{0%,44%,48%,100%{opacity:1}46%{opacity:.05}}
+.s4{background:linear-gradient(#1a2021,#32302b)}.robot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:130px;height:150px;border:6px solid #81796b;background:#484941;border-radius:16px;box-shadow:0 0 35px #000}.robot:before{content:"";position:absolute;width:34px;height:14px;background:#d6b44e;left:42px;top:48px;box-shadow:0 0 20px #d6b44e}.robot:after{content:"";position:absolute;left:15px;right:15px;bottom:23px;height:5px;background:#777}.antenna{position:absolute;width:5px;height:45px;background:#81796b;left:50%;top:-50px}.antenna:after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#bd4936;left:-3px;top:-6px;box-shadow:0 0 20px #bd4936}
+.s5{background:radial-gradient(circle,#8d7b55 0 2%,#261b14 3% 38%,#090909 70%)}.portal{position:absolute;left:50%;top:50%;width:180px;height:240px;transform:translate(-50%,-50%);border:7px solid #c39d53;border-radius:50%;box-shadow:0 0 35px #d6ae58,inset 0 0 45px #d6ae58;animation:portal 3s infinite}.portal:after{content:"";position:absolute;inset:15px;border-radius:50%;background:#071015;box-shadow:inset 0 0 60px #45b6ad}@keyframes portal{50%{transform:translate(-50%,-50%) scale(1.05) rotate(2deg)}}
+.s6{background:linear-gradient(#06101a 0 60%,#17232a)}.ring{position:absolute;left:50%;top:45%;width:230px;height:90px;border:12px solid #a7a37d;border-radius:50%;transform:translate(-50%,-50%) rotate(-12deg);box-shadow:0 0 40px #9fc6bc;animation:ring 6s linear infinite}.ring:after{content:"";position:absolute;inset:14px;border:4px solid #dbb76a;border-radius:50%}@keyframes ring{to{transform:translate(-50%,-50%) rotate(348deg)}}
+.s7{background:linear-gradient(#d9b56b 0 44%,#7c6039 45%)}.city{position:absolute;inset:auto 0 0;height:58%;background:repeating-linear-gradient(90deg,#2f3028 0 45px,#454337 46px 80px);clip-path:polygon(0 100%,0 35%,10% 35%,10% 18%,17% 18%,17% 48%,28% 48%,28% 8%,37% 8%,37% 37%,49% 37%,49% 14%,60% 14%,60% 43%,71% 43%,71% 24%,81% 24%,81% 4%,91% 4%,91% 38%,100% 38%,100% 100%)}.sand{position:absolute;bottom:0;left:0;right:0;height:28%;background:#b18d50;opacity:.65}
+.s8{background:linear-gradient(170deg,#111827,#47332a)}.rain{position:absolute;inset:0;background:repeating-linear-gradient(105deg,transparent 0 22px,#b4c7c8 23px 24px,transparent 25px 46px);opacity:.3;animation:rain .35s linear infinite}.lightning{position:absolute;left:55%;top:12%;width:8px;height:65%;background:#efe7bd;clip-path:polygon(55% 0,100% 0,62% 42%,95% 42%,22% 100%,43% 53%,0 53%);filter:drop-shadow(0 0 15px #fff4b0);animation:flash 3s infinite}@keyframes rain{to{transform:translateY(28px)}}@keyframes flash{0%,47%,50%,100%{opacity:0}48%{opacity:1}}
+.s9{background:radial-gradient(circle at center,#d36c3b 0 4%,#713521 5% 16%,#24150f 45%,#090909)}.heart{position:absolute;left:50%;top:50%;width:150px;height:150px;transform:translate(-50%,-50%) rotate(45deg);background:#a8422d;box-shadow:0 0 50px #d36c3b;animation:heart 1.6s infinite}.heart:before,.heart:after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:#a8422d}.heart:before{left:-75px}.heart:after{top:-75px}@keyframes heart{50%{transform:translate(-50%,-50%) rotate(45deg) scale(1.08)}}
+.s10{background:linear-gradient(#0d1214,#1c1712)}.final-fire{position:absolute;left:50%;bottom:45px;transform:translateX(-50%);width:65px;height:110px;background:#d67a36;border-radius:50% 50% 40% 40%;box-shadow:0 0 60px #c95f2d;animation:fire 1.2s infinite alternate}.final-fire:after{content:"";position:absolute;width:30px;height:65px;left:18px;bottom:0;background:#f3d47a;border-radius:50%}
+.final{background:#17100c;color:#d8c39a;text-align:center;min-height:80svh;display:flex;flex-direction:column;justify-content:center;padding:80px 25px}.final h2{color:#d9a84d}.quote{font-size:clamp(26px,5vw,44px);font-style:italic;max-width:760px;margin:35px auto}.credit{font:13px "Special Elite",monospace;opacity:.65;letter-spacing:.12em}
+.chapter{opacity:0;transform:translateY(35px);transition:opacity .8s ease,transform .8s ease}.chapter.visible{opacity:1;transform:none}
+@media(max-width:600px){.chapter{padding:65px 18px}.scene{margin-left:0;margin-right:0}.cover:after{inset:12px}.sun{right:-25%;top:5%}}
+</style>
+</head>
 <body>
-<div class="stars" id="stars"></div>
-<div class="wrap">
-<section class="cover"><h1>ЭХО-9</h1><div class="sub">Три из Трёх</div>
-<p class="logline">Трое с разных планет просыпаются на живой планете. Один — механик. Второй — диджей. Третий — тот, кто видит всё. Чтобы вернуться домой, им нужно стать командой.</p>
-<div class="heroes">
-<div class="hero" onclick="hero('ЗИГГИ · Механик с планеты Свалка-Прайм. Чинит всё. Любит пончики.')"><div class="avatar">🦎</div><div class="name">ЗИГГИ</div><div class="role">Механик</div></div>
-<div class="hero" onclick="hero('КЛИК · Диджей с планеты Шум-Аккорд. Слышит вселенную.')"><div class="avatar">🎧</div><div class="name">КЛИК</div><div class="role">Диджей</div></div>
-<div class="hero" onclick="hero('ОКО · Скаут из Туманности Взгляда. Молчит, но видит всё.')"><div class="avatar">👁️</div><div class="name">ОКО</div><div class="role">Скаут</div></div>
-</div><div class="scroll">▼ листай вниз ▼</div></section>
-<section><h2 class="book-title">◆ СЦЕНАРИЙ ◆</h2><div class="nav" id="nav"></div><article class="page"><div class="num" id="num"></div><h3 class="title" id="title"></h3><div class="text" id="text"></div></article><div class="nav2"><button id="prev" onclick="change(-1)">◀ НАЗАД</button><button id="next" onclick="change(1)">ВПЕРЁД ▶</button></div></section>
-<footer class="footer"><div class="quote">«Дом — не там, где ты родился. Дом — там, где тебя ждут.»</div>ЭХО-9 · Анимационный мини-сериал · 10 серий</footer>
-</div>
+<main class="book">
+<section class="cover">
+<div class="sun"></div><div class="mountain"></div><div class="ship"></div>
+<div class="kicker">анимационная книга</div>
+<h1>ЭХО-9</h1>
+<div class="subtitle">Три из Трёх</div>
+<div class="cover-note">История о трёх путниках, которые отправились туда, где старые машины помнят больше, чем люди.</div>
+</section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">01</span><h2>ПРОБУЖДЕНИЕ</h2></div>
+<div class="scene s1"><div class="capsule"></div></div>
+<div class="story"><p>Когда Зигги открыл глаза, небо уже было чужим. Вокруг лежал металл, покрытый пылью, а внутри старой капсулы ещё теплился слабый свет.</p><p><span class="voice">ЗИГГИ:</span> «Если я проснулся — значит, кто-то всё ещё ждёт».</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">02</span><h2>ТРИ ЛУНЫ, ОДИН КОСТЁР</h2></div>
+<div class="scene s2"><div class="fire"></div></div>
+<div class="story"><p>Клик нашёл его у старой дороги. Око пришёл последним — тихо, будто уже знал эту историю. Три луны стояли над ними, и впервые за много лет костёр горел не для сигнала бедствия.</p><p>Они решили идти вместе. Три разных пути. Одна карта. Один шанс добраться до Эхо-9.</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">03</span><h2>ЛЕС, КОТОРЫЙ СЛУШАЕТ</h2></div>
+<div class="scene s3"><span class="eye a"></span><span class="eye b"></span></div>
+<div class="story"><p>Лес не двигался — и всё же каждый шаг отзывался где-то далеко. Деревья повторяли голоса тех, кто проходил здесь раньше.</p><p><span class="voice">ОКО:</span> «Не отвечайте ему. Лес запоминает ответы».</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">04</span><h2>РЖАВЫЙ СТРАЖ</h2></div>
+<div class="scene s4"><div class="robot"><div class="antenna"></div></div></div>
+<div class="story"><p>Брон охранял проход почти двести лет. Его корпус заржавел, но протокол не изменился.</p><p><span class="voice">БРОН:</span> «Назовите причину вашего возвращения».</p><p>Зигги посмотрел на друзей. Никто из них не знал ответа.</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">05</span><h2>ПЕЩЕРА ЭХА</h2></div>
+<div class="scene s5"><div class="portal"></div></div>
+<div class="story"><p>В глубине пещеры они нашли кольцо из металла. Оно не отражало свет — оно отражало воспоминания.</p><p>Перед ними возник город, которого больше не существовало. Затем — лица. Затем — они сами, но старше.</p><p><span class="voice">КУРАТОР:</span> «Эхо не показывает будущее. Оно показывает цену выбора».</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">06</span><h2>НЕБЕСНОЕ КОЛЬЦО</h2></div>
+<div class="scene s6"><div class="ring"></div></div>
+<div class="story"><p>Над пустыней открылось огромное кольцо. Внутри него вращались обломки станций, кораблей и целых эпох.</p><p>Эхо-9 оказался не местом. Это был механизм, способный вернуть утраченное — но только одному.</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">07</span><h2>ГОРОД ПОД ПЕСКОМ</h2></div>
+<div class="scene s7"><div class="city"></div><div class="sand"></div></div>
+<div class="story"><p>Под песком они нашли город. На стенах сохранился знак трёх точек — такой же, как на их карте.</p><p>Они поняли: их встреча не была случайностью. Их выбрали задолго до того, как они узнали друг друга.</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">08</span><h2>БУРЯ РАЗДОРА</h2></div>
+<div class="scene s8"><div class="rain"></div><div class="lightning"></div></div>
+<div class="story"><p>Буря пришла без предупреждения. Машины проснулись, песок поднялся стеной, а голоса из Эхо-9 стали звучать громче.</p><p>Каждый услышал своё желание. И впервые трое захотели идти разными дорогами.</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">09</span><h2>СЕРДЦЕ ЭХО-9</h2></div>
+<div class="scene s9"><div class="heart"></div></div>
+<div class="story"><p>В центре комплекса билось сердце. Не двигатель. Не реактор. Память.</p><p>Куратор предложил каждому вернуть то, что было потеряно. Но система требовала одного имени.</p><p><span class="voice">ЗИГГИ:</span> «Мы пришли втроём. Значит, и выбор будет один на троих».</p></div></section>
+
+<section class="chapter"><div class="chapter-head"><span class="num">10</span><h2>ДОМ — ЭТО НЕ МЕСТО</h2></div>
+<div class="scene s10"><div class="final-fire"></div></div>
+<div class="story"><p>Эхо-9 погасло. Ничего не вернулось. Но утром они увидели вдали свет — обычный, тёплый, настоящий.</p><p>Клик первым сел у костра. Око достал карту. Зигги посмотрел на небо.</p><p>Иногда дом — это не место, куда возвращаются. Иногда дом — это те, с кем продолжают путь.</p></div></section>
+
+<section class="final">
+<h2>ЭХО-9</h2>
+<div class="quote">«Некоторые истории заканчиваются не тогда, когда найден ответ, а тогда, когда больше не страшно идти дальше».</div>
+<div class="credit">ТРИ ИЗ ТРЁХ · КОНЕЦ ПЕРВОЙ ГЛАВЫ</div>
+</section>
+</main>
 <script>
-const stars=document.getElementById('stars');for(let i=0;i<180;i++){const s=document.createElement('i');s.className='star';const z=Math.random()*2.5+.6;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;stars.appendChild(s)}
-const E=[
-['Пробуждение',`[SCENE]СЦЕНА 1. ЭКСТ. КРАТЕР — ДЕНЬ[/SCENE]
-Фиолетовый песок. Три луны висят низко над горизонтом. В центре кратера — три разбитые капсулы.
-[OKO]ЗИГГИ (О.С.)[/OKO] [PAREN](бормочет)[/PAREN]
-Уберите... этот... будильник...
-Хвост дёргается. Из капсулы выползает ЗИГГИ. Он падает лицом в песок. Хвост сам поднимается и отряхивает его футболку с пончиком.
-[OKO]ЗИГГИ[/OKO] [PAREN](переворачивается на спину)[/PAREN]
-Так. Либо я умер, либо это худшее утро в моей жизни. Где мой гараж? Где мой кофе? Где... вообще всё?
-[SCENE]СЦЕНА 2. ЭКСТ. СКАЛЫ — ВЕЧЕР[/SCENE]
-[OKO]ЗИГГИ[/OKO]
-Ладно. Итог. Мы на неизвестной планете. Нас чуть не съели. У нас нет связи, нет еды, нет воды.
-[OKO]КЛИК[/OKO]
-Я понимаю тебя. Ты говоришь на общегалактическом. Просто... громко.
-Око проецирует на скалу изображение: ухо, волны, галочка.
-[OKO]ЗИГГИ[/OKO]
-...Я приму это как «да».
-[SCENE]СЦЕНА 3. ЭКСТ. МОНОЛИТ — НОЧЬ[/SCENE]
-Монолит выпускает луч света. Он сканирует героев. На каждом появляется светящаяся метка.
-[OKO]ОКО (проекция)[/OKO]
-«Три из трёх. Испытание началось».
-[OKO]КЛИК[/OKO]
-Какое ещё испытание?! Я не подписывался!
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ПЕРВОЙ СЕРИИ.[/PAREN]`],
-['Три луны, один костёр',`[SCENE]СЦЕНА 1. ЭКСТ. ЛАГЕРЬ У СКАЛ — НОЧЬ[/SCENE]
-Горит костёр. Зигги что-то мастерит из обломков. Клик слушает планету. Око лежит на камне.
-[OKO]ЗИГГИ[/OKO] [PAREN](прикручивает деталь хвостом)[/PAREN]
-Так... если я соединю это с этим... и добавлю вот эту штуку...
-Искры. Маленький робот-скорпион оживает, пищит и убегает.
-[OKO]КЛИК[/OKO] [PAREN](не открывая глаз)[/PAREN]
-Ты только что создал жизнь, а потом удивляешься, что она убежала. Гениально.
-[SCENE]СЦЕНА 2. ЭКСТ. КУСТЫ С ЯГОДАМИ — НОЧЬ[/SCENE]
-Они находят светящиеся ягоды. Зигги съедает первую.
-[OKO]ЗИГГИ[/OKO] [PAREN](светится изнутри)[/PAREN]
-Это... это вкус победы! Я чувствую музыку!
-Он начинает танцевать. Хвост крутится, как пропеллер.
-[OKO]КЛИК[/OKO]
-Ты сошёл с ума!
-Око проецирует на скалу целое световое шоу: звёзды, планеты, кометы.
-[OKO]КЛИК[/OKO] [PAREN](шёпотом)[/PAREN]
-Это... идеальный бит. Это частота вселенной. Я... я слышу всё.
-[OKO]ЗИГГИ[/OKO]
-Ладно, глазастик. Ты официально в команде.
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ВТОРОЙ СЕРИИ.[/PAREN]`],
-['Лес, который слушает',`[SCENE]СЦЕНА 1. ЭКСТ. ГРАНИЦА ЛЕСА — УТРО[/SCENE]
-Трое стоят перед стеной гигантских деревьев. Кора светится изнутри.
-[OKO]КЛИК[/OKO] [PAREN](нервно крутит наушники)[/PAREN]
-Они не «как будто». Они говорят. Я слышу.
-[SCENE]СЦЕНА 2. ЭКСТ. ЦЕНТР ЛЕСА — ДЕНЬ[/SCENE]
-В центре поляны — гигантское дерево, опутанное проводами. Оно пульсирует.
-[OKO]ГОЛОС 3 (О.С.)[/OKO] [PAREN](голос ребёнка)[/PAREN]
-Помогите... я здесь... помогите...
-Око проецирует на ствол: изображение маленького существа, запертого внутри.
-[OKO]ЗИГГИ[/OKO]
-Похоже, лес не злой. Он просто... застрял. И повторяет чужую боль.
-Он направляет Глушилку на дерево. Дерево замолкает. Тишина.
-Из дерева выходит маленький дух — светящийся комочек. Указывает на тропу.
-[SCENE]СЦЕНА 3. ИНТ. РУИНЫ — ДЕНЬ[/SCENE]
-На стене — древняя фреска. Три существа строят гигантского робота. Потом — превращаются в камень.
-[OKO]КЛИК[/OKO]
-Это были другие. До нас. И они... не прошли испытание.
-[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
-Значит, у нас есть шанс.
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ТРЕТЬЕЙ СЕРИИ.[/PAREN]`],
-['Ржавый страж',`[SCENE]СЦЕНА 1. ЭКСТ. ПУСТОШЬ — ДЕНЬ[/SCENE]
-Трое идут по ржавой пустоши. Из песка торчит гигантская статуя робота.
-[OKO]ЗИГГИ[/OKO] [PAREN](с восторгом)[/PAREN]
-Это же золото! Гравитационный стабилизатор! О, мама, я дома!
-Он кладёт руку на статую. Глаза робота загораются.
-[OKO]БРОН (О.С.)[/OKO] [PAREN](глубокий, скрипучий голос)[/PAREN]
-Кто... тревожит... мой сон?
-[OKO]КЛИК[/OKO] [PAREN](отпрыгивает)[/PAREN]
-ОНО ГОВОРИТ!
-[OKO]БРОН[/OKO]
-Почините меня. И я... отдам вам... первый ключ.
-[SCENE]СЦЕНА 2. ИНТ. БРОН — ДЕНЬ[/SCENE]
-Зигги внутри робота. Хвостом соединяет провода.
-[OKO]ЗИГГИ[/OKO]
-Тут написано: «Тот, кто поёт — пробудит камень».
-Клик надевает наушники. Мощный бас. Робот вибрирует.
-[OKO]БРОН[/OKO]
-Я... чувствую... ритм...
-Из груди робота вылетает кристалл — первый ключ.
-[OKO]БРОН[/OKO]
-Идите к небесному кольцу. Но будьте осторожны. Куратор... уже знает о вас.
-В небе появляется рой дронов.
-[OKO]ЗИГГИ[/OKO]
-Бежим!
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ЧЕТВЁРТОЙ СЕРИИ.[/PAREN]`],
-['Пещера эха',`[SCENE]СЦЕНА 1. ИНТ. ПЕЩЕРА — ВЕЧЕР[/SCENE]
-Стены покрыты кристаллами. В центре — три портала. Каждый светится своим цветом.
-[OKO]ЗИГГИ[/OKO]
-Это... моя мастерская. Я вижу свой верстак. Свой пончик на столе.
-[OKO]КЛИК[/OKO]
-А это... моя студия. Идеальная тишина.
-Око подходит к третьему. Там — родная туманность.
-[OKO]КЛИК[/OKO] [PAREN](тихо)[/PAREN]
-Я могу вернуться. Прямо сейчас.
-[OKO]ЗИГГИ[/OKO]
-Потому что... если я уйду, кто починит Брона? Кто поможет глазастику?
-Порталы начинают мерцать. Из них выходят ИЛЛЮЗИИ — идеальные копии героев.
-[OKO]ИЛЛЮЗИЯ ЗИГГИ[/OKO]
-Иди сюда. Ты будешь счастлив. Никаких проблем.
-[OKO]ЗИГГИ[/OKO] [PAREN](качает головой)[/PAREN]
-Нет. Счастье без друзей — это не счастье.
-Порталы исчезают. Из стены выходит второй ключ.
-[OKO]ГОЛОС ПЛАНЕТЫ (О.С.)[/OKO] [PAREN](шёпот)[/PAREN]
-Один из вас... предаст.
-[OKO]КЛИК[/OKO] [PAREN](замирает)[/PAREN]
-Что это было?
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ПЯТОЙ СЕРИИ.[/PAREN]`],
-['Небесное кольцо',`[SCENE]СЦЕНА 1. ЭКСТ. КОСМОС. КОЛЬЦО — ДЕНЬ[/SCENE]
-Глайдер маневрирует между обломками гигантского кольца.
-[OKO]КЛИК[/OKO] [PAREN](кричит)[/PAREN]
-Слева! ОБЛОМОК!
-[OKO]ЗИГГИ[/OKO] [PAREN](крутит штурвал)[/PAREN]
-Вижу!
-Они подлетают к светящемуся ядру. Внутри — второй ключ.
-[OKO]КЛИК[/OKO]
-Ядро реагирует на звук. Оно пульсирует в такт моей музыке.
-Клик включает бас. Ядро открывается. Ключ вылетает.
-[OKO]ЗИГГИ[/OKO] [PAREN](хватает ключ хвостом)[/PAREN]
-Есть!
-Кольцо рушится. Глайдер падает.
-[SCENE]СЦЕНА 2. ЭКСТ. ПОВЕРХНОСТЬ — ВЕЧЕР[/SCENE]
-Ключ активируется. Вспышка памяти: три фигуры, стоящие на этой же планете. Но это не они.
-[OKO]КЛИК[/OKO]
-Это те, кто был до нас. Они тоже искали ключи. И они... не вернулись.
-[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
-Значит, мы не первые. И, может, не последние.
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ШЕСТОЙ СЕРИИ.[/PAREN]`],
-['Город под песком',`[SCENE]СЦЕНА 1. ЭКСТ. ДЮНЫ — ДЕНЬ[/SCENE]
-Гигантская воронка в песке. Внизу — мёртвый светящийся город.
-[OKO]ЗИГГИ[/OKO]
-Ничего себе. Целый город.
-[OKO]КЛИК[/OKO] [PAREN](прислушивается)[/PAREN]
-Там... тихо. Слишком тихо. Как будто все умерли.
-[SCENE]СЦЕНА 2. ИНТ. ХРАМ. ИСПЫТАНИЯ[/SCENE]
-[OKO]ГОЛОС (О.С.)[/OKO]
-Только правда проведёт вас. Ложь — убьёт.
-[OKO]ЗИГГИ[/OKO]
-Ладно! Я — неплохой механик, но иногда ленюсь!
-[OKO]КЛИК[/OKO]
-Я... я боюсь тишины. И одиночества.
-Око молчит. Мост не двигается. Он просто идёт.
-[SCENE]СЦЕНА 3. ИНТ. КОМНАТА СТРАХОВ[/SCENE]
-Перед ними появляются их страхи. Око видит себя слепого. Но проецирует свет.
-Страхи исчезают. Третий ключ — перед ними. Свет гаснет. Появляется КУРАТОР.
-[OKO]КУРАТОР[/OKO] [PAREN](голос, как скрежет)[/PAREN]
-Вы прошли. Но ключи... мои.
-Око выходит вперёд. Проецирует трещину на Кураторе.
-[OKO]КУРАТОР[/OKO] [PAREN](отшатывается)[/PAREN]
-НЕТ!
-Он хватает Око. Темнота.
-[OKO]ЗИГГИ[/OKO]
-ГЛАЗАСТИК!
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ СЕДЬМОЙ СЕРИИ.[/PAREN]`],
-['Буря раздора',`[SCENE]СЦЕНА 1. ЭКСТ. ПУСТОШЬ — НОЧЬ[/SCENE]
-Буря. Ветер. Песок. Зигги и Клик идут против ветра.
-[OKO]ЗИГГИ[/OKO] [PAREN](кричит)[/PAREN]
-Это ты виноват! Если бы ты не замешкался, мы бы его спасли!
-[OKO]КЛИК[/OKO]
-Я?! Это ты повёл нас в храм!
-Зигги останавливается. Смотрит на Клика.
-[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
-Ты прав. Прости. Я просто не знаю, что делать.
-[OKO]КЛИК[/OKO]
-Без него... тихо. Слишком тихо.
-Он смотрит на песок. Там — светящиеся следы от глаз Око.
-[OKO]ЗИГГИ[/OKO]
-Смотри! Он оставил их, когда Куратор его уносил!
-[SCENE]СЦЕНА 2. ИНТ. КРЕПОСТЬ — БОЙ[/SCENE]
-Зигги отбивается от дронов хвостом. Клик создаёт звуковую волну.
-[OKO]ЗИГГИ[/OKO] [PAREN](кричит)[/PAREN]
-ДАВАЙ!
-Дроны падают. Из темноты выходит Око. Слабый, но живой.
-[OKO]ЗИГГИ[/OKO]
-Глазастик! Ты жив!
-[OKO]ОКО[/OKO] [PAREN](проецирует: Куратор, ядро, опасность)[/PAREN]
-[OKO]КЛИК[/OKO]
-Он говорит, что Куратор уже в Сердце. Он хочет уничтожить планету.
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ВОСЬМОЙ СЕРИИ.[/PAREN]`],
-['Сердце Эхо-9',`[SCENE]СЦЕНА 1. ИНТ. СЕРДЦЕ — ЯДРО[/SCENE]
-Гигантское пространство. В центре — светящееся ядро. Куратор держит третий ключ.
-[OKO]КУРАТОР[/OKO]
-Вы не понимаете. Я не уничтожаю планету. Я освобождаю её.
-[OKO]КУРАТОР[/OKO]
-Вы — осколки. Вы были здесь раньше. Вы погибли. И возродились.
-[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
-Это ложь.
-Куратор сливается с ядром. Превращается в ПОЖИРАТЕЛЯ.
-[SCENE]СЦЕНА 2. ИНТ. СЕРДЦЕ — БОЙ[/SCENE]
-[OKO]ЗИГГИ[/OKO]
-Нам нужно разделиться! Я взломаю сеть! Клик — звук! Око — свет!
-Бас Клика замедляет Пожирателя. Око закрывает его собой. Свет.
-[OKO]ЗИГГИ[/OKO]
-ГОТОВО!
-Энергия бьёт в ядро. Пожиратель кричит. Появляется ХРАНИТЕЛЬ.
-[OKO]ХРАНИТЕЛЬ[/OKO]
-Вы освободили меня. Спасибо. Я — Эхо-9. Я ждал вас. Тысячи лет.
-Он открывает три портала.
-[OKO]ХРАНИТЕЛЬ[/OKO]
-Идите. Ваши дома ждут.
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ДЕВЯТОЙ СЕРИИ.[/PAREN]`],
-['Дом — это не место',`[SCENE]СЦЕНА 1. ИНТ. СЕРДЦЕ — ФИНАЛ[/SCENE]
-Три портала открыты. Зигги, Клик и Око стоят перед ними.
-[OKO]ХРАНИТЕЛЬ[/OKO]
-Вы можете вернуться. Каждый — домой.
-[OKO]ЗИГГИ[/OKO] [PAREN](смотрит на портал)[/PAREN]
-Там моя мастерская. Мой пончик.
-[OKO]КЛИК[/OKO]
-Там моя студия. Моя музыка.
-Око проецирует: три фигуры. Вместе. Дом.
-[OKO]КЛИК[/OKO] [PAREN](тихо)[/PAREN]
-Он говорит, что дом — это мы.
-[OKO]ЗИГГИ[/OKO]
-Я не хочу возвращаться. Не без вас.
-Они используют свои токены — футболку, наушники, глаза — чтобы создать мост.
-[SCENE]СЦЕНА 2. ЭКСТ. ЛАГЕРЬ — ВЕЧЕР[/SCENE]
-Три луны. Костёр. Зигги что-то чинит. Клик играет музыку. Око проецирует звёзды.
-[OKO]ЗИГГИ[/OKO] [PAREN](улыбается)[/PAREN]
-Знаете что? Я никогда не думал, что скажу это. Но... я дома.
-[OKO]ЗИГГИ[/OKO]
-Эй, глазастик. Ты когда-нибудь говорил словами?
-Око молчит. Потом проецирует:
-[OKO]ОКО (проекция)[/OKO]
-«Спасибо».
-[SCENE]СЦЕНА 3. ПОСТ-ТИТРЫ[/SCENE]
-Далёкая планета. Кратер. Три капсулы. На песке — глаз Куратора. Он слабо светится.
-[OKO]КУРАТОР (О.С.)[/OKO] [PAREN](шёпотом)[/PAREN]
-Три из трёх... снова...
-[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ.[/PAREN]`]
-];
-let cur=0;
-function parse(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\[SCENE\](.*?)\[\/SCENE\]/gs,'<span class="scene">$1</span>').replace(/\[OKO\](.*?)\[\/OKO\]/gs,'<b class="char">$1</b>').replace(/\[PAREN\](.*?)\[\/PAREN\]/gs,'<i class="paren">$1</i>')}
-function render(){const e=E[cur];num.textContent='СЕРИЯ '+String(cur+1).padStart(2,'0');title.textContent=e[0];text.innerHTML=parse(e[1]);prev.disabled=cur===0;next.disabled=cur===E.length-1;nav.innerHTML=E.map((x,i)=>'<button class="ep '+(i===cur?'active':'')+'" onclick="cur='+i+';render()">'+(i+1)+'</button>').join('')}
-function change(d){cur=Math.max(0,Math.min(E.length-1,cur+d));render();document.querySelector('.book-title').scrollIntoView({behavior:'smooth',block:'start'})}
-function hero(s){alert(s)} render();
-</script></body></html>
+const chapters=[...document.querySelectorAll('.chapter')];
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}}),{threshold:.12});
+chapters.forEach(c=>io.observe(c));
+const fires=[...document.querySelectorAll('.fire,.final-fire')];
+fires.forEach((f,i)=>{for(let n=0;n<7;n++){const s=document.createElement('i');s.style.cssText='position:absolute;width:3px;height:3px;border-radius:50%;background:#f6d67b;left:'+(8+Math.random()*84)+'%;top:'+(15+Math.random()*65)+'%;opacity:.8;animation:spark '+(1.1+Math.random()*1.5)+'s '+Math.random()*1.5+'s infinite ease-out';f.appendChild(s)}});
+const style=document.createElement('style');style.textContent='@keyframes spark{0%{transform:translateY(0) scale(1);opacity:.8}100%{transform:translateY(-55px) translateX(-12px) scale(0);opacity:0}}';document.head.appendChild(style);
+</script>
+</body>
+</html>
