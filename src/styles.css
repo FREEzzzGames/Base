@@ -9575,3 +9575,39 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
     transition: none;
   }
 }
+
+
+/* ECHO-9 PORTAL MODULE — dedicated animation book in BAR */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+}
+.echo9-portal{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:#05030f!important;
+}
+.echo9-frame{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  border:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:#05030f!important;
+}
+.portal-toolbar-item[data-view="echo9"] .portal-toolbar-icon{
+  filter:drop-shadow(0 0 4px rgba(176,107,255,.72))!important;
+}
+.portal-toolbar-item[data-view="echo9"].active .portal-toolbar-icon{
+  filter:drop-shadow(0 0 5px rgba(176,107,255,1)) drop-shadow(0 0 12px rgba(255,110,199,.75))!important;
+}
+@media(max-width:430px){
+  .portal-workspace > .portal-toolbar .portal-toolbar-nav{grid-template-columns:repeat(8,minmax(0,1fr))!important}
+  .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon,
+  .portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon{
+    width:42px!important;height:42px!important;max-width:42px!important;max-height:42px!important;
+  }
+}
