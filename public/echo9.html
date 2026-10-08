@@ -1017,6 +1017,92 @@ html,body{
 .s1:before{animation-duration:16s!important}
 .s3:before{animation-duration:12s!important}
 .s5 .pt:after{animation-duration:10s!important}
+</style>
+<style id="echo9-final-viewport-fix">
+/* FINAL ECHO-9 VIEWPORT AUTHORITY
+   The story is a stack of virtual pages. Legacy storyboard CSS must never
+   determine the page viewport, spacing or navigation layer. */
+html,body{
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+body{position:relative!important;background:#050609!important;color:#fff!important}
+.echo9-page-root{
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  perspective:2200px!important;
+}
+.echo9-page{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.echo9-sheet{
+  width:min(900px,100%)!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:clamp(30px,5vh,62px) clamp(14px,5vw,58px) 104px!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+}
+.echo9-cover-sheet,.echo9-final-sheet{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  text-align:center!important;
+  overflow:hidden!important;
+  padding:30px 20px 96px!important;
+}
+.echo9-cover-sheet .echo9-swipe-note,
+.echo9-final-sheet .echo9-swipe-note{
+  bottom:72px!important;
+}
+.echo9-controls{
+  position:absolute!important;
+  z-index:120!important;
+  left:10px!important;
+  right:10px!important;
+  bottom:8px!important;
+  height:36px!important;
+  pointer-events:none!important;
+}
+.echo9-control{position:relative!important;z-index:121!important}
+.echo9-counter{position:relative!important;z-index:121!important}
+.echo9-page-head{flex-shrink:0!important}
+.echo9-page-scene{flex-shrink:0!important}
+.echo9-page-text{max-width:780px!important;margin:0 auto!important}
+.echo9-bg-video{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;z-index:-4!important}
+.echo9-video-tint{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:-3!important}
+@media(max-width:600px){
+  .echo9-sheet{padding:26px 13px 104px!important}
+  .echo9-page-scene{height:19svh!important;min-height:130px!important;max-height:180px!important;margin-bottom:12px!important}
+  .echo9-page-text{font-size:16px!important;line-height:1.38!important}
+  .echo9-page-text p{margin-bottom:.68em!important}
+  .echo9-page-title{font-size:20px!important}
+  .echo9-page-head{padding-bottom:8px!important;margin-bottom:10px!important}
+}
 </style></head><body><video id="echo9-bg-video" class="echo9-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./videos/hud-background.mp4" type="video/mp4"></video><div class="echo9-video-tint" aria-hidden="true"></div><main class="echo9-page-root" id="echo9Pages"><section class="echo9-page echo9-page-cover"><div class="echo9-sheet echo9-cover-sheet"><div class="echo9-cover-frame"></div><div class="echo9-kicker">FIELD STORYBOARD · ARCHIVE 03</div><div class="echo9-title">ЭХО-9</div><div class="echo9-subtitle">ТРИ ИЗ ТРЁХ</div><div class="echo9-cover-note">Три путника. Один древний механизм. И система, которая слишком хорошо знает, чего каждый из них хочет.</div><div class="echo9-swipe-note">СВАЙП ВЛЕВО — НАЧАТЬ ИСТОРИЮ</div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">01</span><h2 class="echo9-page-title">ПРОБУЖДЕНИЕ</h2></div><div class="echo9-page-scene"><div class="scene s1"><div class="capsule"></div><div class="scene-action"><b>СЦЕНА</b><span>Капсула раскрывается • дрон сканирует • карта вспыхивает</span></div><div class="scene-dust"></div></div>
 </div><div class="echo9-page-text"><p>Когда Зигги открыл глаза, первое, что он услышал, был не сигнал тревоги, а собственное дыхание. Оно звучало слишком громко для человека, который не знал, сколько лет пролежал в металлическом гробу. Крышка капсулы покрылась изнутри конденсатом. За мутным стеклом стояло серое утро: пустыня, обломки посадочной платформы и три луны, расположенные так неправильно, будто кто-то собрал небо после аварии.</p><p><span class="voice">ЗИГГИ:</span> «Ладно. Значит, я жив. Уже неплохой результат».</p><p>Память возвращалась кусками. Имя — да. Навык чинить машины — да. Страх высоты — почему-то да. Всё остальное было похоже на комнату после ограбления. Зигги дёрнул аварийный рычаг. Первый раз ничего не произошло. Второй раз механизм заклинило ещё сильнее. На третий он ударил по замку разводным ключом, который сам не помнил, откуда взял. Крышка отлетела.</p><p>Он выбрался наружу и почти сразу увидел разведывательный дрон. Машина висела в десяти метрах, медленно поворачивая объектив. На корпусе был знак: три точки, соединённые тонкой линией. Дрон просканировал Зигги. Внутри его груди что-то коротко пискнуло. Машина передала сигнал в пустыню.</p><p>Зигги метнул ключ. Дрон увернулся, зацепил оборванный кабель и рухнул в песок. Из его корпуса выпал металлический цилиндр. Внутри оказался фрагмент карты с координатами Эхо-9 и короткой записью: «ТРИ. НЕ ОТКРЫВАТЬ ПО ОДНОМУ».</p><p>На горизонте вспыхнул ответный сигнал. Три коротких импульса. Пауза. Ещё три.</p><p>Зигги посмотрел на разрушенную капсулу. Если его разбудили намеренно, тот, кто это сделал, должен был рассчитывать на его движение. Значит, сигнал мог быть ловушкой. Но оставаться на месте было ещё хуже: вдали уже поднималась пыль. Двигалась тяжёлая техника.</p><p>Он забрал цилиндр, кусок кабеля и единственный рабочий фильтр из капсулы. Перед уходом обернулся. На внутренней стенке капсулы, под слоем копоти, проступила надпись, сделанная вручную много лет назад: «Если проснёшься один — не доверяй Эхо-9». Зигги усмехнулся. Это было первое действительно полезное предупреждение за всё утро.</p><p>Он пошёл на север. Через несколько минут капсула за его спиной автоматически включилась и передала в небо координаты. Кто-то получил их. Кто-то, кто ждал именно этого.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">02</span><h2 class="echo9-page-title">ТРИ ЛУНЫ, ОДИН КОСТЁР</h2></div><div class="echo9-page-scene"><div class="scene s2"><div class="fire"></div><div class="scene-action"><b>СЦЕНА</b><span>Дроны атакуют • Клик включает импульс • костёр разгорается</span></div><div class="scene-sparks"></div></div>
 </div><div class="echo9-page-text"><p>Клик нашёл Зигги у старой сервисной дороги. Его мотоцикл выглядел так, словно его собирали одновременно три человека, из которых двое были пьяны, а третий торопился. На баке сидел маленький динамик, соединённый с аккумулятором проводами. Музыка была громкой, хриплой и неожиданно ритмичной.</p><p><span class="voice">КЛИК:</span> «Если ты тот самый идиот, которого разбудили на северной станции, садись. Если нет — всё равно садись. Здесь скоро станет опасно».</p><p>Зигги не сел. Он показал цилиндр. Улыбка Клика исчезла. Он знал знак трёх точек. Несколько месяцев назад Клик ловил на старом радио одинаковый импульс. Сигнал появлялся каждые девять дней и всегда заканчивался координатами. Последний импульс пришёл ночью.</p><p>Разговор оборвали механические шакалы. Они вышли из каньона без рыка — только с тихим электрическим щёлканьем сервоприводов. Первый прыгнул на мотоцикл. Клик ушёл в занос. Зигги подставил трубу, и металлическая пасть врезалась в неё. Второй шакал целился в спину. Клик ударил по динамику. Звуковая волна отбросила машину, но одновременно сожгла усилитель.</p><p>Из темноты появился Око. Он не атаковал. Он смотрел на трёх существ, будто сверял их с давно сохранённой фотографией. Затем спроецировал на землю старую карту. На ней были отмечены северная станция, лес, ржавая пустошь и три точки вокруг Эхо-9.</p><p><span class="voice">ОКО:</span> «Маршрут не менялся. Менялись те, кто по нему шёл».</p><p>Ночью они разбили лагерь. Клик чинил динамик, Зигги собирал передатчик, Око наблюдал за небом. Выяснилось, что у каждого есть причина идти дальше, но никто не собирался рассказывать её первым. Это было даже удобно.</p><p>Три луны двигались с разной скоростью. В какой-то момент Око заметил закономерность: их положение совпадало с тремя точками на карте. Значит, небесная конфигурация была не природной. Это был таймер. До следующего совпадения оставалось меньше суток.</p><p>Они договорились идти вместе до леса. Не из дружбы. Дружба возникнет позже, если вообще возникнет. Пока это был контракт: Клик знал дорогу, Зигги умел чинить технику, Око умел читать древние системы. Три несовершенных инструмента, которые случайно оказались в одном наборе.</p><p>Перед сном Зигги услышал в радиоприёмнике голос. Очень тихий. Только одна фраза: «Трое уже идут». Затем передатчик умер.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">03</span><h2 class="echo9-page-title">ЛЕС, КОТОРЫЙ СЛУШАЕТ</h2></div><div class="echo9-page-scene"><div class="scene s3"><span class="eye a"></span><span class="eye b"></span><div class="scene-action"><b>СЦЕНА</b><span>Деревья движутся • глаза просыпаются • корни атакуют</span></div><div class="scene-firefly"></div></div>
