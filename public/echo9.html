@@ -1134,12 +1134,12 @@ const stopSpeech=()=>{
 };
 
 const speakNextChunk=token=>{
-  if(!autoRead||token!==speechToken)return;
+  if(!autoRead||token!==speechToken||!("speechSynthesis" in window))return;
   if(speechIndex>=speechQueue.length){
     speechQueue=[];
     speechIndex=0;
     if(active<total-1){
-      window.setTimeout(()=>finish(1,true),650);
+      window.setTimeout(()=>finish(1,true),900);
     }else{
       update();
     }
@@ -1150,29 +1150,49 @@ const speakNextChunk=token=>{
   const v=pickVoice();
   if(v){u.voice=v;u.lang=v.lang}
   else u.lang="ru-RU";
-  u.rate=.74;
-  u.pitch=.78;
-  u.volume=.9;
-  u.onend=()=>window.setTimeout(()=>speakNextChunk(token),220);
-  u.onerror=()=>{if(token===speechToken)speakNextChunk(token)};
+  u.rate=.72;
+  u.pitch=.76;
+  u.volume=1;
+  u.onend=()=>window.setTimeout(()=>speakNextChunk(token),280);
+  u.onerror=()=>window.setTimeout(()=>{
+    if(token!==speechToken||!autoRead)return;
+    try{window.speechSynthesis.resume()}catch(_){}
+    speakNextChunk(token);
+  },180);
+  try{window.speechSynthesis.resume()}catch(_){}
   window.speechSynthesis.speak(u);
 };
 
-const speakPage=index=>{
+const speakPage=(index,userGesture=false)=>{
   if(!autoRead||!("speechSynthesis" in window))return;
   stopSpeech();
+  try{window.speechSynthesis.resume()}catch(_){}
   speechQueue=splitSpeech(pageText(index));
   speechIndex=0;
   const token=speechToken;
   if(!speechQueue.length)return;
-  window.setTimeout(()=>speakNextChunk(token),260);
+  /* First utterance is launched synchronously from the button tap.
+     Android WebView/Chrome can reject delayed speech after user activation expires. */
+  if(userGesture){
+    speakNextChunk(token);
+  }else{
+    window.setTimeout(()=>speakNextChunk(token),120);
+  }
 };
 
 const setAutoRead=enabled=>{
   autoRead=!!enabled;
   stopSpeech();
   update();
-  if(autoRead)speakPage(active);
+  if(autoRead){
+    if(!("speechSynthesis" in window)){
+      autoRead=false;
+      update();
+      return;
+    }
+    try{window.speechSynthesis.resume()}catch(_){}
+    speakPage(active,true);
+  }
 };
 
 const finish=(dir,fromAuto=false)=>{
@@ -1262,7 +1282,7 @@ root.addEventListener("pointercancel",()=>{if(dragging){dragging=false;snapBack(
 
 pages.forEach(p=>{
   const b=p.querySelector(".echo9-voice-toggle");
-  if(b)b.addEventListener("click",e=>{e.stopPropagation();setAutoRead(!autoRead)});
+  if(b)b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();setAutoRead(!autoRead)});
 });
 if(prev){
   prev.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});
@@ -1304,7 +1324,7 @@ const startVideo=()=>{
 
 if("speechSynthesis" in window){
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged=()=>{if(autoRead)update()};
+  window.speechSynthesis.onvoiceschanged=()=>{if(autoRead){try{window.speechSynthesis.resume()}catch(_){}}};
 }
 
 slowMotion();
