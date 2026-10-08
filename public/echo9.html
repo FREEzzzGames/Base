@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#21160f">
-<title>ЭХО-9: Три из Трёх — Анимационная Книга</title>
+<title>ЭХО-9: Три из Трёх — Field Storyboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
@@ -82,7 +82,336 @@ h2{font:400 clamp(42px,9vw,82px)/.9 "Bebas Neue",sans-serif;letter-spacing:.04em
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes par{0%{transform:translate(0,0) scale(.9)}100%{transform:translate(-35px,12px) scale(1.05)}}
 @keyframes fall{from{transform:translateY(-30px);opacity:0}20%{opacity:.8}to{transform:translateY(330px);opacity:0}}
-</style></head>
+</style>
+<style id="echo9-ink-concept-style">
+/* ECHO-9 — INK CONCEPT ART SYSTEM
+   Visual direction: monochrome hand-drawn post-apocalyptic storyboard.
+   Reference language: ink linework, cross-hatching, industrial ruins,
+   comic-panel framing, hard white gutters, restrained paper tones.
+*/
+:root{
+  --ink:#101010;
+  --paper:#d9d8d2;
+  --paper-hi:#ecebe5;
+  --paper-mid:#bdbcb6;
+  --paper-dark:#777771;
+  --black:#090909;
+  --line:#171717;
+  --white:#f3f2ec;
+  --accent:#d8d7cf;
+}
+html,body{
+  background:#080808!important;
+  color:var(--ink)!important;
+  font-family:"Special Elite",ui-monospace,monospace!important;
+}
+body{
+  background:
+    radial-gradient(circle at 50% 15%,#313131 0,transparent 38%),
+    #080808!important;
+}
+body:before{
+  opacity:.18!important;
+  background-image:
+    radial-gradient(#fff .55px,transparent .7px),
+    radial-gradient(#000 .55px,transparent .7px)!important;
+  background-size:6px 6px,9px 9px!important;
+}
+.book{
+  width:min(1080px,100%)!important;
+  background:var(--paper)!important;
+  box-shadow:0 0 0 1px #000,0 18px 70px #000!important;
+}
+.cover{
+  min-height:100svh!important;
+  padding:34px 22px!important;
+  background:
+    linear-gradient(rgba(235,234,228,.94),rgba(183,182,176,.95)),
+    repeating-linear-gradient(72deg,transparent 0 7px,rgba(0,0,0,.08) 8px 9px)!important;
+  border-bottom:8px solid #101010!important;
+  isolation:isolate;
+}
+.cover:after{
+  inset:16px!important;
+  border:3px solid #151515!important;
+  opacity:1!important;
+}
+.cover:before{
+  content:"03 / 03  •  FIELD ARCHIVE  •  ECHO-9";
+  position:absolute;
+  top:25px;left:28px;right:28px;
+  z-index:5;
+  color:#171717;
+  text-align:left;
+  font:11px/1 "Special Elite",monospace;
+  letter-spacing:.18em;
+}
+.kicker{
+  font:14px/1 "Special Elite",monospace!important;
+  letter-spacing:.25em!important;
+  border:2px solid #111;
+  padding:8px 12px;
+  background:rgba(235,234,228,.72);
+}
+h1{
+  color:#0a0a0a!important;
+  font-family:"Bebas Neue",Impact,sans-serif!important;
+  letter-spacing:.06em!important;
+  text-shadow:3px 3px 0 #aaa!important;
+  filter:contrast(1.15);
+}
+.subtitle{
+  color:#191919!important;
+  font-family:"Special Elite",monospace!important;
+  font-style:normal!important;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+}
+.cover-note{
+  color:#202020!important;
+  border-top:2px solid #111;
+  border-bottom:2px solid #111;
+  padding:12px 0;
+}
+.sun{
+  width:clamp(150px,28vw,280px)!important;
+  height:clamp(150px,28vw,280px)!important;
+  background:#cfcfc8!important;
+  box-shadow:0 0 0 2px #111,0 0 55px rgba(0,0,0,.15)!important;
+  mix-blend-mode:multiply;
+  animation:pulse 7s ease-in-out infinite!important;
+}
+.mountain{
+  background:#272727!important;
+  opacity:.95!important;
+  filter:contrast(1.2);
+}
+.ship{
+  border-bottom-color:#111!important;
+  opacity:.9;
+}
+.ship:before,.ship:after{background:#111!important}
+.chapter{
+  padding:72px clamp(16px,5vw,60px)!important;
+  background:
+    linear-gradient(180deg,#deddd7,#bfbeb8)!important;
+  border-top:7px solid #111!important;
+}
+.chapter:nth-of-type(even){
+  background:
+    linear-gradient(180deg,#c6c5bf,#e1e0da)!important;
+}
+.chapter:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.14;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 5px,#000 6px 6.5px),
+    repeating-linear-gradient(83deg,transparent 0 11px,#000 12px 12.5px);
+  mix-blend-mode:multiply;
+}
+.chapter-head{
+  position:relative;
+  z-index:2;
+  max-width:920px!important;
+  border-bottom:3px solid #111!important;
+  padding:0 0 10px!important;
+}
+.num{
+  color:#f0efe9!important;
+  background:#111!important;
+  padding:7px 10px;
+  min-width:48px;
+  text-align:center;
+  font:bold 24px/1 "Special Elite",monospace!important;
+  clip-path:polygon(0 3%,100% 0,98% 100%,1% 97%);
+}
+.chapter-head h2{
+  color:#111!important;
+  text-shadow:2px 2px 0 #aaa!important;
+  letter-spacing:.055em!important;
+}
+.scene{
+  z-index:2;
+  height:min(60vw,500px)!important;
+  min-height:260px!important;
+  border:5px solid #111!important;
+  background:#6e6e69!important;
+  box-shadow:
+    0 0 0 2px #e7e6df,
+    0 8px 0 #111,
+    inset 0 0 0 1px #f2f1eb,
+    inset 0 0 70px rgba(0,0,0,.8)!important;
+  filter:grayscale(1) contrast(1.12);
+}
+.scene:after{
+  inset:0!important;
+  border:1px solid rgba(255,255,255,.38);
+}
+.scene-action{
+  left:10px!important;right:10px!important;top:10px!important;
+  background:rgba(8,8,8,.84)!important;
+  border:2px solid #eee!important;
+  color:#eee!important;
+  font:10px/1.25 "Special Elite",monospace!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase;
+  box-shadow:4px 4px 0 rgba(0,0,0,.7);
+}
+.scene-action b{color:#fff!important}
+.scene-action span{color:#cfcfcf!important}
+.story{
+  position:relative;
+  z-index:2;
+  color:#171717!important;
+  font-family:"Cormorant Garamond",Georgia,serif!important;
+  font-weight:600;
+}
+.story p:first-child:before{
+  content:"SCENE / ";
+  font:10px/1 "Special Elite",monospace;
+  letter-spacing:.16em;
+  margin-right:8px;
+  color:#555;
+}
+.voice{
+  color:#222!important;
+  font:11px "Special Elite",monospace!important;
+  letter-spacing:.12em!important;
+  border-left:4px solid #111;
+  padding-left:10px;
+}
+.cap{
+  color:#f0efe9!important;
+  background:rgba(0,0,0,.82)!important;
+  border:1px solid #eee!important;
+  padding:5px 8px!important;
+  font:10px "Special Elite",monospace!important;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.final{
+  min-height:85svh!important;
+  background:
+    linear-gradient(rgba(15,15,15,.95),rgba(45,45,45,.98)),
+    repeating-linear-gradient(65deg,transparent 0 8px,rgba(255,255,255,.05) 9px 10px)!important;
+  color:#e7e6df!important;
+  border-top:8px solid #111;
+}
+.final h2{
+  color:#fff!important;
+  text-shadow:2px 2px 0 #555!important;
+}
+.quote{
+  font-family:"Cormorant Garamond",Georgia,serif!important;
+  color:#eee!important;
+  border-top:2px solid #eee;
+  border-bottom:2px solid #eee;
+  padding:22px 10px;
+}
+.credit{color:#aaa!important}
+
+/* Convert existing scene art to ink silhouettes / technical plates. */
+.scene.s1{background:
+  radial-gradient(circle at 74% 19%,#ddd 0 11%,#b7b7b2 12%,transparent 12.5%),
+  linear-gradient(#8e8e89 0 58%,#4a4a47 58%)!important}
+.scene.s1:before{background:#d9d9d3!important;box-shadow:0 0 0 2px #111,0 0 45px rgba(255,255,255,.22)!important}
+.scene.s1:after{background:#272727!important}
+.capsule{border-color:#ddd!important;background:#444!important;box-shadow:0 0 0 2px #111,0 0 25px #ddd!important}
+.scene.s2{background:
+  radial-gradient(circle at 50% 72%,#eee 0 5%,#777 6%,#202020 17%,#0b0b0b 45%)!important}
+.fire{background:#e9e8e1!important;box-shadow:0 0 35px #fff!important}
+.fire:after{background:#fff!important}
+.scene.s3{background:#383835!important}
+.scene.s3:before{background:
+  repeating-linear-gradient(75deg,transparent 0 28px,#1c1c1b 29px 55px),
+  repeating-linear-gradient(8deg,transparent 0 17px,rgba(255,255,255,.13) 18px 19px),
+  linear-gradient(#666662,#20201f)!important}
+.eye{background:#eee!important;box-shadow:0 0 18px #fff!important}
+.scene.s4{background:linear-gradient(#555552,#252524)!important}
+.rb{background:linear-gradient(160deg,#8a8982,#363634)!important;border-color:#111!important}
+.rh{background:#77766f!important;border-color:#111!important}
+.re{background:#eee!important;box-shadow:0 0 20px #fff!important}
+.ky{background:#eee!important}
+.scene.s5{background:radial-gradient(circle,#a5a49d 0 2%,#3c3c39 3% 38%,#090909 70%)!important}
+.pt{border-color:#eee!important;background:radial-gradient(circle,#eee,#777 50%,#111)!important;box-shadow:0 0 0 2px #111}
+.scene.s6{background:linear-gradient(#242c30,#090b0c)!important}
+.rg{border-color:#ddd!important;box-shadow:0 0 0 2px #111,0 0 35px #ddd!important}
+.cr{background:#eee!important;box-shadow:0 0 40px 15px rgba(255,255,255,.45)!important}
+.scene.s7{background:linear-gradient(#b8b7b1 0 44%,#565650 45%)!important}
+.ct{background:#252524!important}
+.tp{background:#222!important}
+.mist{background:linear-gradient(transparent,#d4d3cd)!important}
+.scene.s8{background:linear-gradient(170deg,#1b2024,#4c4a44)!important}
+.lt{background:#fff!important;filter:drop-shadow(0 0 8px #fff)!important}
+.eye-sl{background:radial-gradient(circle at 30% 40%,#eee 0 8px,transparent 9px),radial-gradient(circle at 70% 40%,#eee 0 8px,transparent 9px)!important}
+.scene.s9{background:radial-gradient(circle,#8b8a83,#080808 62%)!important}
+.hc{background:radial-gradient(circle,#eee,#666 50%,#111)!important;box-shadow:0 0 0 2px #111,0 0 70px 25px rgba(255,255,255,.25)!important}
+.bm{background:linear-gradient(transparent,#eee,transparent)!important}
+.scene.s10{background:linear-gradient(#171b1d,#080808)!important}
+.bridge{background:linear-gradient(90deg,transparent,#eee,#aaa,#eee,transparent)!important}
+.ff{background:radial-gradient(ellipse at 50% 80%,rgba(238,238,232,.6),transparent 70%)!important}
+.sl{background:#080808!important}
+
+/* Ink overlays: broken hatching, dust, debris and registration marks. */
+.scene-dust{
+  background:
+    radial-gradient(circle at 12% 72%,rgba(255,255,255,.55) 0 1px,transparent 2px),
+    radial-gradient(circle at 64% 32%,rgba(0,0,0,.5) 0 1px,transparent 2px),
+    repeating-linear-gradient(112deg,transparent 0 31px,rgba(255,255,255,.08) 32px 33px,transparent 34px 63px)!important;
+  opacity:.8;
+}
+.scene-sparks{background-image:radial-gradient(circle,rgba(255,255,255,.85) 0 1.5px,transparent 2.5px)!important}
+.scene-firefly{background-image:radial-gradient(circle,rgba(255,255,255,.8) 0 1.5px,transparent 2.5px)!important}
+.scene-bolts{background:repeating-linear-gradient(115deg,transparent 0 70px,rgba(255,255,255,.5) 72px 74px,transparent 76px 140px)!important}
+.scene-runes{background:radial-gradient(circle at 20% 70%,rgba(255,255,255,.3),transparent 8%),radial-gradient(circle at 75% 35%,rgba(255,255,255,.22),transparent 7%)!important}
+.scene-debris{background-image:linear-gradient(25deg,transparent 47%,rgba(255,255,255,.55) 48% 51%,transparent 52%)!important}
+.scene-sandwave{background:linear-gradient(165deg,transparent 20%,rgba(220,219,212,.48) 21% 42%,transparent 43%)!important}
+.scene-rain{background:repeating-linear-gradient(105deg,transparent 0 20px,rgba(235,235,230,.48) 21px 22px,transparent 23px 43px)!important}
+.scene-energy{background:radial-gradient(circle,transparent 15%,rgba(255,255,255,.1) 16%,transparent 31%)!important}
+.scene-embers{background-image:radial-gradient(circle,rgba(255,255,255,.9) 0 1.5px,transparent 2.5px)!important}
+
+/* Comic motion language */
+.chapter .scene{animation:panelBreath 7s ease-in-out infinite}
+.chapter:nth-of-type(even) .scene{animation-delay:-2s}
+@keyframes panelBreath{0%,100%{filter:grayscale(1) contrast(1.08)}50%{filter:grayscale(1) contrast(1.18)}}
+@keyframes inkJitter{
+  0%,100%{transform:translate(0,0)}
+  25%{transform:translate(.6px,-.4px)}
+  50%{transform:translate(-.5px,.5px)}
+  75%{transform:translate(.4px,.2px)}
+}
+.scene > *{animation-timing-function:ease-in-out}
+.scene-action{animation:inkJitter 3.2s steps(2,end) infinite}
+
+/* Interface becomes a storyboard index rather than a fantasy book. */
+.book:before{
+  content:"ECHO-9  /  THREE OF THREE  /  FIELD STORYBOARD";
+  display:block;
+  position:sticky;
+  top:0;
+  z-index:40;
+  height:26px;
+  padding:7px 14px;
+  background:#111;
+  color:#eee;
+  font:9px/1 "Special Elite",monospace;
+  letter-spacing:.14em;
+  text-align:center;
+  border-bottom:1px solid #fff;
+}
+@media(max-width:600px){
+  .book:before{font-size:8px;height:24px;padding:6px 8px}
+  .chapter{padding:52px 12px!important}
+  .scene{height:280px!important;border-width:4px!important}
+  .chapter-head{gap:8px!important}
+  .num{min-width:40px;font-size:19px;padding:6px 7px}
+  .scene-action{font-size:8px!important}
+}
+</style>
+</head>
 <body>
 <main class="book">
 <section class="cover">
