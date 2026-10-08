@@ -563,6 +563,76 @@ h1{
 @keyframes c10Walk2{50%{transform:translateX(-5px) translateY(-2px)}}
 @keyframes c10Walk3{50%{transform:translateX(7px) translateY(-4px)}}
 </style>
+
+<style id="echo9-animation-cycle-2">
+/* CYCLE 2/5 — physics, inertia and layered depth */
+.scene{perspective:900px}
+.scene:after{z-index:20!important;pointer-events:none}
+
+/* 01: atmospheric depth — distant sky moves less than foreground dust */
+.s1{background-position:0 0,0 0!important}
+.s1 .capsule{will-change:transform}
+.s1 .scene-dust{mix-blend-mode:multiply;opacity:.72}
+
+/* 02: heat convection — sparks rise with slight lateral drift */
+.s2 .fire:after{animation:c2InnerFire .48s ease-in-out infinite alternate!important;transform-origin:50% 100%}
+.s2 .scene-sparks{mix-blend-mode:screen}
+@keyframes c2InnerFire{from{transform:translateX(0) scaleY(.92)}to{transform:translateX(3px) scaleY(1.12)}}
+
+/* 03: forest layers — eyes sit behind foreground texture */
+.s3 .eye{z-index:2!important}
+.s3 .scene-firefly{z-index:7!important;mix-blend-mode:screen}
+.s3:before{z-index:1!important}
+
+/* 04: Bron gets delayed head/body response, simulating heavy servos */
+.s4 .rh{transition:none}
+.s4 .rb:after{content:"";position:absolute;left:12px;right:12px;bottom:8px;height:3px;background:#171717;opacity:.6}
+.s4 .re{z-index:3!important}
+.s4 .scene-bolts{mix-blend-mode:screen;opacity:.24!important}
+
+/* 05: portal interiors counter-rotate to imply depth */
+.s5 .pt:after{content:"";position:absolute;inset:13px;border-radius:50%;border:1px dashed rgba(255,255,255,.55);animation:c5Inner 5s linear infinite}
+@keyframes c5Inner{to{transform:rotate(-360deg) scale(.9)}}
+.s5 .ghost{z-index:4!important;filter:blur(.2px);opacity:.6}
+.s5 .ghost.g1{animation:c5Ghost1 5.4s ease-in-out infinite!important}
+.s5 .ghost.g2{animation:c5Ghost2 6.1s ease-in-out infinite!important}
+.s5 .ghost.g3{animation:c5Ghost3 5.7s ease-in-out infinite!important}
+@keyframes c5Ghost1{0%,100%{transform:translateY(5px);opacity:.1}50%{transform:translateY(-25px);opacity:.65}}
+@keyframes c5Ghost2{0%,100%{transform:translateY(-8px);opacity:.15}50%{transform:translateY(-34px);opacity:.55}}
+@keyframes c5Ghost3{0%,100%{transform:translateY(3px);opacity:.1}50%{transform:translateY(-20px);opacity:.7}}
+
+/* 06: orbital depth — core stays visually centered while debris crosses planes */
+.s6 .rg{transform-style:preserve-3d}
+.s6 .scene-debris{mix-blend-mode:screen}
+.s6 .glider{z-index:9!important}
+.s6 .db{opacity:.7}
+
+/* 07: city silhouette stays heavy, sand is the moving foreground */
+.s7 .city,.s7 .ct{filter:contrast(1.2)}
+.s7 .sand{z-index:8!important}
+.s7 .scene-sandwave{z-index:9!important;mix-blend-mode:multiply}
+
+/* 08: storm has two rain velocities */
+.s8 .rain{opacity:.22!important;filter:blur(.3px)}
+.s8 .scene-rain{opacity:.55!important}
+.s8 .lightning{z-index:10!important}
+.s8 .scene-rain{mix-blend-mode:screen}
+
+/* 09: beams pass in front of and behind core */
+.s9 .bm{z-index:3!important;transform-origin:50% 0}
+.s9 .hc,.s9 .heart{z-index:5!important}
+.s9 .scene-energy{z-index:7!important;mix-blend-mode:screen}
+
+/* 10: embers have different depth speeds */
+.s10 .scene-embers{z-index:8!important;mix-blend-mode:screen}
+.s10 .final-fire{z-index:5!important}
+.s10 .sl{z-index:6!important}
+
+/* Respect reduced motion without removing the illustrated scene. */
+@media(prefers-reduced-motion:reduce){
+  .scene,.scene *{animation-duration:1ms!important;animation-iteration-count:1!important}
+}
+</style>
 </head>
 <body>
 <main class="book">
