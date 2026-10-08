@@ -728,6 +728,74 @@ h1{
   50%{transform:translateX(-50%) scale(1.04,1.08)}
 }
 </style>
+
+<style id="echo9-animation-cycle-4">
+/* CYCLE 4/5 — mobile composition, readability and motion containment */
+.scene{
+  contain:layout paint;
+  isolation:isolate;
+  overflow:hidden!important;
+}
+.scene-action{
+  transform:translateZ(20px)!important;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+.chapter-head,.story{position:relative;z-index:30}
+.story p,.voice{position:relative;z-index:31}
+.chapter-head h2,.num{position:relative;z-index:32}
+
+/* Keep animated artwork behind the narrative UI layer. */
+.scene > .scene-dust,.scene > .scene-sparks,.scene > .scene-firefly,
+.scene > .scene-bolts,.scene > .scene-runes,.scene > .scene-debris,
+.scene > .scene-sandwave,.scene > .scene-rain,.scene > .scene-energy,
+.scene > .scene-embers{pointer-events:none}
+
+/* Avoid excessive brightness competing with red headings. */
+.scene-action b{color:#b51b1b!important}
+.scene-action{color:#eee!important}
+
+/* Stronger comic-panel edge when the animation reaches its peak. */
+.chapter .scene{outline:1px solid rgba(255,255,255,.25);outline-offset:-7px}
+
+/* Mobile: constrain motion amplitudes to the actual viewport width. */
+@media(max-width:600px){
+  .scene{
+    height:280px!important;
+    min-height:250px!important;
+    margin-bottom:24px!important;
+  }
+  .scene-action{
+    left:8px!important;right:8px!important;top:8px!important;
+    max-width:calc(100% - 16px);
+  }
+  .scene-action span{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .s6 .rg{width:230px!important}
+  .s4 .rb{transform:translateX(-50%) scale(.86)}
+  .s5 .pt{transform:scale(.84)}
+  .s7 .city,.s7 .ct{transform-origin:50% 100%}
+  .s9 .hc,.s9 .heart{max-width:45vw}
+}
+
+/* Prevent animation-induced horizontal overflow on narrow devices. */
+@media(max-width:380px){
+  .chapter{padding-left:12px!important;padding-right:12px!important}
+  .scene{width:100%!important}
+  .chapter-head h2{font-size:26px!important}
+  .story{font-size:19px!important}
+}
+
+/* Stable compositor hints only for genuinely moving layers. */
+.s1 .capsule,.s2 .fire,.s3:before,.s4 .rb,.s4 .rh,
+.s5 .pt,.s6 .rg,.s6 .cr,.s7 .city,.s7 .ct,
+.s8 .lightning,.s9 .heart,.s9 .hc,.s10 .final-fire{
+  will-change:transform,opacity;
+}
+</style>
 </head>
 <body>
 <main class="book">
