@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ЭХО-9: Три из Трёх</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;background:#05030f;color:#e8e4ff;font-family:Nunito,sans-serif}
+body{overflow-x:hidden}.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle 3s infinite ease-in-out}@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+.wrap{position:relative;z-index:1;max-width:900px;margin:auto;padding:28px 16px 40px}
+.cover{text-align:center;padding:35px 10px 70px;min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+h1{font:900 clamp(2.2rem,10vw,6rem) Orbitron,sans-serif;letter-spacing:.15em;background:linear-gradient(90deg,#7af8ff,#b06bff,#ff6ec7,#ffe36e,#7af8ff);background-size:400% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite;filter:drop-shadow(0 0 25px #b06bff99)}
+@keyframes shine{to{background-position:400% 0}}.sub{margin-top:10px;letter-spacing:.3em;text-transform:uppercase;color:#a99bd8}
+.logline{max-width:650px;margin:25px auto 0;line-height:1.7;color:#c9c1ee}.heroes{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:35px}.hero{width:145px;padding:15px 8px;border:1px solid #4a3a7a;border-radius:18px;background:#140c2d99;cursor:pointer;transition:.25s}.hero:hover{transform:translateY(-5px);border-color:#7af8ff}.avatar{height:80px;display:grid;place-items:center;font-size:52px}.name{font:700 .85rem Orbitron;color:#fff}.role{font-size:.72rem;color:#8d82c2;margin-top:5px}.scroll{margin-top:35px;color:#7a6fb0;letter-spacing:.15em;animation:bounce 2s infinite}@keyframes bounce{50%{transform:translateY(8px);opacity:.6}}
+.book-title{text-align:center;font:700 clamp(1.3rem,4vw,2.2rem) Orbitron;color:#b06bff;letter-spacing:.15em;margin-bottom:25px}
+.nav{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:25px}.ep{width:38px;height:38px;border:2px solid #4a3a7a;background:#1e143dcc;color:#a99bd8;border-radius:10px;font-weight:800;cursor:pointer}.ep.active{background:linear-gradient(135deg,#b06bff,#ff6ec7);border-color:transparent;color:#fff}
+.page{background:linear-gradient(160deg,#140c2de8,#231446db);border:1px solid #b06bff40;border-radius:20px;padding:clamp(20px,5vw,45px);box-shadow:0 0 55px #b06bff26;min-height:430px}.num{font:700 .72rem Orbitron;color:#7af8ff;letter-spacing:.25em}.title{font:700 clamp(1.25rem,4vw,2rem) Orbitron;color:#fff;line-height:1.3;margin:9px 0 22px}.text{font-size:1rem;line-height:1.8;color:#cfc7ee;white-space:pre-wrap}.scene{display:block;margin:22px 0 8px;color:#ffb347;font:700 .76rem Orbitron;letter-spacing:.12em}.char{color:#ffe36e;font-weight:900}.paren{color:#8d82c2;font-style:italic}.nav2{display:flex;gap:10px;margin-top:18px}.nav2 button{flex:1;padding:13px;border:2px solid #4a3a7a;border-radius:12px;background:#1e143dcc;color:#cfc7ee;font:700 .75rem Orbitron;cursor:pointer}.nav2 button:disabled{opacity:.3}.footer{text-align:center;color:#6a5f99;padding:45px 0 10px;font-size:.8rem}.quote{color:#b06bff;font:700 .9rem Orbitron;margin-bottom:10px}
+@media(max-width:600px){.wrap{padding-left:10px;padding-right:10px}.hero{width:110px}.avatar{font-size:42px}.text{font-size:.94rem}}
+</style></head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="wrap">
+<section class="cover"><h1>ЭХО-9</h1><div class="sub">Три из Трёх</div>
+<p class="logline">Трое с разных планет просыпаются на живой планете. Один — механик. Второй — диджей. Третий — тот, кто видит всё. Чтобы вернуться домой, им нужно стать командой.</p>
+<div class="heroes">
+<div class="hero" onclick="hero('ЗИГГИ · Механик с планеты Свалка-Прайм. Чинит всё. Любит пончики.')"><div class="avatar">🦎</div><div class="name">ЗИГГИ</div><div class="role">Механик</div></div>
+<div class="hero" onclick="hero('КЛИК · Диджей с планеты Шум-Аккорд. Слышит вселенную.')"><div class="avatar">🎧</div><div class="name">КЛИК</div><div class="role">Диджей</div></div>
+<div class="hero" onclick="hero('ОКО · Скаут из Туманности Взгляда. Молчит, но видит всё.')"><div class="avatar">👁️</div><div class="name">ОКО</div><div class="role">Скаут</div></div>
+</div><div class="scroll">▼ листай вниз ▼</div></section>
+<section><h2 class="book-title">◆ СЦЕНАРИЙ ◆</h2><div class="nav" id="nav"></div><article class="page"><div class="num" id="num"></div><h3 class="title" id="title"></h3><div class="text" id="text"></div></article><div class="nav2"><button id="prev" onclick="change(-1)">◀ НАЗАД</button><button id="next" onclick="change(1)">ВПЕРЁД ▶</button></div></section>
+<footer class="footer"><div class="quote">«Дом — не там, где ты родился. Дом — там, где тебя ждут.»</div>ЭХО-9 · Анимационный мини-сериал · 10 серий</footer>
+</div>
+<script>
+const stars=document.getElementById('stars');for(let i=0;i<180;i++){const s=document.createElement('i');s.className='star';const z=Math.random()*2.5+.6;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;stars.appendChild(s)}
+const E=[
+['Пробуждение',`[SCENE]СЦЕНА 1. ЭКСТ. КРАТЕР — ДЕНЬ[/SCENE]
+Фиолетовый песок. Три луны висят низко над горизонтом. В центре кратера — три разбитые капсулы.
+[OKO]ЗИГГИ (О.С.)[/OKO] [PAREN](бормочет)[/PAREN]
+Уберите... этот... будильник...
+Хвост дёргается. Из капсулы выползает ЗИГГИ. Он падает лицом в песок. Хвост сам поднимается и отряхивает его футболку с пончиком.
+[OKO]ЗИГГИ[/OKO] [PAREN](переворачивается на спину)[/PAREN]
+Так. Либо я умер, либо это худшее утро в моей жизни. Где мой гараж? Где мой кофе? Где... вообще всё?
+[SCENE]СЦЕНА 2. ЭКСТ. СКАЛЫ — ВЕЧЕР[/SCENE]
+[OKO]ЗИГГИ[/OKO]
+Ладно. Итог. Мы на неизвестной планете. Нас чуть не съели. У нас нет связи, нет еды, нет воды.
+[OKO]КЛИК[/OKO]
+Я понимаю тебя. Ты говоришь на общегалактическом. Просто... громко.
+Око проецирует на скалу изображение: ухо, волны, галочка.
+[OKO]ЗИГГИ[/OKO]
+...Я приму это как «да».
+[SCENE]СЦЕНА 3. ЭКСТ. МОНОЛИТ — НОЧЬ[/SCENE]
+Монолит выпускает луч света. Он сканирует героев. На каждом появляется светящаяся метка.
+[OKO]ОКО (проекция)[/OKO]
+«Три из трёх. Испытание началось».
+[OKO]КЛИК[/OKO]
+Какое ещё испытание?! Я не подписывался!
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ПЕРВОЙ СЕРИИ.[/PAREN]`],
+['Три луны, один костёр',`[SCENE]СЦЕНА 1. ЭКСТ. ЛАГЕРЬ У СКАЛ — НОЧЬ[/SCENE]
+Горит костёр. Зигги что-то мастерит из обломков. Клик слушает планету. Око лежит на камне.
+[OKO]ЗИГГИ[/OKO] [PAREN](прикручивает деталь хвостом)[/PAREN]
+Так... если я соединю это с этим... и добавлю вот эту штуку...
+Искры. Маленький робот-скорпион оживает, пищит и убегает.
+[OKO]КЛИК[/OKO] [PAREN](не открывая глаз)[/PAREN]
+Ты только что создал жизнь, а потом удивляешься, что она убежала. Гениально.
+[SCENE]СЦЕНА 2. ЭКСТ. КУСТЫ С ЯГОДАМИ — НОЧЬ[/SCENE]
+Они находят светящиеся ягоды. Зигги съедает первую.
+[OKO]ЗИГГИ[/OKO] [PAREN](светится изнутри)[/PAREN]
+Это... это вкус победы! Я чувствую музыку!
+Он начинает танцевать. Хвост крутится, как пропеллер.
+[OKO]КЛИК[/OKO]
+Ты сошёл с ума!
+Око проецирует на скалу целое световое шоу: звёзды, планеты, кометы.
+[OKO]КЛИК[/OKO] [PAREN](шёпотом)[/PAREN]
+Это... идеальный бит. Это частота вселенной. Я... я слышу всё.
+[OKO]ЗИГГИ[/OKO]
+Ладно, глазастик. Ты официально в команде.
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ВТОРОЙ СЕРИИ.[/PAREN]`],
+['Лес, который слушает',`[SCENE]СЦЕНА 1. ЭКСТ. ГРАНИЦА ЛЕСА — УТРО[/SCENE]
+Трое стоят перед стеной гигантских деревьев. Кора светится изнутри.
+[OKO]КЛИК[/OKO] [PAREN](нервно крутит наушники)[/PAREN]
+Они не «как будто». Они говорят. Я слышу.
+[SCENE]СЦЕНА 2. ЭКСТ. ЦЕНТР ЛЕСА — ДЕНЬ[/SCENE]
+В центре поляны — гигантское дерево, опутанное проводами. Оно пульсирует.
+[OKO]ГОЛОС 3 (О.С.)[/OKO] [PAREN](голос ребёнка)[/PAREN]
+Помогите... я здесь... помогите...
+Око проецирует на ствол: изображение маленького существа, запертого внутри.
+[OKO]ЗИГГИ[/OKO]
+Похоже, лес не злой. Он просто... застрял. И повторяет чужую боль.
+Он направляет Глушилку на дерево. Дерево замолкает. Тишина.
+Из дерева выходит маленький дух — светящийся комочек. Указывает на тропу.
+[SCENE]СЦЕНА 3. ИНТ. РУИНЫ — ДЕНЬ[/SCENE]
+На стене — древняя фреска. Три существа строят гигантского робота. Потом — превращаются в камень.
+[OKO]КЛИК[/OKO]
+Это были другие. До нас. И они... не прошли испытание.
+[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
+Значит, у нас есть шанс.
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ТРЕТЬЕЙ СЕРИИ.[/PAREN]`],
+['Ржавый страж',`[SCENE]СЦЕНА 1. ЭКСТ. ПУСТОШЬ — ДЕНЬ[/SCENE]
+Трое идут по ржавой пустоши. Из песка торчит гигантская статуя робота.
+[OKO]ЗИГГИ[/OKO] [PAREN](с восторгом)[/PAREN]
+Это же золото! Гравитационный стабилизатор! О, мама, я дома!
+Он кладёт руку на статую. Глаза робота загораются.
+[OKO]БРОН (О.С.)[/OKO] [PAREN](глубокий, скрипучий голос)[/PAREN]
+Кто... тревожит... мой сон?
+[OKO]КЛИК[/OKO] [PAREN](отпрыгивает)[/PAREN]
+ОНО ГОВОРИТ!
+[OKO]БРОН[/OKO]
+Почините меня. И я... отдам вам... первый ключ.
+[SCENE]СЦЕНА 2. ИНТ. БРОН — ДЕНЬ[/SCENE]
+Зигги внутри робота. Хвостом соединяет провода.
+[OKO]ЗИГГИ[/OKO]
+Тут написано: «Тот, кто поёт — пробудит камень».
+Клик надевает наушники. Мощный бас. Робот вибрирует.
+[OKO]БРОН[/OKO]
+Я... чувствую... ритм...
+Из груди робота вылетает кристалл — первый ключ.
+[OKO]БРОН[/OKO]
+Идите к небесному кольцу. Но будьте осторожны. Куратор... уже знает о вас.
+В небе появляется рой дронов.
+[OKO]ЗИГГИ[/OKO]
+Бежим!
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ЧЕТВЁРТОЙ СЕРИИ.[/PAREN]`],
+['Пещера эха',`[SCENE]СЦЕНА 1. ИНТ. ПЕЩЕРА — ВЕЧЕР[/SCENE]
+Стены покрыты кристаллами. В центре — три портала. Каждый светится своим цветом.
+[OKO]ЗИГГИ[/OKO]
+Это... моя мастерская. Я вижу свой верстак. Свой пончик на столе.
+[OKO]КЛИК[/OKO]
+А это... моя студия. Идеальная тишина.
+Око подходит к третьему. Там — родная туманность.
+[OKO]КЛИК[/OKO] [PAREN](тихо)[/PAREN]
+Я могу вернуться. Прямо сейчас.
+[OKO]ЗИГГИ[/OKO]
+Потому что... если я уйду, кто починит Брона? Кто поможет глазастику?
+Порталы начинают мерцать. Из них выходят ИЛЛЮЗИИ — идеальные копии героев.
+[OKO]ИЛЛЮЗИЯ ЗИГГИ[/OKO]
+Иди сюда. Ты будешь счастлив. Никаких проблем.
+[OKO]ЗИГГИ[/OKO] [PAREN](качает головой)[/PAREN]
+Нет. Счастье без друзей — это не счастье.
+Порталы исчезают. Из стены выходит второй ключ.
+[OKO]ГОЛОС ПЛАНЕТЫ (О.С.)[/OKO] [PAREN](шёпот)[/PAREN]
+Один из вас... предаст.
+[OKO]КЛИК[/OKO] [PAREN](замирает)[/PAREN]
+Что это было?
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ПЯТОЙ СЕРИИ.[/PAREN]`],
+['Небесное кольцо',`[SCENE]СЦЕНА 1. ЭКСТ. КОСМОС. КОЛЬЦО — ДЕНЬ[/SCENE]
+Глайдер маневрирует между обломками гигантского кольца.
+[OKO]КЛИК[/OKO] [PAREN](кричит)[/PAREN]
+Слева! ОБЛОМОК!
+[OKO]ЗИГГИ[/OKO] [PAREN](крутит штурвал)[/PAREN]
+Вижу!
+Они подлетают к светящемуся ядру. Внутри — второй ключ.
+[OKO]КЛИК[/OKO]
+Ядро реагирует на звук. Оно пульсирует в такт моей музыке.
+Клик включает бас. Ядро открывается. Ключ вылетает.
+[OKO]ЗИГГИ[/OKO] [PAREN](хватает ключ хвостом)[/PAREN]
+Есть!
+Кольцо рушится. Глайдер падает.
+[SCENE]СЦЕНА 2. ЭКСТ. ПОВЕРХНОСТЬ — ВЕЧЕР[/SCENE]
+Ключ активируется. Вспышка памяти: три фигуры, стоящие на этой же планете. Но это не они.
+[OKO]КЛИК[/OKO]
+Это те, кто был до нас. Они тоже искали ключи. И они... не вернулись.
+[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
+Значит, мы не первые. И, может, не последние.
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ШЕСТОЙ СЕРИИ.[/PAREN]`],
+['Город под песком',`[SCENE]СЦЕНА 1. ЭКСТ. ДЮНЫ — ДЕНЬ[/SCENE]
+Гигантская воронка в песке. Внизу — мёртвый светящийся город.
+[OKO]ЗИГГИ[/OKO]
+Ничего себе. Целый город.
+[OKO]КЛИК[/OKO] [PAREN](прислушивается)[/PAREN]
+Там... тихо. Слишком тихо. Как будто все умерли.
+[SCENE]СЦЕНА 2. ИНТ. ХРАМ. ИСПЫТАНИЯ[/SCENE]
+[OKO]ГОЛОС (О.С.)[/OKO]
+Только правда проведёт вас. Ложь — убьёт.
+[OKO]ЗИГГИ[/OKO]
+Ладно! Я — неплохой механик, но иногда ленюсь!
+[OKO]КЛИК[/OKO]
+Я... я боюсь тишины. И одиночества.
+Око молчит. Мост не двигается. Он просто идёт.
+[SCENE]СЦЕНА 3. ИНТ. КОМНАТА СТРАХОВ[/SCENE]
+Перед ними появляются их страхи. Око видит себя слепого. Но проецирует свет.
+Страхи исчезают. Третий ключ — перед ними. Свет гаснет. Появляется КУРАТОР.
+[OKO]КУРАТОР[/OKO] [PAREN](голос, как скрежет)[/PAREN]
+Вы прошли. Но ключи... мои.
+Око выходит вперёд. Проецирует трещину на Кураторе.
+[OKO]КУРАТОР[/OKO] [PAREN](отшатывается)[/PAREN]
+НЕТ!
+Он хватает Око. Темнота.
+[OKO]ЗИГГИ[/OKO]
+ГЛАЗАСТИК!
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ СЕДЬМОЙ СЕРИИ.[/PAREN]`],
+['Буря раздора',`[SCENE]СЦЕНА 1. ЭКСТ. ПУСТОШЬ — НОЧЬ[/SCENE]
+Буря. Ветер. Песок. Зигги и Клик идут против ветра.
+[OKO]ЗИГГИ[/OKO] [PAREN](кричит)[/PAREN]
+Это ты виноват! Если бы ты не замешкался, мы бы его спасли!
+[OKO]КЛИК[/OKO]
+Я?! Это ты повёл нас в храм!
+Зигги останавливается. Смотрит на Клика.
+[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
+Ты прав. Прости. Я просто не знаю, что делать.
+[OKO]КЛИК[/OKO]
+Без него... тихо. Слишком тихо.
+Он смотрит на песок. Там — светящиеся следы от глаз Око.
+[OKO]ЗИГГИ[/OKO]
+Смотри! Он оставил их, когда Куратор его уносил!
+[SCENE]СЦЕНА 2. ИНТ. КРЕПОСТЬ — БОЙ[/SCENE]
+Зигги отбивается от дронов хвостом. Клик создаёт звуковую волну.
+[OKO]ЗИГГИ[/OKO] [PAREN](кричит)[/PAREN]
+ДАВАЙ!
+Дроны падают. Из темноты выходит Око. Слабый, но живой.
+[OKO]ЗИГГИ[/OKO]
+Глазастик! Ты жив!
+[OKO]ОКО[/OKO] [PAREN](проецирует: Куратор, ядро, опасность)[/PAREN]
+[OKO]КЛИК[/OKO]
+Он говорит, что Куратор уже в Сердце. Он хочет уничтожить планету.
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ВОСЬМОЙ СЕРИИ.[/PAREN]`],
+['Сердце Эхо-9',`[SCENE]СЦЕНА 1. ИНТ. СЕРДЦЕ — ЯДРО[/SCENE]
+Гигантское пространство. В центре — светящееся ядро. Куратор держит третий ключ.
+[OKO]КУРАТОР[/OKO]
+Вы не понимаете. Я не уничтожаю планету. Я освобождаю её.
+[OKO]КУРАТОР[/OKO]
+Вы — осколки. Вы были здесь раньше. Вы погибли. И возродились.
+[OKO]ЗИГГИ[/OKO] [PAREN](тихо)[/PAREN]
+Это ложь.
+Куратор сливается с ядром. Превращается в ПОЖИРАТЕЛЯ.
+[SCENE]СЦЕНА 2. ИНТ. СЕРДЦЕ — БОЙ[/SCENE]
+[OKO]ЗИГГИ[/OKO]
+Нам нужно разделиться! Я взломаю сеть! Клик — звук! Око — свет!
+Бас Клика замедляет Пожирателя. Око закрывает его собой. Свет.
+[OKO]ЗИГГИ[/OKO]
+ГОТОВО!
+Энергия бьёт в ядро. Пожиратель кричит. Появляется ХРАНИТЕЛЬ.
+[OKO]ХРАНИТЕЛЬ[/OKO]
+Вы освободили меня. Спасибо. Я — Эхо-9. Я ждал вас. Тысячи лет.
+Он открывает три портала.
+[OKO]ХРАНИТЕЛЬ[/OKO]
+Идите. Ваши дома ждут.
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ ДЕВЯТОЙ СЕРИИ.[/PAREN]`],
+['Дом — это не место',`[SCENE]СЦЕНА 1. ИНТ. СЕРДЦЕ — ФИНАЛ[/SCENE]
+Три портала открыты. Зигги, Клик и Око стоят перед ними.
+[OKO]ХРАНИТЕЛЬ[/OKO]
+Вы можете вернуться. Каждый — домой.
+[OKO]ЗИГГИ[/OKO] [PAREN](смотрит на портал)[/PAREN]
+Там моя мастерская. Мой пончик.
+[OKO]КЛИК[/OKO]
+Там моя студия. Моя музыка.
+Око проецирует: три фигуры. Вместе. Дом.
+[OKO]КЛИК[/OKO] [PAREN](тихо)[/PAREN]
+Он говорит, что дом — это мы.
+[OKO]ЗИГГИ[/OKO]
+Я не хочу возвращаться. Не без вас.
+Они используют свои токены — футболку, наушники, глаза — чтобы создать мост.
+[SCENE]СЦЕНА 2. ЭКСТ. ЛАГЕРЬ — ВЕЧЕР[/SCENE]
+Три луны. Костёр. Зигги что-то чинит. Клик играет музыку. Око проецирует звёзды.
+[OKO]ЗИГГИ[/OKO] [PAREN](улыбается)[/PAREN]
+Знаете что? Я никогда не думал, что скажу это. Но... я дома.
+[OKO]ЗИГГИ[/OKO]
+Эй, глазастик. Ты когда-нибудь говорил словами?
+Око молчит. Потом проецирует:
+[OKO]ОКО (проекция)[/OKO]
+«Спасибо».
+[SCENE]СЦЕНА 3. ПОСТ-ТИТРЫ[/SCENE]
+Далёкая планета. Кратер. Три капсулы. На песке — глаз Куратора. Он слабо светится.
+[OKO]КУРАТОР (О.С.)[/OKO] [PAREN](шёпотом)[/PAREN]
+Три из трёх... снова...
+[PAREN]ЗАТЕМНЕНИЕ. КОНЕЦ.[/PAREN]`]
+];
+let cur=0;
+function parse(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\[SCENE\](.*?)\[\/SCENE\]/gs,'<span class="scene">$1</span>').replace(/\[OKO\](.*?)\[\/OKO\]/gs,'<b class="char">$1</b>').replace(/\[PAREN\](.*?)\[\/PAREN\]/gs,'<i class="paren">$1</i>')}
+function render(){const e=E[cur];num.textContent='СЕРИЯ '+String(cur+1).padStart(2,'0');title.textContent=e[0];text.innerHTML=parse(e[1]);prev.disabled=cur===0;next.disabled=cur===E.length-1;nav.innerHTML=E.map((x,i)=>'<button class="ep '+(i===cur?'active':'')+'" onclick="cur='+i+';render()">'+(i+1)+'</button>').join('')}
+function change(d){cur=Math.max(0,Math.min(E.length-1,cur+d));render();document.querySelector('.book-title').scrollIntoView({behavior:'smooth',block:'start'})}
+function hero(s){alert(s)} render();
+</script></body></html>
