@@ -31,7 +31,8 @@ const ICONS:Record<string,SvgIconDef>={
   pause:{paths:["M8 5v14","M16 5v14"]},
   stop:{paths:["M6 6h12v12H6z"]},
   star:{paths:["m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"]},
-  archive:{paths:["M4 5h16v4H4z","M6 9v10h12V9","M9 13h6"]}
+  archive:{paths:["M4 5h16v4H4z","M6 9v10h12V9","M9 13h6"]},
+  dragon:{paths:["M4 15c2-5 5-8 9-9 3-.7 5 .4 7 2l-2 2 2 2-4 1-2 4-3-2-3 2-1-3-3 1Z","M14 9h.01","M18 8l2-2","M7 15l-3 2"]}
 };
 export function illustration(name:string,className=""){
   const d=ICONS[name]||ICONS.settings;
