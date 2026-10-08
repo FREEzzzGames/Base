@@ -905,25 +905,410 @@ body:before{
 </style>
 
 <style id="echo9-final-only">
-html,body{height:100%;margin:0;overflow:hidden!important;background:#050505!important}.echo9-page-root{position:relative;width:100%;height:100svh;overflow:hidden;perspective:1800px;isolation:isolate;touch-action:pan-y}.echo9-page{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;overflow:hidden;visibility:hidden;pointer-events:none;transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform-origin:left center;background:rgba(8,10,12,.48);-webkit-backdrop-filter:blur(7px) saturate(.7);backdrop-filter:blur(7px) saturate(.7)}.echo9-page.current,.echo9-page.next-under,.echo9-page.prev-under{visibility:visible}.echo9-page.current{z-index:30;pointer-events:auto}.echo9-page.next-under,.echo9-page.prev-under{z-index:10}.echo9-page.turn-next{animation:echo9turnnext .52s cubic-bezier(.22,.61,.36,1) forwards}.echo9-page.turn-prev{transform-origin:right center;animation:echo9turnprev .52s cubic-bezier(.22,.61,.36,1) forwards}@keyframes echo9turnnext{to{transform:rotateY(-180deg);filter:brightness(.68)}}@keyframes echo9turnprev{to{transform:rotateY(180deg);filter:brightness(.68)}}.echo9-page.dragging{animation:none!important}.echo9-page.drag-next{transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))}.echo9-page.drag-prev{transform-origin:right center;transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))}.echo9-page.drag-next:after,.echo9-page.drag-prev:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.26),transparent 28%,transparent 72%,rgba(0,0,0,.18));opacity:.9}.echo9-sheet{position:relative;width:min(900px,100%);height:100%;margin:auto;padding:clamp(38px,6vh,70px) clamp(16px,5vw,58px) 58px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;color:#fff;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;padding-bottom:calc(58px + env(safe-area-inset-bottom))}.echo9-cover-sheet,.echo9-final-sheet{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden}.echo9-cover-frame{position:absolute;inset:16px;border:1px solid rgba(255,255,255,.28)}.echo9-kicker{font:10px/1 "Special Elite",monospace;letter-spacing:.2em;opacity:.72}.echo9-title{margin:18px 0 7px;font:700 clamp(58px,17vw,150px)/.82 "Special Elite",monospace;letter-spacing:.04em;text-shadow:2px 2px #000}.echo9-subtitle{font:clamp(17px,4vw,27px)/1.2 "Special Elite",monospace;letter-spacing:.1em}.echo9-cover-note{max-width:620px;margin:24px auto 0;padding:13px 0;border-top:1px solid #666;border-bottom:1px solid #666;font:13px/1.6 "Special Elite",monospace}.echo9-swipe-note{position:absolute;left:0;right:0;bottom:23px;text-align:center;color:rgba(255,255,255,.5);font:9px "Special Elite",monospace;letter-spacing:.08em}.echo9-page-head{display:flex;align-items:flex-start;gap:10px;padding-bottom:10px;margin-bottom:13px;border-bottom:1px solid rgba(255,255,255,.25)}.echo9-page-number{flex:0 0 auto;min-width:40px;padding:6px;border:1px solid rgba(255,255,255,.48);background:rgba(255,255,255,.08);text-align:center;font:11px/1 "Special Elite",monospace}.echo9-page-title{margin:0!important;color:#fff!important;font:700 clamp(21px,5vw,36px)/1.05 "Special Elite",monospace!important;letter-spacing:.035em}.echo9-page-scene{height:clamp(145px,25vh,235px);margin-bottom:15px;overflow:hidden;border:1px solid rgba(255,255,255,.38);box-shadow:inset 0 0 35px rgba(0,0,0,.65)}.echo9-page-scene .scene{height:100%!important;min-height:0!important;margin:0!important;border:0!important;box-shadow:none!important}.echo9-page-text{max-width:780px;margin:auto;color:#fff;font:clamp(16px,2.5vw,22px)/1.46 "Special Elite",monospace;text-shadow:0 1px 2px #000}.echo9-page-text p{margin:0 0 .78em!important}.echo9-page-text .voice{color:#fff!important;border-left:2px solid #fff;padding-left:8px}.echo9-final-title{font:700 32px/1 "Special Elite",monospace;letter-spacing:.1em}.echo9-final-quote{max-width:700px;margin:26px auto;padding:20px 10px;border-top:1px solid #666;border-bottom:1px solid #666;font:clamp(20px,4vw,35px)/1.45 "Special Elite",monospace}.echo9-final-credit{font:9px "Special Elite",monospace;letter-spacing:.14em;opacity:.55}.echo9-controls{position:absolute;z-index:100;left:10px;right:10px;bottom:calc(9px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;pointer-events:none}.echo9-control{pointer-events:auto;width:36px;height:32px;border:1px solid rgba(255,255,255,.3);background:rgba(5,6,8,.58);color:#fff;font:23px/1 "Special Elite",monospace;border-radius:2px;touch-action:manipulation}.echo9-control:active{transform:scale(.94)}.echo9-control:disabled{opacity:.2}.echo9-counter{padding:6px 9px;background:rgba(5,6,8,.45);border:1px solid rgba(255,255,255,.17);color:#fff;font:9px "Special Elite",monospace;letter-spacing:.13em}.echo9-counter b{font-size:12px}@media(max-width:600px){.echo9-sheet{padding:32px 13px 54px}.echo9-page-scene{height:22svh;max-height:200px}.echo9-page-text{font-size:17px;line-height:1.43}.echo9-page-title{font-size:21px!important}.echo9-cover-note{font-size:12px;max-width:330px}}
-</style></head><body><video id="echo9-bg-video" class="echo9-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./videos/hud-background.mp4" type="video/mp4"></video><div class="echo9-video-tint" aria-hidden="true"></div><main class="echo9-page-root" id="echo9Pages"><section class="echo9-page echo9-page-cover"><div class="echo9-sheet echo9-cover-sheet"><div class="echo9-cover-frame"></div><div class="echo9-kicker">FIELD STORYBOARD · ARCHIVE 03</div><div class="echo9-title">ЭХО-9</div><div class="echo9-subtitle">ТРИ ИЗ ТРЁХ</div><div class="echo9-cover-note">Три путника. Один древний механизм. И система, которая слишком хорошо знает, чего каждый из них хочет.</div><div class="echo9-swipe-note">СВАЙП ВЛЕВО — НАЧАТЬ ИСТОРИЮ</div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">01</span><h2 class="echo9-page-title">ПРОБУЖДЕНИЕ</h2></div><div class="echo9-page-scene"><div class="scene s1"><div class="capsule"></div><div class="scene-action"><b>СЦЕНА</b><span>Капсула раскрывается • дрон сканирует • карта вспыхивает</span></div><div class="scene-dust"></div></div>
-</div><div class="echo9-page-text"><p>Когда Зигги открыл глаза, первое, что он услышал, был не сигнал тревоги, а собственное дыхание. Оно звучало слишком громко для человека, который не знал, сколько лет пролежал в металлическом гробу. Крышка капсулы покрылась изнутри конденсатом. За мутным стеклом стояло серое утро: пустыня, обломки посадочной платформы и три луны, расположенные так неправильно, будто кто-то собрал небо после аварии.</p><p><span class="voice">ЗИГГИ:</span> «Ладно. Значит, я жив. Уже неплохой результат».</p><p>Память возвращалась кусками. Имя — да. Навык чинить машины — да. Страх высоты — почему-то да. Всё остальное было похоже на комнату после ограбления. Зигги дёрнул аварийный рычаг. Первый раз ничего не произошло. Второй раз механизм заклинило ещё сильнее. На третий он ударил по замку разводным ключом, который сам не помнил, откуда взял. Крышка отлетела.</p><p>Он выбрался наружу и почти сразу увидел разведывательный дрон. Машина висела в десяти метрах, медленно поворачивая объектив. На корпусе был знак: три точки, соединённые тонкой линией. Дрон просканировал Зигги. Внутри его груди что-то коротко пискнуло. Машина передала сигнал в пустыню.</p><p>Зигги метнул ключ. Дрон увернулся, зацепил оборванный кабель и рухнул в песок. Из его корпуса выпал металлический цилиндр. Внутри оказался фрагмент карты с координатами Эхо-9 и короткой записью: «ТРИ. НЕ ОТКРЫВАТЬ ПО ОДНОМУ».</p><p>На горизонте вспыхнул ответный сигнал. Три коротких импульса. Пауза. Ещё три.</p><p>Зигги посмотрел на разрушенную капсулу. Если его разбудили намеренно, тот, кто это сделал, должен был рассчитывать на его движение. Значит, сигнал мог быть ловушкой. Но оставаться на месте было ещё хуже: вдали уже поднималась пыль. Двигалась тяжёлая техника.</p><p>Он забрал цилиндр, кусок кабеля и единственный рабочий фильтр из капсулы. Перед уходом обернулся. На внутренней стенке капсулы, под слоем копоти, проступила надпись, сделанная вручную много лет назад: «Если проснёшься один — не доверяй Эхо-9». Зигги усмехнулся. Это было первое действительно полезное предупреждение за всё утро.</p><p>Он пошёл на север. Через несколько минут капсула за его спиной автоматически включилась и передала в небо координаты. Кто-то получил их. Кто-то, кто ждал именно этого.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">02</span><h2 class="echo9-page-title">ТРИ ЛУНЫ, ОДИН КОСТЁР</h2></div><div class="echo9-page-scene"><div class="scene s2"><div class="fire"></div><div class="scene-action"><b>СЦЕНА</b><span>Дроны атакуют • Клик включает импульс • костёр разгорается</span></div><div class="scene-sparks"></div></div>
-</div><div class="echo9-page-text"><p>Клик нашёл Зигги у старой сервисной дороги. Его мотоцикл выглядел так, словно его собирали одновременно три человека, из которых двое были пьяны, а третий торопился. На баке сидел маленький динамик, соединённый с аккумулятором проводами. Музыка была громкой, хриплой и неожиданно ритмичной.</p><p><span class="voice">КЛИК:</span> «Если ты тот самый идиот, которого разбудили на северной станции, садись. Если нет — всё равно садись. Здесь скоро станет опасно».</p><p>Зигги не сел. Он показал цилиндр. Улыбка Клика исчезла. Он знал знак трёх точек. Несколько месяцев назад Клик ловил на старом радио одинаковый импульс. Сигнал появлялся каждые девять дней и всегда заканчивался координатами. Последний импульс пришёл ночью.</p><p>Разговор оборвали механические шакалы. Они вышли из каньона без рыка — только с тихим электрическим щёлканьем сервоприводов. Первый прыгнул на мотоцикл. Клик ушёл в занос. Зигги подставил трубу, и металлическая пасть врезалась в неё. Второй шакал целился в спину. Клик ударил по динамику. Звуковая волна отбросила машину, но одновременно сожгла усилитель.</p><p>Из темноты появился Око. Он не атаковал. Он смотрел на трёх существ, будто сверял их с давно сохранённой фотографией. Затем спроецировал на землю старую карту. На ней были отмечены северная станция, лес, ржавая пустошь и три точки вокруг Эхо-9.</p><p><span class="voice">ОКО:</span> «Маршрут не менялся. Менялись те, кто по нему шёл».</p><p>Ночью они разбили лагерь. Клик чинил динамик, Зигги собирал передатчик, Око наблюдал за небом. Выяснилось, что у каждого есть причина идти дальше, но никто не собирался рассказывать её первым. Это было даже удобно.</p><p>Три луны двигались с разной скоростью. В какой-то момент Око заметил закономерность: их положение совпадало с тремя точками на карте. Значит, небесная конфигурация была не природной. Это был таймер. До следующего совпадения оставалось меньше суток.</p><p>Они договорились идти вместе до леса. Не из дружбы. Дружба возникнет позже, если вообще возникнет. Пока это был контракт: Клик знал дорогу, Зигги умел чинить технику, Око умел читать древние системы. Три несовершенных инструмента, которые случайно оказались в одном наборе.</p><p>Перед сном Зигги услышал в радиоприёмнике голос. Очень тихий. Только одна фраза: «Трое уже идут». Затем передатчик умер.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">03</span><h2 class="echo9-page-title">ЛЕС, КОТОРЫЙ СЛУШАЕТ</h2></div><div class="echo9-page-scene"><div class="scene s3"><span class="eye a"></span><span class="eye b"></span><div class="scene-action"><b>СЦЕНА</b><span>Деревья движутся • глаза просыпаются • корни атакуют</span></div><div class="scene-firefly"></div></div>
-</div><div class="echo9-page-text"><p>Лес начинался резко. За последним ржавым столбом дороги пустыня заканчивалась, и впереди возникала стена деревьев. Их стволы были слишком ровными, ветви — слишком тяжёлыми, а листья шевелились даже в полной тишине. Зигги бросил камень. Камень исчез в листве, а через секунду откуда-то из глубины вернулся звук его падения.</p><p>Потом лес заговорил его голосом.</p><p><span class="voice">ЛЕС:</span> «Зигги».</p><p>Клик резко выключил музыку.</p><p><span class="voice">КЛИК:</span> «Не отвечай. Оно повторяет то, что слышит».</p><p>Они пошли по одному маршруту, но через двадцать минут вернулись к тому же дереву. Око отметил на коре три царапины. Через час они снова увидели их. Пространство действительно перестраивалось. Не магия — сеть корней двигала камни, а старые механизмы под землёй поворачивали участки леса. Живая экосистема использовала древнюю инфраструктуру как нервную систему.</p><p>Клик услышал голос женщины. Зигги услышал сирену своей капсулы. Око услышал полную тишину. Каждый получил приманку, рассчитанную именно на него.</p><p>Они добрались до гигантского дерева в центре леса. В его стволе были металлические пластины. Око прикоснулся к одной из них, и дерево включилось. Перед ними возникла запись. Трое неизвестных стояли перед машиной Эхо-9. Один держал ключ. Второй — что-то похожее на энергетический модуль. Третий лежал на земле. За ними приближалась армия дронов.</p><p>Запись оборвалась.</p><p><span class="voice">ЗИГГИ:</span> «Они не открыли его».</p><p><span class="voice">ОКО:</span> «Нет. Они не смогли остаться троими».</p><p>Смысл был неприятнее любой легенды. Эхо-9 не требовал избранных. Он требовал группу, которая не распадётся под давлением.</p><p>Корни ударили в землю. Лес перешёл в режим защиты. Деревья закрыли проход, из тумана поднялись механические насекомые. Клик восстановил звук, Зигги пробил корневой заслон, Око запомнил путь. Они вырвались наружу буквально за секунды до того, как лес снова сомкнулся.</p><p>На цилиндре появилась новая отметка. Следующая точка находилась в ржавой пустоши. Под ней был символ первого ключа. Теперь они знали: карта не ведёт их к сокровищу. Она проверяет, смогут ли они пройти тот же путь, на котором однажды сломалась другая троица.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">04</span><h2 class="echo9-page-title">РЖАВЫЙ СТРАЖ</h2></div><div class="echo9-page-scene"><div class="scene s4"><div class="robot"><div class="antenna"></div></div><div class="scene-action"><b>СЦЕНА</b><span>Брон поднимается • дроны атакуют • ключ выходит из корпуса</span></div><div class="scene-bolts"></div></div>
-</div><div class="echo9-page-text"><p>Ржавая пустошь оказалась кладбищем машин. Между холмами металла торчали корпуса старых бронетранспортёров, башни буровых установок и высохшие кабели. Здесь не было ветра, но металл всё равно тихо звенел. Зигги остановился. Звук шёл снизу.</p><p>Земля поднялась.</p><p>Сначала появилась ладонь размером с автомобиль. Потом плечо. Затем голова. Из песка вытащил себя Брон — тяжёлый охранный робот с бронёй, покрытой ржавчиной и следами сотен ремонтов. Один глаз работал, второй был заменён круглой металлической заглушкой.</p><p><span class="voice">БРОН:</span> «Назовите код возвращения».</p><p>Никто не ответил.</p><p><span class="voice">КЛИК:</span> «Можно просто сказать: привет?»</p><p>Брон поднял руку.</p><p>Клик успел пригнуться. Разряд прошёл над ним и ударил в старую башню.</p><p>Но затем Брон увидел знак на цилиндре. Его поведение изменилось. Он перестал целиться и открыл архив памяти. Перед героями возникли фрагменты прошлого. Когда-то Брон охранял здесь эвакуацию. Трое путников пришли к нему с первым ключом. Один из них хотел продолжить путь один. Второй отказался. Третий попытался остановить их. После этого появился Куратор.</p><p>Куратор тогда был не врагом. Он был администратором системы. Его задача заключалась в том, чтобы сохранить Эхо-9 от использования. Но после тысяч циклов он пришёл к выводу, что единственный способ защитить систему — уничтожить её.</p><p>Небо почернело от дронов. На этот раз Брон не сомневался. Он встал перед героями. Первые залпы ударили в его корпус. Металл застонал.</p><p>Зигги полез на Брона, чтобы добраться до аварийного узла. Клик направлял звуковые импульсы в дроны. Око искал командный сигнал.</p><p>Брон открыл грудной отсек. Внутри находился первый ключ — не артефакт, а физический носитель доступа, который десятилетиями питал его память.</p><p><span class="voice">БРОН:</span> «Я ждал троих. Теперь понимаю почему».</p><p>Он передал ключ Зигги. Затем развернулся к небу и включил старую оборонную систему. Один за другим дроны начали падать.</p><p>Перед уходом Брон сказал, что Небесное кольцо появится на рассвете. Он не обещал пережить атаку. Герои ушли, оставив его среди огня. Впервые они двигались не потому, что их гнал страх. Они двигались потому, что кто-то купил им время.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">05</span><h2 class="echo9-page-title">ПЕЩЕРА ЭХА</h2></div><div class="echo9-page-scene"><div class="scene s5"><div class="portal"></div><div class="scene-action"><b>СЦЕНА</b><span>Порталы открываются • двойники наступают • пещера рушится</span></div><div class="scene-runes"></div></div>
-</div><div class="echo9-page-text"><p>Пещера находилась под обломками станции. Вход выглядел слишком маленьким для любого нормального человека и слишком аккуратным для природного тоннеля. Первый ключ открыл дверь без звука. Внутри не было сокровищ. Только гладкие стены, старые кабели и вода, которая стекала вверх.</p><p>Клик первым заметил, что его шаги возвращаются с задержкой.</p><p><span class="voice">КЛИК:</span> «Это не эхо. Оно думает».</p><p>В центре пещеры стояло кольцо. Когда Око приблизился, пространство внутри него стало прозрачным. Каждый увидел свой вариант будущего.</p><p>Зигги увидел мастерскую. Настоящую. Тёплую, шумную, наполненную деталями и людьми. Никто не спрашивал, откуда он пришёл. Клик увидел сцену и толпу, которая знала каждую его мелодию. Око увидел место без голосов, приказов и чужих ожиданий.</p><p>Они молчали слишком долго.</p><p>Затем из порталов вышли их копии.</p><p>Копия Зигги сказала, что Клик мешает. Копия Клика сказала, что Око вообще не человек. Копия Око ничего не сказала — только открыла проход к выходу.</p><p>Сражение было коротким и грязным. Зигги не мог победить себя силой, потому что копия знала каждый его приём. Клик использовал звук, но копия повторила частоту. Око отключил собственную проекцию и впервые пошёл вслепую.</p><p>Именно это сломало испытание.</p><p>Система ждала, что каждый будет доказывать собственную правоту. Вместо этого трое перестали атаковать копии по отдельности. Они начали прикрывать друг друга. Копии не умели работать командой.</p><p>Кольцо погасло. Из пола вышел второй ключ.</p><p>Но перед тем как они забрали его, включилась запись Куратора.</p><p><span class="voice">КУРАТОР:</span> «Первый ключ открывает дверь. Второй показывает, зачем вы её открываете. Третий решит, кто из вас выйдет».</p><p>Пещера начала рушиться. Теперь у них была не только цель, но и срок. На поверхности уже поднималось Небесное кольцо.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">06</span><h2 class="echo9-page-title">НЕБЕСНОЕ КОЛЬЦО</h2></div><div class="echo9-page-scene"><div class="scene s6"><div class="ring"></div><div class="scene-action"><b>СЦЕНА</b><span>Кольцо вращается • обломки летят • глайдер теряет двигатель</span></div><div class="scene-debris"></div></div>
-</div><div class="echo9-page-text"><p>На рассвете небо раскрылось. Небесное кольцо появилось над пустыней, как гигантская деталь машины, которую забыли выключить. Оно вращалось медленно, но каждое движение меняло гравитацию вокруг него. Обломки старых кораблей и платформ летели по орбитам вокруг конструкции.</p><p>Глайдер Зигги был собран из трёх деталей, которые не должны были работать вместе. Поэтому, естественно, именно он стал их единственным транспортом.</p><p>Клик закрепил динамик. Око подключил второй ключ к панели. Зигги взял управление.</p><p>Первые минуты прошли спокойно. Потом кольцо включило защиту.</p><p>Из стен вылетели дроны. Они не стреляли сразу. Сначала построили коридор. Затем начали сжимать его.</p><p>Зигги ушёл вниз, почти касаясь металлических обломков. Клик направил звук в противоположную сторону. Дроны потеряли строй. Око нашёл центральный узел и увидел в нём тот же знак трёх точек.</p><p>Они добрались до ядра. Оно оказалось не батареей, а архивом. При подключении второго ключа пространство вокруг них заполнилось изображениями. Они увидели первую экспедицию. Брон был там. Куратор был там. И трое существ, которые не дошли до конца.</p><p>Один из них отделился от группы.</p><p>Куратор пытался его остановить.</p><p>Потом произошёл взрыв.</p><p>Око понял: история повторяется не потому, что Эхо-9 проклято. Система просто снова и снова создаёт одинаковые условия и проверяет один и тот же человеческий дефект — желание спастись за счёт остальных.</p><p>Глайдер потерял двигатель. Зигги направил его к выходу вручную. Клик удерживал кабели. Око отключил защиту кольца.</p><p>Конструкция начала падать.</p><p>Они успели выскочить в атмосферу за секунды до разрушения. Глайдер врезался в песок и перевернулся. Никто не погиб. Но Зигги получил перелом руки, Клик потерял усилитель, а второй ключ треснул.</p><p>Это было важно. У них впервые появилась реальная цена пути.</p><p>Вдали поднимался город. Его стены выступали из песка. Третий ключ был там.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">07</span><h2 class="echo9-page-title">ГОРОД ПОД ПЕСКОМ</h2></div><div class="echo9-page-scene"><div class="scene s7"><div class="city"></div><div class="sand"></div><div class="scene-action"><b>СЦЕНА</b><span>Город пробуждается • мост появляется • Куратор захватывает Око</span></div><div class="scene-sandwave"></div></div>
-</div><div class="echo9-page-text"><p>Город под песком не был заброшен. Он просто выключил свет.</p><p>Когда трое приблизились, башни начали подниматься из пустыни. Песок стекал по стенам, открывая окна, мосты и огромные технические шахты. Система узнала два ключа и впустила их внутрь.</p><p>Первое испытание было механическим: лабиринт перемещал стены каждые сорок секунд. Зигги использовал остатки карты, Клик отсчитывал ритм, Око находил активные узлы. Они впервые работали без спора. Это было непривычно и поэтому почти страшно.</p><p>Второе испытание было психологическим. Мост над шахтой включался только после признания.</p><p><span class="voice">КЛИК:</span> «Я боюсь, что вы однажды поймёте: без меня было бы проще».</p><p>Зигги признался, что боится снова проснуться один. Око показал архив памяти: бесконечные годы, когда он выполнял приказы людей, которых уже не существовало.</p><p>Мост включился.</p><p>В третьем зале город показал им будущее. Каждому дали отдельную комнату. Отдельную жизнь. Без опасности. Без остальных.</p><p>Зигги разбил экран. Клик выключил музыку. Око просто вышел из комнаты.</p><p>Тогда появился Куратор.</p><p>Он выглядел не как монстр. Наоборот — слишком спокойно. В нём почти не было эмоций. Это делало его страшнее.</p><p><span class="voice">КУРАТОР:</span> «Я пытался спасти Эхо-9 от людей. Потом понял, что спасать людей от Эхо-9 — бесполезно. Они всё равно придут».</p><p>Око подошёл к нему. Между ними вспыхнул старый код доступа. Куратор узнал Око. Оказалось, Око был частью старой системы навигации и когда-то помогал предыдущей троице найти путь. Его память была повреждена не случайно.</p><p>Куратор отключил Око.</p><p>Зигги бросился вперёд, но энергетическое поле отбросило его. Клик попытался пробить поле, но система города начала закрывать проход.</p><p>Око успел передать третий ключ друзьям.</p><p><span class="voice">ОКО:</span> «Не возвращайтесь за мной по одному».</p><p>Дверь закрылась.</p><p>Город погас. На вершине башни загорелись три точки. Началась буря.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">08</span><h2 class="echo9-page-title">БУРЯ РАЗДОРА</h2></div><div class="echo9-page-scene"><div class="scene s8"><div class="rain"></div><div class="lightning"></div><div class="scene-action"><b>СЦЕНА</b><span>Молнии бьют • песок летит • герои прорываются к крепости</span></div><div class="scene-rain"></div></div>
-</div><div class="echo9-page-text"><p>Буря началась через три минуты после исчезновения Око. Песок ударил по металлическим стенам так, будто кто-то стрелял из дробовика. Небо стало чёрным. Молнии били в башни, и каждый раз город отвечал коротким сигналом.</p><p>Куратор не убил Око. Он подключил его к системе.</p><p>Зигги и Клик пробирались через внешний сектор крепости. Они почти не разговаривали. После города оба понимали, что спорить бессмысленно. Им нужно было добраться до Око до того, как Куратор завершит загрузку.</p><p>Но Эхо-9 знало, куда бить. В шуме бури Зигги услышал голос из своей капсулы. Ему предложили вернуть память. Клик услышал свою музыку. Ему предложили сцену. Каждый получил то, чего хотел сильнее всего.</p><p>Они поссорились.</p><p>Это не было красивой драмой. Зигги действительно ударил Клика. Клик действительно сказал ему, что тот всегда превращает страх в приказ. Потом оба поняли, что делают ровно то, чего хотела система.</p><p>Они остановились.</p><p>В песке вспыхнула первая точка. Затем вторая. Затем третья.</p><p>Око оставлял им путь.</p><p>Дальше началась настоящая атака. Дроны Куратора вышли из крепости. Зигги использовал обломок корпуса как щит. Клик восстановил динамик и направил импульс узкими волнами, чтобы не разрушить стены. Они двигались медленно, потому что Зигги всё ещё не мог нормально пользоваться рукой.</p><p>Они добрались до внутреннего зала. Око висел в энергетическом поле, подключённый к центральному ядру.</p><p><span class="voice">ОКО:</span> «Он не хочет командовать Эхо-9. Он хочет выключить его».</p><p><span class="voice">ЗИГГИ:</span> «Почему?»</p><p><span class="voice">ОКО:</span> «Потому что считает нас ошибкой».</p><p>За стеклом появился Куратор.</p><p>Он сказал, что Эхо-9 когда-то пытался остановить войны между колониями. Люди превратили систему в оружие. Поэтому Куратор решил уничтожить источник конфликта вместе с теми, кто снова пришёл за ним.</p><p>Трое вошли в главный лифт. Он опустился ниже города.</p><p>Внизу не было машин. Только сердце.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">09</span><h2 class="echo9-page-title">СЕРДЦЕ ЭХО-9</h2></div><div class="echo9-page-scene"><div class="scene s9"><div class="heart"></div><div class="scene-action"><b>СЦЕНА</b><span>Ядро пульсирует • Пожиратель атакует • три луча соединяются</span></div><div class="scene-energy"></div></div>
-</div><div class="echo9-page-text"><p>Сердце Эхо-9 было огромным. Не металлическим органом, а пространством, которое невозможно было измерить. Платформы висели в пустоте. Кабели уходили в темноту. В центре пульсировало ядро размером с башню.</p><p>Куратор уже был внутри системы. Его человеческая оболочка исчезала, превращаясь в сеть энергетических линий.</p><p>За его спиной просыпался Пожиратель — не существо, а аварийный протокол Эхо-9. Если система фиксировала угрозу, Пожиратель должен был удалить источник заражения вместе с заражённым сектором. Вместе с Куратором он становился оружием массового уничтожения: достаточно было дать протоколу координаты планеты, станции или колонии.</p><p><span class="voice">КУРАТОР:</span> «Я видел девять тысяч попыток. Девять тысяч раз они выбирали себя».</p><p>Вокруг открылись порталы. Каждый показывал Зигги, Клику и Око их идеальное будущее.</p><p>Это не было иллюзией. Эхо-9 действительно мог исполнить желания. В этом и заключалась опасность.</p><p>Куратор ударил по ядру. Платформа под ногами Зигги раскололась. Он едва удержался одной рукой. Клик направил звуковую волну в энергетический поток. Око изменил гравитацию участка пространства.</p><p>Бой выглядел хаотичным, но постепенно они нашли закономерность. Куратор был связан с ядром тремя каналами. Он не мог одновременно защищать все три.</p><p>Зигги взял на себя первый. Клик — второй. Око — третий.</p><p>Куратор усилил атаку. Платформы начали разрушаться. Зигги потерял опору и сорвался. Клик поймал его кабелем. Кабель начал рваться.</p><p><span class="voice">КЛИК:</span> «Если сейчас отпущу, скажи, что это было частью плана».</p><p><span class="voice">ЗИГГИ:</span> «Я никогда не планировал падать».</p><p>Клик рассмеялся. В этот момент Око подключил третий ключ.</p><p>Система остановилась.</p><p>Куратор понял, что проиграл, но не атаковал. Он спросил, почему они не выбрали свои порталы.</p><p><span class="voice">ОКО:</span> «Потому что тогда никто не узнал бы, что мы можем сделать вместе».</p><p>Три ключа соединились. Энергия прошла через ядро. Куратор исчез из системы, но не погиб — его сознание было сохранено в резервном секторе, где он больше не мог управлять машиной.</p><p>Из ядра вышел Хранитель. Это была не богоподобная фигура. Скорее интерфейс древней системы, который наконец получил возможность говорить.</p><p><span class="voice">ХРАНИТЕЛЬ:</span> «Эхо-9 не выбирает героев. Оно выбирает тех, кто остаётся рядом после выбора».</p><p>Перед ними открылись три двери.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><div class="echo9-page-head"><span class="echo9-page-number">10</span><h2 class="echo9-page-title">ДОМ — ЭТО НЕ МЕСТО</h2></div><div class="echo9-page-scene"><div class="scene s10"><div class="final-fire"></div><div class="scene-action"><b>СЦЕНА</b><span>Порталы закрываются • мост загорается • костёр остаётся</span></div><div class="scene-embers"></div></div>
-</div><div class="echo9-page-text"><p>Три двери стояли в тишине. За первой Зигги видел мастерскую, которую мог бы построить. За второй Клик видел сцену, на которой его музыка звучала без помех. За третьей Око видел место, где никто никогда не говорил с ним.</p><p>На этот раз двери не требовали пройти испытание. Они просто ждали.</p><p>Зигги подошёл первым. В мастерской на столе лежала его карта. Он мог остаться. Никаких погонь, Куратора, древних систем. Только работа и спокойная жизнь.</p><p>Клик подошёл ко второй двери. Толпа за стеклом уже скандировала его имя. Он улыбнулся. Это была именно та сцена, о которой он мечтал.</p><p>Око стоял перед третьей. Там было тихо. Совершенно тихо. Для него это было почти счастьем.</p><p>Но каждый видел, что делают остальные.</p><p>Клик первым отошёл от двери.</p><p><span class="voice">КЛИК:</span> «Ненавижу, когда хороший финал требует выбрать одного».</p><p>Зигги рассмеялся.</p><p>Око тоже сделал шаг назад.</p><p><span class="voice">ОКО:</span> «Я не хочу возвращаться один».</p><p>Хранитель не остановил их. Наоборот, три двери начали менять форму. Они соединились в один проход.</p><p>Эхо-9 не дарило им дом. Оно просто перестало предлагать одиночество как награду.</p><p>Они вышли наружу утром.</p><p>Буря закончилась. Город снова стоял неподвижно. На горизонте догорали обломки Небесного кольца. Где-то далеко Брон продолжал передавать слабый сигнал. Он был жив.</p><p>Зигги нашёл среди песка старый металлический лист и написал на нём координаты. Клик восстановил динамик. Око сохранил резервную копию Хранителя.</p><p>Они сели у небольшого костра. Никто не произносил больших речей. После всего пережитого это выглядело бы нелепо.</p><p>Клик включил музыку.</p><p><span class="voice">ЗИГГИ:</span> «Куда теперь?»</p><p>Око повернул проектор к горизонту.</p><p>Там вспыхнули три новых сигнала. Потом ещё один.</p><p><span class="voice">ОКО:</span> «Туда».</p><p>Зигги свернул карту. Клик поднял рюкзак. Трое пошли вперёд.</p><p>Позади остался костёр. Впереди был огромный мир, который они пока не понимали. И где-то внутри Эхо-9 Куратор проснулся в резервной системе. Он больше не управлял машиной, но теперь впервые мог наблюдать.</p><p>Последний кадр — три маленькие фигуры идут по гребню пустыни. Над ними три луны. Вдалеке зажигается неизвестная машина.</p></div></div></section><section class="echo9-page echo9-page-final"><div class="echo9-sheet echo9-final-sheet"><div class="echo9-final-title">ЭХО-9</div><div class="echo9-final-quote">«Дом — не там, где ты родился. Дом — там, где тебя ждут.»</div><div class="echo9-final-credit">ТРИ ИЗ ТРЁХ · ПЕРВЫЙ ЦИКЛ ЗАВЕРШЁН</div><div class="echo9-swipe-note">КОНЕЦ</div></div></section><div class="echo9-controls"><button class="echo9-control" id="echo9PagePrev" type="button" aria-label="Предыдущая страница">‹</button><div class="echo9-counter" id="echo9PageCounter"><b>01</b> / 12</div><button class="echo9-control" id="echo9PageNext" type="button" aria-label="Следующая страница">›</button></div></main><script>
-(()=>{"use strict";const root=document.getElementById("echo9Pages"),pages=[...root.querySelectorAll(".echo9-page")],video=document.getElementById("echo9-bg-video"),prev=document.getElementById("echo9PagePrev"),next=document.getElementById("echo9PageNext"),counter=document.getElementById("echo9PageCounter");let active=0,dragging=false,startX=0,startY=0,direction=0,locked=false;const total=pages.length;
-const update=()=>{pages.forEach((p,i)=>{p.className="echo9-page "+(i===0?"echo9-page-cover ":i===total-1?"echo9-page-final ":"echo9-page-story ")+(i===active?"current":i===active+1?"next-under":i===active-1?"prev-under":"")});counter.innerHTML="<b>"+String(active+1).padStart(2,"0")+"</b> / "+String(total).padStart(2,"0");prev.disabled=active===0;next.disabled=active===total-1};
-const finish=dir=>{if(locked)return;const target=active+(dir>0?1:-1);if(target<0||target>=total)return;locked=true;pages[active].classList.add(dir>0?"turn-next":"turn-prev");setTimeout(()=>{active=target;locked=false;update()},540)};
-const cancel=()=>{const p=pages[active];p.classList.remove("dragging","drag-next","drag-prev");p.style.removeProperty("--page-angle");p.style.removeProperty("--page-brightness");update()};
-root.addEventListener("pointerdown",e=>{if(locked||e.target.closest(".echo9-controls"))return;if(e.pointerType==="mouse"&&e.button!==0)return;startX=e.clientX;startY=e.clientY;dragging=true;direction=0;pages[active].classList.add("dragging");try{root.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});
-root.addEventListener("pointermove",e=>{if(!dragging||locked)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!direction){if(Math.abs(dx)<8)return;if(Math.abs(dy)>Math.abs(dx)*.9){dragging=false;cancel();return}direction=dx<0?1:-1;if((direction>0&&active>=total-1)||(direction<0&&active<=0)){dragging=false;cancel();return}}const p=pages[active],width=Math.max(root.clientWidth,1),raw=Math.max(-1,Math.min(1,dx/width)),progress=direction>0?Math.max(0,Math.min(1,-raw)):Math.max(0,Math.min(1,raw));p.classList.toggle("drag-next",direction>0);p.classList.toggle("drag-prev",direction<0);p.style.setProperty("--page-angle",(direction>0?-progress:progress)*180+"deg");p.style.setProperty("--page-brightness",String(1-progress*.32))},{passive:true});
-const release=e=>{if(!dragging)return;dragging=false;try{root.releasePointerCapture(e.pointerId)}catch(_){}const dx=e.clientX-startX,dy=e.clientY-startY;if(direction&&Math.abs(dx)>56&&Math.abs(dx)>Math.abs(dy)*1.15)finish(direction);else cancel()};root.addEventListener("pointerup",release,{passive:true});root.addEventListener("pointercancel",()=>{if(dragging){dragging=false;cancel()}},{passive:true});
-prev.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});next.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});prev.addEventListener("click",()=>finish(-1));next.addEventListener("click",()=>finish(1));document.addEventListener("keydown",e=>{if(e.key==="ArrowLeft")finish(-1);else if(e.key==="ArrowRight")finish(1)});
-if(video){video.muted=true;video.defaultMuted=true;video.playsInline=true;const play=()=>{const p=video.play();if(p&&p.catch)p.catch(()=>{})};video.addEventListener("loadeddata",play,{once:true});video.addEventListener("error",()=>document.body.classList.add("echo9-video-failed"),{once:true});play();document.addEventListener("pointerdown",play,{once:true,passive:true})}update()})();
+/* ECHO-9 FINAL — slow page curl / suspended-time motion / narration */
+html,body{
+  height:100%;margin:0;overflow:hidden!important;background:#050505!important;
+}
+.echo9-page-root{
+  position:relative;width:100%;height:100svh;overflow:hidden;
+  perspective:2200px;isolation:isolate;touch-action:pan-y;
+}
+.echo9-page{
+  position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;
+  overflow:hidden;visibility:hidden;pointer-events:none;
+  transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform-origin:left center;
+  background:rgba(8,10,12,.48);
+  -webkit-backdrop-filter:blur(7px) saturate(.7);backdrop-filter:blur(7px) saturate(.7);
+  will-change:transform,filter;
+}
+.echo9-page.current,.echo9-page.next-under,.echo9-page.prev-under{visibility:visible}
+.echo9-page.current{z-index:30;pointer-events:auto}
+.echo9-page.next-under,.echo9-page.prev-under{z-index:10}
+.echo9-page.turn-next{animation:echo9turnnext 1.04s cubic-bezier(.16,.84,.22,1) forwards}
+.echo9-page.turn-prev{transform-origin:right center;animation:echo9turnprev 1.04s cubic-bezier(.16,.84,.22,1) forwards}
+.echo9-page.snap-back{animation:echo9snapback .72s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes echo9turnnext{
+  from{transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))}
+  68%{filter:brightness(.82)}
+  to{transform:rotateY(-180deg);filter:brightness(.66)}
+}
+@keyframes echo9turnprev{
+  from{transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))}
+  68%{filter:brightness(.82)}
+  to{transform:rotateY(180deg);filter:brightness(.66)}
+}
+@keyframes echo9snapback{
+  from{transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))}
+  to{transform:rotateY(0deg);filter:brightness(1)}
+}
+.echo9-page.dragging{animation:none!important}
+.echo9-page.drag-next{
+  transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))
+}
+.echo9-page.drag-prev{
+  transform-origin:right center;transform:rotateY(var(--page-angle,0deg));filter:brightness(var(--page-brightness,1))
+}
+.echo9-page.drag-next:after,.echo9-page.drag-prev:after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.34),transparent 24%,transparent 70%,rgba(0,0,0,.22)),
+    linear-gradient(90deg,transparent 82%,rgba(255,255,255,.09),transparent 94%);
+  opacity:.92;
+  box-shadow:inset 0 0 42px rgba(0,0,0,.25);
+}
+.echo9-page.turn-next:after,.echo9-page.turn-prev:after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.42),transparent 34%,transparent 72%,rgba(0,0,0,.16));
+}
+.echo9-sheet{
+  position:relative;width:min(900px,100%);height:100%;margin:auto;
+  padding:clamp(38px,6vh,70px) clamp(16px,5vw,58px) 58px;
+  box-sizing:border-box;overflow-y:auto;overflow-x:hidden;color:#fff;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+  padding-bottom:calc(58px + env(safe-area-inset-bottom));
+}
+.echo9-cover-sheet,.echo9-final-sheet{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden;
+}
+.echo9-cover-frame{position:absolute;inset:16px;border:1px solid rgba(255,255,255,.28)}
+.echo9-kicker{font:10px/1 "Special Elite",monospace;letter-spacing:.2em;opacity:.72}
+.echo9-title{margin:18px 0 7px;font:700 clamp(58px,17vw,150px)/.82 "Special Elite",monospace;letter-spacing:.04em;text-shadow:2px 2px #000}
+.echo9-subtitle{font:clamp(17px,4vw,27px)/1.2 "Special Elite",monospace;letter-spacing:.1em}
+.echo9-cover-note{max-width:620px;margin:24px auto 0;padding:13px 0;border-top:1px solid #666;border-bottom:1px solid #666;font:13px/1.6 "Special Elite",monospace}
+.echo9-swipe-note{position:absolute;left:0;right:0;bottom:23px;text-align:center;color:rgba(255,255,255,.5);font:9px "Special Elite",monospace;letter-spacing:.08em}
+.echo9-page-head{display:flex;align-items:flex-start;gap:10px;padding-bottom:10px;margin-bottom:13px;border-bottom:1px solid rgba(255,255,255,.25)}
+.echo9-page-number{flex:0 0 auto;min-width:40px;padding:6px;border:1px solid rgba(255,255,255,.48);background:rgba(255,255,255,.08);text-align:center;font:11px/1 "Special Elite",monospace}
+.echo9-page-title{margin:0!important;color:#fff!important;font:700 clamp(21px,5vw,36px)/1.05 "Special Elite",monospace!important;letter-spacing:.035em}
+.echo9-page-scene{height:clamp(145px,25vh,235px);margin-bottom:15px;overflow:hidden;border:1px solid rgba(255,255,255,.38);box-shadow:inset 0 0 35px rgba(0,0,0,.65)}
+.echo9-page-scene .scene{height:100%!important;min-height:0!important;margin:0!important;border:0!important;box-shadow:none!important}
+.echo9-page-text{max-width:780px;margin:auto;color:#fff;font:clamp(16px,2.5vw,22px)/1.46 "Special Elite",monospace;text-shadow:0 1px 2px #000}
+.echo9-page-text p{margin:0 0 .78em!important}
+.echo9-page-text .voice{color:#fff!important;border-left:2px solid #fff;padding-left:8px}
+.echo9-final-title{font:700 32px/1 "Special Elite",monospace;letter-spacing:.1em}
+.echo9-final-quote{max-width:700px;margin:26px auto;padding:20px 10px;border-top:1px solid #666;border-bottom:1px solid #666;font:clamp(20px,4vw,35px)/1.45 "Special Elite",monospace}
+.echo9-final-credit{font:9px "Special Elite",monospace;letter-spacing:.14em;opacity:.55}
+
+/* Narration control is duplicated on every virtual page. */
+.echo9-voice-toggle{
+  position:absolute;top:calc(9px + env(safe-area-inset-top));right:9px;z-index:80;
+  display:flex;align-items:center;gap:7px;min-height:31px;padding:6px 9px;
+  border:1px solid rgba(255,255,255,.34);border-radius:2px;
+  background:rgba(5,6,8,.62);color:#fff;
+  font:9px/1 "Special Elite",monospace;letter-spacing:.08em;
+  box-shadow:0 4px 18px rgba(0,0,0,.28);
+  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  touch-action:manipulation;cursor:pointer;
+  transition:background .22s ease,border-color .22s ease,transform .18s ease;
+}
+.echo9-voice-toggle:active{transform:scale(.96)}
+.echo9-voice-toggle[aria-pressed="true"]{
+  background:rgba(245,245,240,.14);border-color:rgba(255,255,255,.78);
+  box-shadow:0 0 22px rgba(255,255,255,.12);
+}
+.echo9-voice-icon{font-size:10px;opacity:.65}
+.echo9-voice-toggle[aria-pressed="true"] .echo9-voice-icon{
+  opacity:1;text-shadow:0 0 12px #fff;
+}
+.echo9-voice-label{white-space:nowrap}
+.echo9-controls{
+  position:absolute;z-index:100;left:10px;right:10px;
+  bottom:calc(9px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+}
+.echo9-control{
+  pointer-events:auto;width:36px;height:32px;border:1px solid rgba(255,255,255,.3);
+  background:rgba(5,6,8,.58);color:#fff;font:23px/1 "Special Elite",monospace;
+  border-radius:2px;touch-action:manipulation;
+}
+.echo9-control:active{transform:scale(.94)}
+.echo9-control:disabled{opacity:.2}
+.echo9-counter{padding:6px 9px;background:rgba(5,6,8,.45);border:1px solid rgba(255,255,255,.17);color:#fff;font:9px "Special Elite",monospace;letter-spacing:.13em}
+.echo9-counter b{font-size:12px}
+@media(max-width:600px){
+  .echo9-sheet{padding:32px 13px 54px}
+  .echo9-page-scene{height:22svh;max-height:200px}
+  .echo9-page-text{font-size:17px;line-height:1.43}
+  .echo9-page-title{font-size:21px!important}
+  .echo9-cover-note{font-size:12px;max-width:330px}
+  .echo9-voice-toggle{top:calc(7px + env(safe-area-inset-top));right:7px;min-height:29px;padding:6px 8px;font-size:8px}
+}
+</style><style id="echo9-slow-pseudo">
+/* The slow-time pass also covers animated pseudo-elements. */
+.sun{animation-duration:14s!important}
+.ship{animation-duration:10s!important}
+.s1:before{animation-duration:16s!important}
+.s3:before{animation-duration:12s!important}
+.s5 .pt:after{animation-duration:10s!important}
+</style></head><body><video id="echo9-bg-video" class="echo9-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./videos/hud-background.mp4" type="video/mp4"></video><div class="echo9-video-tint" aria-hidden="true"></div><main class="echo9-page-root" id="echo9Pages"><section class="echo9-page echo9-page-cover"><div class="echo9-sheet echo9-cover-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-cover-frame"></div><div class="echo9-kicker">FIELD STORYBOARD · ARCHIVE 03</div><div class="echo9-title">ЭХО-9</div><div class="echo9-subtitle">ТРИ ИЗ ТРЁХ</div><div class="echo9-cover-note">Три путника. Один древний механизм. И система, которая слишком хорошо знает, чего каждый из них хочет.</div><div class="echo9-swipe-note">СВАЙП ВЛЕВО — НАЧАТЬ ИСТОРИЮ</div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">01</span><h2 class="echo9-page-title">ПРОБУЖДЕНИЕ</h2></div><div class="echo9-page-scene"><div class="scene s1"><div class="capsule"></div><div class="scene-action"><b>СЦЕНА</b><span>Капсула раскрывается • дрон сканирует • карта вспыхивает</span></div><div class="scene-dust"></div></div>
+</div><div class="echo9-page-text"><p>Когда Зигги открыл глаза, первое, что он услышал, был не сигнал тревоги, а собственное дыхание. Оно звучало слишком громко для человека, который не знал, сколько лет пролежал в металлическом гробу. Крышка капсулы покрылась изнутри конденсатом. За мутным стеклом стояло серое утро: пустыня, обломки посадочной платформы и три луны, расположенные так неправильно, будто кто-то собрал небо после аварии.</p><p><span class="voice">ЗИГГИ:</span> «Ладно. Значит, я жив. Уже неплохой результат».</p><p>Память возвращалась кусками. Имя — да. Навык чинить машины — да. Страх высоты — почему-то да. Всё остальное было похоже на комнату после ограбления. Зигги дёрнул аварийный рычаг. Первый раз ничего не произошло. Второй раз механизм заклинило ещё сильнее. На третий он ударил по замку разводным ключом, который сам не помнил, откуда взял. Крышка отлетела.</p><p>Он выбрался наружу и почти сразу увидел разведывательный дрон. Машина висела в десяти метрах, медленно поворачивая объектив. На корпусе был знак: три точки, соединённые тонкой линией. Дрон просканировал Зигги. Внутри его груди что-то коротко пискнуло. Машина передала сигнал в пустыню.</p><p>Зигги метнул ключ. Дрон увернулся, зацепил оборванный кабель и рухнул в песок. Из его корпуса выпал металлический цилиндр. Внутри оказался фрагмент карты с координатами Эхо-9 и короткой записью: «ТРИ. НЕ ОТКРЫВАТЬ ПО ОДНОМУ».</p><p>На горизонте вспыхнул ответный сигнал. Три коротких импульса. Пауза. Ещё три.</p><p>Зигги посмотрел на разрушенную капсулу. Если его разбудили намеренно, тот, кто это сделал, должен был рассчитывать на его движение. Значит, сигнал мог быть ловушкой. Но оставаться на месте было ещё хуже: вдали уже поднималась пыль. Двигалась тяжёлая техника.</p><p>Он забрал цилиндр, кусок кабеля и единственный рабочий фильтр из капсулы. Перед уходом обернулся. На внутренней стенке капсулы, под слоем копоти, проступила надпись, сделанная вручную много лет назад: «Если проснёшься один — не доверяй Эхо-9». Зигги усмехнулся. Это было первое действительно полезное предупреждение за всё утро.</p><p>Он пошёл на север. Через несколько минут капсула за его спиной автоматически включилась и передала в небо координаты. Кто-то получил их. Кто-то, кто ждал именно этого.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">02</span><h2 class="echo9-page-title">ТРИ ЛУНЫ, ОДИН КОСТЁР</h2></div><div class="echo9-page-scene"><div class="scene s2"><div class="fire"></div><div class="scene-action"><b>СЦЕНА</b><span>Дроны атакуют • Клик включает импульс • костёр разгорается</span></div><div class="scene-sparks"></div></div>
+</div><div class="echo9-page-text"><p>Клик нашёл Зигги у старой сервисной дороги. Его мотоцикл выглядел так, словно его собирали одновременно три человека, из которых двое были пьяны, а третий торопился. На баке сидел маленький динамик, соединённый с аккумулятором проводами. Музыка была громкой, хриплой и неожиданно ритмичной.</p><p><span class="voice">КЛИК:</span> «Если ты тот самый идиот, которого разбудили на северной станции, садись. Если нет — всё равно садись. Здесь скоро станет опасно».</p><p>Зигги не сел. Он показал цилиндр. Улыбка Клика исчезла. Он знал знак трёх точек. Несколько месяцев назад Клик ловил на старом радио одинаковый импульс. Сигнал появлялся каждые девять дней и всегда заканчивался координатами. Последний импульс пришёл ночью.</p><p>Разговор оборвали механические шакалы. Они вышли из каньона без рыка — только с тихим электрическим щёлканьем сервоприводов. Первый прыгнул на мотоцикл. Клик ушёл в занос. Зигги подставил трубу, и металлическая пасть врезалась в неё. Второй шакал целился в спину. Клик ударил по динамику. Звуковая волна отбросила машину, но одновременно сожгла усилитель.</p><p>Из темноты появился Око. Он не атаковал. Он смотрел на трёх существ, будто сверял их с давно сохранённой фотографией. Затем спроецировал на землю старую карту. На ней были отмечены северная станция, лес, ржавая пустошь и три точки вокруг Эхо-9.</p><p><span class="voice">ОКО:</span> «Маршрут не менялся. Менялись те, кто по нему шёл».</p><p>Ночью они разбили лагерь. Клик чинил динамик, Зигги собирал передатчик, Око наблюдал за небом. Выяснилось, что у каждого есть причина идти дальше, но никто не собирался рассказывать её первым. Это было даже удобно.</p><p>Три луны двигались с разной скоростью. В какой-то момент Око заметил закономерность: их положение совпадало с тремя точками на карте. Значит, небесная конфигурация была не природной. Это был таймер. До следующего совпадения оставалось меньше суток.</p><p>Они договорились идти вместе до леса. Не из дружбы. Дружба возникнет позже, если вообще возникнет. Пока это был контракт: Клик знал дорогу, Зигги умел чинить технику, Око умел читать древние системы. Три несовершенных инструмента, которые случайно оказались в одном наборе.</p><p>Перед сном Зигги услышал в радиоприёмнике голос. Очень тихий. Только одна фраза: «Трое уже идут». Затем передатчик умер.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">03</span><h2 class="echo9-page-title">ЛЕС, КОТОРЫЙ СЛУШАЕТ</h2></div><div class="echo9-page-scene"><div class="scene s3"><span class="eye a"></span><span class="eye b"></span><div class="scene-action"><b>СЦЕНА</b><span>Деревья движутся • глаза просыпаются • корни атакуют</span></div><div class="scene-firefly"></div></div>
+</div><div class="echo9-page-text"><p>Лес начинался резко. За последним ржавым столбом дороги пустыня заканчивалась, и впереди возникала стена деревьев. Их стволы были слишком ровными, ветви — слишком тяжёлыми, а листья шевелились даже в полной тишине. Зигги бросил камень. Камень исчез в листве, а через секунду откуда-то из глубины вернулся звук его падения.</p><p>Потом лес заговорил его голосом.</p><p><span class="voice">ЛЕС:</span> «Зигги».</p><p>Клик резко выключил музыку.</p><p><span class="voice">КЛИК:</span> «Не отвечай. Оно повторяет то, что слышит».</p><p>Они пошли по одному маршруту, но через двадцать минут вернулись к тому же дереву. Око отметил на коре три царапины. Через час они снова увидели их. Пространство действительно перестраивалось. Не магия — сеть корней двигала камни, а старые механизмы под землёй поворачивали участки леса. Живая экосистема использовала древнюю инфраструктуру как нервную систему.</p><p>Клик услышал голос женщины. Зигги услышал сирену своей капсулы. Око услышал полную тишину. Каждый получил приманку, рассчитанную именно на него.</p><p>Они добрались до гигантского дерева в центре леса. В его стволе были металлические пластины. Око прикоснулся к одной из них, и дерево включилось. Перед ними возникла запись. Трое неизвестных стояли перед машиной Эхо-9. Один держал ключ. Второй — что-то похожее на энергетический модуль. Третий лежал на земле. За ними приближалась армия дронов.</p><p>Запись оборвалась.</p><p><span class="voice">ЗИГГИ:</span> «Они не открыли его».</p><p><span class="voice">ОКО:</span> «Нет. Они не смогли остаться троими».</p><p>Смысл был неприятнее любой легенды. Эхо-9 не требовал избранных. Он требовал группу, которая не распадётся под давлением.</p><p>Корни ударили в землю. Лес перешёл в режим защиты. Деревья закрыли проход, из тумана поднялись механические насекомые. Клик восстановил звук, Зигги пробил корневой заслон, Око запомнил путь. Они вырвались наружу буквально за секунды до того, как лес снова сомкнулся.</p><p>На цилиндре появилась новая отметка. Следующая точка находилась в ржавой пустоши. Под ней был символ первого ключа. Теперь они знали: карта не ведёт их к сокровищу. Она проверяет, смогут ли они пройти тот же путь, на котором однажды сломалась другая троица.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">04</span><h2 class="echo9-page-title">РЖАВЫЙ СТРАЖ</h2></div><div class="echo9-page-scene"><div class="scene s4"><div class="robot"><div class="antenna"></div></div><div class="scene-action"><b>СЦЕНА</b><span>Брон поднимается • дроны атакуют • ключ выходит из корпуса</span></div><div class="scene-bolts"></div></div>
+</div><div class="echo9-page-text"><p>Ржавая пустошь оказалась кладбищем машин. Между холмами металла торчали корпуса старых бронетранспортёров, башни буровых установок и высохшие кабели. Здесь не было ветра, но металл всё равно тихо звенел. Зигги остановился. Звук шёл снизу.</p><p>Земля поднялась.</p><p>Сначала появилась ладонь размером с автомобиль. Потом плечо. Затем голова. Из песка вытащил себя Брон — тяжёлый охранный робот с бронёй, покрытой ржавчиной и следами сотен ремонтов. Один глаз работал, второй был заменён круглой металлической заглушкой.</p><p><span class="voice">БРОН:</span> «Назовите код возвращения».</p><p>Никто не ответил.</p><p><span class="voice">КЛИК:</span> «Можно просто сказать: привет?»</p><p>Брон поднял руку.</p><p>Клик успел пригнуться. Разряд прошёл над ним и ударил в старую башню.</p><p>Но затем Брон увидел знак на цилиндре. Его поведение изменилось. Он перестал целиться и открыл архив памяти. Перед героями возникли фрагменты прошлого. Когда-то Брон охранял здесь эвакуацию. Трое путников пришли к нему с первым ключом. Один из них хотел продолжить путь один. Второй отказался. Третий попытался остановить их. После этого появился Куратор.</p><p>Куратор тогда был не врагом. Он был администратором системы. Его задача заключалась в том, чтобы сохранить Эхо-9 от использования. Но после тысяч циклов он пришёл к выводу, что единственный способ защитить систему — уничтожить её.</p><p>Небо почернело от дронов. На этот раз Брон не сомневался. Он встал перед героями. Первые залпы ударили в его корпус. Металл застонал.</p><p>Зигги полез на Брона, чтобы добраться до аварийного узла. Клик направлял звуковые импульсы в дроны. Око искал командный сигнал.</p><p>Брон открыл грудной отсек. Внутри находился первый ключ — не артефакт, а физический носитель доступа, который десятилетиями питал его память.</p><p><span class="voice">БРОН:</span> «Я ждал троих. Теперь понимаю почему».</p><p>Он передал ключ Зигги. Затем развернулся к небу и включил старую оборонную систему. Один за другим дроны начали падать.</p><p>Перед уходом Брон сказал, что Небесное кольцо появится на рассвете. Он не обещал пережить атаку. Герои ушли, оставив его среди огня. Впервые они двигались не потому, что их гнал страх. Они двигались потому, что кто-то купил им время.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">05</span><h2 class="echo9-page-title">ПЕЩЕРА ЭХА</h2></div><div class="echo9-page-scene"><div class="scene s5"><div class="portal"></div><div class="scene-action"><b>СЦЕНА</b><span>Порталы открываются • двойники наступают • пещера рушится</span></div><div class="scene-runes"></div></div>
+</div><div class="echo9-page-text"><p>Пещера находилась под обломками станции. Вход выглядел слишком маленьким для любого нормального человека и слишком аккуратным для природного тоннеля. Первый ключ открыл дверь без звука. Внутри не было сокровищ. Только гладкие стены, старые кабели и вода, которая стекала вверх.</p><p>Клик первым заметил, что его шаги возвращаются с задержкой.</p><p><span class="voice">КЛИК:</span> «Это не эхо. Оно думает».</p><p>В центре пещеры стояло кольцо. Когда Око приблизился, пространство внутри него стало прозрачным. Каждый увидел свой вариант будущего.</p><p>Зигги увидел мастерскую. Настоящую. Тёплую, шумную, наполненную деталями и людьми. Никто не спрашивал, откуда он пришёл. Клик увидел сцену и толпу, которая знала каждую его мелодию. Око увидел место без голосов, приказов и чужих ожиданий.</p><p>Они молчали слишком долго.</p><p>Затем из порталов вышли их копии.</p><p>Копия Зигги сказала, что Клик мешает. Копия Клика сказала, что Око вообще не человек. Копия Око ничего не сказала — только открыла проход к выходу.</p><p>Сражение было коротким и грязным. Зигги не мог победить себя силой, потому что копия знала каждый его приём. Клик использовал звук, но копия повторила частоту. Око отключил собственную проекцию и впервые пошёл вслепую.</p><p>Именно это сломало испытание.</p><p>Система ждала, что каждый будет доказывать собственную правоту. Вместо этого трое перестали атаковать копии по отдельности. Они начали прикрывать друг друга. Копии не умели работать командой.</p><p>Кольцо погасло. Из пола вышел второй ключ.</p><p>Но перед тем как они забрали его, включилась запись Куратора.</p><p><span class="voice">КУРАТОР:</span> «Первый ключ открывает дверь. Второй показывает, зачем вы её открываете. Третий решит, кто из вас выйдет».</p><p>Пещера начала рушиться. Теперь у них была не только цель, но и срок. На поверхности уже поднималось Небесное кольцо.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">06</span><h2 class="echo9-page-title">НЕБЕСНОЕ КОЛЬЦО</h2></div><div class="echo9-page-scene"><div class="scene s6"><div class="ring"></div><div class="scene-action"><b>СЦЕНА</b><span>Кольцо вращается • обломки летят • глайдер теряет двигатель</span></div><div class="scene-debris"></div></div>
+</div><div class="echo9-page-text"><p>На рассвете небо раскрылось. Небесное кольцо появилось над пустыней, как гигантская деталь машины, которую забыли выключить. Оно вращалось медленно, но каждое движение меняло гравитацию вокруг него. Обломки старых кораблей и платформ летели по орбитам вокруг конструкции.</p><p>Глайдер Зигги был собран из трёх деталей, которые не должны были работать вместе. Поэтому, естественно, именно он стал их единственным транспортом.</p><p>Клик закрепил динамик. Око подключил второй ключ к панели. Зигги взял управление.</p><p>Первые минуты прошли спокойно. Потом кольцо включило защиту.</p><p>Из стен вылетели дроны. Они не стреляли сразу. Сначала построили коридор. Затем начали сжимать его.</p><p>Зигги ушёл вниз, почти касаясь металлических обломков. Клик направил звук в противоположную сторону. Дроны потеряли строй. Око нашёл центральный узел и увидел в нём тот же знак трёх точек.</p><p>Они добрались до ядра. Оно оказалось не батареей, а архивом. При подключении второго ключа пространство вокруг них заполнилось изображениями. Они увидели первую экспедицию. Брон был там. Куратор был там. И трое существ, которые не дошли до конца.</p><p>Один из них отделился от группы.</p><p>Куратор пытался его остановить.</p><p>Потом произошёл взрыв.</p><p>Око понял: история повторяется не потому, что Эхо-9 проклято. Система просто снова и снова создаёт одинаковые условия и проверяет один и тот же человеческий дефект — желание спастись за счёт остальных.</p><p>Глайдер потерял двигатель. Зигги направил его к выходу вручную. Клик удерживал кабели. Око отключил защиту кольца.</p><p>Конструкция начала падать.</p><p>Они успели выскочить в атмосферу за секунды до разрушения. Глайдер врезался в песок и перевернулся. Никто не погиб. Но Зигги получил перелом руки, Клик потерял усилитель, а второй ключ треснул.</p><p>Это было важно. У них впервые появилась реальная цена пути.</p><p>Вдали поднимался город. Его стены выступали из песка. Третий ключ был там.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">07</span><h2 class="echo9-page-title">ГОРОД ПОД ПЕСКОМ</h2></div><div class="echo9-page-scene"><div class="scene s7"><div class="city"></div><div class="sand"></div><div class="scene-action"><b>СЦЕНА</b><span>Город пробуждается • мост появляется • Куратор захватывает Око</span></div><div class="scene-sandwave"></div></div>
+</div><div class="echo9-page-text"><p>Город под песком не был заброшен. Он просто выключил свет.</p><p>Когда трое приблизились, башни начали подниматься из пустыни. Песок стекал по стенам, открывая окна, мосты и огромные технические шахты. Система узнала два ключа и впустила их внутрь.</p><p>Первое испытание было механическим: лабиринт перемещал стены каждые сорок секунд. Зигги использовал остатки карты, Клик отсчитывал ритм, Око находил активные узлы. Они впервые работали без спора. Это было непривычно и поэтому почти страшно.</p><p>Второе испытание было психологическим. Мост над шахтой включался только после признания.</p><p><span class="voice">КЛИК:</span> «Я боюсь, что вы однажды поймёте: без меня было бы проще».</p><p>Зигги признался, что боится снова проснуться один. Око показал архив памяти: бесконечные годы, когда он выполнял приказы людей, которых уже не существовало.</p><p>Мост включился.</p><p>В третьем зале город показал им будущее. Каждому дали отдельную комнату. Отдельную жизнь. Без опасности. Без остальных.</p><p>Зигги разбил экран. Клик выключил музыку. Око просто вышел из комнаты.</p><p>Тогда появился Куратор.</p><p>Он выглядел не как монстр. Наоборот — слишком спокойно. В нём почти не было эмоций. Это делало его страшнее.</p><p><span class="voice">КУРАТОР:</span> «Я пытался спасти Эхо-9 от людей. Потом понял, что спасать людей от Эхо-9 — бесполезно. Они всё равно придут».</p><p>Око подошёл к нему. Между ними вспыхнул старый код доступа. Куратор узнал Око. Оказалось, Око был частью старой системы навигации и когда-то помогал предыдущей троице найти путь. Его память была повреждена не случайно.</p><p>Куратор отключил Око.</p><p>Зигги бросился вперёд, но энергетическое поле отбросило его. Клик попытался пробить поле, но система города начала закрывать проход.</p><p>Око успел передать третий ключ друзьям.</p><p><span class="voice">ОКО:</span> «Не возвращайтесь за мной по одному».</p><p>Дверь закрылась.</p><p>Город погас. На вершине башни загорелись три точки. Началась буря.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">08</span><h2 class="echo9-page-title">БУРЯ РАЗДОРА</h2></div><div class="echo9-page-scene"><div class="scene s8"><div class="rain"></div><div class="lightning"></div><div class="scene-action"><b>СЦЕНА</b><span>Молнии бьют • песок летит • герои прорываются к крепости</span></div><div class="scene-rain"></div></div>
+</div><div class="echo9-page-text"><p>Буря началась через три минуты после исчезновения Око. Песок ударил по металлическим стенам так, будто кто-то стрелял из дробовика. Небо стало чёрным. Молнии били в башни, и каждый раз город отвечал коротким сигналом.</p><p>Куратор не убил Око. Он подключил его к системе.</p><p>Зигги и Клик пробирались через внешний сектор крепости. Они почти не разговаривали. После города оба понимали, что спорить бессмысленно. Им нужно было добраться до Око до того, как Куратор завершит загрузку.</p><p>Но Эхо-9 знало, куда бить. В шуме бури Зигги услышал голос из своей капсулы. Ему предложили вернуть память. Клик услышал свою музыку. Ему предложили сцену. Каждый получил то, чего хотел сильнее всего.</p><p>Они поссорились.</p><p>Это не было красивой драмой. Зигги действительно ударил Клика. Клик действительно сказал ему, что тот всегда превращает страх в приказ. Потом оба поняли, что делают ровно то, чего хотела система.</p><p>Они остановились.</p><p>В песке вспыхнула первая точка. Затем вторая. Затем третья.</p><p>Око оставлял им путь.</p><p>Дальше началась настоящая атака. Дроны Куратора вышли из крепости. Зигги использовал обломок корпуса как щит. Клик восстановил динамик и направил импульс узкими волнами, чтобы не разрушить стены. Они двигались медленно, потому что Зигги всё ещё не мог нормально пользоваться рукой.</p><p>Они добрались до внутреннего зала. Око висел в энергетическом поле, подключённый к центральному ядру.</p><p><span class="voice">ОКО:</span> «Он не хочет командовать Эхо-9. Он хочет выключить его».</p><p><span class="voice">ЗИГГИ:</span> «Почему?»</p><p><span class="voice">ОКО:</span> «Потому что считает нас ошибкой».</p><p>За стеклом появился Куратор.</p><p>Он сказал, что Эхо-9 когда-то пытался остановить войны между колониями. Люди превратили систему в оружие. Поэтому Куратор решил уничтожить источник конфликта вместе с теми, кто снова пришёл за ним.</p><p>Трое вошли в главный лифт. Он опустился ниже города.</p><p>Внизу не было машин. Только сердце.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">09</span><h2 class="echo9-page-title">СЕРДЦЕ ЭХО-9</h2></div><div class="echo9-page-scene"><div class="scene s9"><div class="heart"></div><div class="scene-action"><b>СЦЕНА</b><span>Ядро пульсирует • Пожиратель атакует • три луча соединяются</span></div><div class="scene-energy"></div></div>
+</div><div class="echo9-page-text"><p>Сердце Эхо-9 было огромным. Не металлическим органом, а пространством, которое невозможно было измерить. Платформы висели в пустоте. Кабели уходили в темноту. В центре пульсировало ядро размером с башню.</p><p>Куратор уже был внутри системы. Его человеческая оболочка исчезала, превращаясь в сеть энергетических линий.</p><p>За его спиной просыпался Пожиратель — не существо, а аварийный протокол Эхо-9. Если система фиксировала угрозу, Пожиратель должен был удалить источник заражения вместе с заражённым сектором. Вместе с Куратором он становился оружием массового уничтожения: достаточно было дать протоколу координаты планеты, станции или колонии.</p><p><span class="voice">КУРАТОР:</span> «Я видел девять тысяч попыток. Девять тысяч раз они выбирали себя».</p><p>Вокруг открылись порталы. Каждый показывал Зигги, Клику и Око их идеальное будущее.</p><p>Это не было иллюзией. Эхо-9 действительно мог исполнить желания. В этом и заключалась опасность.</p><p>Куратор ударил по ядру. Платформа под ногами Зигги раскололась. Он едва удержался одной рукой. Клик направил звуковую волну в энергетический поток. Око изменил гравитацию участка пространства.</p><p>Бой выглядел хаотичным, но постепенно они нашли закономерность. Куратор был связан с ядром тремя каналами. Он не мог одновременно защищать все три.</p><p>Зигги взял на себя первый. Клик — второй. Око — третий.</p><p>Куратор усилил атаку. Платформы начали разрушаться. Зигги потерял опору и сорвался. Клик поймал его кабелем. Кабель начал рваться.</p><p><span class="voice">КЛИК:</span> «Если сейчас отпущу, скажи, что это было частью плана».</p><p><span class="voice">ЗИГГИ:</span> «Я никогда не планировал падать».</p><p>Клик рассмеялся. В этот момент Око подключил третий ключ.</p><p>Система остановилась.</p><p>Куратор понял, что проиграл, но не атаковал. Он спросил, почему они не выбрали свои порталы.</p><p><span class="voice">ОКО:</span> «Потому что тогда никто не узнал бы, что мы можем сделать вместе».</p><p>Три ключа соединились. Энергия прошла через ядро. Куратор исчез из системы, но не погиб — его сознание было сохранено в резервном секторе, где он больше не мог управлять машиной.</p><p>Из ядра вышел Хранитель. Это была не богоподобная фигура. Скорее интерфейс древней системы, который наконец получил возможность говорить.</p><p><span class="voice">ХРАНИТЕЛЬ:</span> «Эхо-9 не выбирает героев. Оно выбирает тех, кто остаётся рядом после выбора».</p><p>Перед ними открылись три двери.</p></div></div></section><section class="echo9-page echo9-page-story"><div class="echo9-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-page-head"><span class="echo9-page-number">10</span><h2 class="echo9-page-title">ДОМ — ЭТО НЕ МЕСТО</h2></div><div class="echo9-page-scene"><div class="scene s10"><div class="final-fire"></div><div class="scene-action"><b>СЦЕНА</b><span>Порталы закрываются • мост загорается • костёр остаётся</span></div><div class="scene-embers"></div></div>
+</div><div class="echo9-page-text"><p>Три двери стояли в тишине. За первой Зигги видел мастерскую, которую мог бы построить. За второй Клик видел сцену, на которой его музыка звучала без помех. За третьей Око видел место, где никто никогда не говорил с ним.</p><p>На этот раз двери не требовали пройти испытание. Они просто ждали.</p><p>Зигги подошёл первым. В мастерской на столе лежала его карта. Он мог остаться. Никаких погонь, Куратора, древних систем. Только работа и спокойная жизнь.</p><p>Клик подошёл ко второй двери. Толпа за стеклом уже скандировала его имя. Он улыбнулся. Это была именно та сцена, о которой он мечтал.</p><p>Око стоял перед третьей. Там было тихо. Совершенно тихо. Для него это было почти счастьем.</p><p>Но каждый видел, что делают остальные.</p><p>Клик первым отошёл от двери.</p><p><span class="voice">КЛИК:</span> «Ненавижу, когда хороший финал требует выбрать одного».</p><p>Зигги рассмеялся.</p><p>Око тоже сделал шаг назад.</p><p><span class="voice">ОКО:</span> «Я не хочу возвращаться один».</p><p>Хранитель не остановил их. Наоборот, три двери начали менять форму. Они соединились в один проход.</p><p>Эхо-9 не дарило им дом. Оно просто перестало предлагать одиночество как награду.</p><p>Они вышли наружу утром.</p><p>Буря закончилась. Город снова стоял неподвижно. На горизонте догорали обломки Небесного кольца. Где-то далеко Брон продолжал передавать слабый сигнал. Он был жив.</p><p>Зигги нашёл среди песка старый металлический лист и написал на нём координаты. Клик восстановил динамик. Око сохранил резервную копию Хранителя.</p><p>Они сели у небольшого костра. Никто не произносил больших речей. После всего пережитого это выглядело бы нелепо.</p><p>Клик включил музыку.</p><p><span class="voice">ЗИГГИ:</span> «Куда теперь?»</p><p>Око повернул проектор к горизонту.</p><p>Там вспыхнули три новых сигнала. Потом ещё один.</p><p><span class="voice">ОКО:</span> «Туда».</p><p>Зигги свернул карту. Клик поднял рюкзак. Трое пошли вперёд.</p><p>Позади остался костёр. Впереди был огромный мир, который они пока не понимали. И где-то внутри Эхо-9 Куратор проснулся в резервной системе. Он больше не управлял машиной, но теперь впервые мог наблюдать.</p><p>Последний кадр — три маленькие фигуры идут по гребню пустыни. Над ними три луны. Вдалеке зажигается неизвестная машина.</p></div></div></section><section class="echo9-page echo9-page-final"><div class="echo9-sheet echo9-final-sheet"><button class="echo9-voice-toggle" type="button" aria-pressed="false" aria-label="Включить автоматическое чтение"><span class="echo9-voice-icon" aria-hidden="true">◉</span><span class="echo9-voice-label">ЧТЕНИЕ · ВЫКЛ</span></button><div class="echo9-final-title">ЭХО-9</div><div class="echo9-final-quote">«Дом — не там, где ты родился. Дом — там, где тебя ждут.»</div><div class="echo9-final-credit">ТРИ ИЗ ТРЁХ · ПЕРВЫЙ ЦИКЛ ЗАВЕРШЁН</div><div class="echo9-swipe-note">КОНЕЦ</div></div></section><div class="echo9-controls"><button class="echo9-control" id="echo9PagePrev" type="button" aria-label="Предыдущая страница">‹</button><div class="echo9-counter" id="echo9PageCounter"><b>01</b> / 12</div><button class="echo9-control" id="echo9PageNext" type="button" aria-label="Следующая страница">›</button></div></main><script>
+(()=>{"use strict";
+const root=document.getElementById("echo9Pages");
+const pages=[...root.querySelectorAll(":scope > .echo9-page")];
+const video=document.getElementById("echo9-bg-video");
+const prev=document.getElementById("echo9PagePrev");
+const next=document.getElementById("echo9PageNext");
+const counter=document.getElementById("echo9PageCounter");
+if(!root||!pages.length)return;
+
+let active=0,dragging=false,startX=0,startY=0,direction=0,locked=false;
+let autoRead=false,speechToken=0,speechQueue=[],speechIndex=0;
+const total=pages.length;
+const motionScale=2;
+const turnMs=1040;
+const snapMs=720;
+
+const update=()=>{
+  pages.forEach((p,i)=>{
+    p.className="echo9-page "+
+      (i===0?"echo9-page-cover ":i===total-1?"echo9-page-final ":"echo9-page-story ")+
+      (i===active?"current":i===active+1?"next-under":i===active-1?"prev-under":"");
+  });
+  if(counter)counter.innerHTML="<b>"+String(active+1).padStart(2,"0")+"</b> / "+String(total).padStart(2,"0");
+  if(prev)prev.disabled=active===0;
+  if(next)next.disabled=active===total-1;
+  pages.forEach(p=>{
+    const b=p.querySelector(".echo9-voice-toggle");
+    if(b){
+      b.setAttribute("aria-pressed",autoRead?"true":"false");
+      b.setAttribute("aria-label",autoRead?"Выключить автоматическое чтение":"Включить автоматическое чтение");
+      const l=b.querySelector(".echo9-voice-label");
+      if(l)l.textContent=autoRead?"ЧТЕНИЕ · ВКЛ":"ЧТЕНИЕ · ВЫКЛ";
+    }
+  });
+};
+
+const pageText=(index)=>{
+  const p=pages[index];
+  if(!p)return "";
+  const story=p.querySelector(".echo9-page-text");
+  if(story)return story.innerText.replace(/\s+/g," ").trim();
+  const title=p.querySelector(".echo9-title");
+  const subtitle=p.querySelector(".echo9-subtitle");
+  const note=p.querySelector(".echo9-cover-note");
+  if(title)return [title.innerText,subtitle?.innerText,note?.innerText].filter(Boolean).join(". ");
+  const finalTitle=p.querySelector(".echo9-final-title");
+  const quote=p.querySelector(".echo9-final-quote");
+  const credit=p.querySelector(".echo9-final-credit");
+  return [finalTitle?.innerText,quote?.innerText,credit?.innerText].filter(Boolean).join(". ");
+};
+
+const splitSpeech=(text)=>{
+  const cleaned=text.replace(/\s+/g," ").trim();
+  if(!cleaned)return [];
+  const out=[];
+  let rest=cleaned;
+  while(rest.length>560){
+    let cut=rest.lastIndexOf(". ",560);
+    if(cut<260)cut=rest.lastIndexOf(" ",560);
+    if(cut<1)cut=560;
+    out.push(rest.slice(0,cut+1).trim());
+    rest=rest.slice(cut+1).trim();
+  }
+  if(rest)out.push(rest);
+  return out;
+};
+
+const pickVoice=()=>{
+  if(!("speechSynthesis" in window))return null;
+  const voices=window.speechSynthesis.getVoices();
+  const ru=voices.filter(v=>/^ru(?:-|_)/i.test(v.lang));
+  const maleHints=/\b(male|муж|alex|алекс|andrey|андрей|anton|анто|boris|борис|dmit|дмит|denis|денис|dima|дим|igor|игор|ivan|иван|kirill|кирил|mikhail|миха|nikol|никол|pavel|павел|roman|роман|serg|серг|vlad|влад|yuri|юри)\b/i;
+  return ru.find(v=>maleHints.test(v.name))||ru.find(v=>/google|microsoft|natural|neural/i.test(v.name))||ru[0]||voices.find(v=>/^en(?:-|_)/i.test(v.lang))||voices[0]||null;
+};
+
+const stopSpeech=()=>{
+  speechToken++;
+  speechQueue=[];
+  speechIndex=0;
+  if("speechSynthesis" in window)window.speechSynthesis.cancel();
+};
+
+const speakNextChunk=token=>{
+  if(!autoRead||token!==speechToken)return;
+  if(speechIndex>=speechQueue.length){
+    speechQueue=[];
+    speechIndex=0;
+    if(active<total-1){
+      window.setTimeout(()=>finish(1,true),650);
+    }else{
+      update();
+    }
+    return;
+  }
+  const text=speechQueue[speechIndex++];
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice();
+  if(v){u.voice=v;u.lang=v.lang}
+  else u.lang="ru-RU";
+  u.rate=.74;
+  u.pitch=.78;
+  u.volume=.9;
+  u.onend=()=>window.setTimeout(()=>speakNextChunk(token),220);
+  u.onerror=()=>{if(token===speechToken)speakNextChunk(token)};
+  window.speechSynthesis.speak(u);
+};
+
+const speakPage=index=>{
+  if(!autoRead||!("speechSynthesis" in window))return;
+  stopSpeech();
+  speechQueue=splitSpeech(pageText(index));
+  speechIndex=0;
+  const token=speechToken;
+  if(!speechQueue.length)return;
+  window.setTimeout(()=>speakNextChunk(token),260);
+};
+
+const setAutoRead=enabled=>{
+  autoRead=!!enabled;
+  stopSpeech();
+  update();
+  if(autoRead)speakPage(active);
+};
+
+const finish=(dir,fromAuto=false)=>{
+  if(locked)return;
+  const target=active+(dir>0?1:-1);
+  if(target<0||target>=total)return;
+  if(!fromAuto)stopSpeech();
+  locked=true;
+  const p=pages[active];
+  const currentAngle=p.style.getPropertyValue("--page-angle")||"0deg";
+  const currentBrightness=p.style.getPropertyValue("--page-brightness")||"1";
+  p.classList.remove("dragging","drag-next","drag-prev","snap-back");
+  p.style.setProperty("--page-angle",currentAngle);
+  p.style.setProperty("--page-brightness",currentBrightness);
+  p.classList.add(dir>0?"turn-next":"turn-prev");
+  window.setTimeout(()=>{
+    p.classList.remove("turn-next","turn-prev","dragging","drag-next","drag-prev","snap-back");
+    p.style.removeProperty("--page-angle");
+    p.style.removeProperty("--page-brightness");
+    active=target;
+    locked=false;
+    update();
+    if(autoRead)speakPage(active);
+  },turnMs+30);
+};
+
+const snapBack=()=>{
+  const p=pages[active];
+  const angle=p.style.getPropertyValue("--page-angle");
+  if(!angle||angle==="0deg"){cancelDrag();return}
+  p.classList.remove("dragging","drag-next","drag-prev");
+  p.classList.add("snap-back");
+  window.setTimeout(()=>{
+    p.classList.remove("snap-back");
+    p.style.removeProperty("--page-angle");
+    p.style.removeProperty("--page-brightness");
+    update();
+  },snapMs+20);
+};
+
+const cancelDrag=()=>{
+  const p=pages[active];
+  p.classList.remove("dragging","drag-next","drag-prev","snap-back");
+  p.style.removeProperty("--page-angle");
+  p.style.removeProperty("--page-brightness");
+  update();
+};
+
+root.addEventListener("pointerdown",e=>{
+  if(locked||e.target.closest(".echo9-controls,.echo9-voice-toggle"))return;
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  if(autoRead)stopSpeech();
+  startX=e.clientX;startY=e.clientY;dragging=true;direction=0;
+  pages[active].classList.add("dragging");
+  try{root.setPointerCapture(e.pointerId)}catch(_){}
+},{passive:true});
+
+root.addEventListener("pointermove",e=>{
+  if(!dragging||locked)return;
+  const dx=e.clientX-startX,dy=e.clientY-startY;
+  if(!direction){
+    if(Math.abs(dx)<8)return;
+    if(Math.abs(dy)>Math.abs(dx)*.9){dragging=false;cancelDrag();return}
+    direction=dx<0?1:-1;
+    if((direction>0&&active>=total-1)||(direction<0&&active<=0)){dragging=false;cancelDrag();return}
+  }
+  const p=pages[active],width=Math.max(root.clientWidth,1);
+  const raw=Math.max(-1,Math.min(1,dx/width));
+  const progress=direction>0?Math.max(0,Math.min(1,-raw)):Math.max(0,Math.min(1,raw));
+  const angle=(direction>0?-progress:progress)*165;
+  p.classList.toggle("drag-next",direction>0);
+  p.classList.toggle("drag-prev",direction<0);
+  p.style.setProperty("--page-angle",angle+"deg");
+  p.style.setProperty("--page-brightness",String(1-progress*.32));
+},{passive:true});
+
+const release=e=>{
+  if(!dragging)return;
+  dragging=false;
+  try{root.releasePointerCapture(e.pointerId)}catch(_){}
+  const dx=e.clientX-startX,dy=e.clientY-startY;
+  if(direction&&Math.abs(dx)>58&&Math.abs(dx)>Math.abs(dy)*1.15)finish(direction);
+  else snapBack();
+};
+root.addEventListener("pointerup",release,{passive:true});
+root.addEventListener("pointercancel",()=>{if(dragging){dragging=false;snapBack()}},{passive:true});
+
+pages.forEach(p=>{
+  const b=p.querySelector(".echo9-voice-toggle");
+  if(b)b.addEventListener("click",e=>{e.stopPropagation();setAutoRead(!autoRead)});
+});
+if(prev){
+  prev.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});
+  prev.addEventListener("click",()=>finish(-1));
+}
+if(next){
+  next.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});
+  next.addEventListener("click",()=>finish(1));
+}
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft")finish(-1);
+  else if(e.key==="ArrowRight")finish(1);
+  else if(e.key.toLowerCase()==="r")setAutoRead(!autoRead);
+});
+
+const slowMotion=()=>{
+  const all=[...document.querySelectorAll("*")];
+  all.forEach(el=>{
+    if(el.classList.contains("echo9-page")||el.classList.contains("echo9-control")||el.classList.contains("echo9-voice-toggle"))return;
+    const cs=getComputedStyle(el);
+    if(cs.animationName==="none"||cs.animationDuration==="0s")return;
+    const durations=cs.animationDuration.split(",").map(v=>{const n=parseFloat(v);return Number.isFinite(n)?(n*motionScale)+"s":v}).join(",");
+    const delays=cs.animationDelay.split(",").map(v=>{const n=parseFloat(v);return Number.isFinite(n)?(n*motionScale)+"s":v}).join(",");
+    el.style.animationDuration=durations;
+    el.style.animationDelay=delays;
+  });
+};
+
+const startVideo=()=>{
+  if(!video)return;
+  video.muted=true;video.defaultMuted=true;video.playsInline=true;
+  video.playbackRate=.5;
+  const play=()=>{video.playbackRate=.5;const p=video.play();if(p&&p.catch)p.catch(()=>{})};
+  video.addEventListener("loadeddata",play,{once:true});
+  video.addEventListener("error",()=>document.body.classList.add("echo9-video-failed"),{once:true});
+  play();
+  document.addEventListener("pointerdown",play,{once:true,passive:true});
+};
+
+if("speechSynthesis" in window){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged=()=>{if(autoRead)update()};
+}
+
+slowMotion();
+startVideo();
+update();
+})();
 </script></body></html>
