@@ -1126,11 +1126,114 @@ const pickVoice=()=>{
   return ru.find(v=>maleHints.test(v.name))||ru.find(v=>/google|microsoft|natural|neural/i.test(v.name))||ru[0]||voices.find(v=>/^en(?:-|_)/i.test(v.lang))||voices[0]||null;
 };
 
+const isWebViewEnvironment=()=>{
+  const ua=navigator.userAgent||"";
+  return !!(window.Telegram?.WebApp)||/\\bwv\\b/i.test(ua)||/Telegram/i.test(ua);
+};
+
+let audioPlayer=null,audioToken=0,audioQueue=[],audioIndex=0;
+
+const stopRemoteAudio=()=>{
+  audioToken++;
+  audioQueue=[];
+  audioIndex=0;
+  if(audioPlayer){
+    try{audioPlayer.pause()}catch(_){}
+    audioPlayer.onended=null;
+    audioPlayer.onerror=null;
+    audioPlayer.removeAttribute("src");
+    try{audioPlayer.load()}catch(_){}
+  }
+};
+
 const stopSpeech=()=>{
   speechToken++;
   speechQueue=[];
   speechIndex=0;
-  if("speechSynthesis" in window)window.speechSynthesis.cancel();
+  if("speechSynthesis" in window){
+    try{window.speechSynthesis.cancel()}catch(_){}
+  }
+  stopRemoteAudio();
+};
+
+const remoteTtsUrl=text=>
+  "https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=ru&total=1&idx=0&textlen="+
+  encodeURIComponent(String(text).length)+"&q="+encodeURIComponent(text);
+
+const splitRemoteSpeech=text=>{
+  const cleaned=text.replace(/\\s+/g," ").trim();
+  if(!cleaned)return [];
+  const out=[];
+  let rest=cleaned;
+  while(rest.length>175){
+    let cut=Math.max(
+      rest.lastIndexOf(". ",175),
+      rest.lastIndexOf("! ",175),
+      rest.lastIndexOf("? ",175),
+      rest.lastIndexOf(", ",175)
+    );
+    if(cut<80)cut=rest.lastIndexOf(" ",175);
+    if(cut<1)cut=175;
+    out.push(rest.slice(0,cut+1).trim());
+    rest=rest.slice(cut+1).trim();
+  }
+  if(rest)out.push(rest);
+  return out;
+};
+
+const finishNarrationPage=token=>{
+  if(token!==audioToken||!autoRead)return;
+  audioQueue=[];
+  audioIndex=0;
+  if(active<total-1){
+    window.setTimeout(()=>finish(1,true),900);
+  }else{
+    update();
+  }
+};
+
+const speakRemoteNext=token=>{
+  if(token!==audioToken||!autoRead)return;
+  if(audioIndex>=audioQueue.length){
+    finishNarrationPage(token);
+    return;
+  }
+
+  const text=audioQueue[audioIndex++];
+  if(!audioPlayer){
+    audioPlayer=new Audio();
+    audioPlayer.preload="auto";
+    audioPlayer.playsInline=true;
+  }
+
+  const a=audioPlayer;
+  a.onended=()=>window.setTimeout(()=>speakRemoteNext(token),220);
+  a.onerror=()=>{
+    if(token!==audioToken||!autoRead)return;
+    window.setTimeout(()=>speakRemoteNext(token),160);
+  };
+  a.src=remoteTtsUrl(text);
+  a.playbackRate=.86;
+  a.volume=.88;
+  try{a.load()}catch(_){}
+  const p=a.play();
+  if(p?.catch)p.catch(()=>{
+    /* A Telegram/WebView media element can need a second immediate attempt. */
+    window.setTimeout(()=>{
+      if(token!==audioToken||!autoRead)return;
+      const retry=a.play();
+      if(retry?.catch)retry.catch(()=>{});
+    },80);
+  });
+};
+
+const speakRemotePage=(index)=>{
+  stopRemoteAudio();
+  audioQueue=splitRemoteSpeech(pageText(index));
+  audioIndex=0;
+  const token=audioToken;
+  if(!audioQueue.length)return;
+  speakRemoteNext(token);
 };
 
 const speakNextChunk=token=>{
@@ -1154,25 +1257,30 @@ const speakNextChunk=token=>{
   u.pitch=.76;
   u.volume=1;
   u.onend=()=>window.setTimeout(()=>speakNextChunk(token),280);
-  u.onerror=()=>window.setTimeout(()=>{
+  u.onerror=()=>{
     if(token!==speechToken||!autoRead)return;
-    try{window.speechSynthesis.resume()}catch(_){}
-    speakNextChunk(token);
-  },180);
+    /* Native TTS can exist but be non-functional in a WebView. */
+    speakRemotePage(active);
+  };
   try{window.speechSynthesis.resume()}catch(_){}
-  window.speechSynthesis.speak(u);
+  try{window.speechSynthesis.speak(u)}catch(_){
+    speakRemotePage(active);
+  }
 };
 
 const speakPage=(index,userGesture=false)=>{
-  if(!autoRead||!("speechSynthesis" in window))return;
+  if(!autoRead)return;
   stopSpeech();
+  const useRemote=isWebViewEnvironment()||!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window);
+  if(useRemote){
+    speakRemotePage(index);
+    return;
+  }
   try{window.speechSynthesis.resume()}catch(_){}
   speechQueue=splitSpeech(pageText(index));
   speechIndex=0;
   const token=speechToken;
   if(!speechQueue.length)return;
-  /* First utterance is launched synchronously from the button tap.
-     Android WebView/Chrome can reject delayed speech after user activation expires. */
   if(userGesture){
     speakNextChunk(token);
   }else{
@@ -1185,12 +1293,6 @@ const setAutoRead=enabled=>{
   stopSpeech();
   update();
   if(autoRead){
-    if(!("speechSynthesis" in window)){
-      autoRead=false;
-      update();
-      return;
-    }
-    try{window.speechSynthesis.resume()}catch(_){}
     speakPage(active,true);
   }
 };
