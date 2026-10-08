@@ -479,6 +479,90 @@ h1{
 }
 </style>
 
+
+<style id="echo9-animation-cycle-1">
+/* CYCLE 1/5 — individual scene motion blocking */
+.chapter .scene{animation:inkFrameBreath 9s ease-in-out infinite!important;transform-origin:center center}
+@keyframes inkFrameBreath{0%,100%{filter:grayscale(1) contrast(1.08)}50%{filter:grayscale(1) contrast(1.13)}}
+
+/* 01 — capsule: slow hydraulic rise + scanning eye */
+.s1 .capsule{animation:c1Capsule 4.8s cubic-bezier(.35,.05,.2,1) infinite!important}
+.s1 .scene-dust{animation:c1Dust 7s linear infinite!important}
+.s1:before{animation:c1Sun 8s ease-in-out infinite!important}
+@keyframes c1Capsule{0%,100%{transform:translate(-50%,-49%) rotate(-.4deg)}45%{transform:translate(-50%,-54%) rotate(.4deg)}55%{transform:translate(-50%,-52%) rotate(0)}}
+@keyframes c1Dust{0%{transform:translate(0,0)}50%{transform:translate(-22px,-5px)}100%{transform:translate(-45px,0)}}
+@keyframes c1Sun{0%,100%{opacity:.8}50%{opacity:1;transform:scale(1.015)}}
+
+/* 02 — fire: oxygen-fed irregular flame, not a generic pulse */
+.s2 .fire{animation:c2Fire .72s steps(5,end) infinite!important;transform-origin:50% 100%!important}
+.s2 .scene-sparks{animation:c2Sparks 2.2s linear infinite!important}
+@keyframes c2Fire{0%{transform:translateX(-50%) scale(.94,.92) rotate(-2deg)}25%{transform:translateX(-50%) scale(1.02,1.08) rotate(2deg)}50%{transform:translateX(-50%) scale(.96,1.16) rotate(-1deg)}75%{transform:translateX(-50%) scale(1.06,1) rotate(3deg)}100%{transform:translateX(-50%) scale(.94,.92) rotate(-2deg)}}
+@keyframes c2Sparks{0%{transform:translateY(18px);opacity:.2}50%{transform:translateY(-35px);opacity:.8}100%{transform:translateY(-75px);opacity:.05}}
+
+/* 03 — forest: branches sway at different phases, eyes blink independently */
+.s3:before{animation:c3Canopy 6s ease-in-out infinite!important;transform-origin:50% 100%!important}
+.s3 .eye.a{animation:c3EyeA 4.7s steps(1,end) infinite!important}
+.s3 .eye.b{animation:c3EyeB 6.1s steps(1,end) infinite!important}
+@keyframes c3Canopy{0%,100%{transform:skewX(-.7deg) scale(1)}50%{transform:skewX(.9deg) scale(1.015)}}
+@keyframes c3EyeA{0%,42%,46%,100%{opacity:1}44%{opacity:.05}}
+@keyframes c3EyeB{0%,61%,65%,100%{opacity:1}63%{opacity:.05}}
+
+/* 04 — Bron: weight, servo hesitation and head correction */
+.s4 .rb{animation:c4Body 4.6s cubic-bezier(.45,.05,.25,1) infinite!important}
+.s4 .rh{animation:c4Head 3.8s ease-in-out infinite!important;transform-origin:50% 100%!important}
+.s4 .re{animation:c4Eye 2.4s steps(2,end) infinite!important}
+@keyframes c4Body{0%,100%{transform:translateX(-50%) translateY(0)}42%{transform:translateX(-50%) translateY(-2px)}48%{transform:translateX(-50%) translateY(1px)}}
+@keyframes c4Head{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1.5deg)}}
+@keyframes c4Eye{0%,70%,100%{opacity:.55}72%{opacity:1}76%{opacity:.2}}
+
+/* 05 — portals: phase-shifted attraction instead of synchronized scaling */
+.s5 .pt1{animation:c5Portal1 3.7s ease-in-out infinite!important}
+.s5 .pt2{animation:c5Portal2 4.3s ease-in-out infinite!important}
+.s5 .pt3{animation:c5Portal3 3.9s ease-in-out infinite!important}
+@keyframes c5Portal1{0%,100%{transform:translateY(0) rotate(-2deg) scale(.97)}50%{transform:translateY(-9px) rotate(2deg) scale(1.04)}}
+@keyframes c5Portal2{0%,100%{transform:translateX(-50%) rotate(2deg) scale(1)}50%{transform:translateX(-50%) rotate(-2deg) scale(1.07)}}
+@keyframes c5Portal3{0%,100%{transform:translateY(-3px) rotate(2deg) scale(1)}50%{transform:translateY(7px) rotate(-2deg) scale(.95)}}
+
+/* 06 — ring: stable orbital rotation, debris follows with delay */
+.s6 .rg{animation:c6Ring 10s linear infinite!important}
+.s6 .cr{animation:c6Core 2.1s ease-in-out infinite!important}
+.s6 .scene-debris{animation:c6Debris 6s linear infinite!important}
+@keyframes c6Ring{from{transform:translate(-50%,-50%) rotate(-12deg)}to{transform:translate(-50%,-50%) rotate(348deg)}}
+@keyframes c6Core{0%,100%{transform:translate(-50%,-50%) scale(.94);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.08);opacity:1}}
+@keyframes c6Debris{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(-80px,45px) rotate(12deg)}}
+
+/* 07 — buried city: slow reveal impression through sand movement */
+.s7 .city,.s7 .ct{animation:c7City 8s ease-in-out infinite!important;transform-origin:50% 100%!important}
+.s7 .sand,.s7 .scene-sandwave{animation:c7Sand 4.8s ease-in-out infinite!important}
+@keyframes c7City{0%,100%{transform:translateY(3px)}50%{transform:translateY(-2px)}}
+@keyframes c7Sand{0%,100%{transform:translateX(0)}50%{transform:translateX(-28px)}}
+
+/* 08 — storm: rain has depth, lightning has irregular timing */
+.s8 .rain{animation:c8Rain .38s linear infinite!important}
+.s8 .lightning{animation:c8Lightning 4.7s steps(1,end) infinite!important}
+.s8 .scene-rain{animation:c8RainOverlay .42s linear infinite!important}
+@keyframes c8Rain{to{transform:translate(-8px,32px)}}
+@keyframes c8RainOverlay{to{transform:translate(12px,38px)}}
+@keyframes c8Lightning{0%,37%,39%,71%,73%,100%{opacity:0}38%,72%{opacity:1}}
+
+/* 09 — core: energy breath + rotating beams */
+.s9 .heart,.s9 .hc{animation:c9Heart 1.7s ease-in-out infinite!important;transform-origin:center}
+.s9 .bm{animation:c9Beam 5.5s linear infinite!important}
+.s9 .bm2{animation-delay:-1.8s!important}
+.s9 .bm3{animation-delay:-3.6s!important}
+@keyframes c9Heart{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(.96)}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1.06)}}
+@keyframes c9Beam{to{transform:rotate(360deg)}}
+
+/* 10 — fire remains alive while silhouettes move independently */
+.s10 .final-fire{animation:c10Fire .9s steps(5,end) infinite!important}
+.s10 .sl1{animation:c10Walk1 4.5s ease-in-out infinite!important}
+.s10 .sl2{animation:c10Walk2 5.1s ease-in-out infinite!important}
+.s10 .sl3{animation:c10Walk3 4.8s ease-in-out infinite!important}
+@keyframes c10Fire{0%,100%{transform:translateX(-50%) scale(.96,.94)}35%{transform:translateX(-50%) scale(1.04,1.1)}70%{transform:translateX(-50%) scale(.98,1.16)}}
+@keyframes c10Walk1{50%{transform:translateX(8px) translateY(-3px)}}
+@keyframes c10Walk2{50%{transform:translateX(-5px) translateY(-2px)}}
+@keyframes c10Walk3{50%{transform:translateX(7px) translateY(-4px)}}
+</style>
 </head>
 <body>
 <main class="book">
