@@ -568,7 +568,7 @@ function render(){
   }
 
   if(view==="echo9"){
-    body=`<div class="echo9-portal"><iframe class="echo9-frame" src="./echo9.html" title="ЭХО-9: Три из Трёх" loading="eager"></iframe></div>`;
+    body=`<div class="echo9-portal"><iframe class="echo9-frame" src="./echo9.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="ЭХО-9: Три из Трёх" loading="eager"></iframe></div>`;
   }
 
   app.innerHTML=`
