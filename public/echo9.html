@@ -633,6 +633,101 @@ h1{
   .scene,.scene *{animation-duration:1ms!important;animation-iteration-count:1!important}
 }
 </style>
+
+<style id="echo9-animation-cycle-3">
+/* CYCLE 3/5 — cinematic timing: setup → action → peak → release */
+
+/* 01: awakening — stillness, then mechanical interruption */
+.s1 .capsule{animation:c3Awake 6.5s cubic-bezier(.22,.61,.36,1) infinite!important}
+@keyframes c3Awake{
+  0%,25%{transform:translate(-50%,-49%) rotate(0);filter:brightness(.82)}
+  38%{transform:translate(-50%,-53%) rotate(-.8deg);filter:brightness(1.1)}
+  46%{transform:translate(-50%,-56%) rotate(.5deg);filter:brightness(1.28)}
+  55%,100%{transform:translate(-50%,-50%) rotate(0);filter:brightness(.92)}
+}
+
+/* 02: attack burst interrupts quiet camp */
+.s2 .scene-sparks{animation:c3AttackSparks 4.8s ease-out infinite!important}
+@keyframes c3AttackSparks{
+  0%,52%{opacity:.08;transform:translate(0,20px) scale(.7)}
+  57%{opacity:1;transform:translate(-8px,-12px) scale(1.2)}
+  64%{opacity:.35;transform:translate(18px,-55px) scale(.9)}
+  75%,100%{opacity:.08;transform:translate(30px,-85px) scale(.6)}
+}
+
+/* 03: forest notices the group before attacking */
+.s3 .eye.a{animation:c3WatchA 7s steps(1,end) infinite!important}
+.s3 .eye.b{animation:c3WatchB 7s steps(1,end) infinite -2.4s!important}
+@keyframes c3WatchA{0%,30%{opacity:.05}31%,53%{opacity:1}54%,100%{opacity:.05}}
+@keyframes c3WatchB{0%,45%{opacity:.05}46%,68%{opacity:1}69%,100%{opacity:.05}}
+
+/* 04: Bron wakes, recognizes them, then braces for fire */
+.s4 .rb{animation:c3Bron 7s cubic-bezier(.4,0,.2,1) infinite!important}
+@keyframes c3Bron{
+  0%,30%{transform:translateX(-50%) translateY(8px)}
+  42%{transform:translateX(-50%) translateY(-9px)}
+  48%{transform:translateX(-50%) translateY(2px)}
+  55%{transform:translateX(-50%) translateY(0) scale(1.015)}
+  62%,100%{transform:translateX(-50%) translateY(0)}
+}
+
+/* 05: temptation portals open sequentially */
+.s5 .pt1{animation:c3Gate1 8s ease-in-out infinite!important}
+.s5 .pt2{animation:c3Gate2 8s ease-in-out infinite!important}
+.s5 .pt3{animation:c3Gate3 8s ease-in-out infinite!important}
+@keyframes c3Gate1{0%,12%{opacity:.15;transform:translateY(8px) scale(.84)}22%,48%{opacity:1;transform:translateY(0) scale(1)}60%,100%{opacity:.25;transform:translateY(5px) scale(.9)}}
+@keyframes c3Gate2{0%,30%{opacity:.15;transform:translateX(-50%) scale(.84)}40%,68%{opacity:1;transform:translateX(-50%) scale(1.06)}80%,100%{opacity:.2;transform:translateX(-50%) scale(.88)}}
+@keyframes c3Gate3{0%,48%{opacity:.15;transform:translateY(7px) scale(.86)}58%,76%{opacity:1;transform:translateY(0) scale(1)}90%,100%{opacity:.2;transform:translateY(5px) scale(.9)}}
+
+/* 06: ring accelerates only after the key is connected */
+.s6 .rg{animation:c3RingSequence 12s cubic-bezier(.37,0,.2,1) infinite!important}
+@keyframes c3RingSequence{
+  0%,35%{transform:translate(-50%,-50%) rotate(-12deg)}
+  58%{transform:translate(-50%,-50%) rotate(115deg)}
+  68%{transform:translate(-50%,-50%) rotate(235deg)}
+  78%{transform:translate(-50%,-50%) rotate(360deg)}
+  100%{transform:translate(-50%,-50%) rotate(348deg)}
+}
+
+/* 07: city rises before the capture, then freezes */
+.s7 .city,.s7 .ct{animation:c3CityRise 10s cubic-bezier(.4,0,.2,1) infinite!important}
+@keyframes c3CityRise{
+  0%,22%{transform:translateY(18px)}
+  48%{transform:translateY(0)}
+  66%{transform:translateY(-2px)}
+  72%,100%{transform:translateY(0)}
+}
+
+/* 08: storm builds before lightning reveals the fortress */
+.s8 .lightning{animation:c3StormFlash 8s steps(1,end) infinite!important}
+@keyframes c3StormFlash{
+  0%,52%{opacity:0}
+  53%{opacity:1}
+  54%{opacity:0}
+  62%{opacity:0}
+  63%{opacity:1}
+  64%{opacity:0}
+  100%{opacity:0}
+}
+
+/* 09: heart reaches dangerous amplitude before release */
+.s9 .heart{animation:c3HeartBeat 5.5s ease-in-out infinite!important}
+@keyframes c3HeartBeat{
+  0%,30%{transform:translate(-50%,-50%) rotate(45deg) scale(.94)}
+  45%{transform:translate(-50%,-50%) rotate(45deg) scale(1)}
+  52%{transform:translate(-50%,-50%) rotate(45deg) scale(1.15)}
+  57%{transform:translate(-50%,-50%) rotate(45deg) scale(.9)}
+  64%{transform:translate(-50%,-50%) rotate(45deg) scale(1.08)}
+  72%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(.96)}
+}
+
+/* 10: final scene deliberately slows down */
+.s10 .final-fire{animation:c3FinalFire 3.6s ease-in-out infinite!important}
+@keyframes c3FinalFire{
+  0%,100%{transform:translateX(-50%) scale(.95,.92)}
+  50%{transform:translateX(-50%) scale(1.04,1.08)}
+}
+</style>
 </head>
 <body>
 <main class="book">
