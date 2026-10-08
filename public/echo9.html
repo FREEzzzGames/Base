@@ -1038,12 +1038,12 @@ const counter=document.getElementById("echo9PageCounter");
 if(!root||!pages.length)return;
 
 let active=0,dragging=false,startX=0,startY=0,direction=0,locked=false;
-let speechToken=0;
 const total=pages.length;
+const motionScale=2;
 const turnMs=1040;
 const snapMs=720;
 
-const finish=(dir,fromAuto=false)=>{
+const finish=dir=>{
   if(locked)return;
   const target=active+(dir>0?1:-1);
   if(target<0||target>=total)return;
@@ -1088,7 +1088,7 @@ const cancelDrag=()=>{
 };
 
 root.addEventListener("pointerdown",e=>{
-  if(locked||e.target.closest(".echo9-controls,.echo9-voice-toggle"))return;
+  if(locked||e.target.closest(".echo9-controls"))return;
   if(e.pointerType==="mouse"&&e.button!==0)return;
   startX=e.clientX;startY=e.clientY;dragging=true;direction=0;
   pages[active].classList.add("dragging");
@@ -1136,13 +1136,12 @@ if(next){
 document.addEventListener("keydown",e=>{
   if(e.key==="ArrowLeft")finish(-1);
   else if(e.key==="ArrowRight")finish(1);
-  else if(e.key.toLowerCase()==="r")setAutoRead(!autoRead);
 });
 
 const slowMotion=()=>{
   const all=[...document.querySelectorAll("*")];
   all.forEach(el=>{
-    if(el.classList.contains("echo9-page")||el.classList.contains("echo9-control")||el.classList.contains("echo9-voice-toggle"))return;
+    if(el.classList.contains("echo9-page")||el.classList.contains("echo9-control"))return;
     const cs=getComputedStyle(el);
     if(cs.animationName==="none"||cs.animationDuration==="0s")return;
     const durations=cs.animationDuration.split(",").map(v=>{const n=parseFloat(v);return Number.isFinite(n)?(n*motionScale)+"s":v}).join(",");
@@ -1162,11 +1161,6 @@ const startVideo=()=>{
   play();
   document.addEventListener("pointerdown",play,{once:true,passive:true});
 };
-
-if("speechSynthesis" in window){
-  window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged=()=>{if(autoRead){try{window.speechSynthesis.resume()}catch(_){}}};
-}
 
 slowMotion();
 startVideo();
