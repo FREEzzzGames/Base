@@ -434,8 +434,7 @@ function renderPortalToolbar(){
     ["chat","chat","CHAT"],
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
-    ["library","library","LIBRARY"],
-    ["echo9","dragon","ECHO-9"]
+    ["library","library","LIBRARY"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     ${persistentBackgroundVideo("hud",portalVideoUrl("hud"),"portal-toolbar-background-video")}
@@ -466,7 +465,7 @@ function render(){
           <div class="home-hero-content">
           <div class="home-hero-top">
             <div class="home-hero-brand">
-              <span class="home-hero-kicker">ECHO</span>
+              <button class="home-hero-kicker home-hero-echo-launch" data-echo9-launch type="button" aria-label="ECHO">ECHO</button>
               <span class="home-hero-clock" data-home-clock>--:--:--</span>
             </div>
           </div>
@@ -774,6 +773,15 @@ function bind(){
     e.preventDefault();
     e.stopPropagation();
     toggleHud();
+  });
+
+  document.querySelectorAll<HTMLElement>("[data-echo9-launch]").forEach(function(x){
+    x.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(!moduleManager.has("echo9"))return;
+      portalEvents.emit("navigation:changed",{view:"echo9"});
+    };
   });
 
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
