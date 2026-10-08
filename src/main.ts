@@ -434,7 +434,8 @@ function renderPortalToolbar(){
     ["chat","chat","CHAT"],
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
-    ["library","library","LIBRARY"]
+    ["library","library","LIBRARY"],
+    ["echo9","dragon","ECHO-9"]
   ];
   return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
     ${persistentBackgroundVideo("hud",portalVideoUrl("hud"),"portal-toolbar-background-video")}
@@ -564,6 +565,10 @@ function render(){
 
   if(view==="library"){
     body=renderLibrary();
+  }
+
+  if(view==="echo9"){
+    body=`<div class="echo9-portal"><iframe class="echo9-frame" src="./echo9.html" title="ЭХО-9: Три из Трёх" loading="eager"></iframe></div>`;
   }
 
   app.innerHTML=`
