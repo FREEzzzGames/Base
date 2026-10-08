@@ -1128,7 +1128,7 @@ const pickVoice=()=>{
 
 const isWebViewEnvironment=()=>{
   const ua=navigator.userAgent||"";
-  return !!(window.Telegram?.WebApp)||/\\bwv\\b/i.test(ua)||/Telegram/i.test(ua);
+  return !!(window.Telegram?.WebApp)||/\bwv\b/i.test(ua)||/Telegram/i.test(ua);
 };
 
 let audioPlayer=null,audioToken=0,audioQueue=[],audioIndex=0;
@@ -1161,7 +1161,7 @@ const remoteTtsUrl=text=>
   encodeURIComponent(String(text).length)+"&q="+encodeURIComponent(text);
 
 const splitRemoteSpeech=text=>{
-  const cleaned=text.replace(/\\s+/g," ").trim();
+  const cleaned=text.replace(/\s+/g," ").trim();
   if(!cleaned)return [];
   const out=[];
   let rest=cleaned;
