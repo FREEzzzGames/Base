@@ -9611,3 +9611,14 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
     width:42px!important;height:42px!important;max-width:42px!important;max-height:42px!important;
   }
 }
+
+/* ECHO-9 toolbar — monochrome ink storyboard language */
+.portal-toolbar-item[data-view="echo9"] .portal-toolbar-icon{
+  filter:grayscale(1) contrast(1.35) brightness(1.15) drop-shadow(0 0 3px rgba(255,255,255,.28))!important;
+}
+.portal-toolbar-item[data-view="echo9"].active .portal-toolbar-icon{
+  filter:grayscale(1) contrast(1.5) brightness(1.35) drop-shadow(0 0 5px rgba(255,255,255,.55))!important;
+}
+.portal-toolbar-item[data-view="echo9"]{
+  color:#e7e6df!important;
+}
