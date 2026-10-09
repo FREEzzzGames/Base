@@ -1001,6 +1001,22 @@ function drawAtmosphere(){
   ctx.fillRect(0,H*.3,W,H*.5);
   ctx.globalAlpha=1;
  }
+ // Foreground atmospheric motion, tuned per biome and kept behind gameplay entities.
+ var ambientT=performance.now()*.001;
+ for(var mote=0;mote<26;mote++){
+  var seedX=(mote*71+13)%Math.max(1,W),seedY=(mote*47+9)%Math.max(1,H*.64);
+  var fall=levelTheme===1?8+mote%9:levelTheme===2?18+mote%17:levelTheme===3?5+mote%8:10+mote%11;
+  var driftX=levelTheme===1?Math.sin(ambientT*.8+mote)*10:levelTheme===2?Math.sin(ambientT*1.4+mote)*4:levelTheme===3?Math.sin(ambientT*.45+mote)*3:Math.sin(ambientT+mote)*6;
+  var ax=(seedX+driftX+(levelTheme===2?ambientT*fall*.65:ambientT*fall*.2))%W;
+  var ay=(seedY+ambientT*fall)%Math.max(1,H*.64);
+  ctx.globalAlpha=.18+.18*(.5+.5*Math.sin(ambientT*2+mote));
+  ctx.fillStyle=levelTheme===1?(mote%3?'#9adfff':'#ffb8d0'):levelTheme===2?(mote%3?'#ff6a37':'#ffd06c'):levelTheme===3?(mote%3?'#4ff2d6':'#a0fff0'):(mote%3?'#70dff1':'#ffc17a');
+  if(levelTheme===1){ctx.save();ctx.translate(ax,ay);ctx.rotate(ambientT*.5+mote);ctx.fillRect(-2,-1,4,2);ctx.restore()}
+  else if(levelTheme===2){ctx.fillRect(ax,ay,2,4+mote%3)}
+  else if(levelTheme===3){ctx.fillRect(ax,ay,1,5)}
+  else{ctx.fillRect(ax,ay,2,2)}
+ }
+ ctx.globalAlpha=1;
  // Warm ground haze and subtle vignette keep the player and platform silhouettes readable.
  var haze=ctx.createLinearGradient(0,H*.5,0,H);haze.addColorStop(0,'rgba(255,105,67,0)');haze.addColorStop(.7,'rgba(255,90,61,.045)');haze.addColorStop(1,'rgba(0,0,0,.32)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
  var vg=ctx.createRadialGradient(W*.5,H*.46,70,W*.5,H*.46,260);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.34)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
