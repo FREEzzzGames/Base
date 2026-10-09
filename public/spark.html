@@ -538,14 +538,18 @@ function drawOperator(x,y,face,ch,anim,attacking){
  ctx.strokeStyle='#101827';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(6,16);ctx.lineTo(16,24);ctx.stroke();ctx.strokeStyle='#a9bfd0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(7,16);ctx.lineTo(16,23);ctx.stroke();
  outlineRect(3,14,5,5,ch.coat,edge,1);outlineRect(17,13,6,6,ch.coat,edge,1);ctx.fillStyle='#f0d4b0';ctx.fillRect(4,15,2,1);ctx.fillRect(19,14,2,1);
  outlineRect(5,23,13,3,'#172338',edge,1);ctx.fillStyle=shot;ctx.fillRect(8,24,6,1);
- // arms and forearm guards, kept inside the established collision silhouette
- outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(18,16,5,7,ch.coat,edge,2);outlineRect(0,22,5,5,'#303f54',edge,1);outlineRect(18,21,5,5,'#303f54',edge,1);
- ctx.fillStyle=accent;ctx.fillRect(1,23,3,1);ctx.fillRect(19,22,3,1);
- // compact weapon with stock, receiver, barrel, sight and energy core
+ // Shoulder and elbow pivots. Keep arm assemblies inside the original collision silhouette.
+ ctx.save();rigPivot(5,17,rigJointAngle(anim*9,.05,0)+(attacking>0?-.06:0));
+ outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(0,22,5,5,'#303f54',edge,1);ctx.fillStyle=accent;ctx.fillRect(1,23,3,1);ctx.restore();
+ ctx.save();rigPivot(20,16,rigJointAngle(anim*9,.055,Math.PI)+(attacking>0?-.14:0));
+ outlineRect(18,16,5,7,ch.coat,edge,2);outlineRect(18,21,5,5,'#303f54',edge,1);ctx.fillStyle=accent;ctx.fillRect(19,22,3,1);ctx.restore();
+ // Weapon mount, receiver, barrel and muzzle share a recoil pivot.
+ ctx.save();rigPivot(19,20,rigJointAngle(anim*9,.025,Math.PI)+(attacking>0?-.12:0));
  outlineRect(16,18,11,4,'#17263a',edge,2);outlineRect(19,17,7,3,'#3d5067',edge,1);outlineRect(23,18,6,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(27,18,2,1);
- ctx.fillStyle='#7e94a8';ctx.fillRect(18,22,3,2);ctx.fillStyle=shot;ctx.fillRect(20,20,4,1);ctx.fillStyle='#101827';ctx.fillRect(21,22,2,2);
+ ctx.fillStyle='#7e94a8';ctx.fillRect(18,22,3,2);ctx.fillStyle=shot;ctx.fillRect(20,20,4,1);ctx.fillStyle='#101827';ctx.fillRect(21,22,2,2);ctx.restore();
  if(attacking>0){ctx.save();ctx.globalAlpha=.8;ctx.shadowColor=shot;ctx.shadowBlur=8;ctx.fillStyle=shot;ctx.beginPath();ctx.moveTo(28,16);ctx.lineTo(36,19);ctx.lineTo(29,23);ctx.closePath();ctx.fill();ctx.fillStyle='#fff6d7';ctx.fillRect(28,18,5,2);ctx.restore()}
- // neck and larger expressive face with cheek shadows
+ // Neck pivot makes the head, hair and headband move as one connected assembly.
+ ctx.save();rigPivot(11.5,11,rigJointAngle(anim*9,.018,0)+(attacking>0?-.025:0));
  outlineRect(8,9,7,5,ch.skin,edge,1);outlineRect(4,2,15,13,ch.skin,edge,2);
  ctx.fillStyle='#bd776c';ctx.fillRect(5,10,3,2);ctx.fillRect(15,10,3,2);ctx.fillStyle='#ffe0bb';ctx.fillRect(6,4,2,3);ctx.fillRect(7,3,5,1);
  // hair silhouette varies naturally by character hair colour
@@ -557,6 +561,7 @@ function drawOperator(x,y,face,ch,anim,attacking){
  ctx.fillStyle='#101827';ctx.fillRect(7,8,3,2);ctx.fillRect(14,8,3,2);ctx.fillStyle='#fff0d6';ctx.fillRect(8,8,1,1);ctx.fillRect(15,8,1,1);ctx.fillStyle='#3c2935';ctx.fillRect(7,7,3,1);ctx.fillRect(14,7,3,1);ctx.fillStyle='#9b4e54';ctx.fillRect(11,11,3,1);ctx.fillStyle='#f3b9a0';ctx.fillRect(10,12,4,1);
  // silhouette ink and cloth rim light
  ctx.fillStyle='#ffffff';ctx.globalAlpha=.16;ctx.fillRect(4,13,13,1);ctx.fillRect(4,2,1,10);ctx.globalAlpha=1;ctx.lineWidth=1.5;ctx.strokeStyle=edge;ctx.strokeRect(3,0,17,15);
+ ctx.restore();
  ctx.restore();
 }
 function drawEnemy(e){
