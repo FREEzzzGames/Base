@@ -617,7 +617,7 @@ function drawEnemy(e){
  function rr(a,b,c,d,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(a,b,c,d,Math.min(r,c/2,d/2));ctx.fill()}
  function circ(a,b,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(a,b,Math.max(.1,r),0,Math.PI*2);ctx.fill()}
  function line(a,b,c,d,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
- ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=e._gaitPhase===undefined?(e.anim||0)*11:e._gaitPhase,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);var lean=Math.max(-.09,Math.min(.09,-(e._rvx||e.vxRun||0)*.00035+(e._rax||0)*-.000012));if(t==='drone')lean=Math.max(-.12,Math.min(.12,(e._rvx||0)*.00045));if(t==='turret')lean=Math.max(-.045,Math.min(.045,-(e._rvx||0)*.00025));ctx.rotate(lean);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
+ ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=e._gaitPhase===undefined?(e.anim||0)*11:e._gaitPhase,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);var lean=Math.max(-.09,Math.min(.09,-(e._rvx||e.vxRun||0)*.00035+(e._rax||0)*-.000012));if(t==='drone')lean=Math.max(-.12,Math.min(.12,(e._rvx||0)*.00045));if(t==='turret')lean=Math.max(-.045,Math.min(.045,-(e._rvx||0)*.00025));ctx.rotate(lean+Math.max(-.045,Math.min(.045,-(e.hitKick||0)*.006)));var hitPose=Math.max(0,Math.min(1,(e.flash||0)/.16));ctx.scale(1+hitPose*.035,1-hitPose*.055);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
  // Reusable enemy rig landmarks in local coordinates; visual-only and independent of hitboxes.
  if(!e.rigNodes)e.rigNodes={hipL:{x:0,y:0},kneeL:{x:0,y:0},ankleL:{x:0,y:0},hipR:{x:0,y:0},kneeR:{x:0,y:0},ankleR:{x:0,y:0},shoulderL:{x:0,y:0},elbowL:{x:0,y:0},wristL:{x:0,y:0},shoulderR:{x:0,y:0},elbowR:{x:0,y:0},wristR:{x:0,y:0},weaponMount:{x:0,y:0},muzzle:{x:0,y:0}};
  var en=e.rigNodes;en.hipL.x=-w*.18;en.hipL.y=h*.1;en.kneeL.x=-w*.19;en.kneeL.y=h*.27;en.ankleL.x=-w*.1;en.ankleL.y=h*.4;en.hipR.x=w*.18;en.hipR.y=h*.1;en.kneeR.x=w*.19;en.kneeR.y=h*.27;en.ankleR.x=w*.1;en.ankleR.y=h*.4;en.shoulderL.x=-w*.34;en.shoulderL.y=-h*.08;en.elbowL.x=-w*.4;en.elbowL.y=h*.08;en.wristL.x=-w*.39;en.wristL.y=h*.17;en.shoulderR.x=w*.34;en.shoulderR.y=-h*.08;en.elbowR.x=w*.4;en.elbowR.y=h*.08;en.wristR.x=w*.43;en.wristR.y=h*.02;en.weaponMount.x=w*.4;en.weaponMount.y=-h*.02;en.muzzle.x=w*.67;en.muzzle.y=-h*.065;
@@ -699,6 +699,8 @@ function drawEnemy(e){
    line(-w*.2,h*.24,-w*.33,h*.31,glow,1.5);line(w*.13,h*.24,w*.28,h*.31,glow,1.5);
   }
  }
+ // Brief material response: the armor compresses on impact and catches a sharp specular flash.
+ if((e.flash||0)>0){ctx.save();ctx.globalAlpha=Math.min(.62,(e.flash||0)*3.8);ctx.fillStyle='#eafcff';ctx.fillRect(-w*.24,-h*.36,w*.48,h*.48);ctx.globalAlpha*=.55;ctx.fillStyle=glow;ctx.fillRect(-w*.3,-h*.04,w*.6,Math.max(2,h*.07));ctx.restore()}
  ctx.restore();
  // Specular marks, no bounding-box stroke.
  ctx.globalAlpha=.78;circ(-w*.2,-h*.39,1,'#e9fbff');circ(w*.18,-h*.39,1,'#e9fbff');ctx.globalAlpha=1;
