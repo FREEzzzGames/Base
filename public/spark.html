@@ -645,6 +645,23 @@ function drawEnemy(e){
   line(-w*.27,-h*.11,-w*.2,h*.03,'#8ca4b9',1);line(w*.27,-h*.11,w*.2,h*.03,'#8ca4b9',1);
   ctx.save();rigPivot(en.shoulderL.x,en.shoulderL.y,Math.sin(movePhase)*.035);rr(-w*.48,-h*.13,w*.22,h*.28,5,'#3b5066');rr(-w*.42,-h*.08,w*.1,h*.11,3,'#6e849a');ctx.restore();
   ctx.save();rigPivot(en.shoulderR.x,en.shoulderR.y,-Math.sin(movePhase)*.035+((e.fireT||e.attackT||0)>0?-.09:0));rr(w*.26,-h*.13,w*.22,h*.28,5,'#3b5066');rr(w*.32,-h*.08,w*.1,h*.11,3,'#6e849a');ctx.restore();
+  // Reusable IK endpoints drive visible upper/lower arm and leg links.
+  rigSolve2Bone(en.elbowL,en.shoulderL.x,en.shoulderL.y,en.wristL.x,en.wristL.y,w*.16,w*.15,1);
+  rigSolve2Bone(en.elbowR,en.shoulderR.x,en.shoulderR.y,en.wristR.x,en.wristR.y,w*.16,w*.15,-1);
+  drawRigLink(en.shoulderL.x,en.shoulderL.y,en.elbowL.x,en.elbowL.y,'#101a28','#7c91a6',Math.max(2,w*.075));
+  drawRigLink(en.elbowL.x,en.elbowL.y,en.wristL.x,en.wristL.y,'#101a28','#a7bacb',Math.max(1.5,w*.055));
+  drawRigHinge(en.elbowL.x,en.elbowL.y,Math.max(1.4,w*.045),'#101a28',glow);
+  drawRigLink(en.shoulderR.x,en.shoulderR.y,en.elbowR.x,en.elbowR.y,'#101a28','#7c91a6',Math.max(2,w*.075));
+  drawRigLink(en.elbowR.x,en.elbowR.y,en.wristR.x,en.wristR.y,'#101a28','#a7bacb',Math.max(1.5,w*.055));
+  drawRigHinge(en.elbowR.x,en.elbowR.y,Math.max(1.4,w*.045),'#101a28',glow);
+  rigSolve2Bone(en.kneeL,en.hipL.x,en.hipL.y,en.ankleL.x,en.ankleL.y,w*.14,w*.13,1);
+  rigSolve2Bone(en.kneeR,en.hipR.x,en.hipR.y,en.ankleR.x,en.ankleR.y,w*.14,w*.13,-1);
+  drawRigLink(en.hipL.x,en.hipL.y,en.kneeL.x,en.kneeL.y,'#101a28','#43536a',Math.max(2,w*.08));
+  drawRigLink(en.kneeL.x,en.kneeL.y,en.ankleL.x,en.ankleL.y,'#101a28','#9cb3c7',Math.max(1.5,w*.05));
+  drawRigHinge(en.kneeL.x,en.kneeL.y,Math.max(1.4,w*.04),'#101a28',glow);
+  drawRigLink(en.hipR.x,en.hipR.y,en.kneeR.x,en.kneeR.y,'#101a28','#43536a',Math.max(2,w*.08));
+  drawRigLink(en.kneeR.x,en.kneeR.y,en.ankleR.x,en.ankleR.y,'#101a28','#9cb3c7',Math.max(1.5,w*.05));
+  drawRigHinge(en.kneeR.x,en.kneeR.y,Math.max(1.4,w*.04),'#101a28',glow);
   // Neck pivot carries helmet, faceplate and antenna as a connected assembly.
   ctx.save();rigPivot(0,-h*.28,Math.sin(movePhase*.45)*.018+((e.hitKick||0)!==0?.025:0));
   rr(-w*.29,-h*.48,w*.58,h*.35,Math.min(8,w*.19),t==='shield'?'#71859c':shell);
