@@ -9628,3 +9628,91 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .spark-portal-brand{display:flex!important;align-items:center!important;gap:8px!important;font-size:12px!important;font-weight:700!important;letter-spacing:1.5px!important;color:#00f0ff!important}.spark-portal-brand small{display:block!important;margin-top:2px!important;font-size:8px!important;letter-spacing:1px!important;color:#648ba2!important}.spark-portal-mark{font-size:21px!important;text-shadow:0 0 10px #00f0ff!important}
 .spark-portal-close{width:36px!important;height:36px!important;min-width:36px!important;border:1px solid rgba(255,47,160,.5)!important;border-radius:8px!important;background:#160b17!important;color:#ff65b8!important;font-size:27px!important;line-height:1!important;cursor:pointer!important}.spark-portal-frame{display:block!important;flex:1 1 auto!important;width:100%!important;height:calc(100% - 48px)!important;min-height:0!important;border:0!important;background:#05070c!important}
 @media(max-width:390px){.portal-toolbar-spark-button{min-width:40px!important;width:40px!important;padding:0 4px!important}.portal-toolbar-spark-button span{display:none!important}}
+
+/* TOOLBAR FIX — 8 controls (6 sections + SPARK + language), no overlapping cells. */
+.portal-workspace > .portal-toolbar .portal-toolbar-nav{
+  display:grid!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  grid-template-rows:84px!important;
+  grid-auto-flow:row!important;
+  gap:2px!important;
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button,
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
+  grid-column:auto!important;
+  grid-row:1!important;
+  order:initial!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:64px!important;
+  min-height:64px!important;
+  max-height:64px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  justify-self:stretch!important;
+  align-self:center!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:1fr!important;
+  place-items:center!important;
+  gap:0!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  white-space:normal!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button .portal-toolbar-icon{
+  width:36px!important;
+  height:36px!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:100%!important;
+  max-height:36px!important;
+  margin:0!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button span{
+  display:none!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
+  position:relative!important;
+  display:grid!important;
+  place-items:stretch!important;
+  overflow:visible!important;
+}
+.portal-workspace > .portal-toolbar .portal-toolbar-language-button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:64px!important;
+  min-height:64px!important;
+  max-height:64px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:520px){
+  .portal-workspace > .portal-toolbar .portal-toolbar-nav{
+    grid-template-columns:repeat(8,minmax(0,1fr))!important;
+    gap:2px!important;
+  }
+  .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon,
+  .portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon,
+  .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button .portal-toolbar-icon{
+    width:clamp(23px,8vw,34px)!important;
+    height:clamp(23px,8vw,34px)!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:100%!important;
+    max-height:34px!important;
+    flex:0 1 auto!important;
+  }
+}
