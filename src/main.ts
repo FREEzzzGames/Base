@@ -503,7 +503,7 @@ function render(){
           <div><h2>GAME</h2><p>SPARK · ICHIRAKU OPERATIONS</p></div>
         </div>
         <section class="portal-block spark-game-host" data-portal-block="game" aria-label="SPARK game">
-          <iframe class="spark-game-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}&art=enemy-detail-pass-12" title="SPARK — Ichiraku" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
+          <iframe class="spark-game-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}&art=enemy-ai-motion-fire-13" title="SPARK — Ichiraku" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
         </section>
       </div>`;
   }
