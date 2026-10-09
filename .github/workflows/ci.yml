@@ -143,7 +143,7 @@ jobs:
           const effects = readFileSync("public/spark-effects.js", "utf8");
           const audio = readFileSync("public/spark-audio.js", "utf8");
           if (!runtime.includes("SparkSimulation.start(update,renderFrame)")) throw new Error("SPARK scheduler is not wired to runtime");
-          if (!runtime.includes("SparkData.createPlayer()")) throw new Error("SPARK data module is not wired to runtime");
+          if (!runtime.includes("SparkData.createPlayer(ground)")) throw new Error("SPARK data module is not wired to runtime");
           if (!runtime.includes("SparkAI.nearestTarget")) throw new Error("SPARK AI module is not wired to runtime");
           if (!runtime.includes("SparkRenderMath.smoothPose")) throw new Error("SPARK render math is not wired to runtime");
           if (!runtime.includes("SparkSession.later")) throw new Error("SPARK session module is not wired to runtime");
