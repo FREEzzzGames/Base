@@ -626,7 +626,7 @@ function drawBoss(){
   poly([[x+w*.5,y+51],[x+w*.5+7,y+59],[x+w*.5,y+68],[x+w*.5-7,y+59]],'#ffbf6a','#ffe5a8',1);
   // arms and hands visibly connect the sword to the body
   plate(x+2,y+48,24,30,'#333b4b');plate(x+w-26,y+48,24,30,'#333b4b');plate(x+4,y+71,18,11,'#8b3444');plate(x+w-22,y+71,18,11,'#8b3444');
-  line([[x+w-14,y+75],[x+w+38,y+28]],'#10151f',9);line([[x+w-14,y+73],[x+w+38,y+26]],'#cfd4dc',5);line([[x+w-14,y+73],[x+w+38,y+26]],glow,2);
+  line([[x+w-14,y+75],[x+w+38,y+28]],'#10151f',8);line([[x+w-14,y+73],[x+w+38,y+26]],'#cfd4dc',4);line([[x+w-14,y+73],[x+w+38,y+26]],glow,1);
   line([[x+w-21,y+68],[x+w-7,y+82]],'#e5b16d',4);line([[x+w-22,y+67],[x+w-7,y+82]],edge,1);
   ctx.fillStyle='#ffb15e';ctx.fillRect(x+22,y+84,6,3);ctx.fillRect(x+w-28,y+84,6,3);
  }else if(b.kind==='siege'){
