@@ -550,7 +550,7 @@ function drawOperator(x,y,face,ch,anim,attacking,velocityX,velocityY){
  var gaitPhase=anim*(5+speed*13),bob=air>.12?Math.min(1.5,air*1.5):Math.abs(Math.sin(gaitPhase*2))*(.12+speed*.55),step=Math.sin(gaitPhase)*speed*2.6,edge='#080d16',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  if(!drawOperator._rig)drawOperator._rig={elbowL:{x:0,y:0,tx:0,ty:0},elbowR:{x:0,y:0,tx:0,ty:0},kneeL:{x:0,y:0,tx:0,ty:0},kneeR:{x:0,y:0,tx:0,ty:0}};
  var opr=drawOperator._rig;
- ctx.save();ctx.translate(Math.round(x+12),Math.round(y+37+bob));ctx.scale(face||1,1);ctx.scale(depth,depth);ctx.translate(-12,-37);
+ ctx.save();ctx.translate(Math.round(x+12),Math.round(y+37+bob));ctx.rotate(Math.max(-.055,Math.min(.055,-(velocityX||0)*.00022+(velocityY||0)*.000035)));ctx.scale(face||1,1);ctx.scale(depth,depth);ctx.translate(-12,-37);
  // contact shadow and a subtle team-colour pool
  ctx.fillStyle='rgba(1,4,10,.72)';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
  ctx.globalAlpha=.17;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
@@ -617,7 +617,7 @@ function drawEnemy(e){
  function rr(a,b,c,d,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(a,b,c,d,Math.min(r,c/2,d/2));ctx.fill()}
  function circ(a,b,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(a,b,Math.max(.1,r),0,Math.PI*2);ctx.fill()}
  function line(a,b,c,d,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
- ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=(e.anim||0)*11,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
+ ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=(e.anim||0)*11,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);var lean=Math.max(-.09,Math.min(.09,-(e._rvx||e.vxRun||0)*.00035+(e._rax||0)*-.000012));if(t==='drone')lean=Math.max(-.12,Math.min(.12,(e._rvx||0)*.00045));if(t==='turret')lean=Math.max(-.045,Math.min(.045,-(e._rvx||0)*.00025));ctx.rotate(lean);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
  // Reusable enemy rig landmarks in local coordinates; visual-only and independent of hitboxes.
  if(!e.rigNodes)e.rigNodes={hipL:{x:0,y:0},kneeL:{x:0,y:0},ankleL:{x:0,y:0},hipR:{x:0,y:0},kneeR:{x:0,y:0},ankleR:{x:0,y:0},shoulderL:{x:0,y:0},elbowL:{x:0,y:0},wristL:{x:0,y:0},shoulderR:{x:0,y:0},elbowR:{x:0,y:0},wristR:{x:0,y:0},weaponMount:{x:0,y:0},muzzle:{x:0,y:0}};
  var en=e.rigNodes;en.hipL.x=-w*.18;en.hipL.y=h*.1;en.kneeL.x=-w*.19;en.kneeL.y=h*.27;en.ankleL.x=-w*.1;en.ankleL.y=h*.4;en.hipR.x=w*.18;en.hipR.y=h*.1;en.kneeR.x=w*.19;en.kneeR.y=h*.27;en.ankleR.x=w*.1;en.ankleR.y=h*.4;en.shoulderL.x=-w*.34;en.shoulderL.y=-h*.08;en.elbowL.x=-w*.4;en.elbowL.y=h*.08;en.wristL.x=-w*.39;en.wristL.y=h*.17;en.shoulderR.x=w*.34;en.shoulderR.y=-h*.08;en.elbowR.x=w*.4;en.elbowR.y=h*.08;en.wristR.x=w*.43;en.wristR.y=h*.02;en.weaponMount.x=w*.4;en.weaponMount.y=-h*.02;en.muzzle.x=w*.67;en.muzzle.y=-h*.065;
@@ -734,6 +734,9 @@ function drawBoss(){
  // Visual-only rigid-body response: velocity stretches the silhouette; impacts and heavy attacks compress it.
  var vx=boss.visualVx||0,vy=boss.visualVy||0,speed=Math.min(1,Math.abs(vx)/360),lift=Math.min(1,Math.abs(vy)/260);
  var sx=1+speed*.075,sy=1-speed*.055;
+ // Bounded inertial squash/stretch responds to smoothed acceleration without changing hitboxes.
+ var accelX=Math.max(-1,Math.min(1,(boss._rax||0)/1800)),accelY=Math.max(-1,Math.min(1,(boss._ray||0)/2200));
+ sx*=1+accelX*.018;sy*=1-accelX*.012-accelY*.012;
  if(bossAI==='aerial'){sx=1+speed*.035;sy=1+lift*.09}
  if(bossAI==='siege'){sx=1+Math.min(.035,Math.abs(vx)/1200);sy=1-(boss.attack>0?.055:0)+Math.min(.025,Math.abs(vy)/900)}
  if(bossAI==='phase'&&boss.dashT>0){sx=1.12;sy=.88}
