@@ -129,16 +129,21 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync } from "node:fs";
           const html = readFileSync("public/spark.html", "utf8");
-          const script = html.match(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/i);
-          if (!script) throw new Error("SPARK runtime script reference is missing");
-          const target = script[1].replace(/^\.\//, "");
-          if (target !== "spark.js") throw new Error("Unexpected SPARK runtime path: " + target);
-          const source = readFileSync("public/" + target, "utf8");
-          if (!source.includes("function frame(t)")) throw new Error("SPARK main loop missing");
-          if (!source.includes("function reset()")) throw new Error("SPARK reset handler missing");
+          const scripts = [...html.matchAll(/<script\\b[^>]*src=["']([^"']+)["'][^>]*>/gi)].map(m => m[1].replace(/^\\.\\//, ""));
+          for (const required of ["spark-physics.js", "spark.js"]) {
+            if (!scripts.includes(required)) throw new Error("Missing SPARK script reference: " + required);
+          }
+          const runtime = readFileSync("public/spark.js", "utf8");
+          const physics = readFileSync("public/spark-physics.js", "utf8");
+          if (!runtime.includes("function frame(t)")) throw new Error("SPARK main loop missing");
+          if (!runtime.includes("function reset()")) throw new Error("SPARK reset handler missing");
+          if (!runtime.includes("SparkPhysics.segmentHitsRect")) throw new Error("SPARK runtime is not wired to physics module");
+          if (!physics.includes("segmentHitsRect")) throw new Error("SPARK segment collision primitive missing");
           console.log("SPARK_RUNTIME_REFERENCE_OK");
           NODE
+          node --check public/spark-physics.js
           node --check public/spark.js
+          node --test public/spark-physics.test.mjs
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
