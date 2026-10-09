@@ -265,7 +265,7 @@ document.addEventListener('click',function(e){
  var b=e.target&&e.target.closest?e.target.closest('#menu button'):null;
  if(!b||!$('menu').contains(b))return;
  if(Date.now()-lastHubTouch<800){e.preventDefault();e.stopPropagation();return}
- if(e.detail===0){e.preventDefault();e.stopPropagation();activateHubButton(b)}
+ e.preventDefault();e.stopPropagation();activateHubButton(b)
 },true);
 $('retry').onclick=reset;$('again').onclick=reset;document.addEventListener('visibilitychange',function(){last=0;acc=0;if(document.hidden)resetInput()});resize();resetInput();renderCharacterSelector();renderWeapons();showScreen('home');requestAnimationFrame(frame);
 })();
