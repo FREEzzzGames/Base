@@ -81,3 +81,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Reworked the UI palette toward ramen-shop reds, lantern amber, warm cream, and night-village charcoal; replaced the industrial skyline with layered night-market facades and lanterns.
 - Renamed arena markers to Ichiraku, rooftops, market, and shrine; medkit pickups now identify as ramen recovery, while existing weapon, enemy, boss, and three-phase combat mechanics remain.
 - Source commit: `98523c5163a90f4a289d6cc66a8ffddf1b4390bf`. This is a source change, not yet a runtime/device smoke-test claim; validate CI and published output before marking it released.
+
+## 2026-10-09 Ichiraku menu backdrop implemented in code
+
+- Added a procedural canvas-rendered night-village / ramen-shop backdrop directly to `public/spark.html`; no external image URL or separately loaded asset is required.
+- The menu state now renders the backdrop as its full-screen canvas scene, including moonlight, mountain silhouettes, village buildings, warm ramen signage, lanterns, stools, sakura petals, and vignette lighting.
+- Reduced the menu overlay opacity and styled the character panel so the scene remains visible behind the existing character selector.
+- Gameplay rendering remains on the existing path after the menu state; existing character selection and combat mechanics are preserved.
+- Source commit: `0ba9e69d51a174fb07874d16e059bf99762779a2`.
+- Runtime/device appearance and mobile performance still require smoke testing after deployment.
