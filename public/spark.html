@@ -74,13 +74,13 @@ function showScreen(name){document.querySelectorAll('.hub-screen').forEach(funct
 function renderWeapons(){var grid=$('weaponsGrid');if(!grid)return;grid.innerHTML='';Object.keys(WEAPONS).forEach(function(key){var w=WEAPONS[key],b=document.createElement('button');b.className='weapon-card'+(selectedWeapon===key?' selected':'');b.style.setProperty('--wc',w.color);b.innerHTML='<span class="weapon-icon">'+w.icon+'</span><span><b>'+w.name+'</b><small>Урон '+w.dmg+' · '+(1/w.cd).toFixed(1)+'/с</small></span>';b.addEventListener('click',function(){selectedWeapon=key;renderWeapons()});grid.appendChild(b)})}
 /* Delegated navigation survives dynamically rebuilt UI and mobile WebViews. */
 document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-goto]'):null;if(!b||!$('menu').contains(b))return;e.preventDefault();showScreen(b.dataset.goto)},true);
-$('settingsShortcut').addEventListener('click',function(){showScreen('settings')});
-$('soundToggle').addEventListener('click',function(){soundEnabled=!soundEnabled;this.classList.toggle('on',soundEnabled);this.textContent=soundEnabled?'ВКЛ':'ВЫКЛ';if(soundEnabled)beep(660,.06)});
-$('chooseCharacter').addEventListener('click',function(){reset()});
-$('equipWeapon').addEventListener('click',function(){p.weapon=selectedWeapon;$('weapon').textContent='▸ '+WEAPONS[p.weapon].name;showScreen('home');toast('ОРУЖИЕ: '+WEAPONS[p.weapon].name)});
-$('openMissions').addEventListener('click',function(){showScreen('missions')});
-$('missionOne').addEventListener('click',function(){document.querySelectorAll('.mission-card').forEach(function(el){el.classList.remove('selected')});this.classList.add('selected')});
-$('missionStart').addEventListener('click',function(){reset()});
+
+
+
+
+
+
+
 $('pauseButton').addEventListener('click',pauseGame);
 $('resume').addEventListener('click',resumeGame);
 $('pauseRestart').addEventListener('click',function(){ $('pauseMenu').classList.add('hidden');reset()});
