@@ -455,7 +455,7 @@ function drawEnemy(e){
  function rr(a,b,c,d,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(a,b,c,d,Math.min(r,c/2,d/2));ctx.fill()}
  function circ(a,b,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(a,b,Math.max(.1,r),0,Math.PI*2);ctx.fill()}
  function line(a,b,c,d,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
- ctx.save();ctx.translate(x+w/2,y+h/2);
+ ctx.save();var movePhase=(e.anim||0)*11,stepSwing=Math.sin(movePhase)*(Math.abs(e.vxRun||e.v||0)>2?2.2:.6),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
  // Atmospheric bloom is confined to the sprite; no hard outer frame.
  ctx.save();ctx.globalAlpha=.13+.045*Math.sin(now*3.2+e.x*.035);ctx.shadowColor=glow;ctx.shadowBlur=13;circ(0,0,Math.max(w,h)*.44,glow);ctx.restore();
  ctx.globalAlpha=.45;ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(0,h*.43,w*.34,2+Math.sin(now*7)*.4,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
@@ -471,16 +471,16 @@ function drawEnemy(e){
   circ(-w*.39,-h*.16,1.5,'#e5ffff');circ(w*.39,-h*.16,1.5,'#e5ffff');
  }else if(t==='turret'){
   rr(-w*.38,h*.17,w*.76,h*.24,h*.1,'#1d2839');rr(-w*.29,h*.23,w*.58,h*.12,3,'#465166');
-  for(var k=0;k<4;k++)circ(-w*.23+k*w*.15,h*.29,1.2,k%2?glow:'#ffce83');
+  for(var tr=0;tr<5;tr++){var treadX=-w*.3+((tr*5+(e.wheel||0)*9)%(w*.6));circ(treadX,h*.29,1.35,tr%2?glow:'#ffce83')}
   rr(-w*.32,-h*.24,w*.64,h*.48,h*.15,shell);rr(-w*.23,-h*.43,w*.46,h*.34,h*.13,'#3d4d62');
   rr(-w*.14,-h*.35,w*.28,h*.16,3,'#101a29');rr(-w*.07,-h*.32,w*.14,h*.09,2,glow);
   rr(w*.12,-h*.29,w*.47,Math.max(4,h*.12),3,'#5a6d83');rr(w*.51,-h*.28,w*.13,Math.max(3,h*.1),2,glow);
   circ(-w*.17,-h*.31,1,'#fff3d8');circ(w*.02,-h*.31,1,'#fff3d8');
  }else{
   // Humanoid units use curved overlapping armor plates and exposed joints.
-  rr(-w*.29,h*.1,w*.23,h*.34,4,'#182738');rr(w*.06,h*.1,w*.23,h*.34,4,'#182738');
-  rr(-w*.31,h*.26,w*.26,h*.14,3,'#43536a');rr(w*.05,h*.26,w*.26,h*.14,3,'#43536a');
-  line(-w*.18,h*.34,-w*.1,h*.4,'#9cb3c7',1);line(w*.18,h*.34,w*.1,h*.4,'#9cb3c7',1);
+  rr(-w*.29,h*.1,w*.23,h*.3,4,'#182738');rr(w*.06,h*.1,w*.23,h*.3,4,'#182738');
+  rr(-w*.31,h*.25+stepSwing*.45,w*.26,h*.14,3,'#43536a');rr(w*.05,h*.25-stepSwing*.45,w*.26,h*.14,3,'#43536a');
+  line(-w*.18,h*.32+stepSwing*.3,-w*.1,h*.4+stepSwing*.3,'#9cb3c7',1);line(w*.18,h*.32-stepSwing*.3,w*.1,h*.4-stepSwing*.3,'#9cb3c7',1);
   rr(-w*.4,-h*.19,w*.8,h*.5,Math.min(8,w*.19),shell);
   rr(-w*.3,-h*.15,w*.6,h*.25,Math.min(6,w*.14),'#394e64');
   // Chest reactor and fine edge highlights
