@@ -157,7 +157,7 @@ jobs:
           if (!audio.includes("function beep(")) throw new Error("SPARK audio primitive missing");
           if (!data.includes("function createPlayer(")) throw new Error("SPARK data factory missing");
           if (!ai.includes("function nearestTarget(") || !ai.includes("function bossPhase(") || !ai.includes("function updateEnemies(") || !ai.includes("function updateBoss(")) throw new Error("SPARK AI decisions/enemy/boss behavior missing");
-          if (!render.includes("function smoothPose(") || !render.includes("function drawRigLink(") || !render.includes("function drawRigHinge(") || !render.includes("function solve2Bone(") || !render.includes("function pivot(")) throw new Error("SPARK render helpers missing");
+          if (!render.includes("function smoothPose(") || !render.includes("function drawRigLink(") || !render.includes("function drawRigHinge(") || !render.includes("function solve2Bone(") || !render.includes("function pivot(") || !render.includes("function interpolateActors(")) throw new Error("SPARK render helpers missing");
           if (!simulation.includes("function start(") || !simulation.includes("function resetClock(")) throw new Error("SPARK simulation lifecycle missing");
           if (!session.includes("function later(") || !session.includes("function clear(")) throw new Error("SPARK session lifecycle missing");
           console.log("SPARK_RUNTIME_REFERENCE_OK");
