@@ -130,25 +130,29 @@ jobs:
           import { readFileSync } from "node:fs";
           const html = readFileSync("public/spark.html", "utf8");
           const scripts = [...html.matchAll(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/gi)].map(m => m[1].replace(/^\.\//, ""));
-          for (const required of ["spark-physics.js", "spark-effects.js", "spark.js"]) {
+          for (const required of ["spark-physics.js", "spark-effects.js", "spark-audio.js", "spark.js"]) {
             if (!scripts.includes(required)) throw new Error("Missing SPARK script reference: " + required);
           }
           const runtime = readFileSync("public/spark.js", "utf8");
           const physics = readFileSync("public/spark-physics.js", "utf8");
           const effects = readFileSync("public/spark-effects.js", "utf8");
+          const audio = readFileSync("public/spark-audio.js", "utf8");
           if (!runtime.includes("function frame(t)")) throw new Error("SPARK main loop missing");
           if (!runtime.includes("function reset()")) throw new Error("SPARK reset handler missing");
           if (!runtime.includes("SparkPhysics.segmentHitsRect")) throw new Error("SPARK runtime is not wired to physics module");
           if (!runtime.includes("SparkEffects.burst(fx")) throw new Error("SPARK runtime is not wired to effects module");
           if (!runtime.includes("SparkEffects.shoot(bullets")) throw new Error("SPARK runtime is not wired to projectile module");
+          if (!runtime.includes("SparkAudio.beep(soundEnabled")) throw new Error("SPARK runtime is not wired to audio module");
           if (!physics.includes("segmentHitsRect")) throw new Error("SPARK segment collision primitive missing");
           if (!effects.includes("function burst(") || !effects.includes("function shoot(")) throw new Error("SPARK effects primitives missing");
+          if (!audio.includes("function beep(")) throw new Error("SPARK audio primitive missing");
           console.log("SPARK_RUNTIME_REFERENCE_OK");
           NODE
           node --check public/spark-physics.js
           node --check public/spark-effects.js
+          node --check public/spark-audio.js
           node --check public/spark.js
-          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs
+          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
