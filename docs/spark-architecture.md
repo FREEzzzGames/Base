@@ -3,7 +3,9 @@
 ## Runtime entry
 
 - `spark.html` owns the DOM, layout, HUD, menus, and touch-control markup.
-- `spark.js` is the runtime entry point and owns the private game-session state.
+- `spark.js` is the runtime entry point and owns private game-session state.
+- `spark-physics.js` contains pure, allocation-free geometry/collision primitives.
+- `spark-effects.js` owns bounded particle-burst and projectile creation primitives; the runtime passes its active pools into these functions.
 - The game remains dependency-free and uses Canvas 2D.
 
 ## Subsystem boundaries inside `spark.js`
