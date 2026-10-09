@@ -623,6 +623,31 @@ function drawBoss(){
   outlineRect(x+42,y+6,w-84,24,'#e2d7df',edge,3);ctx.fillStyle='#c9becb';ctx.beginPath();ctx.moveTo(x+43,y+12);ctx.lineTo(x+33,y-7);ctx.lineTo(x+56,y+6);ctx.lineTo(x+70,y-10);ctx.lineTo(x+76,y+7);ctx.lineTo(x+w-42,y-5);ctx.lineTo(x+w-47,y+17);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();outlineRect(x+49,y+15,w-98,7,'#090d17',edge,1);ctx.fillStyle=glow;ctx.fillRect(x+55,y+17,13,3);ctx.fillRect(x+w-68,y+17,13,3);
   ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=13;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+22,y+49);ctx.lineTo(x-7,y+19);ctx.moveTo(x+w-22,y+49);ctx.lineTo(x+w+7,y+19);ctx.stroke();ctx.restore();
  }
+ // Signature-specific silhouette accents and restrained animation.
+ var pulse=.5+.5*Math.sin((boss.pattern||0)*5),flash=boss.attack>0;
+ ctx.save();
+ if(b.kind==='samurai'){
+  // segmented shoulder plates, red waist lames and a circular reactor crest
+  for(var ar=0;ar<3;ar++){ctx.fillStyle=ar===1?'#d84b55':'#5b3544';ctx.fillRect(x+8+ar*7,y+36+ar*2,5,14);ctx.fillRect(x+w-13-ar*7,y+36+ar*2,5,14)}
+  ctx.fillStyle='#f6a9a2';ctx.fillRect(x+35,y+h-25,12,3);ctx.fillRect(x+w-47,y+h-25,12,3);
+  ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x+w*.5,y+57,24+pulse*2,0,Math.PI*2);ctx.stroke();
+  if(flash){ctx.globalAlpha=.8;ctx.strokeStyle='#fff1dd';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+w-24,y+62);ctx.lineTo(x+w+44,y+20);ctx.stroke()}
+ }else if(b.kind==='siege'){
+  // ammunition belts, barrel mouths and hazard chevrons clarify the heavy silhouette
+  for(var belt=0;belt<5;belt++){ctx.fillStyle=belt%2?'#161d27':'#ffb23c';ctx.fillRect(x+39+belt*13,y+h-24,7,4)}
+  for(var muzzle=0;muzzle<2;muzzle++){var mx=muzzle?x+w-30:x+30;ctx.fillStyle=flash? '#fff1c2':glow;ctx.fillRect(mx-3,y+8,6,4);ctx.fillStyle='#101722';ctx.fillRect(mx-2,y+12,4,5)}
+  ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+17,y+67);ctx.lineTo(x+31,y+76);ctx.lineTo(x+45,y+67);ctx.moveTo(x+w-45,y+67);ctx.lineTo(x+w-31,y+76);ctx.lineTo(x+w-17,y+67);ctx.stroke();
+ }else if(b.kind==='drone'){
+  // rotating scan halo and three illuminated stabilizer nodes
+  ctx.translate(x+w*.5,y+h*.48);ctx.rotate((boss.pattern||0)*.32);ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(0,0,36+pulse*3,25+pulse*2,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.rotate(-(boss.pattern||0)*.32);
+  for(var node=0;node<3;node++){var na=(boss.pattern||0)*.7+node*Math.PI*2/3;ctx.fillStyle=flash?'#ffffff':glow;ctx.beginPath();ctx.arc(Math.cos(na)*31,Math.sin(na)*22,3+pulse,0,Math.PI*2);ctx.fill()}
+ }else{
+  // twin segmented forearm guards, angular belt and flickering afterimage slashes
+  for(var seg=0;seg<3;seg++){ctx.fillStyle=seg===1?glow:'#434052';ctx.fillRect(x+13+seg*4,y+48+seg*3,7,3);ctx.fillRect(x+w-20-seg*4,y+48+seg*3,7,3)}
+  ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+35,y+h-20);ctx.lineTo(x+w*.5,y+h-12);ctx.lineTo(x+w-35,y+h-20);ctx.stroke();
+  if(flash){ctx.globalAlpha=.25+.35*pulse;ctx.fillStyle=glow;ctx.fillRect(x-14,y+20,w+28,h-10);ctx.globalAlpha=1}
+ }
+ ctx.restore();
  var cx=x+w*.5,cy=y+h*.54;ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,phase===3?12:9,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff0d6';ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,phase===3?21:16,0,Math.PI*2);ctx.stroke();ctx.restore();
  ctx.lineWidth=3;ctx.strokeStyle=edge;ctx.strokeRect(x,y,w,h);if(boss.attack>0){ctx.globalAlpha=.75;ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,28+Math.sin((boss.pattern||0)*18)*4,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}ctx.restore();
 }
