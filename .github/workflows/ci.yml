@@ -129,9 +129,11 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from "node:fs";
           const html = readFileSync("public/spark.html", "utf8");
-          const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
-          if (scripts.length !== 1) throw new Error(`Expected one inline SPARK script, found ${scripts.length}`);
-          writeFileSync("/tmp/spark-inline.js", scripts[0][1]);
+          const open = html.indexOf("<script>");
+          const close = html.lastIndexOf("</script>");
+          if (open < 0 || close <= open) throw new Error("SPARK inline script tags are missing or malformed");
+          const source = html.slice(html.indexOf(">", open) + 1, close);
+          writeFileSync("/tmp/spark-inline.js", source);
           NODE
           node --check /tmp/spark-inline.js
 
