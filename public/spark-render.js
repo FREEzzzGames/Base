@@ -9,5 +9,14 @@ function smoothPose(o,tx,ty,dt,teleportLimit){
  o._rax=(o._rvx-oldVx)/safeDt;o._ray=(o._rvy-oldVy)/safeDt;o._px=o._rx;o._py=o._ry;
 }
 function depthScale(y,ground){return Math.max(.88,Math.min(1.08,.96+(ground-y)*.00016));}
-root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale});
+
+function drawRigLink(ctx,ax,ay,bx,by,outer,inner,width){
+ ctx.lineCap='round';ctx.strokeStyle=outer;ctx.lineWidth=width+2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+ ctx.strokeStyle=inner;ctx.lineWidth=Math.max(1,width*.45);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+}
+function drawRigHinge(ctx,x,y,r,outer,inner){
+ ctx.fillStyle=outer;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=inner;ctx.beginPath();ctx.arc(x,y,Math.max(1,r*.42),0,Math.PI*2);ctx.fill();
+}
+root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale,drawRigLink:drawRigLink,drawRigHinge:drawRigHinge});
 })(typeof window!=='undefined'?window:globalThis);
