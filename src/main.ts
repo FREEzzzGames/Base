@@ -15,7 +15,6 @@ import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
-import { mountFreezzzMafia } from "./freezzz-mafia";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
 import { renderLibrary, bindLibraryView } from "./library-emulator";
 
@@ -58,8 +57,6 @@ let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language")
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
-let sparkOpen=false;
-window.addEventListener("keydown",e=>{if(e.key==="Escape"&&sparkOpen){e.preventDefault();sparkOpen=false;render();if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});}});
 const telegramAuth=await Promise.race<TelegramAuthResult>([
   verifyTelegramSession(),
   new Promise<TelegramAuthResult>(resolve=>window.setTimeout(()=>resolve({ok:false,error:"AUTH_TIMEOUT"}),2500))
@@ -82,7 +79,6 @@ let radioActivityName="";
 let livePopups:LivePopupState[]=[];
 const PORTAL_NICKNAME="d3tr01t";
 let hudHidden=false;
-let freezzzArenaCleanup:(()=>void)|null=null;
 let hudGestureBound=false;
 const telegramChatClient=createTelegramChatClient();
 
@@ -431,7 +427,6 @@ function renderProfileCard(){
 }
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
-    ["game","game","GAME"],
     ["live","video","LIVE"],
     ["chat","chat","CHAT"],
     ["home","home","HOME"],
@@ -443,7 +438,6 @@ function renderPortalToolbar(){
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
-        <button class="portal-toolbar-spark-button" data-spark-launch type="button" aria-label="SPARK — Central Complex" title="SPARK // Central Complex">${icon("zap","portal-toolbar-icon")}<span>SPARK</span></button>
         <div class="portal-toolbar-language-wrap">
           <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
           <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
@@ -456,13 +450,7 @@ function renderPortalToolbar(){
     </div>
   </nav>`;
 }
-function renderSparkOverlay(){
-  return `<section class="spark-portal-overlay" role="dialog" aria-modal="true" aria-label="SPARK">
-    <iframe class="spark-portal-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="SPARK" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
-  </section>`;
-}
 function render(){
-  if(freezzzArenaCleanup){ freezzzArenaCleanup(); freezzzArenaCleanup=null; }
   let body="";
 
   if(view==="home"){
@@ -512,9 +500,11 @@ function render(){
     body=`
       <div class="content portal-layout game-portal" data-portal-layout="game">
         <div class="section-head portal-block game-section-head" data-portal-block="header">
-          <div><h2>GAME</h2><p>FREEzzz MAFIA · 2D PLATFORMER</p></div>
+          <div><h2>GAME</h2><p>SPARK · ICHIRAKU OPERATIONS</p></div>
         </div>
-        <div class="portal-block game-story-block" data-portal-block="game" aria-label="FREEzzz Mafia platformer"></div>
+        <section class="portal-block spark-game-host" data-portal-block="game" aria-label="SPARK game">
+          <iframe class="spark-game-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="SPARK — Ichiraku" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
+        </section>
       </div>`;
   }
   if(view==="radio"){
@@ -586,20 +576,14 @@ function render(){
       </div>
       ${renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
-      ${sparkOpen?renderSparkOverlay():""}
     </div>`;
 
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   mountPersistentBackgroundVideos();
   bind();
-  if(view==="game"){
-    const host=document.querySelector<HTMLElement>(".game-story-block");
-    if(host)freezzzArenaCleanup=mountFreezzzMafia(host);
-  }
   bindHudTouchGesture();
   updateHomeClock();
-  bindTelegramBackButton(view!=="home" || profileOpen || sparkOpen,()=>{
-    if(sparkOpen){sparkOpen=false;render();return;}
+  bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
     portalEvents.emit("navigation:changed",{view:"home"});
   });
@@ -855,15 +839,6 @@ function bind(){
     const stream=popup?getLiveStreams().find(s=>s.name===popup.name):undefined;
     const url=stream?(popup?.source==="twitch"?stream.twitch:popup?.source==="replay"?stream.lastRecordingUrl:stream.youtube):"";
     if(url)openExternalUrl(url);
-  });
-  document.querySelector<HTMLElement>("[data-spark-launch]")?.addEventListener("click",function(e){
-    e.preventDefault();e.stopPropagation();
-    const root=document.documentElement;
-    if(!document.fullscreenElement&&root.requestFullscreen)void root.requestFullscreen({navigationUI:"hide"}).catch(()=>{});
-    sparkOpen=true;languageMenuOpen=false;render();
-  });
-  document.querySelector<HTMLElement>("[data-spark-close]")?.addEventListener("click",function(e){
-    e.preventDefault();e.stopPropagation();sparkOpen=false;render();if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});
   });
   document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
