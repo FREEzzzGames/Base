@@ -173,7 +173,6 @@ function drawEnemy(e){
  if(e.hp<e.maxHp){outlineRect(x,y-7,w,4,'#121a29',edge,1);ctx.fillStyle=glow;ctx.fillRect(x+1,y-6,Math.max(0,(w-2)*e.hp/e.maxHp),2)}
  ctx.restore();
 }
-\n
 function drawBoss(){
  var x=Math.round(boss.x),y=Math.round(boss.y),w=boss.w,h=boss.h,edge='#090d17',red=boss.phase===3?'#ff593e':'#9f303b',glow=boss.phase===3?'#ff9c3a':'#ff6a36';
  ctx.save();
