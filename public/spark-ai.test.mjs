@@ -25,3 +25,14 @@ test("enemy AI updates drone state and fires through injected effects", () => {
  assert.equal(shots.length,1);
  assert.ok(bursts.length>0);
 });
+
+test("all boss archetypes update without missing runtime-scoped variables", () => {
+ for (const archetype of ["mecha","aerial","siege","phase"]) {
+  const boss={active:true,dead:false,x:100,y:100,w:100,h:120,hp:100,maxHp:100,cd:0,attack:0};
+  const player={x:160,y:100,w:24,h:40,vx:0,vy:0};
+  const shots=[],bursts=[];
+  ai.updateBoss(boss,player,1/60,archetype,565,120,500,(...args)=>shots.push(args),(...args)=>bursts.push(args));
+  assert.ok(Number.isFinite(boss.x)&&Number.isFinite(boss.y),archetype);
+  assert.ok(shots.length>0,archetype);
+ }
+});
