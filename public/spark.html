@@ -623,6 +623,7 @@ function drawBoss(){
   outlineRect(x+42,y+6,w-84,24,'#e2d7df',edge,3);ctx.fillStyle='#c9becb';ctx.beginPath();ctx.moveTo(x+43,y+12);ctx.lineTo(x+33,y-7);ctx.lineTo(x+56,y+6);ctx.lineTo(x+70,y-10);ctx.lineTo(x+76,y+7);ctx.lineTo(x+w-42,y-5);ctx.lineTo(x+w-47,y+17);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();outlineRect(x+49,y+15,w-98,7,'#090d17',edge,1);ctx.fillStyle=glow;ctx.fillRect(x+55,y+17,13,3);ctx.fillRect(x+w-68,y+17,13,3);
   ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=13;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+22,y+49);ctx.lineTo(x-7,y+19);ctx.moveTo(x+w-22,y+49);ctx.lineTo(x+w+7,y+19);ctx.stroke();ctx.restore();
  }
+ var pulse=.5+.5*Math.sin((boss.pattern||0)*5),flash=boss.attack>0;
  // Material pass: bevel highlights, bolts, vents and a distinct silhouette per boss.
  ctx.save();
  if(b.kind==='samurai'){
@@ -659,7 +660,6 @@ function drawBoss(){
  ctx.globalAlpha=.7;ctx.fillStyle='#e7f7ff';ctx.fillRect(x+Math.round(w*.5)-2,y+4,4,2);ctx.globalAlpha=1;
  ctx.restore();
  // Signature-specific silhouette accents and restrained animation.
- var pulse=.5+.5*Math.sin((boss.pattern||0)*5),flash=boss.attack>0;
  ctx.save();
  if(b.kind==='samurai'){
   // segmented shoulder plates, red waist lames and a circular reactor crest
@@ -682,6 +682,33 @@ function drawBoss(){
   ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+35,y+h-20);ctx.lineTo(x+w*.5,y+h-12);ctx.lineTo(x+w-35,y+h-20);ctx.stroke();
   if(flash){ctx.globalAlpha=.25+.35*pulse;ctx.fillStyle=glow;ctx.fillRect(x-14,y+20,w+28,h-10);ctx.globalAlpha=1}
  }
+ ctx.restore();
+ // High-detail identity pass: faceplates, layered bevels, vents and insignia.
+ ctx.save();
+ if(b.kind==='samurai'){
+  // angular kabuto side horns, cheek guards, chest lames and emblem
+  ctx.fillStyle='#6c2435';ctx.beginPath();ctx.moveTo(x+47,y+8);ctx.lineTo(x+31,y-1);ctx.lineTo(x+42,y+18);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#6c2435';ctx.beginPath();ctx.moveTo(x+w-47,y+8);ctx.lineTo(x+w-31,y-1);ctx.lineTo(x+w-42,y+18);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#171d2a';ctx.fillRect(x+49,y+35,w-98,15);ctx.fillStyle='#f2b85f';ctx.fillRect(x+54,y+39,8,3);ctx.fillRect(x+w-62,y+39,8,3);
+  ctx.strokeStyle='#f0c36d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w*.5,y+44);ctx.lineTo(x+w*.5-5,y+51);ctx.lineTo(x+w*.5,y+58);ctx.lineTo(x+w*.5+5,y+51);ctx.closePath();ctx.stroke();
+ }else if(b.kind==='siege'){
+  // stacked shoulder armour, exhaust grills and a reinforced central mantlet
+  outlineRect(x+22,y+28,18,8,'#66717a',edge,2);outlineRect(x+w-40,y+28,18,8,'#66717a',edge,2);
+  for(var vent=0;vent<5;vent++){ctx.fillStyle=vent%2?'#f6a33b':'#151d28';ctx.fillRect(x+43+vent*10,y+78,6,3)}
+  ctx.strokeStyle='#aeb9c1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+20,y+37);ctx.lineTo(x+28,y+44);ctx.lineTo(x+36,y+37);ctx.moveTo(x+w-36,y+37);ctx.lineTo(x+w-28,y+44);ctx.lineTo(x+w-20,y+37);ctx.stroke();
+  ctx.fillStyle='#121923';ctx.fillRect(x+w*.5-9,y+39,18,27);ctx.strokeStyle='#ffcc70';ctx.lineWidth=2;ctx.strokeRect(x+w*.5-9,y+39,18,27);
+ }else if(b.kind==='drone'){
+  // blade-shaped wing tips, reactor containment ribs and thruster chevrons
+  for(var rib=0;rib<4;rib++){ctx.strokeStyle=rib%2?'#1b9bd0':'#68eaff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+18+rib*5,y+32+rib*3);ctx.lineTo(x+35+rib*4,y+37+rib*3);ctx.moveTo(x+w-18-rib*5,y+32+rib*3);ctx.lineTo(x+w-35-rib*4,y+37+rib*3);ctx.stroke()}
+  ctx.strokeStyle='#d5fbff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w*.5,y+h*.48-20);ctx.lineTo(x+w*.5,y+h*.48+20);ctx.moveTo(x+w*.5-20,y+h*.48);ctx.lineTo(x+w*.5+20,y+h*.48);ctx.stroke();
+  ctx.fillStyle=glow;ctx.fillRect(x+w*.5-2,y+h-2,4,9+pulse*5);
+ }else{
+  // face mask plates, forehead crest, scarf tails and paired wrist blades
+  ctx.fillStyle='#d9d4df';ctx.beginPath();ctx.moveTo(x+44,y+22);ctx.lineTo(x+w*.5,y+30);ctx.lineTo(x+w-44,y+22);ctx.lineTo(x+w-50,y+39);ctx.lineTo(x+w*.5,y+45);ctx.lineTo(x+50,y+39);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#171b2a';ctx.fillRect(x+53,y+28,w-106,5);ctx.fillStyle=glow;ctx.fillRect(x+57,y+29,11,2);ctx.fillRect(x+w-68,y+29,11,2);
+  ctx.fillStyle='#8b294c';ctx.beginPath();ctx.moveTo(x+31,y+44);ctx.lineTo(x+8,y+58);ctx.lineTo(x+28,y+54);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(x+w-31,y+44);ctx.lineTo(x+w-8,y+58);ctx.lineTo(x+w-28,y+54);ctx.closePath();ctx.fill();
+ }
+ // Bosses get a stable outer contour; no opaque rectangular fill is introduced.
  ctx.restore();
  var cx=x+w*.5,cy=y+h*.54;ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,phase===3?12:9,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff0d6';ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,phase===3?21:16,0,Math.PI*2);ctx.stroke();ctx.restore();
  ctx.lineWidth=3;ctx.strokeStyle=edge;ctx.strokeRect(x,y,w,h);if(boss.attack>0){ctx.globalAlpha=.75;ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,28+Math.sin((boss.pattern||0)*18)*4,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}ctx.restore();
