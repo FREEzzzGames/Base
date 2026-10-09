@@ -657,7 +657,7 @@ function drawBoss(){
   for(var wing=0;wing<3;wing++){ctx.fillStyle=wing===1?'#55d8ef':'#2583ad';ctx.fillRect(x-18-wing*3,y+27+wing*9,24,5);ctx.fillRect(x+w-6+wing*3,y+27+wing*9,24,5);ctx.fillStyle='#baf8ff';ctx.fillRect(x-12-wing*3,y+28+wing*9,7,2);ctx.fillRect(x+w-1+wing*3,y+28+wing*9,7,2)}
   // core housing and rings are layered, with spokes and moving scan marks
   ctx.fillStyle='#07121f';ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,29,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#287f9f';ctx.lineWidth=6;ctx.stroke();
-  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=18;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,20+pulse*2,0,Math.PI*2);ctx.stroke();ctx.restore();
+  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=14;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,20+pulse*2,0,Math.PI*2);ctx.stroke();ctx.restore();
   for(var sp=0;sp<8;sp++){var sa=(boss.pattern||0)*.45+sp*Math.PI/4;line([[x+w*.5+Math.cos(sa)*10,y+h*.48+Math.sin(sa)*10],[x+w*.5+Math.cos(sa)*18,y+h*.48+Math.sin(sa)*18]],'#8af4ff',2)}
   ctx.fillStyle='#e8ffff';ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,8,0,Math.PI*2);ctx.fill();ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,4,0,Math.PI*2);ctx.fill();
   for(var thr=0;thr<3;thr++){var tx=x+w*.5+(thr-1)*22;ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=8;ctx.fillStyle=glow;ctx.fillRect(tx-3,y+h-2,6,10+pulse*5);ctx.restore()}
