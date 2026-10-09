@@ -157,7 +157,8 @@ function drawBoss(){
  ctx.lineWidth=2;ctx.strokeStyle=glow;ctx.strokeRect(Math.round(x+w*.38),Math.round(y+45),Math.round(w*.24),23);
  ctx.restore();
 }
-\nfunction drawMenuBackdrop(){
+
+function drawMenuBackdrop(){
  var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#06112c');g.addColorStop(.42,'#18284c');g.addColorStop(.72,'#301b2b');g.addColorStop(1,'#080b13');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  for(var i=0;i<54;i++){var sx=(i*47+13)%W,sy=(i*83+17)%(H*.52);ctx.fillStyle=i%5===0?'#ffb4c9':'#d8e7ff';ctx.globalAlpha=.35+(i%4)*.14;ctx.fillRect(sx,sy,i%7===0?2:1,1)}ctx.globalAlpha=1;
  var moon=ctx.createRadialGradient(W*.78,H*.13,2,W*.78,H*.13,38);moon.addColorStop(0,'#fff7d5');moon.addColorStop(.6,'#a9d8ff');moon.addColorStop(1,'rgba(114,172,255,0)');ctx.fillStyle=moon;ctx.beginPath();ctx.arc(W*.78,H*.13,38,0,Math.PI*2);ctx.fill();ctx.fillStyle='#dcecff';ctx.beginPath();ctx.arc(W*.78,H*.13,16,0,Math.PI*2);ctx.fill();
