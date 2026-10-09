@@ -826,9 +826,7 @@ function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(
  });fx.forEach(function(f){ctx.globalAlpha=Math.max(0,f.life/f.max);ctx.fillStyle=f.c;ctx.fillRect(Math.round(f.x),Math.round(f.y),2,2);if(f.life/f.max>.55){ctx.globalAlpha*=.35;ctx.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,4,4)}});ctx.globalAlpha=1;if(!p.dead){if(p.inv>0&&Math.floor(p.inv*20)%2===0)ctx.globalAlpha=.35;var ch=selectedCharacter;drawOperator(p._rx===undefined?p.x:p._rx,p._ry===undefined?p.y:p._ry,p.face,ch,p._gaitPhase||0,p.atk,p._rvx===undefined?p.vx:p._rvx,p._rvy===undefined?p.vy:p._rvy,p._hitReact||0,p._landPulse||0);if(p.shield>0||(p._blockPulse||0)>.01){ctx.save();var blockGlow=Math.max(p.shield>0?.32:0,(p._blockPulse||0)*.62);ctx.globalAlpha=blockGlow+.08*Math.sin(performance.now()*.012);ctx.strokeStyle='#55dff3';ctx.lineWidth=2+(p._blockPulse||0)*1.5;ctx.shadowColor='#55dff3';ctx.shadowBlur=8+(p._blockPulse||0)*9;ctx.beginPath();ctx.ellipse(p.x+p.w/2,p.y+p.h/2,p.w*(.82+(p._blockPulse||0)*.1),p.h*(.7+(p._blockPulse||0)*.08),0,0,Math.PI*2);ctx.stroke();ctx.restore()}if((p._landPulse||0)>.02){ctx.save();var land=p._landPulse;ctx.globalAlpha=land*.42;ctx.strokeStyle='#b8e7ff';ctx.lineWidth=1+land;ctx.beginPath();ctx.ellipse(p.x+p.w/2,p.y+p.h-1,p.w*(.65+(.9-land)*.5),2+land*4,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.globalAlpha=1}ctx.restore();drawLightingOverlay()}
 // MAIN LOOP: simulation scheduler is independent from rendering and DOM events.
 function renderFrame(rdt){
- for(var si=0;si<enemies.length;si++){var se=enemies[si];smoothRenderPose(se,se.x,se.y,rdt,180);if(se.type!=='drone'&&se.type!=='turret'&&se.type!=='support'){se._gaitPhase=(se._gaitPhase||0)+Math.abs(se._rvx||0)*rdt*.22}}
- if(boss&&boss.active&&!boss.dead)smoothRenderPose(boss,boss.x,boss.y,rdt,220);
- if(p)smoothRenderPose(p,p.x,p.y,rdt,140);
+ SparkRenderMath.interpolateActors(enemies,boss,p,rdt,smoothRenderPose);
  draw();
 }
 // HUB INPUT: pointer/touch-first activation for Telegram Android WebViews.
