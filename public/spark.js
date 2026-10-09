@@ -85,8 +85,8 @@ function reset(){clearTimers();clearToastTimer();resetInput();worldShake=worldSh
 // PHYSICS: collision tests, projectiles, damage and fixed-step simulation.
 function hit(a,b){return SparkPhysics.hit(a,b)}
 function collide(e,dt){var oldX=e.x,oldY=e.y,oldBottom=oldY+e.h;e.onGround=false;e.y+=e.vy*dt;platforms.forEach(function(q){if(e.x<q.x+q.w&&e.x+e.w>q.x&&e.y<q.y+q.h&&e.y+e.h>q.y){if(e.vy>=0&&oldBottom<=q.y+10){e.y=q.y-e.h;e.vy=0;e.onGround=true}else if(e.vy<0&&oldY>=q.y+q.h-3){e.y=q.y+q.h;e.vy=0}}});e.x+=e.vx*dt;platforms.forEach(function(q){if(hit(e,q)){if(e.vx>0&&oldX+e.w<=q.x+3)e.x=q.x-e.w;else if(e.vx<0&&oldX>=q.x+q.w-3)e.x=q.x+q.w;e.vx=0}});e.x=Math.max(0,Math.min(levelW-e.w,e.x))}
-function burst(x,y,n,c){for(var i=0;i<n&&fx.length<160;i++){var a=Math.random()*Math.PI*2,s=40+Math.random()*150;fx.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.3+Math.random()*.4,max:.7,c:c})}}
-function shoot(x,y,vx,vy,dmg,owner,c){if(bullets.length<90)bullets.push({x:x,y:y,px:x,py:y,vx:vx,vy:vy,dmg:dmg,owner:owner,c:c,life:2.3})}
+function burst(x,y,n,c){SparkEffects.burst(fx,x,y,n,c)}
+function shoot(x,y,vx,vy,dmg,owner,c){SparkEffects.shoot(bullets,x,y,vx,vy,dmg,owner,c)}
 function segmentHitsRect(x1,y1,x2,y2,r){return SparkPhysics.segmentHitsRect(x1,y1,x2,y2,r)}
 function hurt(n){if(p.inv>0||p.dead||state!=='PLAY')return;if(p.shield>0){worldShake=Math.max(worldShake,.8);p._blockPulse=1;burst(p.x+p.w/2,p.y+p.h/2,5,'#55dff3');beep(980,.04);return}p.hp=Math.max(0,p.hp-n);worldShake=Math.max(worldShake,Math.min(4.5,1.5+n*.12));p.inv=.75;p._hitReact=Math.min(1,(p._hitReact||0)+.85);beep(150,.1);burst(p.x,p.y,10,'#ff2fa0');if(p.hp===0){p.dead=true;later(function(){if(state==='PLAY'){state='DEAD';resetInput();$('controls').classList.add('hidden');$('over').classList.remove('hidden')}},400)}}
 function toast(s){var t=$('toast');if(!t)return;t.textContent=s;t.classList.remove('hidden');clearToastTimer();toast.id=setTimeout(function(){t.classList.add('hidden');toast.id=0},1000)}
