@@ -64,3 +64,11 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Fixed projectile mob hit tracking to use stable mob IDs instead of mutable array indices.
 - Added per-frame collision-geometry caching to avoid repeated allocations during movement/path resolution.
 - Verified TypeScript typecheck, production build, release smoke, Pages artifact generation and published-build verification on the resulting validation chain.
+
+## 2026-10-09 SPARK UI/mechanics audit
+
+- Audited `public/spark.html` against the current SPARK gameplay: character selection, HP/energy/scrap HUD, weapon pickups, console repair, virtual movement stick, jump, dash, hold-to-fire, aim assist, enemy roster, Colossus phases/weak point, win/loss states, and mobile safe-area handling remain present.
+- Removed redundant CRT/vignette overlays that stacked darkening effects; retained the scan-line and edge-light effects.
+- Removed unused `.btn.small` and `.pad` CSS rules left over from earlier control layouts.
+- Character/enemy/boss drawing remains in the same HTML runtime; no separate portal economy or old tender/mission interface was added.
+- The audit confirms source-level presence only; runtime behavior still requires the published build and device smoke test to be checked.
