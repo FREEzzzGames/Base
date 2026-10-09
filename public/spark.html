@@ -253,16 +253,19 @@ function activateHubButton(b){
   case 'missionStart': reset();break;
  }
 }
-document.addEventListener('pointerup',function(e){
+/* Touch-first input: Telegram Android WebView may not dispatch pointerup/click consistently
+   inside nested portal iframes. Touchend is handled explicitly; synthetic click is suppressed. */
+var lastHubTouch=0;
+document.addEventListener('touchend',function(e){
  var b=e.target&&e.target.closest?e.target.closest('#menu button'):null;
  if(!b||!$('menu').contains(b))return;
- e.preventDefault();e.stopPropagation();activateHubButton(b);
-},true);
-/* Preserve keyboard and accessibility activation without double-firing touch actions. */
+ lastHubTouch=Date.now();e.preventDefault();e.stopPropagation();activateHubButton(b);
+}, {capture:true,passive:false});
 document.addEventListener('click',function(e){
- if(e.detail!==0)return;
  var b=e.target&&e.target.closest?e.target.closest('#menu button'):null;
- if(b&&$('menu').contains(b)){e.preventDefault();activateHubButton(b)}
+ if(!b||!$('menu').contains(b))return;
+ if(Date.now()-lastHubTouch<800){e.preventDefault();e.stopPropagation();return}
+ if(e.detail===0){e.preventDefault();e.stopPropagation();activateHubButton(b)}
 },true);
 $('retry').onclick=reset;$('again').onclick=reset;document.addEventListener('visibilitychange',function(){last=0;acc=0;if(document.hidden)resetInput()});resize();resetInput();renderCharacterSelector();renderWeapons();showScreen('home');requestAnimationFrame(frame);
 })();
