@@ -516,6 +516,13 @@ function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y
 
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
 function rigJointAngle(phase,amp,offset){return Math.sin(phase+offset)*amp}
+// Render-only critically damped approximation: never writes to simulation x/y or collision state.
+function smoothRenderPose(o,tx,ty,dt,teleportLimit){
+ if(o._rx===undefined||o._ry===undefined||Math.abs(tx-o._rx)>teleportLimit||Math.abs(ty-o._ry)>teleportLimit){o._rx=tx;o._ry=ty;return}
+ var k=1-Math.exp(-Math.max(0,dt)*18);o._rx+=(tx-o._rx)*k;o._ry+=(ty-o._ry)*k;
+}
+// Mild depth scale around the feet: distant upper platforms are smaller, near ground sprites larger.
+function depthScaleAt(y){return Math.max(.88,Math.min(1.08,.96+(ground-y)*.00016))}
 function rigPivot(px,py,angle){ctx.translate(px,py);ctx.rotate(angle);ctx.translate(-px,-py)}
 // Two-bone IK in 2D. Output objects are caller-owned and reused; no per-frame allocation.
 function rigSolve2Bone(out,ax,ay,tx,ty,lenA,lenB,bend){
@@ -536,10 +543,11 @@ function drawRigHinge(x,y,r,outer,inner){
  ctx.fillStyle=inner;ctx.beginPath();ctx.arc(x,y,Math.max(1,r*.42),0,Math.PI*2);ctx.fill();
 }
 function drawOperator(x,y,face,ch,anim,attacking){
+ var depth=depthScaleAt(y+37);
  var bob=Math.sin(anim*9)*.65,step=Math.sin(anim*13)*1.6,edge='#080d16',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  if(!drawOperator._rig)drawOperator._rig={elbowL:{x:0,y:0,tx:0,ty:0},elbowR:{x:0,y:0,tx:0,ty:0},kneeL:{x:0,y:0,tx:0,ty:0},kneeR:{x:0,y:0,tx:0,ty:0}};
  var opr=drawOperator._rig;
- ctx.save();ctx.translate(Math.round(x+12),Math.round(y+bob));ctx.scale(face||1,1);ctx.translate(-12,0);
+ ctx.save();ctx.translate(Math.round(x+12),Math.round(y+37+bob));ctx.scale(face||1,1);ctx.scale(depth,depth);ctx.translate(-12,-37);
  // contact shadow and a subtle team-colour pool
  ctx.fillStyle='rgba(1,4,10,.72)';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
  ctx.globalAlpha=.17;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
@@ -600,13 +608,13 @@ function drawOperator(x,y,face,ch,anim,attacking){
  ctx.restore();
 }
 function drawEnemy(e){
- var x=e.x+(e.hitKick||0),y=e.y,w=e.w,h=e.h,t=e.type,now=performance.now()*.001;
+ var x=(e._rx===undefined?e.x:e._rx)+(e.hitKick||0),y=e._ry===undefined?e.y:e._ry,w=e.w,h=e.h,t=e.type,now=performance.now()*.001,depth=depthScaleAt(y+h);
  var glow=t==='sniper'?'#c68aff':t==='support'?'#65ffd1':t==='drone'?'#50eaff':t==='turret'?'#ffb454':t==='shield'?'#ff6b91':'#ff596d';
  var shell=t==='drone'?'#182e43':t==='sniper'?'#292440':t==='support'?'#183d38':t==='shield'?'#492532':t==='turret'?'#302a3b':'#352331';
  function rr(a,b,c,d,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(a,b,c,d,Math.min(r,c/2,d/2));ctx.fill()}
  function circ(a,b,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(a,b,Math.max(.1,r),0,Math.PI*2);ctx.fill()}
  function line(a,b,c,d,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
- ctx.save();var movePhase=(e.anim||0)*11,stepSwing=Math.sin(movePhase)*(Math.abs(e.vxRun||e.v||0)>2?2.2:.6),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
+ ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=(e.anim||0)*11,stepSwing=Math.sin(movePhase)*(Math.abs(e.vxRun||e.v||0)>2?2.2:.6),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
  // Reusable enemy rig landmarks in local coordinates; visual-only and independent of hitboxes.
  if(!e.rigNodes)e.rigNodes={hipL:{x:0,y:0},kneeL:{x:0,y:0},ankleL:{x:0,y:0},hipR:{x:0,y:0},kneeR:{x:0,y:0},ankleR:{x:0,y:0},shoulderL:{x:0,y:0},elbowL:{x:0,y:0},wristL:{x:0,y:0},shoulderR:{x:0,y:0},elbowR:{x:0,y:0},wristR:{x:0,y:0},weaponMount:{x:0,y:0},muzzle:{x:0,y:0}};
  var en=e.rigNodes;en.hipL.x=-w*.18;en.hipL.y=h*.1;en.kneeL.x=-w*.19;en.kneeL.y=h*.27;en.ankleL.x=-w*.1;en.ankleL.y=h*.4;en.hipR.x=w*.18;en.hipR.y=h*.1;en.kneeR.x=w*.19;en.kneeR.y=h*.27;en.ankleR.x=w*.1;en.ankleR.y=h*.4;en.shoulderL.x=-w*.34;en.shoulderL.y=-h*.08;en.elbowL.x=-w*.4;en.elbowL.y=h*.08;en.wristL.x=-w*.39;en.wristL.y=h*.17;en.shoulderR.x=w*.34;en.shoulderR.y=-h*.08;en.elbowR.x=w*.4;en.elbowR.y=h*.08;en.wristR.x=w*.43;en.wristR.y=h*.02;en.weaponMount.x=w*.4;en.weaponMount.y=-h*.02;en.muzzle.x=w*.67;en.muzzle.y=-h*.065;
@@ -698,7 +706,7 @@ function drawEnemy(e){
  }
 }
 function drawBoss(){
- var x=Math.round(boss.x+(boss.hitKick||0)),y=Math.round(boss.y),w=boss.w,h=boss.h,edge='#080b13',phase=boss.phase||1;
+ var bx=boss._rx===undefined?boss.x:boss._rx,by=boss._ry===undefined?boss.y:boss._ry, x=Math.round(bx+(boss.hitKick||0)),y=Math.round(by),w=boss.w,h=boss.h,edge='#080b13',phase=boss.phase||1,depth=depthScaleAt(y+h);
  var profiles=[
   {name:'АКИРО',kind:'samurai',base:'#252b38',armor:'#842b3c',light:'#ff4357',metal:'#c5c8cf'},
   {name:'ГОЛИАФ',kind:'siege',base:'#242d37',armor:'#59636b',light:'#ffad35',metal:'#c1c8c9'},
@@ -728,7 +736,7 @@ function drawBoss(){
  if(bossAI==='phase'&&boss.dashT>0){sx=1.12;sy=.88}
  if(bossAI==='mecha'&&boss.attack>0){sx=1.035;sy=.94}
  if((boss.hitFlash||0)>0){sx*=1.035;sy*=.965}
- ctx.translate(x+w*.5,y+h*.5);ctx.scale(sx,sy);ctx.translate(-(x+w*.5),-(y+h*.5));
+ ctx.translate(x+w*.5,y+h);ctx.scale(sx*depth,sy*depth);ctx.translate(-(x+w*.5),- (y+h));
  ctx.fillStyle='rgba(0,0,0,.34)';ctx.beginPath();ctx.ellipse(x+w*.5,y+h-1,w*.64,9,0,0,Math.PI*2);ctx.fill();if((boss.hitFlash||0)>0){ctx.globalAlpha=Math.min(.65,boss.hitFlash*4.5);ctx.fillStyle='#f7fbff';ctx.fillRect(x+12,y+12,w-24,h-18);ctx.globalAlpha=1}
  if(b.kind==='samurai'){
   // AKIRO: broad horned kabuto, split shoulder silhouette, layered lamellar cuirass and long katana.
@@ -1246,7 +1254,12 @@ function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(
  ctx.globalAlpha=.85;ctx.shadowColor=b.c;ctx.shadowBlur=6;ctx.strokeStyle=b.c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(b.x,b.y);ctx.stroke();
  ctx.shadowBlur=0;ctx.fillStyle='#fff4d8';ctx.fillRect(b.x-1,b.y-1,2,2);ctx.restore();
  });fx.forEach(function(f){ctx.globalAlpha=Math.max(0,f.life/f.max);ctx.fillStyle=f.c;ctx.fillRect(Math.round(f.x),Math.round(f.y),2,2);if(f.life/f.max>.55){ctx.globalAlpha*=.35;ctx.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,4,4)}});ctx.globalAlpha=1;if(!p.dead){if(p.inv>0&&Math.floor(p.inv*20)%2===0)ctx.globalAlpha=.35;var ch=selectedCharacter;drawOperator(p.x,p.y,p.face,ch,p.anim,p.atk);if(p.shield>0){ctx.save();ctx.globalAlpha=.32+.1*Math.sin(performance.now()*.012);ctx.strokeStyle='#55dff3';ctx.lineWidth=2;ctx.shadowColor='#55dff3';ctx.shadowBlur=10;ctx.beginPath();ctx.ellipse(p.x+p.w/2,p.y+p.h/2,p.w*.82,p.h*.7,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.globalAlpha=1}ctx.restore();drawLightingOverlay()}
-function frame(t){requestAnimationFrame(frame);if(!last)last=t;var dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;if(document.hidden){acc=0;return}acc+=dt;var n=0;while(acc>=1/60&&n<5){update(1/60);acc-=1/60;n++}if(n===5)acc=0;draw()}
+function frame(t){requestAnimationFrame(frame);if(!last)last=t;var dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;if(document.hidden){acc=0;return}acc+=dt;var n=0;while(acc>=1/60&&n<5){update(1/60);acc-=1/60;n++}if(n===5)acc=0;
+ // Smooth render-only poses for every actor. Simulation and hitboxes retain authoritative coordinates.
+ var rdt=Math.min(.05,dt);for(var si=0;si<enemies.length;si++){var se=enemies[si];smoothRenderPose(se,se.x,se.y,rdt,180)}
+ if(boss&&boss.active&&!boss.dead)smoothRenderPose(boss,boss.x,boss.y,rdt,220);
+ if(p)smoothRenderPose(p,p.x,p.y,rdt,140);
+ draw()}
 /* Pointer-first hub input: Android Telegram WebViews may fail to synthesize click after touch. */
 function activateHubButton(b){if(b.dataset&&b.dataset.level!==undefined){selectedLevel=Math.max(0,Math.min(3,Number(b.dataset.level)||0));document.querySelectorAll('.mission-card[data-level]').forEach(function(card){card.classList.toggle('selected',card===b)});var names=['ЦЕНТРАЛЬНЫЙ КОМПЛЕКС','КРЫШИ ДЕРЕВНИ','ПРОМЗОНА','СЕКРЕТНАЯ БАЗА'];var homeMission=document.querySelector('#openMissions');if(homeMission){var spans=homeMission.querySelectorAll('b,small');if(spans[0])spans[0].textContent='1-'+(selectedLevel+1)+' · '+names[selectedLevel];if(spans[1])spans[1].textContent=['Город · меха-босс','Крыши · воздушные отряды','Конвейеры · тяжёлые бойцы','Подземная база · элитные враги'][selectedLevel]}return;}
  if(!b||!$('menu').contains(b))return;
