@@ -720,8 +720,11 @@ function drawBoss(){
   // RAIJIN: unmistakable floating diamond craft, blade wings, thruster fins and concentric cyan reactor.
   poly([[x+w*.5,y-13],[x+w*.75,y+14],[x+w+14,y+39],[x+w*.78,y+57],[x+w*.5,y+h+8],[x+w*.22,y+57],[x-14,y+39],[x+w*.25,y+14]],'#0c1829',edge,5);
   poly([[x+w*.5,y-4],[x+w*.69,y+20],[x+w*.5,y+43],[x+w*.31,y+20]],'#1c3c57','#3286aa',2);
-  poly([[x+22,y+28],[x-18,y+34],[x+10,y+45],[x+34,y+42]],'#164e73',edge,3);poly([[x+w-22,y+28],[x+w+18,y+34],[x+w-10,y+45],[x+w-34,y+42]],'#164e73',edge,3);
-  for(var wing=0;wing<3;wing++){ctx.fillStyle=wing===1?'#55d8ef':'#2583ad';ctx.fillRect(x-18-wing*3,y+27+wing*9,24,5);ctx.fillRect(x+w-6+wing*3,y+27+wing*9,24,5);ctx.fillStyle='#baf8ff';ctx.fillRect(x-12-wing*3,y+28+wing*9,7,2);ctx.fillRect(x+w-1+wing*3,y+28+wing*9,7,2)}
+  // Each wing has a root hinge; fin plates and their edge lights rotate as one assembly.
+  ctx.save();rigPivot(x+22,y+37,rigJointAngle(rigT*3.2,.035,0)+(boss.attack>0?-.06:0));poly([[x+22,y+28],[x-18,y+34],[x+10,y+45],[x+34,y+42]],'#164e73',edge,3);
+  for(var wingL=0;wingL<3;wingL++){ctx.fillStyle=wingL===1?'#55d8ef':'#2583ad';ctx.fillRect(x-18-wingL*3,y+27+wingL*9,24,5);ctx.fillStyle='#baf8ff';ctx.fillRect(x-12-wingL*3,y+28+wingL*9,7,2)}ctx.restore();
+  ctx.save();rigPivot(x+w-22,y+37,-rigJointAngle(rigT*3.2,.035,0)-(boss.attack>0?-.06:0));poly([[x+w-22,y+28],[x+w+18,y+34],[x+w-10,y+45],[x+w-34,y+42]],'#164e73',edge,3);
+  for(var wingR=0;wingR<3;wingR++){ctx.fillStyle=wingR===1?'#55d8ef':'#2583ad';ctx.fillRect(x+w-6+wingR*3,y+27+wingR*9,24,5);ctx.fillStyle='#baf8ff';ctx.fillRect(x+w-1+wingR*3,y+28+wingR*9,7,2)}ctx.restore();
   // core housing and rings are layered, with spokes and moving scan marks
   ctx.fillStyle='#07121f';ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,29,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#287f9f';ctx.lineWidth=6;ctx.stroke();
   ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=14;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,20+pulse*2,0,Math.PI*2);ctx.stroke();ctx.restore();
@@ -739,9 +742,12 @@ function drawBoss(){
   ctx.fillStyle=glow;ctx.fillRect(x+51,y+26,12,3);ctx.fillRect(x+w-63,y+26,12,3);
   poly([[x+46,y+37],[x+w*.5,y+43],[x+w-46,y+37],[x+w-51,y+48],[x+w*.5,y+53],[x+51,y+48]],'#d0cbd6',edge,2);
   plate(x+10,y+45,22,29,'#24283a');plate(x+w-32,y+45,22,29,'#24283a');
-  poly([[x+17,y+51],[x-10,y+21],[x+3,y+56]],glow,edge,2);poly([[x+w-17,y+51],[x+w+10,y+21],[x+w-3,y+56]],glow,edge,2);
-  // scarf tails are separate cloth shapes, not rectangular appendages
-  poly([[x+31,y+43],[x+6,y+55],[x+22,y+57],[x+42,y+49]],'#7d2447',edge,2);poly([[x+w-31,y+43],[x+w-6,y+55],[x+w-22,y+57],[x+w-42,y+49]],'#7d2447',edge,2);
+  // Blade mounts pivot at the shoulders; both blades share a controlled attack arc.
+  ctx.save();rigPivot(x+17,y+51,rigJointAngle(rigT*5,.025,0)+(boss.attack>0?-.14:0));poly([[x+17,y+51],[x-10,y+21],[x+3,y+56]],glow,edge,2);ctx.restore();
+  ctx.save();rigPivot(x+w-17,y+51,-rigJointAngle(rigT*5,.025,0)-(boss.attack>0?-.14:0));poly([[x+w-17,y+51],[x+w+10,y+21],[x+w-3,y+56]],glow,edge,2);ctx.restore();
+  // Cloth tails lag behind lateral movement and settle during idle.
+  var scarfLag=Math.max(-3,Math.min(3,(boss.visualVx||0)*.012));
+  poly([[x+31,y+43],[x+6-scarfLag,y+55],[x+22-scarfLag*.5,y+57],[x+42,y+49]],'#7d2447',edge,2);poly([[x+w-31,y+43],[x+w-6-scarfLag,y+55],[x+w-22-scarfLag*.5,y+57],[x+w-42,y+49]],'#7d2447',edge,2);
   plate(x+33,y+56,w-66,h*.19,'#171b2a');ctx.fillStyle='#ff315c';ctx.fillRect(x+40,y+61,8,2);ctx.fillRect(x+w-48,y+61,8,2);
  }
  // REFERENCE MATCH PASS 2 — crisp pixel-scale construction marks, clipped to the boss body.
