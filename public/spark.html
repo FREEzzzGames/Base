@@ -854,6 +854,31 @@ function drawBoss(){
   ctx.fillStyle='#fff0f4';ctx.fillRect(cx-2,cy-5,4,10);
  }
  ctx.restore();
+ // Boss motion pass: idle mechanics remain alive even between attacks; each boss has a distinct motion signature.
+ var motionT=(boss.pattern||0),idleBob=Math.sin(motionT*2.7)*1.7,charge= boss.attack>0 ? Math.min(1,boss.attack/.36) : 0;
+ ctx.save();
+ ctx.globalAlpha=.22+.12*Math.sin(motionT*4.2);
+ ctx.strokeStyle=glow;ctx.lineWidth=1;
+ if(b.kind==='samurai'){
+  // Floating sparks around the katana and a short red blade charge.
+  for(var sp=0;sp<5;sp++){var sa=motionT*1.8+sp*1.256;var sr=23+(sp%3)*8;ctx.fillStyle=sp%2?'#ffb36e':glow;ctx.fillRect(cx+Math.cos(sa)*sr,cy+Math.sin(sa)*sr*.7,2,2)}
+  if(charge>.05){ctx.globalAlpha=.16+.28*charge;ctx.strokeStyle='#ff6278';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w-12,y+18);ctx.lineTo(x+w+20+charge*18,y+45);ctx.stroke()}
+ }else if(b.kind==='siege'){
+  // Barrel heat and recoil flashes, deliberately behind the armor.
+  var recoil=charge*5;
+  for(var sg=0;sg<2;sg++){var sx2=x+(sg?w-31:31);ctx.fillStyle=charge>.05?'#fff0a3':'#ff9b35';ctx.globalAlpha=charge>.05?.55:.18+.14*Math.sin(motionT*5+sg);ctx.fillRect(sx2-3-recoil,y-1,6,3)}
+  ctx.globalAlpha=.15+.1*Math.sin(motionT*2);ctx.fillStyle='#ff7d35';ctx.fillRect(x+16,y+h*.82,w-32,3);
+ }else if(b.kind==='drone'){
+  // Oscillating thrust cones and orbiting calibration nodes.
+  for(var th=0;th<3;th++){var tx2=cx+(th-1)*22;var flame=4+3*(.5+.5*Math.sin(motionT*13+th*2));ctx.globalAlpha=.18+.2*Math.sin(motionT*9+th);ctx.fillStyle='#55eaff';ctx.beginPath();ctx.moveTo(tx2-3,y+h+3);ctx.lineTo(tx2,y+h+flame+9);ctx.lineTo(tx2+3,y+h+3);ctx.closePath();ctx.fill()}
+  for(var orb=0;orb<4;orb++){var oa=motionT*1.25+orb*Math.PI/2;ctx.globalAlpha=.45;ctx.fillStyle='#c6ffff';ctx.fillRect(cx+Math.cos(oa)*34-1,cy+Math.sin(oa)*25-1,3,3)}
+ }else{
+  // Kage phase flicker and twin red afterimage slivers.
+  var flicker=.5+.5*Math.sin(motionT*17);
+  ctx.globalAlpha=.09+.13*flicker;ctx.fillStyle='#ff315c';ctx.fillRect(x-8,y+20,w+16,h*.45);
+  if(boss.phase>=2){ctx.globalAlpha=.18+.18*flicker;ctx.fillStyle='#ff315c';ctx.fillRect(x-13-Math.sin(motionT*6)*4,y+34,w*.22,h*.42);ctx.fillRect(x+w-3+Math.sin(motionT*6)*4,y+34,w*.22,h*.42)}
+ }
+ ctx.restore();
  // Reference-faithful attack cue: thin, restrained and unique to each silhouette.
  if(boss.attack>0){ctx.save();ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=glow;ctx.lineWidth=1;
   if(b.kind==='samurai'){ctx.beginPath();ctx.moveTo(cx-24,cy+19);ctx.lineTo(cx,cy+25+4*pulse);ctx.lineTo(cx+24,cy+19);ctx.stroke()}
