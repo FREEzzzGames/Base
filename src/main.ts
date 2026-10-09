@@ -788,6 +788,15 @@ function bind(){
       portalEvents.emit("navigation:changed",{view:target});
     };
   });
+  document.querySelectorAll<HTMLElement>(".home-card[data-view]").forEach(function(x){
+    const navigate=()=>{
+      const next=x.dataset.view as View;
+      if(!next||!moduleManager.has(next))return;
+      portalEvents.emit("navigation:changed",{view:next});
+    };
+    x.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();navigate();});
+    x.addEventListener("keydown",function(e){if(e.key!=="Enter"&&e.key!==" ")return;e.preventDefault();e.stopPropagation();navigate();});
+  });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
     if(x.getAttribute("role")==="button"){
