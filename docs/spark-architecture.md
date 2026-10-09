@@ -45,7 +45,7 @@
 
 - `spark-data.js`: immutable character/weapon definitions and player-state factory.
 - `spark-ai.js`: target selection, boss phase decisions, and all per-enemy movement/attack decisions; combat effects are injected from the runtime to preserve existing projectiles, damage, and VFX.
-- `spark-render.js`: render-only pose smoothing, depth scaling, and shared skeletal rig drawing primitives; detailed character/boss art remains in runtime to avoid visual regressions.
+- `spark-render.js`: render-only pose smoothing, depth scaling, reusable 2D two-bone IK, pivot transforms, gait-angle math, and skeletal rig drawing primitives. Detailed character/boss art remains in runtime to avoid visual regressions.
 - `spark-simulation.js`: fixed-step scheduler, delta clamp, catch-up limit and hidden-tab reset.
 - `spark-session.js`: session timer ownership and cancellation.
 - The runtime retains the existing gameplay update and detailed actor drawing code to avoid changing combat timing or visual output during this architecture pass.
