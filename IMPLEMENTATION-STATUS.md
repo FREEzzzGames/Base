@@ -90,3 +90,13 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Gameplay rendering remains on the existing path after the menu state; existing character selection and combat mechanics are preserved.
 - Source commit: `0ba9e69d51a174fb07874d16e059bf99762779a2`.
 - Runtime/device appearance and mobile performance still require smoke testing after deployment.
+
+## 2026-10-09 Ichiraku hub UI implementation
+
+- Replaced the single centered start panel with a responsive portrait hub containing Home, Shinobi, Arsenal, Missions, and Settings screens.
+- Added the supplied Ichiraku Ramen logo as a separate asset at `public/assets/ichiraku-logo.jpg`; the logo is not drawn into the menu background.
+- Added a level/operation selector, operator selection panel, weapon cards tied to the existing four weapon definitions, settings toggle for sound effects, and a functional pause/resume/restart/home flow.
+- Existing arena simulation, weapon pickups, enemy behaviors, combat controls, and boss logic are retained.
+- Mission 1-1 launches the existing arena; additional mission cards are explicitly locked and are not represented as implemented levels.
+- UI source commit: `b0bdbd4ebedd4c27a95fef264d4a5905cc4ae3a3`; follow-up interaction fixes: `209af0f119d32e907b780f3d927b945f176526`.
+- Device-level visual verification remains pending; the concept board is a design target, not proof that every pictured asset or animation is implemented. Enemy and character art still needs a dedicated asset pass against the approved sprite reference.
