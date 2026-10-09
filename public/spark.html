@@ -677,6 +677,87 @@ function drawBoss(){
   poly([[x+31,y+43],[x+6,y+55],[x+22,y+57],[x+42,y+49]],'#7d2447',edge,2);poly([[x+w-31,y+43],[x+w-6,y+55],[x+w-22,y+57],[x+w-42,y+49]],'#7d2447',edge,2);
   plate(x+33,y+56,w-66,h*.19,'#171b2a');ctx.fillStyle='#ff315c';ctx.fillRect(x+40,y+61,8,2);ctx.fillRect(x+w-48,y+61,8,2);
  }
+ // REFERENCE MATCH PASS 2 — crisp pixel-scale construction marks, clipped to the boss body.
+ // These marks add panel depth and engineered structure without changing the approved silhouette.
+ ctx.save();
+ ctx.lineCap='square';ctx.lineJoin='miter';
+ if(b.kind==='samurai'){
+  // layered kabuto crest, segmented chest scales and lacquered shoulder plates
+  line([[x+42,y+9],[x+53,y+2],[x+w*.5,y-6],[x+w-53,y+2],[x+w-42,y+9]],'#596273',2);
+  line([[x+47,y+14],[x+w*.5,y+4],[x+w-47,y+14]],'#b7bbc8',1);
+  for(var sc=0;sc<4;sc++){
+   var sy=y+48+sc*6;
+   line([[x+43,sy],[x+56,sy+3],[cx-5,sy+2]],sc%2?'#b74a59':'#4a1e2d',2);
+   line([[cx+5,sy+2],[x+w-56,sy+3],[x+w-43,sy]],sc%2?'#b74a59':'#4a1e2d',2);
+  }
+  // rivets and segmented sode shoulder armor
+  for(var riv2=0;riv2<3;riv2++){
+   ctx.fillStyle='#efb96d';ctx.fillRect(x+10,y+43+riv2*9,3,3);ctx.fillRect(x+w-13,y+43+riv2*9,3,3);
+  }
+  line([[x+17,y+43],[x+28,y+48],[x+26,y+65]],'#a14b5a',2);
+  line([[x+w-17,y+43],[x+w-28,y+48],[x+w-26,y+65]],'#a14b5a',2);
+ }else if(b.kind==='siege'){
+  // twin barrel mouths, recessed barrel bores, recoil rails and heavy chest bevels
+  for(var gun=0;gun<2;gun++){
+   var gx=x+(gun? w-31:31);
+   ctx.fillStyle='#111923';ctx.fillRect(gx-7,y-4,14,10);
+   ctx.strokeStyle='#e4b66b';ctx.lineWidth=2;ctx.strokeRect(gx-7,y-4,14,10);
+   ctx.fillStyle='#050a11';ctx.fillRect(gx-3,y-2,6,5);
+   ctx.fillStyle=glow;ctx.fillRect(gx-1,y-1,2,2);
+   line([[gx-8,y+8],[gx-8,y+25],[gx-4,y+30]],'#9aa5ad',2);
+   line([[gx+8,y+8],[gx+8,y+25],[gx+4,y+30]],'#9aa5ad',2);
+  }
+  line([[x+31,y+34],[x+42,y+29],[cx-21,y+32]],'#a8b0b5',2);
+  line([[cx+21,y+32],[x+w-42,y+29],[x+w-31,y+34]],'#a8b0b5',2);
+  // warning stencils and individual fasteners across the front plate
+  for(var mark=0;mark<4;mark++){
+   ctx.fillStyle=mark%2?'#ffca65':'#c7cdd0';
+   ctx.fillRect(x+44+mark*12,y+69,5,2);
+  }
+  for(var bolt2=0;bolt2<4;bolt2++){
+   ctx.fillStyle='#101720';ctx.fillRect(x+18+bolt2*9,y+h*.72,4,4);
+   ctx.fillStyle='#a9b0b4';ctx.fillRect(x+19+bolt2*9,y+h*.72+1,2,1);
+  }
+ }else if(b.kind==='drone'){
+  // layered diamond armor, panel joins, antenna sockets and thruster housings
+  poly([[cx,y-7],[cx+11,y+11],[cx,y+24],[cx-11,y+11]],'#10273c','#55dff5',1);
+  line([[x+w*.5,y+3],[x+w*.5,y+17]],'#d1fbff',2);
+  line([[x+w*.5-7,y+20],[x+w*.5,y+24],[x+w*.5+7,y+20]],'#35a9d1',2);
+  for(var panel=0;panel<3;panel++){
+   var py=y+34+panel*7;
+   line([[x+9,py],[x+25,py+2],[x+37,py]],panel===1?'#67eaff':'#287ca1',2);
+   line([[x+w-9,py],[x+w-25,py+2],[x+w-37,py]],panel===1?'#67eaff':'#287ca1',2);
+  }
+  for(var node=0;node<4;node++){
+   var nx=x+18+node*11;
+   ctx.fillStyle='#07131f';ctx.fillRect(nx,y+47,5,5);ctx.fillStyle=node%2?'#36b7dc':'#c4fbff';ctx.fillRect(nx+1,y+48,2,2);
+   ctx.fillStyle='#07131f';ctx.fillRect(x+w-23-node*11,y+47,5,5);ctx.fillStyle=node%2?'#36b7dc':'#c4fbff';ctx.fillRect(x+w-22-node*11,y+48,2,2);
+  }
+  // three distinct engine bells with dark rims, cyan cores and short exhaust trails
+  for(var engine=0;engine<3;engine++){
+   var ex2=cx+(engine-1)*22;
+   ctx.fillStyle='#07101d';ctx.fillRect(ex2-5,y+h-3,10,7);
+   ctx.strokeStyle='#247e9f';ctx.lineWidth=2;ctx.strokeRect(ex2-5,y+h-3,10,7);
+   ctx.fillStyle='#b7fbff';ctx.fillRect(ex2-2,y+h+1,4,3+pulse*2);
+  }
+ }else{
+  // Kage: white crest teeth, faceted mask, shoulder armour and red blade cores
+  line([[x+31,y+12],[x+43,y+19],[x+53,y+15]],'#8d91a2',2);
+  line([[x+w-31,y+12],[x+w-43,y+19],[x+w-53,y+15]],'#8d91a2',2);
+  poly([[x+46,y+22],[cx,y+28],[x+w-46,y+22],[x+w-51,y+31],[cx,y+35],[x+51,y+31]],'#0a101b','#74798b',2);
+  line([[x+48,y+37],[cx-6,y+40],[cx,y+38],[cx+6,y+40],[x+w-48,y+37]],'#a9a8b7',1);
+  for(var crest=0;crest<4;crest++){
+   ctx.fillStyle=crest%2?'#aaa8b7':'#f0eaf0';
+   ctx.fillRect(x+44+crest*7,y+1+(crest%2)*3,3,2);
+   ctx.fillRect(x+w-47-crest*7,y+1+(crest%2)*3,3,2);
+  }
+  // armoured gauntlet seams and red-lit wrist guards
+  line([[x+12,y+49],[x+24,y+54],[x+20,y+65]],'#777b8d',2);
+  line([[x+w-12,y+49],[x+w-24,y+54],[x+w-20,y+65]],'#777b8d',2);
+  ctx.fillStyle='#f34468';ctx.fillRect(x+9,y+57,7,3);ctx.fillRect(x+w-16,y+57,7,3);
+  line([[x+1,y+25],[x+14,y+45]],'#fff0f4',2);line([[x+w-1,y+25],[x+w-14,y+45]],'#fff0f4',2);
+ }
+ ctx.restore();
  // Reference fidelity pass: high-density mechanical details, confined to the approved silhouettes.
  // Every accent follows the boss's existing material language; no new silhouette or extra appendages.
  ctx.save();
