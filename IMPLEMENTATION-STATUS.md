@@ -72,3 +72,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Removed unused `.btn.small` and `.pad` CSS rules left over from earlier control layouts.
 - Character/enemy/boss drawing remains in the same HTML runtime; no separate portal economy or old tender/mission interface was added.
 - The audit confirms source-level presence only; runtime behavior still requires the published build and device smoke test to be checked.
+
+## 2026-10-09 SPARK landscape and vertical traversal
+
+- Changed the SPARK logical viewport to 960×540 for landscape play; portrait view is blocked by a rotate-device prompt.
+- Added vertical camera tracking and expanded the playable world to support upper platform routes.
+- Rebuilt platform placement as staggered, jump-reachable tiers and increased jump impulse to reach them.
+- Repositioned selected weapon pickups on elevated routes and resized touch controls/HUD for landscape screens.
+- Existing combat, enemy types, boss phases, repair, weapons, and operator selection remain in the same runtime.
+- Source update committed; verify CI and perform a landscape-device smoke test before treating the build as runtime-validated.
