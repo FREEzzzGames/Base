@@ -165,6 +165,41 @@ canvas{z-index:0;pointer-events:none}
 }
 @media(max-width:370px){#menu .character-card{min-height:94px!important}#menu .character-card svg{height:54px!important}}
 
+/* FULL MENU REFERENCE PASS — shared design system for every SPARK screen */
+#menu .hub-screen{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 82% 0%,rgba(53,112,160,.13),transparent 37%),linear-gradient(150deg,#101e31 0%,#0b1525 48%,#12111e 100%);border:1px solid rgba(95,156,193,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),inset 0 0 40px rgba(36,91,130,.07)}
+#menu .hub-screen:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 31px,rgba(130,190,225,.018) 31px 32px),linear-gradient(120deg,transparent 0 70%,rgba(255,133,71,.025) 70.2%,transparent 71%)}
+#menu .screen-heading{background:linear-gradient(100deg,rgba(28,50,72,.78),rgba(13,25,42,.3));border-bottom:1px solid rgba(98,157,191,.32);padding:8px 0 12px}
+#menu .screen-heading b{letter-spacing:1.2px;color:#f6f0e7;text-shadow:0 0 12px rgba(103,188,230,.16)}
+#menu .screen-heading small{color:#91abc1}
+#menu .back-btn,#menu .icon-btn{background:linear-gradient(145deg,#1b3046,#0c1828);border-color:#4c6b82;box-shadow:inset 0 1px #ffffff15,0 3px 9px #0005}
+#menu .profile-chip{background:linear-gradient(110deg,#192c42,#101b2b);border-color:#3d617d;box-shadow:inset 0 1px #ffffff12,0 5px 14px #0003}
+#menu .resource-chip{background:linear-gradient(130deg,#102b3b,#0b1c2c);border-color:#247a92;box-shadow:inset 0 1px #ffffff12,0 0 12px #21c7e00d}
+#menu .feature-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#192b40,#101a2b 64%,#0b1421);border-color:#36546e;box-shadow:inset 0 1px #ffffff12,0 5px 13px #0004}
+#menu .feature-card:after{content:"";position:absolute;left:8px;right:8px;top:0;height:2px;background:linear-gradient(90deg,transparent,#50d9f0,transparent);opacity:.45}
+#menu .feature-art{filter:drop-shadow(0 0 8px currentColor);text-shadow:0 0 12px currentColor}
+#menu .level-select{background:linear-gradient(105deg,#17283b,#0d1929);border-color:#456781;box-shadow:inset 0 1px #ffffff12,0 4px 12px #0004}
+#menu .weapon-card{border-radius:4px;background:linear-gradient(125deg,color-mix(in srgb,var(--wc) 10%,#17283b),#0d1929 68%,#0a1320);border-color:color-mix(in srgb,var(--wc) 70%,#324b62);box-shadow:inset 0 1px #ffffff12,0 5px 12px #0004}
+#menu .weapon-card.selected{outline:2px solid var(--wc);outline-offset:0;background:linear-gradient(120deg,color-mix(in srgb,var(--wc) 23%,#17283b),#101b2c);box-shadow:inset 0 0 20px color-mix(in srgb,var(--wc) 12%,transparent),0 0 17px color-mix(in srgb,var(--wc) 30%,transparent)}
+#menu .weapon-icon{border-color:var(--wc);background:linear-gradient(145deg,#1d3043,#0b1625);color:var(--wc);text-shadow:0 0 12px var(--wc)}
+#menu .mission-card{border-radius:3px;background:linear-gradient(105deg,#192b3e,#0e1a2a 65%,#0b1422);border-color:#38546d;box-shadow:inset 0 1px #ffffff0b,0 4px 12px #0003}
+#menu .mission-card.selected{border-color:#ffb94e;box-shadow:inset 4px 0 #ffb94e,inset 0 0 18px #ffae3210,0 0 12px #ffae3212}
+#menu .mission-card.locked{filter:saturate(.45);opacity:.58}
+#menu .mission-art{background:linear-gradient(145deg,#302434,#182337);border:1px solid #513746}
+#menu .settings-list{border:1px solid #354f67;background:rgba(12,24,39,.72);box-shadow:0 6px 16px #0003}
+#menu .setting-row{background:linear-gradient(100deg,rgba(23,39,56,.92),rgba(12,23,37,.85));border-bottom-color:#2c4358}
+#menu .info-strip{background:linear-gradient(100deg,#17293b,#101b2b);border-left-color:#ffb84f;box-shadow:inset 0 1px #ffffff0a,0 4px 12px #0003}
+#menu .cta,#menu .wide-cta{background:linear-gradient(105deg,#512831,#3b222d 56%,#242031);border-color:#ffb34e;box-shadow:inset 0 1px #fff2c477,inset 0 -3px #190f18,0 7px 18px #0005,0 0 14px #ffae3212;text-shadow:0 2px 2px #170c12}
+#menu .cta:active,#menu .wide-cta:active{filter:brightness(1.18)}
+#menu .hub-nav{background:linear-gradient(180deg,#101d2e,#08111f);border-color:#354f67;box-shadow:0 -5px 20px #0003}
+#menu .nav-item{background:linear-gradient(180deg,#101d2e,#0a1422);border-color:#293e53}
+#menu .nav-item.active{background:linear-gradient(180deg,#40352f,#17202b);box-shadow:inset 0 -3px #ffb642,inset 0 0 18px #ffb64210}
+#menu .nav-item.active span,#menu .nav-item.active small{color:#ffd078;text-shadow:0 0 10px #ffb64255}
+#menu .selected-operator{background:linear-gradient(110deg,#172b41,#101c2e 65%,#0b1524);border-color:#4b708b}
+#pauseMenu .pause-panel,#over .panel,#win .panel{background:radial-gradient(ellipse at 50% 0%,#25405a55,transparent 55%),linear-gradient(145deg,#13253a,#0a1423 72%,#211822);border:1px solid #56748b;box-shadow:inset 0 0 0 1px #ffffff0a,0 0 0 3px #050a12,0 16px 45px #000b}
+#pauseMenu .sub,#over .sub,#win .sub{color:#8fc7e8;letter-spacing:1.5px}
+#pauseMenu h2,#over h2,#win h2{ text-shadow:0 0 16px #68caff28;letter-spacing:2px}
+#pauseMenu .menu-btn{background:linear-gradient(100deg,#172b40,#0d1929);border-color:#3c5d78;box-shadow:inset 0 1px #ffffff12,0 4px 10px #0004}
+#pauseMenu .menu-btn:active{border-color:#ffb34e;color:#ffcf78}
 </style></head><body><canvas id="game"></canvas><div class="fx-scan"></div>
 <div class="hud hidden" id="hud"><div class="hud-row"><div class="meter"><span class="hud-label">HP</span><div class="track"><div id="hp" class="fill"></div></div></div><div class="meter"><span class="hud-label">ENERGY</span><div class="track"><div id="en" class="fill energy"></div></div></div><button class="pause-hud" id="pauseButton" aria-label="Пауза">Ⅱ</button></div><div class="hud-row2"><div class="chip" id="scrap">◆ 0</div><button type="button" class="weapon-switch" id="weaponPrev" aria-label="Предыдущее оружие">‹</button><div class="chip weapon" id="weapon">▸ PISTOL</div><button type="button" class="weapon-switch" id="weaponNext" aria-label="Следующее оружие">›</button><div class="meter boss" id="bossMeter">CORE<div class="track"><div id="bossHp" class="fill"></div></div></div></div></div>
 <div class="controls hidden" id="controls"><div class="move-zone"><div id="moveStick" class="move-stick" aria-label="Виртуальный стик движения"><div class="stick-ring"></div><div id="stickKnob" class="stick-knob"></div></div></div><div class="combat-zone"><button class="btn skill" data-act="interact" aria-label="Ремонт">✚</button><button class="btn dash" data-act="skill" aria-label="Рывок">➤</button><button class="btn jump" data-act="jump" aria-label="Прыжок">▲</button><button class="btn attack" data-act="attack" aria-label="Огонь">✦</button></div></div><div class="toast hidden" id="toast"></div>
