@@ -122,20 +122,23 @@ jobs:
           node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
           node -e 'const fs=require("fs"); const s=fs.readFileSync("src/build-info.ts","utf8"); if(!s.includes(process.env.GITHUB_SHA)) throw new Error("build-info.ts was not stamped with GITHUB_SHA");'
 
-      - name: Validate SPARK inline JavaScript
+      - name: Validate SPARK runtime
         shell: bash
         run: |
           set -euo pipefail
           node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync } from "node:fs";
+          import { readFileSync } from "node:fs";
           const html = readFileSync("public/spark.html", "utf8");
-          const open = html.indexOf("<script>");
-          const close = html.lastIndexOf("</script>");
-          if (open < 0 || close <= open) throw new Error("SPARK inline script tags are missing or malformed");
-          const source = html.slice(html.indexOf(">", open) + 1, close);
-          writeFileSync("/tmp/spark-inline.js", source);
+          const script = html.match(/<script\\b[^>]*src=["']([^"']+)["'][^>]*>/i);
+          if (!script) throw new Error("SPARK runtime script reference is missing");
+          const target = script[1].replace(/^\\.\\//, "");
+          if (target !== "spark.js") throw new Error("Unexpected SPARK runtime path: " + target);
+          const source = readFileSync("public/" + target, "utf8");
+          if (!source.includes("function frame(t)")) throw new Error("SPARK main loop missing");
+          if (!source.includes("function reset()")) throw new Error("SPARK reset handler missing");
+          console.log("SPARK_RUNTIME_REFERENCE_OK");
           NODE
-          node --check /tmp/spark-inline.js
+          node --check public/spark.js
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
