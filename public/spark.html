@@ -590,12 +590,12 @@ function drawOperator(x,y,face,ch,anim,attacking,velocityX,velocityY,hitReact,la
  drawRigLink(20,18,opr.elbowR.x,opr.elbowR.y,'#101827',ch.coat,4);drawRigLink(opr.elbowR.x,opr.elbowR.y,opr.elbowR.tx,opr.elbowR.ty,'#101827',ch.coat,4);
  drawRigHinge(opr.elbowR.x,opr.elbowR.y,2.1,edge,accent);
  // Weapon mount, receiver, barrel and muzzle share a recoil pivot.
- ctx.save();rigPivot(19,20,rigJointAngle(anim*9,.025,Math.PI)+(attacking>0?-.12:0));
+ ctx.save();rigPivot(19,20,rigJointAngle(gaitPhase,.025,Math.PI)+(attacking>0?-.12:0)+impact*.065+landing*.08);
  outlineRect(16,18,11,4,'#17263a',edge,2);outlineRect(19,17,7,3,'#3d5067',edge,1);outlineRect(23,18,6,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(27,18,2,1);
  ctx.fillStyle='#7e94a8';ctx.fillRect(18,22,3,2);ctx.fillStyle=shot;ctx.fillRect(20,20,4,1);ctx.fillStyle='#101827';ctx.fillRect(21,22,2,2);ctx.restore();
  if(attacking>0){ctx.save();ctx.globalAlpha=.8;ctx.shadowColor=shot;ctx.shadowBlur=8;ctx.fillStyle=shot;ctx.beginPath();ctx.moveTo(28,16);ctx.lineTo(36,19);ctx.lineTo(29,23);ctx.closePath();ctx.fill();ctx.fillStyle='#fff6d7';ctx.fillRect(28,18,5,2);ctx.restore()}
  // Neck pivot makes the head, hair and headband move as one connected assembly.
- ctx.save();rigPivot(11.5,11,rigJointAngle(anim*9,.018,0)+(attacking>0?-.025:0));
+ ctx.save();rigPivot(11.5,11,rigJointAngle(gaitPhase,.018,0)+(attacking>0?-.025:0)+impact*.045);
  outlineRect(8,9,7,5,ch.skin,edge,1);outlineRect(4,2,15,13,ch.skin,edge,2);
  ctx.fillStyle='#bd776c';ctx.fillRect(5,10,3,2);ctx.fillRect(15,10,3,2);ctx.fillStyle='#ffe0bb';ctx.fillRect(6,4,2,3);ctx.fillRect(7,3,5,1);
  // hair silhouette varies naturally by character hair colour
@@ -617,7 +617,7 @@ function drawEnemy(e){
  function rr(a,b,c,d,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(a,b,c,d,Math.min(r,c/2,d/2));ctx.fill()}
  function circ(a,b,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(a,b,Math.max(.1,r),0,Math.PI*2);ctx.fill()}
  function line(a,b,c,d,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
- ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=(e.anim||0)*11,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);var lean=Math.max(-.09,Math.min(.09,-(e._rvx||e.vxRun||0)*.00035+(e._rax||0)*-.000012));if(t==='drone')lean=Math.max(-.12,Math.min(.12,(e._rvx||0)*.00045));if(t==='turret')lean=Math.max(-.045,Math.min(.045,-(e._rvx||0)*.00025));ctx.rotate(lean);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
+ ctx.save();ctx.translate(x+w*.5,y+h);ctx.scale(depth,depth);ctx.translate(-(x+w*.5),-(y+h));var movePhase=e._gaitPhase===undefined?(e.anim||0)*11:e._gaitPhase,enemySpeed=Math.abs(e._rvx||e.vxRun||e.v||0),stepSwing=Math.sin(movePhase)*Math.min(2.6,enemySpeed*.025),hoverBob=t==='drone'?Math.sin((e.t||0)*2.8)*1.8:0;ctx.translate(x+w/2,y+h/2+hoverBob);var lean=Math.max(-.09,Math.min(.09,-(e._rvx||e.vxRun||0)*.00035+(e._rax||0)*-.000012));if(t==='drone')lean=Math.max(-.12,Math.min(.12,(e._rvx||0)*.00045));if(t==='turret')lean=Math.max(-.045,Math.min(.045,-(e._rvx||0)*.00025));ctx.rotate(lean);if(t!=='drone'&&t!=='turret'&&e.face)ctx.scale(e.face,1);
  // Reusable enemy rig landmarks in local coordinates; visual-only and independent of hitboxes.
  if(!e.rigNodes)e.rigNodes={hipL:{x:0,y:0},kneeL:{x:0,y:0},ankleL:{x:0,y:0},hipR:{x:0,y:0},kneeR:{x:0,y:0},ankleR:{x:0,y:0},shoulderL:{x:0,y:0},elbowL:{x:0,y:0},wristL:{x:0,y:0},shoulderR:{x:0,y:0},elbowR:{x:0,y:0},wristR:{x:0,y:0},weaponMount:{x:0,y:0},muzzle:{x:0,y:0}};
  var en=e.rigNodes;en.hipL.x=-w*.18;en.hipL.y=h*.1;en.kneeL.x=-w*.19;en.kneeL.y=h*.27;en.ankleL.x=-w*.1;en.ankleL.y=h*.4;en.hipR.x=w*.18;en.hipR.y=h*.1;en.kneeR.x=w*.19;en.kneeR.y=h*.27;en.ankleR.x=w*.1;en.ankleR.y=h*.4;en.shoulderL.x=-w*.34;en.shoulderL.y=-h*.08;en.elbowL.x=-w*.4;en.elbowL.y=h*.08;en.wristL.x=-w*.39;en.wristL.y=h*.17;en.shoulderR.x=w*.34;en.shoulderR.y=-h*.08;en.elbowR.x=w*.4;en.elbowR.y=h*.08;en.wristR.x=w*.43;en.wristR.y=h*.02;en.weaponMount.x=w*.4;en.weaponMount.y=-h*.02;en.muzzle.x=w*.67;en.muzzle.y=-h*.065;
@@ -1262,7 +1262,7 @@ function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(
  });fx.forEach(function(f){ctx.globalAlpha=Math.max(0,f.life/f.max);ctx.fillStyle=f.c;ctx.fillRect(Math.round(f.x),Math.round(f.y),2,2);if(f.life/f.max>.55){ctx.globalAlpha*=.35;ctx.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,4,4)}});ctx.globalAlpha=1;if(!p.dead){if(p.inv>0&&Math.floor(p.inv*20)%2===0)ctx.globalAlpha=.35;var ch=selectedCharacter;drawOperator(p._rx===undefined?p.x:p._rx,p._ry===undefined?p.y:p._ry,p.face,ch,p._gaitPhase||0,p.atk,p._rvx===undefined?p.vx:p._rvx,p._rvy===undefined?p.vy:p._rvy,p._hitReact||0,p._landPulse||0);if(p.shield>0){ctx.save();ctx.globalAlpha=.32+.1*Math.sin(performance.now()*.012);ctx.strokeStyle='#55dff3';ctx.lineWidth=2;ctx.shadowColor='#55dff3';ctx.shadowBlur=10;ctx.beginPath();ctx.ellipse(p.x+p.w/2,p.y+p.h/2,p.w*.82,p.h*.7,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.globalAlpha=1}ctx.restore();drawLightingOverlay()}
 function frame(t){requestAnimationFrame(frame);if(!last)last=t;var dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;if(document.hidden){acc=0;return}acc+=dt;var n=0;while(acc>=1/60&&n<5){update(1/60);acc-=1/60;n++}if(n===5)acc=0;
  // Smooth render-only poses for every actor. Simulation and hitboxes retain authoritative coordinates.
- var rdt=Math.min(.05,dt);for(var si=0;si<enemies.length;si++){var se=enemies[si];smoothRenderPose(se,se.x,se.y,rdt,180)}
+ var rdt=Math.min(.05,dt);for(var si=0;si<enemies.length;si++){var se=enemies[si];smoothRenderPose(se,se.x,se.y,rdt,180);if(se.type!=='drone'&&se.type!=='turret'&&se.type!=='support'){se._gaitPhase=(se._gaitPhase||0)+Math.abs(se._rvx||0)*rdt*.22}}
  if(boss&&boss.active&&!boss.dead)smoothRenderPose(boss,boss.x,boss.y,rdt,220);
  if(p)smoothRenderPose(p,p.x,p.y,rdt,140);
  draw()}
