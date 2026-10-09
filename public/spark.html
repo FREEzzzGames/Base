@@ -716,6 +716,38 @@ function drawBoss(){
  ctx.globalAlpha=.85;ctx.strokeStyle=b.metal;ctx.lineWidth=1;
  ctx.beginPath();ctx.moveTo(x+4,y+h-5);ctx.lineTo(x+w-4,y+h-5);ctx.stroke();
  ctx.restore();
+ // Final detail pass: inset lenses, emissive seams and readable joints at phone scale.
+ ctx.save();
+ if(b.kind==='samurai'){
+  // segmented forearm gauntlets and layered shin guards
+  plate(x+4,y+65,18,12,'#222b39');plate(x+w-22,y+65,18,12,'#222b39');
+  for(var sg=0;sg<3;sg++){ctx.fillStyle=sg===1?'#e0a95f':'#702a3b';ctx.fillRect(x+8+sg*4,y+67,2,7);ctx.fillRect(x+w-18+sg*4,y+67,2,7)}
+  poly([[x+12,y+h-18],[x+31,y+h-18],[x+28,y+h-5],[x+9,y+h-5]],'#343b49',edge,2);
+  poly([[x+w-12,y+h-18],[x+w-31,y+h-18],[x+w-28,y+h-5],[x+w-9,y+h-5]],'#343b49',edge,2);
+  ctx.strokeStyle='#d9a85e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+15,y+h-13);ctx.lineTo(x+26,y+h-13);ctx.moveTo(x+w-15,y+h-13);ctx.lineTo(x+w-26,y+h-13);ctx.stroke();
+  // a small shoulder crest makes the helmet profile recognizable at reduced scale
+  poly([[x+w*.5-5,y+4],[x+w*.5,y-4],[x+w*.5+5,y+4]],'#f1c36f',edge,1);
+ }else if(b.kind==='siege'){
+  // distinct barrel bore rings and side-mounted rocket racks
+  for(var br=0;br<2;br++){var bx=br?x+w-31:x+31;ctx.fillStyle='#0b111a';ctx.beginPath();ctx.arc(bx,y+5,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#8b969d';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=glow;ctx.fillRect(bx-2,y+3,4,2)}
+  plate(x+4,y+43,12,23,'#29333e');plate(x+w-16,y+43,12,23,'#29333e');
+  for(var rk=0;rk<3;rk++){ctx.fillStyle='#171e28';ctx.fillRect(x+7,y+46+rk*6,6,4);ctx.fillStyle='#ffb347';ctx.fillRect(x+8,y+47+rk*6,2,2);ctx.fillRect(x+w-13,y+47+rk*6,2,2)}
+  ctx.strokeStyle='#d2d8d9';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+38,y+34);ctx.lineTo(x+46,y+40);ctx.lineTo(x+54,y+34);ctx.moveTo(x+w-54,y+34);ctx.lineTo(x+w-46,y+40);ctx.lineTo(x+w-38,y+34);ctx.stroke();
+ }else if(b.kind==='drone'){
+  // segmented wing joints and a rotating targeting reticle around the reactor
+  for(var joint=0;joint<2;joint++){var jx=joint?x+w-18:x+18;ctx.fillStyle='#07121f';ctx.beginPath();ctx.arc(jx,y+39,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#eaffff';ctx.fillRect(jx-1,y+38,2,2)}
+  ctx.save();ctx.translate(x+w*.5,y+h*.48);ctx.rotate((boss.pattern||0)*.22);ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-29,-8);ctx.lineTo(-29,-18);ctx.lineTo(-19,-18);ctx.moveTo(29,8);ctx.lineTo(29,18);ctx.lineTo(19,18);ctx.stroke();ctx.restore();
+  ctx.fillStyle='#8df5ff';ctx.fillRect(x+w*.5-2,y+7,4,2);ctx.fillRect(x+w*.5-2,y+h-1,4,4);
+ }else{
+  // knuckle guards, calf plates and narrow highlights along the twin blades
+  plate(x+8,y+58,17,11,'#333044');plate(x+w-25,y+58,17,11,'#333044');
+  for(var kn=0;kn<3;kn++){ctx.fillStyle=kn===1?glow:'#85859a';ctx.fillRect(x+11+kn*4,y+61,2,4);ctx.fillRect(x+w-23+kn*4,y+61,2,4)}
+  poly([[x+20,y+h-18],[x+34,y+h-16],[x+31,y+h-4],[x+17,y+h-4]],'#343347',edge,2);
+  poly([[x+w-20,y+h-18],[x+w-34,y+h-16],[x+w-31,y+h-4],[x+w-17,y+h-4]],'#343347',edge,2);
+  line([[x+3,y+25],[x-10,y+12]],'#ff9ab1',1);line([[x+w-3,y+25],[x+w+10,y+12]],'#ff9ab1',1);
+ }
+ // Fine emissive seams only on selected edges to preserve contrast against the level.
+ ctx.globalAlpha=.72;ctx.strokeStyle=glow;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+8,y+h-2);ctx.lineTo(x+24,y+h-2);ctx.moveTo(x+w-24,y+h-2);ctx.lineTo(x+w-8,y+h-2);ctx.stroke();ctx.restore();
  // Shared weak point, framed as an inset mechanical component.
  var cx=x+w*.5,cy=y+h*.54;
  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;
