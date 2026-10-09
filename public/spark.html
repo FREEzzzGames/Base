@@ -732,7 +732,7 @@ function drawBoss(){
  rn.shoulderR.x=x+w*.81;rn.shoulderR.y=y+h*.36;rn.elbowR.x=x+w*.88;rn.elbowR.y=y+h*.57;rn.wristR.x=x+w*.9;rn.wristR.y=y+h*.68;
  rn.weaponMount.x=x+w*.84;rn.weaponMount.y=y+h*.54;rn.muzzle.x=x+w*1.04;rn.muzzle.y=y+h*.31;rn.armorL.x=x+w*.15;rn.armorL.y=y+h*.43;rn.armorR.x=x+w*.85;rn.armorR.y=y+h*.43;
  if(!boss.rigPose)boss.rigPose={leftArm:0,rightArm:0,head:0,weaponRecoil:0,armorLag:0};
- var rp=boss.rigPose;rp.leftArm=rigJointAngle(rigT*7,.055+rigRun*.09,0)+rigHit*.06;rp.rightArm=rigJointAngle(rigT*7,.055+rigRun*.09,Math.PI)+(boss.attack>0?-.12:0);rp.head=rigJointAngle(rigT*2,.018,0)+rigHit*.025;rp.weaponRecoil=boss.attack>0?.12:0;rp.armorLag=Math.max(-.08,Math.min(.08,(boss.visualVx||0)/1200));
+ var rp=boss.rigPose;var impactKick=Math.max(-1,Math.min(1,(boss.hitKick||0)/9))*rigHit;rp.leftArm=rigJointAngle(rigT*7,.055+rigRun*.09,0)+rigHit*.06+impactKick*.12;rp.rightArm=rigJointAngle(rigT*7,.055+rigRun*.09,Math.PI)+(boss.attack>0?-.12:0)-impactKick*.16;rp.head=rigJointAngle(rigT*2,.018,0)+rigHit*.025-impactKick*.045;rp.weaponRecoil=(boss.attack>0?.12:0)+rigHit*.075;rp.armorLag=Math.max(-.08,Math.min(.08,(boss.visualVx||0)/1200))+impactKick*.035;
  // Visual-only rigid-body response: velocity stretches the silhouette; impacts and heavy attacks compress it.
  var vx=boss.visualVx||0,vy=boss.visualVy||0,speed=Math.min(1,Math.abs(vx)/360),lift=Math.min(1,Math.abs(vy)/260);
  var sx=1+speed*.075,sy=1-speed*.055;
@@ -745,7 +745,7 @@ function drawBoss(){
  if(bossAI==='mecha'&&boss.attack>0){sx=1.035;sy=.94}
  if((boss.hitFlash||0)>0){sx*=1.035;sy*=.965}
  ctx.translate(x+w*.5,y+h);ctx.scale(sx*depth,sy*depth);ctx.translate(-(x+w*.5),- (y+h));
- ctx.fillStyle='rgba(0,0,0,.34)';ctx.beginPath();ctx.ellipse(x+w*.5,y+h-1,w*.64,9,0,0,Math.PI*2);ctx.fill();if((boss.hitFlash||0)>0){ctx.globalAlpha=Math.min(.65,boss.hitFlash*4.5);ctx.fillStyle='#f7fbff';ctx.fillRect(x+12,y+12,w-24,h-18);ctx.globalAlpha=1}
+ ctx.fillStyle='rgba(0,0,0,.34)';ctx.beginPath();ctx.ellipse(x+w*.5,y+h-1,w*.64,9,0,0,Math.PI*2);ctx.fill();if((boss.hitFlash||0)>0){var hitGlow=Math.min(.65,boss.hitFlash*4.5);ctx.globalAlpha=hitGlow;ctx.fillStyle='#f7fbff';ctx.fillRect(x+12,y+12,w-24,h-18);ctx.globalAlpha=hitGlow*.8;ctx.fillStyle=glow;ctx.fillRect(x+w*.28,y+h*.46,w*.44,Math.max(3,h*.035));ctx.globalAlpha=1;ctx.save();ctx.strokeStyle=glow;ctx.globalAlpha=Math.min(.8,boss.hitFlash*5);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w*.5-7,y+h*.48);ctx.lineTo(x+w*.5+7,y+h*.48);ctx.moveTo(x+w*.5,y+h*.48-7);ctx.lineTo(x+w*.5,y+h*.48+7);ctx.stroke();ctx.restore()}
  if(b.kind==='samurai'){
   // AKIRO: broad horned kabuto, split shoulder silhouette, layered lamellar cuirass and long katana.
   ctx.save();rigPivot(x+29,y+39,(boss.rigPose?boss.rigPose.armorLag:0)-.015);
