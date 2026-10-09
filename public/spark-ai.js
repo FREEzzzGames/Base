@@ -65,5 +65,41 @@ function updateEnemies(enemies,p,dt,levelAI,levelW,shoot,burst,hit,wSafe,hurt){
 
  });
 }
-root.SparkAI=Object.freeze({nearestTarget:nearestTarget,bossPhase:bossPhase,updateEnemies:updateEnemies});
+
+function updateBoss(boss,p,dt,bossAI,ground,bossHomeX,levelW,shoot,burst){
+ if(boss.active&&!boss.dead){boss.phase=SparkAI.bossPhase(boss.hp,boss.maxHp);boss.cd-=dt;boss.attack=Math.max(0,boss.attack-dt);boss.hitFlash=Math.max(0,(boss.hitFlash||0)-dt);boss.hitKick=(boss.hitKick||0)*Math.pow(.0008,dt);boss.pattern=(boss.pattern||0)+dt;var bx=boss.x+boss.w/2,by=boss.y+boss.h*.52,ang=Math.atan2(p.y+p.h/2-by,p.x+p.w/2-bx);boss.prevMoveX=boss.x;boss.prevMoveY=boss.y;boss.moveT=(boss.moveT||0)+dt;boss.dashT=Math.max(0,(boss.dashT||0)-dt);var playerDir=Math.sign(p.x+p.w/2-bx)||1,distBoss=Math.abs(p.x+p.w/2-bx);
+if(bossAI==='aerial'){
+ // RAIDZIN: sustained flight, orbiting strafes and a faster high-altitude sweep in later phases.
+ var flight= boss.phase===1?1:boss.phase===2?1.3:1.65;
+ boss.y=ground-boss.h-112+Math.sin(boss.moveT*2.15)*35+Math.sin(boss.moveT*4.1)*7;
+ boss.x+=Math.sin(boss.moveT*1.45)*22*flight*dt;
+ if(distBoss>92)boss.x+=playerDir*(boss.phase===1?34:boss.phase===2?48:62)*dt;
+}else if(bossAI==='siege'){
+ // GOLIATH: grounded mass, deliberate advance, then recoil/brace; never floats.
+ boss.y=ground-boss.h;
+ if(distBoss>155)boss.x+=playerDir*(boss.phase===1?13:boss.phase===2?22:30)*dt;
+ else boss.x-=playerDir*(boss.phase===3?9:4)*dt;
+ boss.recoil=Math.max(0,(boss.recoil||0)-dt);
+ if(boss.attack>0)boss.recoil=Math.max(boss.recoil,.14);
+}else if(bossAI==='phase'){
+ // KAGE: crouch, low/high feints and a readable short dash instead of teleporting.
+ var hop=(boss.phase===1?9:boss.phase===2?25:42);
+ boss.y=ground-boss.h-Math.max(0,Math.sin(boss.moveT*(boss.phase===3?5.2:3.2)))*hop;
+ var dashPeriod=boss.phase===1?5.2:boss.phase===2?3.8:2.9,windowId=Math.floor(boss.moveT/dashPeriod);
+ if(boss.phase>=2&&boss.dashWindow!==windowId&&boss.moveT%dashPeriod<dt+.025){
+  boss.dashWindow=windowId;boss.dashT=boss.phase===3?.34:.27;boss.dashDir=playerDir;
+  burst(boss.x+boss.w/2,boss.y+boss.h*.72,8,'#d45bff');
+ }
+ if(boss.dashT>0)boss.x+=(boss.dashDir||playerDir)*(boss.phase===3?330:285)*dt;
+ else if(distBoss>105)boss.x+=playerDir*(boss.phase===1?19:boss.phase===2?28:36)*dt;
+}else{
+ // AKIRO: grounded samurai footwork, measured approach and a short forward lunge during attack.
+ boss.y=ground-boss.h;
+ if(boss.attack>0)boss.x+=playerDir*(boss.phase===3?155:boss.phase===2?125:95)*dt;
+ else if(distBoss>125)boss.x+=playerDir*(boss.phase===1?22:boss.phase===2?30:38)*dt;
+ else boss.x-=playerDir*(Math.sin(boss.moveT*3.4)>0?12:0)*dt;
+}
+boss.x=Math.max(bossHomeX-210,Math.min(levelW-boss.w-12,boss.x));boss.visualVx=(boss.x-(boss.prevMoveX==null?boss.x:boss.prevMoveX))/Math.max(dt,.001);boss.visualVy=(boss.y-(boss.prevMoveY==null?boss.y:boss.prevMoveY))/Math.max(dt,.001);if(boss.cd<=0){boss.cd=bossAI==='aerial'?(boss.phase===1?1.8:boss.phase===2?1.35:1.05):bossAI==='siege'?(boss.phase===1?2:boss.phase===2?1.45:1.05):bossAI==='phase'?(boss.phase===1?1.75:boss.phase===2?1.25:.9):(boss.phase===1?1.65:boss.phase===2?1.5:1.3);boss.attack=.36;if(bossAI==='aerial'){for(var ak=-(boss.phase===3?3:boss.phase===2?2:1);ak<=(boss.phase===3?3:boss.phase===2?2:1);ak++)shoot(bx,by,Math.cos(ang+ak*.19)*270,Math.sin(ang+ak*.19)*270,10,'e','#55d9ef')}else if(bossAI==='siege'){if(boss.phase===1){shoot(bx,by,Math.cos(ang)*220,Math.sin(ang)*220,14,'e','#ffad50');shoot(bx,by,Math.cos(ang+.1)*220,Math.sin(ang+.1)*220,14,'e','#ffad50')}else if(boss.phase===2){for(var sk=-2;sk<=2;sk++)shoot(bx,by,Math.cos(ang+sk*.17)*245,Math.sin(ang+sk*.17)*245,12,'e','#ff8a1e')}else{for(var sj=0;sj<12;sj++)shoot(bx,by,Math.cos(sj*Math.PI/6)*210,Math.sin(sj*Math.PI/6)*210,13,'e','#ff593e')}}else if(bossAI==='phase'){if(boss.phase===3){for(var pj=0;pj<14;pj++)shoot(bx,by,Math.cos(pj*Math.PI/7)*230,Math.sin(pj*Math.PI/7)*230,11,'e','#ff2fa0')}else for(var pk=-2;pk<=2;pk++)shoot(bx,by,Math.cos(ang+pk*.2)*260,Math.sin(ang+pk*.2)*260,10,'e','#d45bff')}else if(boss.phase===2){for(var k=-1;k<=1;k++)shoot(bx,by,Math.cos(ang+k*.24)*245,Math.sin(ang+k*.24)*245,11,'e','#ff8a1e')}else if(boss.phase===3){for(var j=0;j<10;j++)shoot(bx,by,Math.cos(j*Math.PI/5)*205,Math.sin(j*Math.PI/5)*205,12,'e','#ff2fa0')}else{shoot(bx,by,Math.cos(ang)*225,Math.sin(ang)*225,12,'e','#ff8a1e');shoot(bx,by,Math.cos(ang+.12)*225,Math.sin(ang+.12)*225,12,'e','#ff5365')}}}
+}
+root.SparkAI=Object.freeze({nearestTarget:nearestTarget,bossPhase:bossPhase,updateEnemies:updateEnemies,updateBoss:updateBoss});
 })(typeof window!=='undefined'?window:globalThis);
