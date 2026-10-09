@@ -261,6 +261,55 @@ canvas{display:block;width:100%;height:100%;background:#080b14}
 .btn,.weapon-switch,.pause-hud,#menu button{opacity:.7}
 .btn:active,.weapon-switch:active,.pause-hud:active,#menu button:active{opacity:.88}
 @media(max-width:370px){.combat-zone{transform:scale(1.22)}}
+
+/* Unified mobile combat HUD: clear hierarchy, stable wrapping and safer touch zones. */
+.hud{left:calc(9px + var(--sl));right:calc(9px + var(--sr));top:calc(9px + var(--st));gap:7px}
+.hud-row{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 42px;gap:6px}
+.hud-row .meter{width:auto;min-width:0;padding:7px 8px;background:rgba(9,17,29,.94);border-color:#38556d}
+.hud-label{font-size:10px;letter-spacing:1px}
+.track{height:8px;border:1px solid #07111d;border-radius:2px}
+.fill{border-radius:1px}
+.hud-row .pause-hud{width:42px;min-width:42px;height:100%;min-height:43px;border-radius:3px;border-color:#5c8098;background:linear-gradient(145deg,#17283a,#0b1421);color:#e8f7ff}
+.hud-row2{width:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0}
+.hud-row2 .chip.weapon{min-height:32px;display:flex;align-items:center;justify-content:center;padding:6px 10px;background:rgba(8,19,32,.96);border-color:#426d83}
+.hud-row2 .weapon-switch{height:32px;min-width:32px;width:32px;border-radius:3px;background:#101e2e;color:#ffbd76;border-color:#765247}
+.hud-row2 .meter.boss[style*="block"]{order:10;flex:1 0 100%;width:100%;max-width:260px;margin:1px 0 0;padding:6px 8px;background:rgba(8,15,26,.96);border-color:#74404b;border-radius:2px;letter-spacing:1px}
+.hud-row2 .meter.boss .track{height:6px}
+.controls{bottom:calc(22px + var(--sb));padding-left:max(13px,var(--sl));padding-right:max(13px,var(--sr));gap:8px}
+.move-zone{width:clamp(112px,32vw,142px);height:clamp(112px,32vw,142px);flex:0 1 auto}
+.combat-zone{grid-template-columns:repeat(2,clamp(46px,12.5vw,60px));grid-template-rows:repeat(2,clamp(46px,12.5vw,60px));gap:7px}
+.btn{width:clamp(46px,12.5vw,60px);height:clamp(46px,12.5vw,60px);background:radial-gradient(circle at 32% 25%,#28394b,#0b111c 74%);border-width:1.5px;box-shadow:0 0 14px #ff6a3624,inset 0 0 10px #ffffff08}
+.btn.skill{background:radial-gradient(circle at 32% 25%,#1d493f,#0b151b 74%);box-shadow:0 0 13px #45f3a51c}
+.btn.dash{background:radial-gradient(circle at 32% 25%,#5a3825,#17121a 74%)}
+.btn.jump{background:radial-gradient(circle at 32% 25%,#3c2e57,#11111d 74%)}
+.btn.attack{width:clamp(62px,16.5vw,78px);height:clamp(62px,16.5vw,78px);background:radial-gradient(circle at 32% 25%,#71342f,#180f17 74%)}
+.btn .cooldown{font-size:clamp(14px,4vw,17px);background:rgba(3,9,16,.86)}
+.toast{top:calc(25% + var(--st));max-width:82vw;white-space:normal;text-align:center;border-color:#4d8295;background:rgba(6,16,27,.96);padding:8px 12px;font-weight:800;letter-spacing:.7px}
+.overlay{background:linear-gradient(180deg,rgba(3,8,20,.48),rgba(3,7,15,.68))}
+.panel{border-color:#52758a;background:linear-gradient(150deg,rgba(18,31,47,.98),rgba(7,13,23,.99));box-shadow:0 0 30px #000a,0 0 20px #ff4a3d12}
+.panel h1{text-shadow:0 0 16px #ff704033,2px 2px 0 #642a32}
+.cta{background:linear-gradient(180deg,#5c2b30,#301820);border-color:#ff9c58;box-shadow:inset 0 -3px #160d13,0 0 12px #ff6b3320}
+@media(max-width:390px){
+ .hud{left:calc(6px + var(--sl));right:calc(6px + var(--sr));gap:5px}
+ .hud-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px;gap:4px}
+ .hud-row .meter{padding:6px}
+ .hud-row .pause-hud{width:36px;min-width:36px;min-height:40px}
+ .hud-label{font-size:9px}
+ .hud-row2{gap:4px}
+ .hud-row2 .chip.weapon{min-height:29px;padding:5px 7px;font-size:9px}
+ .hud-row2 .weapon-switch{height:29px;width:28px;min-width:28px}
+ .hud-row2 .meter.boss[style*="block"]{max-width:100%}
+ .controls{bottom:calc(20px + var(--sb));padding-left:max(7px,var(--sl));padding-right:max(7px,var(--sr));gap:4px}
+ .move-zone{width:clamp(102px,30vw,120px);height:clamp(102px,30vw,120px)}
+ .combat-zone{grid-template-columns:repeat(2,clamp(42px,11.5vw,48px));grid-template-rows:repeat(2,clamp(42px,11.5vw,48px));gap:6px}
+ .btn{width:clamp(42px,11.5vw,48px);height:clamp(42px,11.5vw,48px)}
+ .btn.attack{width:clamp(56px,15vw,64px);height:clamp(56px,15vw,64px)}
+}
+@media(max-height:700px){
+ .controls{bottom:calc(14px + var(--sb))}
+ .move-zone{width:min(28vw,116px);height:min(28vw,116px)}
+ .combat-zone{gap:5px}
+}
 </style></head><body><canvas id="game"></canvas><div class="fx-scan"></div>
 <div class="hud hidden" id="hud"><div class="hud-row"><div class="meter"><span class="hud-label">HP</span><div class="track"><div id="hp" class="fill"></div></div></div><div class="meter"><span class="hud-label">ENERGY</span><div class="track"><div id="en" class="fill energy"></div></div></div><button class="pause-hud" id="pauseButton" aria-label="Пауза">Ⅱ</button></div><div class="hud-row2"><div class="chip" id="scrap">◆ 0</div><button type="button" class="weapon-switch" id="weaponPrev" aria-label="Предыдущее оружие">‹</button><div class="chip weapon" id="weapon">▸ PISTOL</div><button type="button" class="weapon-switch" id="weaponNext" aria-label="Следующее оружие">›</button><div class="meter boss" id="bossMeter">CORE<div class="track"><div id="bossHp" class="fill"></div></div></div></div></div>
 <div class="controls hidden" id="controls"><div class="move-zone"><div id="moveStick" class="move-stick" aria-label="Виртуальный стик движения"><div class="stick-ring"></div><div id="stickKnob" class="stick-knob"></div></div></div><div class="combat-zone"><button class="btn skill" data-act="interact" aria-label="Щит" title="Щит">⬡</button><button class="btn dash" data-act="skill" aria-label="Блинк" title="Мгновенное перемещение">➤</button><button class="btn jump" data-act="jump" aria-label="Прыжок">▲</button><button class="btn attack" data-act="attack" aria-label="Огонь">✦</button></div></div><div class="toast hidden" id="toast"></div>
