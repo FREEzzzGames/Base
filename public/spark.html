@@ -84,6 +84,79 @@ canvas{z-index:0;pointer-events:none}
 .btn{box-shadow:inset 0 1px rgba(255,255,255,.22),inset 0 -3px rgba(0,0,0,.28),0 0 15px color-mix(in srgb,var(--c,#ff7a45) 16%,transparent)}
 #moveStick{box-shadow:inset 0 0 0 2px rgba(255,174,133,.1),0 0 20px rgba(255,110,76,.08)}
 @media(prefers-reduced-motion:reduce){.mission-card,.weapon-card,.character-card{transition:none!important}}
+/* CHARACTER SELECT MENU — dedicated visual pass only; no layout or gameplay changes */
+#menu .hub-screen[data-screen="characters"]{
+ background:
+  radial-gradient(ellipse at 50% 18%,rgba(58,111,157,.15),transparent 42%),
+  radial-gradient(ellipse at 5% 65%,rgba(255,128,66,.07),transparent 32%),
+  linear-gradient(155deg,rgba(10,21,37,.985),rgba(7,13,25,.99) 58%,rgba(18,14,25,.99));
+ border-color:#34516a;
+ box-shadow:inset 0 0 0 1px rgba(174,221,255,.035),inset 0 0 42px rgba(18,69,105,.11),0 10px 32px rgba(0,0,0,.26);
+}
+#menu .hub-screen[data-screen="characters"] .screen-heading{
+ border-bottom-color:rgba(109,177,212,.32);
+ text-shadow:0 0 12px rgba(108,190,231,.12);
+}
+#menu .hub-screen[data-screen="characters"] .back-btn{
+ background:linear-gradient(145deg,#182a3e,#0c1626);
+ border:1px solid #526e84;
+ box-shadow:inset 0 1px rgba(255,255,255,.09),0 3px 9px #0005;
+}
+#menu .character-grid{gap:6px;margin:10px 0 12px}
+#menu .character-card{
+ position:relative;isolation:isolate;overflow:hidden;min-height:94px;
+ padding:7px 3px 7px;border-radius:4px;border:1px solid color-mix(in srgb,var(--char) 76%,#42546b);
+ background:
+  radial-gradient(ellipse at 50% 24%,color-mix(in srgb,var(--char) 18%,transparent),transparent 55%),
+  linear-gradient(145deg,#17263a 0%,#101a2a 58%,#0b1320 100%);
+ box-shadow:inset 0 1px rgba(255,255,255,.055),inset 0 -12px 20px rgba(0,0,0,.12),0 4px 10px rgba(0,0,0,.2);
+ transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+}
+#menu .character-card:before{
+ content:"";position:absolute;inset:4px;z-index:-1;pointer-events:none;
+ border:1px solid color-mix(in srgb,var(--char) 20%,transparent);
+ background:linear-gradient(135deg,rgba(255,255,255,.035),transparent 38%,rgba(0,0,0,.08));
+ clip-path:polygon(0 0,22% 0,22% 2px,78% 2px,78% 0,100% 0,100% 100%,0 100%);
+}
+#menu .character-card:after{
+ content:"";position:absolute;left:8px;right:8px;top:5px;height:1px;
+ background:linear-gradient(90deg,transparent,var(--char),transparent);opacity:.45;pointer-events:none;
+}
+#menu .character-card svg{
+ height:59px;width:100%;overflow:visible;filter:drop-shadow(0 3px 2px rgba(0,0,0,.42)) drop-shadow(0 0 5px color-mix(in srgb,var(--char) 15%,transparent));
+}
+#menu .character-card span{font-size:9px;letter-spacing:.7px;text-shadow:0 1px 2px #000}
+#menu .character-card .shot{height:3px;width:72%;margin:5px auto 0;box-shadow:0 0 7px var(--char),0 0 14px color-mix(in srgb,var(--char) 30%,transparent)}
+#menu .character-card.selected{
+ outline:2px solid var(--char);outline-offset:0;
+ background:
+  radial-gradient(ellipse at 50% 25%,color-mix(in srgb,var(--char) 27%,transparent),transparent 58%),
+  linear-gradient(145deg,#22334a 0%,#121e30 65%,#0c1523 100%);
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 0 22px color-mix(in srgb,var(--char) 10%,transparent),0 0 0 3px rgba(4,10,18,.8),0 0 18px color-mix(in srgb,var(--char) 24%,transparent);
+}
+#menu .selected-operator{
+ position:relative;overflow:hidden;border-color:#4a6d86;
+ background:linear-gradient(105deg,#15263a,#101d2e 60%,#0d1727);
+ box-shadow:inset 0 1px rgba(255,255,255,.07),0 5px 14px rgba(0,0,0,.22);
+}
+#menu .selected-operator:after{
+ content:"";position:absolute;right:-20px;top:-26px;width:100px;height:100px;border-radius:50%;
+ background:radial-gradient(circle,color-mix(in srgb,var(--char,#ffad32) 15%,transparent),transparent 68%);pointer-events:none;
+}
+#menu .selected-avatar{
+ position:relative;z-index:1;background:linear-gradient(145deg,#2a3445,#171e2d);
+ box-shadow:inset 0 0 0 2px rgba(255,255,255,.04),0 0 14px color-mix(in srgb,var(--char,#ffad32) 14%,transparent);
+}
+#menu .selected-info b{text-shadow:0 0 10px color-mix(in srgb,var(--char,#ffad32) 25%,transparent)}
+#menu .stat-track{background:#243447;box-shadow:inset 0 1px 3px #0008}
+#menu .stat-track i{box-shadow:0 0 8px color-mix(in srgb,var(--char,#ffad32) 45%,transparent)}
+#menu .hub-screen[data-screen="characters"] .wide-cta{
+ background:linear-gradient(105deg,#4a252c,#35212b 58%,#241d2a);
+ border-color:#ffb04c;
+ box-shadow:inset 0 1px rgba(255,225,186,.16),inset 0 -3px #1b1119,0 0 0 1px rgba(255,172,76,.08),0 6px 18px rgba(0,0,0,.28);
+}
+@media(hover:hover){#menu .character-card:hover{transform:translateY(-2px);filter:brightness(1.12)}}
+@media(prefers-reduced-motion:reduce){#menu .character-card{transition:none}}
 </style></head><body><canvas id="game"></canvas><div class="fx-scan"></div>
 <div class="hud hidden" id="hud"><div class="hud-row"><div class="meter"><span class="hud-label">HP</span><div class="track"><div id="hp" class="fill"></div></div></div><div class="meter"><span class="hud-label">ENERGY</span><div class="track"><div id="en" class="fill energy"></div></div></div><button class="pause-hud" id="pauseButton" aria-label="Пауза">Ⅱ</button></div><div class="hud-row2"><div class="chip" id="scrap">◆ 0</div><button type="button" class="weapon-switch" id="weaponPrev" aria-label="Предыдущее оружие">‹</button><div class="chip weapon" id="weapon">▸ PISTOL</div><button type="button" class="weapon-switch" id="weaponNext" aria-label="Следующее оружие">›</button><div class="meter boss" id="bossMeter">CORE<div class="track"><div id="bossHp" class="fill"></div></div></div></div></div>
 <div class="controls hidden" id="controls"><div class="move-zone"><div id="moveStick" class="move-stick" aria-label="Виртуальный стик движения"><div class="stick-ring"></div><div id="stickKnob" class="stick-knob"></div></div></div><div class="combat-zone"><button class="btn skill" data-act="interact" aria-label="Ремонт">✚</button><button class="btn dash" data-act="skill" aria-label="Рывок">➤</button><button class="btn jump" data-act="jump" aria-label="Прыжок">▲</button><button class="btn attack" data-act="attack" aria-label="Огонь">✦</button></div></div><div class="toast hidden" id="toast"></div>
