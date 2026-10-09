@@ -701,7 +701,7 @@ function drawBoss(){
  }
  ctx.restore();
  // Reference-faithful attack cue: thin, restrained and unique to each silhouette.
- if(boss.attack>0){ctx.save();ctx.globalAlpha=.24+.16*pulse;ctx.strokeStyle=glow;ctx.lineWidth=1;
+ if(boss.attack>0){ctx.save();ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=glow;ctx.lineWidth=1;
   if(b.kind==='samurai'){ctx.beginPath();ctx.moveTo(cx-24,cy+19);ctx.lineTo(cx,cy+25+4*pulse);ctx.lineTo(cx+24,cy+19);ctx.stroke()}
   else if(b.kind==='siege'){ctx.strokeRect(cx-24,cy-19,48,38)}
   else if(b.kind==='drone'){ctx.beginPath();ctx.arc(cx,cy,24+3*pulse,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,30+3*pulse,0,Math.PI*2);ctx.stroke()}
