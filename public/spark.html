@@ -523,12 +523,15 @@ function drawOperator(x,y,face,ch,anim,attacking){
  // contact shadow and a subtle team-colour pool
  ctx.fillStyle='rgba(1,4,10,.72)';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
  ctx.globalAlpha=.17;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
- // shinobi boots, articulated shin guards and sole highlights
- outlineRect(4,25+Math.max(0,step),6,8,ch.pants,edge,2);outlineRect(14,25+Math.max(0,-step),6,8,ch.pants,edge,2);
- outlineRect(3,28+Math.max(0,step),7,3,'#40516a',edge,1);outlineRect(14,28+Math.max(0,-step),7,3,'#40516a',edge,1);
- ctx.fillStyle='#a6c1d5';ctx.fillRect(4,29+Math.max(0,step),3,1);ctx.fillRect(15,29+Math.max(0,-step),3,1);
- outlineRect(1,32+Math.max(0,step),10,5,'#1b283b',edge,2);outlineRect(12,32+Math.max(0,-step),11,5,'#1b283b',edge,2);
- ctx.fillStyle='#d6e4eb';ctx.fillRect(3,33+Math.max(0,step),5,1);ctx.fillRect(15,33+Math.max(0,-step),5,1);ctx.fillStyle=accent;ctx.fillRect(5,31,3,1);ctx.fillRect(16,31,3,1);
+ // Hip -> knee -> ankle chains; each leg swings around its own attachment point.
+ ctx.save();rigPivot(7,25,rigJointAngle(anim*13,.075,0)+(attacking>0?-.025:0));
+ outlineRect(4,25+Math.max(0,step),6,8,ch.pants,edge,2);outlineRect(3,28+Math.max(0,step),7,3,'#40516a',edge,1);
+ ctx.fillStyle='#a6c1d5';ctx.fillRect(4,29+Math.max(0,step),3,1);outlineRect(1,32+Math.max(0,step),10,5,'#1b283b',edge,2);
+ ctx.fillStyle='#d6e4eb';ctx.fillRect(3,33+Math.max(0,step),5,1);ctx.fillStyle=accent;ctx.fillRect(5,31,3,1);ctx.restore();
+ ctx.save();rigPivot(17,25,rigJointAngle(anim*13,.075,Math.PI)+(attacking>0?-.025:0));
+ outlineRect(14,25+Math.max(0,-step),6,8,ch.pants,edge,2);outlineRect(14,28+Math.max(0,-step),7,3,'#40516a',edge,1);
+ ctx.fillStyle='#a6c1d5';ctx.fillRect(15,29+Math.max(0,-step),3,1);outlineRect(12,32+Math.max(0,-step),11,5,'#1b283b',edge,2);
+ ctx.fillStyle='#d6e4eb';ctx.fillRect(15,33+Math.max(0,-step),5,1);ctx.fillStyle=accent;ctx.fillRect(16,31,3,1);ctx.restore();
  // rear utility pack, scroll tube and glowing clasp
  outlineRect(1,13,6,14,'#26364b',edge,2);outlineRect(2,15,4,7,'#43566b',edge,1);ctx.fillStyle='#90a9bd';ctx.fillRect(3,16,2,1);ctx.fillRect(3,19,2,1);ctx.fillStyle=shot;ctx.fillRect(2,22,3,2);
  // layered jacket and shoulder silhouette
@@ -665,9 +668,10 @@ function drawBoss(){
  ctx.fillStyle='rgba(0,0,0,.34)';ctx.beginPath();ctx.ellipse(x+w*.5,y+h-1,w*.64,9,0,0,Math.PI*2);ctx.fill();if((boss.hitFlash||0)>0){ctx.globalAlpha=Math.min(.65,boss.hitFlash*4.5);ctx.fillStyle='#f7fbff';ctx.fillRect(x+12,y+12,w-24,h-18);ctx.globalAlpha=1}
  if(b.kind==='samurai'){
   // AKIRO: broad horned kabuto, split shoulder silhouette, layered lamellar cuirass and long katana.
-  poly([[x+31,y+27],[x+10,y+15],[x+22,y+39],[x+39,y+45]],'#5c2538',edge,3);
-  poly([[x+w-31,y+27],[x+w-10,y+15],[x+w-22,y+39],[x+w-39,y+45]],'#5c2538',edge,3);
-  plate(x+15,y+35,35,38,'#4c2536');plate(x+w-50,y+35,35,38,'#4c2536');
+  ctx.save();rigPivot(x+29,y+39,(boss.rigPose?boss.rigPose.armorLag:0)-.015);
+  poly([[x+31,y+27],[x+10,y+15],[x+22,y+39],[x+39,y+45]],'#5c2538',edge,3);plate(x+15,y+35,35,38,'#4c2536');ctx.restore();
+  ctx.save();rigPivot(x+w-29,y+39,-((boss.rigPose?boss.rigPose.armorLag:0)-.015));
+  poly([[x+w-31,y+27],[x+w-10,y+15],[x+w-22,y+39],[x+w-39,y+45]],'#5c2538',edge,3);plate(x+w-50,y+35,35,38,'#4c2536');ctx.restore();
   plate(x+20,y+65,30,h*.22,'#202938');plate(x+w-50,y+65,30,h*.22,'#202938');
   plate(x+8,y+h-20,47,18,'#171e2a');plate(x+w-55,y+h-20,47,18,'#171e2a');
   poly([[x+34,y+17],[x+40,y+4],[x+w*.5,y-11],[x+w-40,y+4],[x+w-34,y+17],[x+w-46,y+31],[x+46,y+31]],'#141a27',edge,4);
