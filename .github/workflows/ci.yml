@@ -130,14 +130,23 @@ jobs:
           import { readFileSync } from "node:fs";
           const html = readFileSync("public/spark.html", "utf8");
           const scripts = [...html.matchAll(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/gi)].map(m => m[1].replace(/^\.\//, ""));
-          for (const required of ["spark-physics.js", "spark-effects.js", "spark-audio.js", "spark.js"]) {
+          for (const required of ["spark-data.js", "spark-physics.js", "spark-effects.js", "spark-audio.js", "spark-ai.js", "spark-render.js", "spark-simulation.js", "spark-session.js", "spark.js"]) {
             if (!scripts.includes(required)) throw new Error("Missing SPARK script reference: " + required);
           }
           const runtime = readFileSync("public/spark.js", "utf8");
+          const data = readFileSync("public/spark-data.js", "utf8");
+          const ai = readFileSync("public/spark-ai.js", "utf8");
+          const render = readFileSync("public/spark-render.js", "utf8");
+          const simulation = readFileSync("public/spark-simulation.js", "utf8");
+          const session = readFileSync("public/spark-session.js", "utf8");
           const physics = readFileSync("public/spark-physics.js", "utf8");
           const effects = readFileSync("public/spark-effects.js", "utf8");
           const audio = readFileSync("public/spark-audio.js", "utf8");
-          if (!runtime.includes("function frame(t)")) throw new Error("SPARK main loop missing");
+          if (!runtime.includes("SparkSimulation.start(update,renderFrame)")) throw new Error("SPARK scheduler is not wired to runtime");
+          if (!runtime.includes("SparkData.createPlayer()")) throw new Error("SPARK data module is not wired to runtime");
+          if (!runtime.includes("SparkAI.nearestTarget")) throw new Error("SPARK AI module is not wired to runtime");
+          if (!runtime.includes("SparkRenderMath.smoothPose")) throw new Error("SPARK render math is not wired to runtime");
+          if (!runtime.includes("SparkSession.later")) throw new Error("SPARK session module is not wired to runtime");
           if (!runtime.includes("function reset()")) throw new Error("SPARK reset handler missing");
           if (!runtime.includes("SparkPhysics.segmentHitsRect")) throw new Error("SPARK runtime is not wired to physics module");
           if (!runtime.includes("SparkEffects.burst(fx")) throw new Error("SPARK runtime is not wired to effects module");
@@ -146,11 +155,23 @@ jobs:
           if (!physics.includes("segmentHitsRect")) throw new Error("SPARK segment collision primitive missing");
           if (!effects.includes("function burst(") || !effects.includes("function shoot(")) throw new Error("SPARK effects primitives missing");
           if (!audio.includes("function beep(")) throw new Error("SPARK audio primitive missing");
+          if (!data.includes("function createPlayer(")) throw new Error("SPARK data factory missing");
+          if (!ai.includes("function nearestTarget(") || !ai.includes("function bossPhase(")) throw new Error("SPARK AI decisions missing");
+          if (!render.includes("function smoothPose(")) throw new Error("SPARK render math missing");
+          if (!simulation.includes("function start(") || !simulation.includes("function resetClock(")) throw new Error("SPARK simulation lifecycle missing");
+          if (!session.includes("function later(") || !session.includes("function clear(")) throw new Error("SPARK session lifecycle missing");
           console.log("SPARK_RUNTIME_REFERENCE_OK");
           NODE
           node --check public/spark-physics.js
           node --check public/spark-effects.js
+          node --check public/spark-data.js
+          node --check public/spark-physics.js
+          node --check public/spark-effects.js
           node --check public/spark-audio.js
+          node --check public/spark-ai.js
+          node --check public/spark-render.js
+          node --check public/spark-simulation.js
+          node --check public/spark-session.js
           node --check public/spark.js
           node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs
 
