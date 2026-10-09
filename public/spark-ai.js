@@ -67,7 +67,7 @@ function updateEnemies(enemies,p,dt,levelAI,levelW,shoot,burst,hit,wSafe,hurt){
 }
 
 function updateBoss(boss,p,dt,bossAI,ground,bossHomeX,levelW,shoot,burst){
- if(boss.active&&!boss.dead){boss.phase=SparkAI.bossPhase(boss.hp,boss.maxHp);boss.cd-=dt;boss.attack=Math.max(0,boss.attack-dt);boss.hitFlash=Math.max(0,(boss.hitFlash||0)-dt);boss.hitKick=(boss.hitKick||0)*Math.pow(.0008,dt);boss.pattern=(boss.pattern||0)+dt;var bx=boss.x+boss.w/2,by=boss.y+boss.h*.52,ang=Math.atan2(p.y+p.h/2-by,p.x+p.w/2-bx);boss.prevMoveX=boss.x;boss.prevMoveY=boss.y;boss.moveT=(boss.moveT||0)+dt;boss.dashT=Math.max(0,(boss.dashT||0)-dt);var playerDir=Math.sign(p.x+p.w/2-bx)||1,distBoss=Math.abs(p.x+p.w/2-bx);
+ if(boss.active&&!boss.dead){boss.phase=bossPhase(boss.hp,boss.maxHp);boss.cd-=dt;boss.attack=Math.max(0,boss.attack-dt);boss.hitFlash=Math.max(0,(boss.hitFlash||0)-dt);boss.hitKick=(boss.hitKick||0)*Math.pow(.0008,dt);boss.pattern=(boss.pattern||0)+dt;var bx=boss.x+boss.w/2,by=boss.y+boss.h*.52,ang=Math.atan2(p.y+p.h/2-by,p.x+p.w/2-bx);boss.prevMoveX=boss.x;boss.prevMoveY=boss.y;boss.moveT=(boss.moveT||0)+dt;boss.dashT=Math.max(0,(boss.dashT||0)-dt);var playerDir=Math.sign(p.x+p.w/2-bx)||1,distBoss=Math.abs(p.x+p.w/2-bx);
 if(bossAI==='aerial'){
  // RAIDZIN: sustained flight, orbiting strafes and a faster high-altitude sweep in later phases.
  var flight= boss.phase===1?1:boss.phase===2?1.3:1.65;
