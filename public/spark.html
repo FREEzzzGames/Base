@@ -679,7 +679,7 @@ function drawBoss(){
  }
  // Reference-specific weak point: each boss keeps its own signature reactor/visor geometry.
  var cx=x+w*.5,cy=y+h*.54,coreR=phase===3?15:12;
- ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;
+ ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?16:7;
  ctx.fillStyle='#080d16';
  if(b.kind==='samurai'){
   poly([[cx,cy-coreR-4],[cx+coreR,cy],[cx,cy+coreR+4],[cx-coreR,cy]],'#101521',edge,3);
