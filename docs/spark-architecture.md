@@ -40,3 +40,12 @@
 - Keep Canvas 2D and bounded VFX for low-end Android / Telegram WebView.
 - Do not claim device performance or gameplay correctness without an actual runtime test.
 - Make large subsystem extractions incrementally, with CI validation after each move.
+
+## Extracted subsystem modules
+
+- `spark-data.js`: immutable character/weapon definitions and player-state factory.
+- `spark-ai.js`: target selection and boss phase decisions, independent from drawing.
+- `spark-render.js`: render-only pose smoothing and depth scaling.
+- `spark-simulation.js`: fixed-step scheduler, delta clamp, catch-up limit and hidden-tab reset.
+- `spark-session.js`: session timer ownership and cancellation.
+- The runtime retains the existing gameplay update and detailed actor drawing code to avoid changing combat timing or visual output during this architecture pass.
