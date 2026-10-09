@@ -10,6 +10,15 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - No UI constructor.
 - Local developer tools are build-gated and never included in the normal production build.
 
+## Repository hygiene and quality gates (2026-10-09)
+
+- Expanded `.gitignore` for Node/Vite, Android/Gradle, IDE, and local environment artifacts.
+- Added ESLint with targeted correctness rules for TypeScript/JavaScript source.
+- Centralized Android plugin and library versions in `android/gradle/libs.versions.toml`.
+- Added KtLint and Android Lint steps to the Android workflow.
+- Added ProGuard keep rules for `MainActivity` and `OverlayService`; release minification remains disabled pending a verified minified build.
+- Lint gates are newly added; their first CI results must be checked and any existing findings fixed before treating them as green.
+
 ## LAW 2.0
 
 - [x] 01 Source of Truth — Base/main fixed as the only repository.

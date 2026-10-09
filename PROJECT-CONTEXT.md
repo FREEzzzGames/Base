@@ -1,7 +1,7 @@
 # FREEzzz Portal — Project Context
 
 > Canonical project context for continued work.
-> Last reviewed: 2026-10-07
+> Last reviewed: 2026-10-09
 > Repository: FREEzzzGames/Base
 > Branch: main
 
@@ -96,7 +96,16 @@ Current documented status includes:
 
 The remaining LAW stages must not be renumbered.
 
-## 8. Build and deployment rule
+## 8. Repository hygiene and quality gates
+
+- `.gitignore` excludes Node/Vite build output, Android/Gradle artifacts, local IDE state, and local environment files.
+- ESLint runs targeted correctness rules on TypeScript/JavaScript source in the main CI workflow.
+- Android plugin and library versions are centralized in `android/gradle/libs.versions.toml`.
+- Android Lint and KtLint run in the Android-specific workflow when Android files change.
+- ProGuard keep rules cover `MainActivity` and `OverlayService`; release minification stays disabled until a minified release is built and verified.
+- Material changes to functionality, architecture, build, or deployment must update `IMPLEMENTATION-STATUS.md` and this document.
+
+## 9. Build and deployment rule
 
 Required release chain:
 
@@ -109,13 +118,13 @@ Rules:
 - typecheck/build/release smoke must pass before treating a change as deployable;
 - do not claim a deployment is successful without checking the actual GitHub Actions run and published result.
 
-## 9. Video / media rule
+## 10. Video / media rule
 
 - Local video assets use the repository's local asset resolution mechanism.
 - Do not reintroduce direct Pixabay/external video URLs where local assets are expected.
 - GAME's internal video window was removed previously; `home-game.mp4` is retained where required by HOME.
 
-## 10. Current repository checkpoint
+## 11. Current repository checkpoint
 
 At the latest repository inspection on 2026-10-07:
 - repository exists and is accessible;
@@ -125,7 +134,7 @@ At the latest repository inspection on 2026-10-07:
 - `IMPLEMENTATION-STATUS.md` remains the implementation status source;
 - deployment success must be re-verified from GitHub Actions before being described as currently green.
 
-## 11. Working rule for future sessions
+## 12. Working rule for future sessions
 
 Before changing code:
 

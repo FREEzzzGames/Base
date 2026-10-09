@@ -1,8 +1,9 @@
 import java.util.Base64
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -32,8 +33,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-}
 
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
+    }
+}
 
 tasks.register("restorePhotoIcon") {
     doLast {
@@ -46,8 +51,8 @@ tasks.register("restorePhotoIcon") {
 tasks.named("preBuild").configure { dependsOn("restorePhotoIcon") }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.activity:activity-ktx:1.11.0")
-    implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("androidx.webkit:webkit:1.14.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.webkit)
 }

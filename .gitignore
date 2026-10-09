@@ -1,4 +1,29 @@
+# Node.js / Vite
 node_modules/
 dist/
 coverage/
 *.log
+.npm/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Android / Gradle
+.gradle/
+**/.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

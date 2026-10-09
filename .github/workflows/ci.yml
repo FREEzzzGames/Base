@@ -131,6 +131,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: ESLint
+        run: npm run lint
+
       - name: Build
         env:
           VITE_TELEGRAM_AUTH_URL: ${{ secrets.TELEGRAM_AUTH_URL }}
