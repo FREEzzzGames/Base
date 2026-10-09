@@ -27,9 +27,14 @@ function drawRigLink(ctx,ax,ay,bx,by,outer,inner,width){
  ctx.lineCap='round';ctx.strokeStyle=outer;ctx.lineWidth=width+2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
  ctx.strokeStyle=inner;ctx.lineWidth=Math.max(1,width*.45);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
 }
+function interpolateActors(enemies,boss,player,dt,smoothPose){
+ for(var i=0;i<enemies.length;i++){var e=enemies[i];smoothPose(e,e.x,e.y,dt,180);if(e.type!=='drone'&&e.type!=='turret'&&e.type!=='support')e._gaitPhase=(e._gaitPhase||0)+Math.abs(e._rvx||0)*dt*.22;}
+ if(boss&&boss.active&&!boss.dead)smoothPose(boss,boss.x,boss.y,dt,220);
+ if(player)smoothPose(player,player.x,player.y,dt,140);
+}
 function drawRigHinge(ctx,x,y,r,outer,inner){
  ctx.fillStyle=outer;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
  ctx.fillStyle=inner;ctx.beginPath();ctx.arc(x,y,Math.max(1,r*.42),0,Math.PI*2);ctx.fill();
 }
-root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale,jointAngle:jointAngle,pivot:pivot,solve2Bone:solve2Bone,drawRigLink:drawRigLink,drawRigHinge:drawRigHinge});
+root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale,jointAngle:jointAngle,pivot:pivot,solve2Bone:solve2Bone,interpolateActors:interpolateActors,drawRigLink:drawRigLink,drawRigHinge:drawRigHinge});
 })(typeof window!=='undefined'?window:globalThis);
