@@ -12,6 +12,6 @@ var CHARACTERS=[
 {id:'miko',name:'MIKO',color:'#ff76c9',skin:'#fff0d4',hair:'#5e929a',coat:'#528e9a',pants:'#27354a',shot:'#ff76c9',desc:'розовые импульсы с рассеиванием'}
 ];
 var WEAPONS={pistol:{name:'PISTOL',cd:.18,cost:2,dmg:14,spd:400,count:1,spread:0,size:3,color:'#ff6a36',icon:'▬'},shotgun:{name:'SHOTGUN',cd:.55,cost:28,dmg:8,spd:360,count:5,spread:.24,size:3,color:'#ffb14d',icon:'⊞'},smg:{name:'SMG',cd:.08,cost:5,dmg:6,spd:480,count:1,spread:.07,size:2,color:'#55d9ef',icon:'⁝'},plasma:{name:'PLASMA',cd:.68,cost:34,dmg:48,spd:320,count:1,spread:0,size:5,color:'#ff4a3d',icon:'◉'}};
-function createPlayer(){return {x:30,y:ground-38,w:24,h:38,vx:0,vy:0,onGround:false,coyote:0,jbuf:0,face:1,hp:100,en:100,scrap:0,inv:0,atk:0,cd:0,dashCd:0,dash:0,shield:0,shieldCd:0,dead:false,anim:0,weapon:'pistol'};}
+function createPlayer(ground){return {x:30,y:ground-38,w:24,h:38,vx:0,vy:0,onGround:false,coyote:0,jbuf:0,face:1,hp:100,en:100,scrap:0,inv:0,atk:0,cd:0,dashCd:0,dash:0,shield:0,shieldCd:0,dead:false,anim:0,weapon:'pistol'};}
 root.SparkData=Object.freeze({CHARACTERS:CHARACTERS,WEAPONS:WEAPONS,createPlayer:createPlayer});
 })(typeof window!=='undefined'?window:globalThis);
