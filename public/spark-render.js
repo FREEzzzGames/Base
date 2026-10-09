@@ -8,7 +8,20 @@ function smoothPose(o,tx,ty,dt,teleportLimit){
  var safeDt=Math.max(.001,dt);o._rvx=(o._rx-o._px)/safeDt;o._rvy=(o._ry-o._py)/safeDt;
  o._rax=(o._rvx-oldVx)/safeDt;o._ray=(o._rvy-oldVy)/safeDt;o._px=o._rx;o._py=o._ry;
 }
+
 function depthScale(y,ground){return Math.max(.88,Math.min(1.08,.96+(ground-y)*.00016));}
+function jointAngle(phase,amp,offset){return Math.sin(phase+offset)*amp;}
+function pivot(ctx,px,py,angle){ctx.translate(px,py);ctx.rotate(angle);ctx.translate(-px,-py);}
+function solve2Bone(out,ax,ay,tx,ty,lenA,lenB,bend){
+ var dx=tx-ax,dy=ty-ay,d=Math.sqrt(dx*dx+dy*dy);
+ d=Math.max(.001,Math.min(lenA+lenB-.001,Math.max(Math.abs(lenA-lenB)+.001,d)));
+ var rawDx=tx-ax,rawDy=ty-ay,rawLength=Math.sqrt(rawDx*rawDx+rawDy*rawDy)||1;
+ var along=(lenA*lenA-lenB*lenB+d*d)/(2*d),height=Math.sqrt(Math.max(0,lenA*lenA-along*along));
+ var nx=rawDx/rawLength,ny=rawDy/rawLength;
+ out.x=ax+nx*along-ny*height*bend;out.y=ay+ny*along+nx*height*bend;
+ out.tx=tx;out.ty=ty;return out;
+}
+
 
 function drawRigLink(ctx,ax,ay,bx,by,outer,inner,width){
  ctx.lineCap='round';ctx.strokeStyle=outer;ctx.lineWidth=width+2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
@@ -18,5 +31,5 @@ function drawRigHinge(ctx,x,y,r,outer,inner){
  ctx.fillStyle=outer;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
  ctx.fillStyle=inner;ctx.beginPath();ctx.arc(x,y,Math.max(1,r*.42),0,Math.PI*2);ctx.fill();
 }
-root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale,drawRigLink:drawRigLink,drawRigHinge:drawRigHinge});
+root.SparkRenderMath=Object.freeze({smoothPose:smoothPose,depthScale:depthScale,jointAngle:jointAngle,pivot:pivot,solve2Bone:solve2Bone,drawRigLink:drawRigLink,drawRigHinge:drawRigHinge});
 })(typeof window!=='undefined'?window:globalThis);
