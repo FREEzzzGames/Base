@@ -1013,6 +1013,20 @@ function drawBoss(){
   ctx.globalAlpha=.09+.13*flicker;ctx.fillStyle='#ff315c';ctx.fillRect(x-8,y+20,w+16,h*.45);
   if(boss.phase>=2){ctx.globalAlpha=.18+.18*flicker;ctx.fillStyle='#ff315c';ctx.fillRect(x-13-Math.sin(motionT*6)*4,y+34,w*.22,h*.42);ctx.fillRect(x+w-3+Math.sin(motionT*6)*4,y+34,w*.22,h*.42)}
  }
+ // Boss rig: solve elbow positions from shoulder and wrist targets; drone wings stay on their own rig.
+ if(b.kind!=='drone'){
+  var reach=Math.max(8,Math.min(22,w*.22)),armPose=rp.rightArm+rp.weaponRecoil;
+  rn.wristL.x=x+w*.1+Math.sin(rp.leftArm)*3;rn.wristL.y=y+h*.68+Math.cos(rp.leftArm)*2;
+  rn.wristR.x=x+w*.9+Math.sin(armPose)*4;rn.wristR.y=y+h*.68+Math.cos(armPose)*3;
+  rigSolve2Bone(rn.elbowL,rn.shoulderL.x,rn.shoulderL.y,rn.wristL.x,rn.wristL.y,reach,reach,1);
+  rigSolve2Bone(rn.elbowR,rn.shoulderR.x,rn.shoulderR.y,rn.wristR.x,rn.wristR.y,reach,reach,-1);
+  drawRigLink(rn.shoulderL.x,rn.shoulderL.y,rn.elbowL.x,rn.elbowL.y,edge,b.metal,Math.max(2,w*.035));
+  drawRigLink(rn.elbowL.x,rn.elbowL.y,rn.wristL.x,rn.wristL.y,edge,b.armor,Math.max(2,w*.03));
+  drawRigHinge(rn.elbowL.x,rn.elbowL.y,Math.max(2,w*.025),edge,glow);
+  drawRigLink(rn.shoulderR.x,rn.shoulderR.y,rn.elbowR.x,rn.elbowR.y,edge,b.metal,Math.max(2,w*.035));
+  drawRigLink(rn.elbowR.x,rn.elbowR.y,rn.wristR.x,rn.wristR.y,edge,b.armor,Math.max(2,w*.03));
+  drawRigHinge(rn.elbowR.x,rn.elbowR.y,Math.max(2,w*.025),edge,glow);
+ }
  ctx.restore();
  // Reference-faithful attack cue: thin, restrained and unique to each silhouette.
  if(boss.attack>0){ctx.save();ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=glow;ctx.lineWidth=1;
