@@ -480,6 +480,13 @@ function drawBoss(){
  ctx.shadowBlur=14;ctx.shadowColor=glow;ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,13+(boss.attack>0?3:0),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
  ctx.fillStyle='#fff0b4';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();
  ctx.strokeStyle='#ffe0a0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,19,0,Math.PI*2);ctx.stroke();
+ // shoulder-mounted hydraulic pistons, vents and braided power conduits
+ ctx.strokeStyle='#101827';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x+31,y+57);ctx.lineTo(x+24,y+76);ctx.lineTo(x+34,y+86);ctx.moveTo(x+w-31,y+57);ctx.lineTo(x+w-24,y+76);ctx.lineTo(x+w-34,y+86);ctx.stroke();
+ ctx.strokeStyle='#62788b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+31,y+57);ctx.lineTo(x+24,y+76);ctx.lineTo(x+34,y+86);ctx.moveTo(x+w-31,y+57);ctx.lineTo(x+w-24,y+76);ctx.lineTo(x+w-34,y+86);ctx.stroke();
+ // layered vents and panel seams on chest and shoulders
+ for(var vent=0;vent<4;vent++){ctx.fillStyle='#111a29';ctx.fillRect(x+17+vent*5,y+38,3,8);ctx.fillStyle=vent===0?glow:'#718397';ctx.fillRect(x+18+vent*5,y+39,1,5);ctx.fillStyle='#111a29';ctx.fillRect(x+w-37+vent*5,y+38,3,8);ctx.fillStyle=vent===3?glow:'#718397';ctx.fillRect(x+w-36+vent*5,y+39,1,5)}
+ outlineRect(x+8,y+61,15,8,'#202d40',edge,1);outlineRect(x+w-23,y+61,15,8,'#202d40',edge,1);
+ ctx.fillStyle=glow;ctx.fillRect(x+12,y+64,7,2);ctx.fillRect(x+w-19,y+64,7,2);
  // warning stripes and panel bolts
  for(var i=0;i<5;i++){ctx.fillStyle=i%2?'#172234':'#ffb33f';ctx.fillRect(x+30+i*8,y+h-23,5,4)}
  ctx.fillStyle='#ffd6b5';[[x+31,y+31],[x+w-34,y+31],[x+31,y+h-29],[x+w-34,y+h-29]].forEach(function(q){ctx.fillRect(q[0],q[1],3,3)});
