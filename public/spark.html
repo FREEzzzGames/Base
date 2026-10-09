@@ -84,79 +84,87 @@ canvas{z-index:0;pointer-events:none}
 .btn{box-shadow:inset 0 1px rgba(255,255,255,.22),inset 0 -3px rgba(0,0,0,.28),0 0 15px color-mix(in srgb,var(--c,#ff7a45) 16%,transparent)}
 #moveStick{box-shadow:inset 0 0 0 2px rgba(255,174,133,.1),0 0 20px rgba(255,110,76,.08)}
 @media(prefers-reduced-motion:reduce){.mission-card,.weapon-card,.character-card{transition:none!important}}
-/* CHARACTER SELECT MENU — dedicated visual pass only; no layout or gameplay changes */
+/* SHINOBI MENU VISUAL REVISION 2 — intentionally visible finish pass */
 #menu .hub-screen[data-screen="characters"]{
  background:
-  radial-gradient(ellipse at 50% 18%,rgba(58,111,157,.15),transparent 42%),
-  radial-gradient(ellipse at 5% 65%,rgba(255,128,66,.07),transparent 32%),
-  linear-gradient(155deg,rgba(10,21,37,.985),rgba(7,13,25,.99) 58%,rgba(18,14,25,.99));
- border-color:#34516a;
- box-shadow:inset 0 0 0 1px rgba(174,221,255,.035),inset 0 0 42px rgba(18,69,105,.11),0 10px 32px rgba(0,0,0,.26);
+  radial-gradient(ellipse at 50% 0%,rgba(70,151,211,.22),transparent 44%),
+  radial-gradient(ellipse at 4% 45%,rgba(255,126,55,.10),transparent 35%),
+  radial-gradient(ellipse at 100% 88%,rgba(190,62,120,.09),transparent 34%),
+  linear-gradient(145deg,#0d1a2c 0%,#0a1424 50%,#10111d 100%)!important;
+ border:1px solid #426984!important;
+ box-shadow:inset 0 0 0 2px rgba(114,194,235,.045),inset 0 0 55px rgba(50,130,190,.12),0 12px 30px #0008!important;
 }
 #menu .hub-screen[data-screen="characters"] .screen-heading{
- border-bottom-color:rgba(109,177,212,.32);
- text-shadow:0 0 12px rgba(108,190,231,.12);
+ padding:7px 0 12px!important;
+ border-bottom:1px solid #3b607b!important;
+ background:linear-gradient(90deg,rgba(35,68,95,.34),transparent 85%);
 }
-#menu .hub-screen[data-screen="characters"] .back-btn{
- background:linear-gradient(145deg,#182a3e,#0c1626);
- border:1px solid #526e84;
- box-shadow:inset 0 1px rgba(255,255,255,.09),0 3px 9px #0005;
+#menu .hub-screen[data-screen="characters"] .screen-heading b{
+ color:#f5f0e8;text-shadow:0 0 14px rgba(110,201,255,.28);letter-spacing:1.4px;
 }
-#menu .character-grid{gap:6px;margin:10px 0 12px}
+#menu .character-grid{gap:7px!important}
 #menu .character-card{
- position:relative;isolation:isolate;overflow:hidden;min-height:94px;
- padding:7px 3px 7px;border-radius:4px;border:1px solid color-mix(in srgb,var(--char) 76%,#42546b);
+ min-height:102px!important;position:relative!important;isolation:isolate;overflow:hidden;
+ border:1px solid color-mix(in srgb,var(--char) 88%,#d5e5f0)!important;
+ border-radius:5px!important;
  background:
-  radial-gradient(ellipse at 50% 24%,color-mix(in srgb,var(--char) 18%,transparent),transparent 55%),
-  linear-gradient(145deg,#17263a 0%,#101a2a 58%,#0b1320 100%);
- box-shadow:inset 0 1px rgba(255,255,255,.055),inset 0 -12px 20px rgba(0,0,0,.12),0 4px 10px rgba(0,0,0,.2);
- transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+  linear-gradient(135deg,color-mix(in srgb,var(--char) 16%,#17263b) 0%,#111d30 45%,#080f1c 100%)!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.15),inset 0 -18px 24px rgba(0,0,0,.24),0 5px 12px rgba(0,0,0,.32)!important;
 }
 #menu .character-card:before{
  content:"";position:absolute;inset:4px;z-index:-1;pointer-events:none;
- border:1px solid color-mix(in srgb,var(--char) 20%,transparent);
- background:linear-gradient(135deg,rgba(255,255,255,.035),transparent 38%,rgba(0,0,0,.08));
- clip-path:polygon(0 0,22% 0,22% 2px,78% 2px,78% 0,100% 0,100% 100%,0 100%);
+ border:1px solid color-mix(in srgb,var(--char) 28%,transparent);
+ background:
+  linear-gradient(135deg,rgba(255,255,255,.09),transparent 28%),
+  repeating-linear-gradient(0deg,transparent 0 13px,rgba(255,255,255,.018) 13px 14px);
 }
 #menu .character-card:after{
- content:"";position:absolute;left:8px;right:8px;top:5px;height:1px;
- background:linear-gradient(90deg,transparent,var(--char),transparent);opacity:.45;pointer-events:none;
+ content:"";position:absolute;top:0;left:12%;right:12%;height:2px;
+ background:linear-gradient(90deg,transparent,var(--char),transparent);
+ box-shadow:0 0 10px var(--char);opacity:.9;pointer-events:none;
 }
 #menu .character-card svg{
- height:59px;width:100%;overflow:visible;filter:drop-shadow(0 3px 2px rgba(0,0,0,.42)) drop-shadow(0 0 5px color-mix(in srgb,var(--char) 15%,transparent));
+ height:61px!important;filter:drop-shadow(0 4px 2px #0009) drop-shadow(0 0 7px color-mix(in srgb,var(--char) 30%,transparent))!important;
 }
-#menu .character-card span{font-size:9px;letter-spacing:.7px;text-shadow:0 1px 2px #000}
-#menu .character-card .shot{height:3px;width:72%;margin:5px auto 0;box-shadow:0 0 7px var(--char),0 0 14px color-mix(in srgb,var(--char) 30%,transparent)}
+#menu .character-card span{
+ color:#fff2dc!important;font-size:9px!important;letter-spacing:1px!important;
+ text-shadow:0 2px 3px #000,0 0 8px color-mix(in srgb,var(--char) 35%,transparent)!important;
+}
+#menu .character-card .shot{
+ height:4px!important;width:76%!important;margin-top:5px!important;
+ background:linear-gradient(90deg,color-mix(in srgb,var(--char) 55%,white),var(--char))!important;
+ box-shadow:0 0 5px var(--char),0 0 13px color-mix(in srgb,var(--char) 52%,transparent)!important;
+}
 #menu .character-card.selected{
- outline:2px solid var(--char);outline-offset:0;
+ outline:2px solid var(--char)!important;outline-offset:1px;
  background:
-  radial-gradient(ellipse at 50% 25%,color-mix(in srgb,var(--char) 27%,transparent),transparent 58%),
-  linear-gradient(145deg,#22334a 0%,#121e30 65%,#0c1523 100%);
- box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 0 22px color-mix(in srgb,var(--char) 10%,transparent),0 0 0 3px rgba(4,10,18,.8),0 0 18px color-mix(in srgb,var(--char) 24%,transparent);
+  radial-gradient(ellipse at 50% 25%,color-mix(in srgb,var(--char) 34%,transparent),transparent 65%),
+  linear-gradient(145deg,#293c53,#142238 56%,#0b1524)!important;
+ box-shadow:inset 0 0 0 1px #ffffff35,inset 0 0 28px color-mix(in srgb,var(--char) 18%,transparent),0 0 0 3px #050b14,0 0 22px color-mix(in srgb,var(--char) 48%,transparent)!important;
 }
 #menu .selected-operator{
- position:relative;overflow:hidden;border-color:#4a6d86;
- background:linear-gradient(105deg,#15263a,#101d2e 60%,#0d1727);
- box-shadow:inset 0 1px rgba(255,255,255,.07),0 5px 14px rgba(0,0,0,.22);
-}
-#menu .selected-operator:after{
- content:"";position:absolute;right:-20px;top:-26px;width:100px;height:100px;border-radius:50%;
- background:radial-gradient(circle,color-mix(in srgb,var(--char,#ffad32) 15%,transparent),transparent 68%);pointer-events:none;
+ border:1px solid #4f7d9d!important;
+ background:
+  radial-gradient(ellipse at 90% 5%,rgba(80,172,222,.19),transparent 48%),
+  linear-gradient(110deg,#172b42,#101d30 62%,#0b1525)!important;
+ box-shadow:inset 0 1px #ffffff17,0 7px 18px #0005!important;
 }
 #menu .selected-avatar{
- position:relative;z-index:1;background:linear-gradient(145deg,#2a3445,#171e2d);
- box-shadow:inset 0 0 0 2px rgba(255,255,255,.04),0 0 14px color-mix(in srgb,var(--char,#ffad32) 14%,transparent);
+ background:linear-gradient(145deg,#263d55,#121d2c)!important;
+ border:2px solid var(--char,#ffad32)!important;
+ box-shadow:inset 0 0 0 2px #ffffff12,0 0 18px color-mix(in srgb,var(--char,#ffad32) 28%,transparent)!important;
 }
-#menu .selected-info b{text-shadow:0 0 10px color-mix(in srgb,var(--char,#ffad32) 25%,transparent)}
-#menu .stat-track{background:#243447;box-shadow:inset 0 1px 3px #0008}
-#menu .stat-track i{box-shadow:0 0 8px color-mix(in srgb,var(--char,#ffad32) 45%,transparent)}
+#menu .selected-info b{color:var(--char,#ffc05a)!important;text-shadow:0 0 12px color-mix(in srgb,var(--char,#ffad32) 38%,transparent)!important}
+#menu .stat-track{height:7px!important;background:#263b50!important;border:1px solid #3a5368;box-shadow:inset 0 2px 3px #0008}
+#menu .stat-track i{box-shadow:0 0 10px color-mix(in srgb,var(--char,#ffad32) 62%,transparent)!important}
 #menu .hub-screen[data-screen="characters"] .wide-cta{
- background:linear-gradient(105deg,#4a252c,#35212b 58%,#241d2a);
- border-color:#ffb04c;
- box-shadow:inset 0 1px rgba(255,225,186,.16),inset 0 -3px #1b1119,0 0 0 1px rgba(255,172,76,.08),0 6px 18px rgba(0,0,0,.28);
+ border:1px solid #ffc064!important;
+ background:linear-gradient(100deg,#522630 0%,#39212d 50%,#242033 100%)!important;
+ box-shadow:inset 0 1px #fff3d0aa,inset 0 -3px #170f19,0 0 0 1px #ffae4a20,0 8px 22px #0007,0 0 18px #ffad3220!important;
+ text-shadow:0 2px 2px #140c13,0 0 12px #ffe0b433!important;
 }
-@media(hover:hover){#menu .character-card:hover{transform:translateY(-2px);filter:brightness(1.12)}}
-@media(prefers-reduced-motion:reduce){#menu .character-card{transition:none}}
+@media(max-width:370px){#menu .character-card{min-height:94px!important}#menu .character-card svg{height:54px!important}}
+
 </style></head><body><canvas id="game"></canvas><div class="fx-scan"></div>
 <div class="hud hidden" id="hud"><div class="hud-row"><div class="meter"><span class="hud-label">HP</span><div class="track"><div id="hp" class="fill"></div></div></div><div class="meter"><span class="hud-label">ENERGY</span><div class="track"><div id="en" class="fill energy"></div></div></div><button class="pause-hud" id="pauseButton" aria-label="Пауза">Ⅱ</button></div><div class="hud-row2"><div class="chip" id="scrap">◆ 0</div><button type="button" class="weapon-switch" id="weaponPrev" aria-label="Предыдущее оружие">‹</button><div class="chip weapon" id="weapon">▸ PISTOL</div><button type="button" class="weapon-switch" id="weaponNext" aria-label="Следующее оружие">›</button><div class="meter boss" id="bossMeter">CORE<div class="track"><div id="bossHp" class="fill"></div></div></div></div></div>
 <div class="controls hidden" id="controls"><div class="move-zone"><div id="moveStick" class="move-stick" aria-label="Виртуальный стик движения"><div class="stick-ring"></div><div id="stickKnob" class="stick-knob"></div></div></div><div class="combat-zone"><button class="btn skill" data-act="interact" aria-label="Ремонт">✚</button><button class="btn dash" data-act="skill" aria-label="Рывок">➤</button><button class="btn jump" data-act="jump" aria-label="Прыжок">▲</button><button class="btn attack" data-act="attack" aria-label="Огонь">✦</button></div></div><div class="toast hidden" id="toast"></div>
