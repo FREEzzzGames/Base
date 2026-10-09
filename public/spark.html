@@ -748,6 +748,33 @@ function drawBoss(){
  }
  // Fine emissive seams only on selected edges to preserve contrast against the level.
  ctx.globalAlpha=.72;ctx.strokeStyle=glow;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+8,y+h-2);ctx.lineTo(x+24,y+h-2);ctx.moveTo(x+w-24,y+h-2);ctx.lineTo(x+w-8,y+h-2);ctx.stroke();ctx.restore();
+ // Reference cleanup: grounded contact and restrained edge light, without changing the approved silhouettes.
+ ctx.save();
+ if(b.kind==='samurai'){
+  // Keep the katana as a clean, single readable diagonal rather than a broad glow.
+  ctx.globalAlpha=.9;ctx.strokeStyle='#fff0d0';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+w-12,y+74);ctx.lineTo(x+w+35,y+29);ctx.stroke();
+  ctx.fillStyle='#d9a85e';ctx.fillRect(x+w-22,y+68,3,3);ctx.fillRect(x+w-13,y+77,3,3);
+ }else if(b.kind==='siege'){
+  // Distinguish the two cannon apertures from the central reactor.
+  for(var muzzle=0;muzzle<2;muzzle++){
+   var mx=muzzle?x+w-31:x+31;
+   ctx.fillStyle='#0b1119';ctx.fillRect(mx-4,y-2,8,7);
+   ctx.strokeStyle='#c1c8c9';ctx.lineWidth=1;ctx.strokeRect(mx-4,y-2,8,7);
+   ctx.fillStyle=glow;ctx.fillRect(mx-2,y+1,4,2);
+  }
+ }else if(b.kind==='drone'){
+  // Small lower thrusters remain separated from the platform edge.
+  ctx.globalAlpha=.75;
+  for(var th=0;th<3;th++){var tx=x+w*.5+(th-1)*22;ctx.fillStyle='#e8ffff';ctx.fillRect(tx-1,y+h+1,2,3)}
+ }else{
+  // Preserve Kage's pale crest / dark mask contrast and clarify the twin blade guards.
+  ctx.strokeStyle='#ff9db3';ctx.lineWidth=1;ctx.beginPath();
+  ctx.moveTo(x+4,y+24);ctx.lineTo(x+20,y+43);
+  ctx.moveTo(x+w-4,y+24);ctx.lineTo(x+w-20,y+43);ctx.stroke();
+  ctx.fillStyle='#e7dce5';ctx.fillRect(x+47,y+28,3,2);ctx.fillRect(x+w-50,y+28,3,2);
+ }
+ ctx.restore();
  // Reference-specific weak point: each boss keeps its own signature reactor/visor geometry.
  var cx=x+w*.5,cy=y+h*.54,coreR=phase===3?15:12;
  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;
