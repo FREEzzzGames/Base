@@ -517,6 +517,15 @@ function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
 function rigJointAngle(phase,amp,offset){return Math.sin(phase+offset)*amp}
 function rigPivot(px,py,angle){ctx.translate(px,py);ctx.rotate(angle);ctx.translate(-px,-py)}
+// Low-cost connected skeletal links. Inputs are reused numeric coordinates; no per-frame arrays/objects.
+function drawRigLink(ax,ay,bx,by,outer,inner,width){
+ ctx.lineCap='round';ctx.strokeStyle=outer;ctx.lineWidth=width+2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+ ctx.strokeStyle=inner;ctx.lineWidth=Math.max(1,width*.45);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+}
+function drawRigHinge(x,y,r,outer,inner){
+ ctx.fillStyle=outer;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=inner;ctx.beginPath();ctx.arc(x,y,Math.max(1,r*.42),0,Math.PI*2);ctx.fill();
+}
 function drawOperator(x,y,face,ch,anim,attacking){
  var bob=Math.sin(anim*9)*.65,step=Math.sin(anim*13)*1.6,edge='#080d16',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  ctx.save();ctx.translate(Math.round(x+12),Math.round(y+bob));ctx.scale(face||1,1);ctx.translate(-12,0);
@@ -524,6 +533,11 @@ function drawOperator(x,y,face,ch,anim,attacking){
  ctx.fillStyle='rgba(1,4,10,.72)';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
  ctx.globalAlpha=.17;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
  // Hip -> knee -> ankle chains; each leg swings around its own attachment point.
+ var legL=rigJointAngle(anim*13,.075,0),legR=rigJointAngle(anim*13,.075,Math.PI);
+ drawRigLink(7,25,7+Math.sin(anim*13)*1.6,31,'#101827',ch.pants,5);
+ drawRigHinge(7+Math.sin(anim*13)*1.6,31,2,edge,'#8fa6ba');
+ drawRigLink(17,25,17-Math.sin(anim*13)*1.6,31,'#101827',ch.pants,5);
+ drawRigHinge(17-Math.sin(anim*13)*1.6,31,2,edge,'#8fa6ba');
  ctx.save();rigPivot(7,25,rigJointAngle(anim*13,.075,0)+(attacking>0?-.025:0));
  outlineRect(4,25+Math.max(0,step),6,8,ch.pants,edge,2);outlineRect(3,28+Math.max(0,step),7,3,'#40516a',edge,1);
  ctx.fillStyle='#a6c1d5';ctx.fillRect(4,29+Math.max(0,step),3,1);outlineRect(1,32+Math.max(0,step),10,5,'#1b283b',edge,2);
@@ -541,11 +555,14 @@ function drawOperator(x,y,face,ch,anim,attacking){
  ctx.strokeStyle='#101827';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(6,16);ctx.lineTo(16,24);ctx.stroke();ctx.strokeStyle='#a9bfd0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(7,16);ctx.lineTo(16,23);ctx.stroke();
  outlineRect(3,14,5,5,ch.coat,edge,1);outlineRect(17,13,6,6,ch.coat,edge,1);ctx.fillStyle='#f0d4b0';ctx.fillRect(4,15,2,1);ctx.fillRect(19,14,2,1);
  outlineRect(5,23,13,3,'#172338',edge,1);ctx.fillStyle=shot;ctx.fillRect(8,24,6,1);
- // Shoulder and elbow pivots. Keep arm assemblies inside the original collision silhouette.
- ctx.save();rigPivot(5,17,rigJointAngle(anim*9,.05,0)+(attacking>0?-.06:0));
- outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(0,22,5,5,'#303f54',edge,1);ctx.fillStyle=accent;ctx.fillRect(1,23,3,1);ctx.restore();
- ctx.save();rigPivot(20,16,rigJointAngle(anim*9,.055,Math.PI)+(attacking>0?-.14:0));
- outlineRect(18,16,5,7,ch.coat,edge,2);outlineRect(18,21,5,5,'#303f54',edge,1);ctx.fillStyle=accent;ctx.fillRect(19,22,3,1);ctx.restore();
+ // Shoulder -> elbow -> wrist chains. Upper-arm and forearm links share articulated endpoints.
+ var armL=rigJointAngle(anim*9,.05,0)+(attacking>0?-.06:0),armR=rigJointAngle(anim*9,.055,Math.PI)+(attacking>0?-.14:0);
+ ctx.save();rigPivot(5,17,armL);outlineRect(0,17,5,7,ch.coat,edge,2);ctx.restore();
+ drawRigLink(5,18,3+Math.sin(armL)*1.5,23,'#101827',ch.coat,4);
+ drawRigHinge(3+Math.sin(armL)*1.5,23,2.1,edge,'#71879a');
+ ctx.save();rigPivot(20,16,armR);outlineRect(18,16,5,7,ch.coat,edge,2);ctx.restore();
+ drawRigLink(20,18,21+Math.sin(armR)*1.5,23,'#101827',ch.coat,4);
+ drawRigHinge(21+Math.sin(armR)*1.5,23,2.1,edge,accent);
  // Weapon mount, receiver, barrel and muzzle share a recoil pivot.
  ctx.save();rigPivot(19,20,rigJointAngle(anim*9,.025,Math.PI)+(attacking>0?-.12:0));
  outlineRect(16,18,11,4,'#17263a',edge,2);outlineRect(19,17,7,3,'#3d5067',edge,1);outlineRect(23,18,6,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(27,18,2,1);
