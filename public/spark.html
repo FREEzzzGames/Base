@@ -227,6 +227,26 @@ canvas{z-index:0;pointer-events:none}
 #exitConfirm .exit-actions>*{width:100%;min-height:40px;margin:0;font-size:10px;letter-spacing:.5px}
 #exitConfirm .exit-actions .cta{background:linear-gradient(110deg,#a92f39,#6b202d);border-color:#ff6157;color:#fff1e5;box-shadow:inset 0 1px #ffffff33,0 0 14px #ff454526}
 #pauseMenu .exit-menu-btn{border-color:#9c4c50;color:#ffb0a6}
+/* Minimal gameplay HUD: keep combat-critical information, remove decorative clutter */
+#game{image-rendering:pixelated}
+.fx-scan{opacity:.12;pointer-events:none}
+.hud{gap:5px;padding:8px 9px 0}
+.hud-row{gap:7px;align-items:stretch}
+.hud-row .meter{min-width:0;padding:7px 8px;background:rgba(8,16,28,.88);border-color:#344b60;box-shadow:none}
+.hud-label{font-size:10px;letter-spacing:.8px}
+.hud-row .track{height:7px;margin-top:5px;background:#050b13;border-color:#273b4d}
+.pause-hud{width:40px;min-width:40px;min-height:39px;background:#101d2b;border:1px solid #536a7e;box-shadow:none;font-size:21px}
+.hud-row2{gap:5px;margin-top:0;align-items:center}
+.hud-row2 #scrap{display:none!important}
+.weapon-switch{width:31px;min-width:31px;height:31px;padding:0;background:#172437;border:1px solid #705044;box-shadow:none;font-size:18px}
+.hud-row2 .chip.weapon{min-width:0;flex:0 1 auto;padding:7px 9px;background:rgba(12,23,38,.94);border-color:#3d647c;box-shadow:none;font-size:10px;letter-spacing:.7px}
+.hud-row2 .meter.boss{margin-left:auto;min-width:82px;padding:5px 7px;background:rgba(8,16,28,.9);border-color:#6b3e46;box-shadow:none;font-size:9px}
+.hud-row2 .meter.boss .track{height:5px;margin-top:3px}
+.controls{background:linear-gradient(180deg,rgba(7,12,23,.04),rgba(7,12,23,.68));border:0;box-shadow:none}
+.move-stick{box-shadow:0 0 14px #ff9d4730}
+.btn{box-shadow:0 0 10px #0005}
+.toast{box-shadow:0 4px 14px #0008}
+@media(max-width:390px){.hud{padding:6px 6px 0}.hud-row .meter{padding:6px}.hud-label{font-size:9px}.hud-row2 .chip.weapon{font-size:9px;padding:6px 7px}.hud-row2 .meter.boss{min-width:65px}}
 </style></head><body><canvas id="game"></canvas><div class="fx-scan"></div>
 <div class="hud hidden" id="hud"><div class="hud-row"><div class="meter"><span class="hud-label">HP</span><div class="track"><div id="hp" class="fill"></div></div></div><div class="meter"><span class="hud-label">ENERGY</span><div class="track"><div id="en" class="fill energy"></div></div></div><button class="pause-hud" id="pauseButton" aria-label="Пауза">Ⅱ</button></div><div class="hud-row2"><div class="chip" id="scrap">◆ 0</div><button type="button" class="weapon-switch" id="weaponPrev" aria-label="Предыдущее оружие">‹</button><div class="chip weapon" id="weapon">▸ PISTOL</div><button type="button" class="weapon-switch" id="weaponNext" aria-label="Следующее оружие">›</button><div class="meter boss" id="bossMeter">CORE<div class="track"><div id="bossHp" class="fill"></div></div></div></div></div>
 <div class="controls hidden" id="controls"><div class="move-zone"><div id="moveStick" class="move-stick" aria-label="Виртуальный стик движения"><div class="stick-ring"></div><div id="stickKnob" class="stick-knob"></div></div></div><div class="combat-zone"><button class="btn skill" data-act="interact" aria-label="Ремонт">✚</button><button class="btn dash" data-act="skill" aria-label="Рывок">➤</button><button class="btn jump" data-act="jump" aria-label="Прыжок">▲</button><button class="btn attack" data-act="attack" aria-label="Огонь">✦</button></div></div><div class="toast hidden" id="toast"></div>
