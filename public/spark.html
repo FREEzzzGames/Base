@@ -654,8 +654,14 @@ function drawBoss(){
  ctx.save();
  // Rig landmarks are recomputed from the bind pose each frame; never accumulate transforms.
  var rigT=boss.pattern||0,rigRun=Math.min(1,Math.abs(boss.visualVx||0)/180),rigHit=Math.min(1,(boss.hitFlash||0)*3);
- boss.rigNodes={root:{x:x+w*.5,y:y+h*.86},pelvis:{x:x+w*.5,y:y+h*.69},neck:{x:x+w*.5,y:y+h*.22},head:{x:x+w*.5,y:y+h*.12},shoulderL:{x:x+w*.19,y:y+h*.36},elbowL:{x:x+w*.12,y:y+h*.57},wristL:{x:x+w*.1,y:y+h*.68},shoulderR:{x:x+w*.81,y:y+h*.36},elbowR:{x:x+w*.88,y:y+h*.57},wristR:{x:x+w*.9,y:y+h*.68},weaponMount:{x:x+w*.84,y:y+h*.54},muzzle:{x:x+w*1.04,y:y+h*.31},armorL:{x:x+w*.15,y:y+h*.43},armorR:{x:x+w*.85,y:y+h*.43}};
- boss.rigPose={leftArm:rigJointAngle(rigT*7,.055+rigRun*.09,0)+rigHit*.06,rightArm:rigJointAngle(rigT*7,.055+rigRun*.09,Math.PI)+(boss.attack>0?-.12:0),head:rigJointAngle(rigT*2,.018,0)+rigHit*.025,weaponRecoil:boss.attack>0?.12:0,armorLag:Math.max(-.08,Math.min(.08,(boss.visualVx||0)/1200))};
+ if(!boss.rigNodes)boss.rigNodes={root:{},pelvis:{},neck:{},head:{},shoulderL:{},elbowL:{},wristL:{},shoulderR:{},elbowR:{},wristR:{},weaponMount:{},muzzle:{},armorL:{},armorR:{}};
+ var rn=boss.rigNodes;
+ rn.root.x=x+w*.5;rn.root.y=y+h*.86;rn.pelvis.x=x+w*.5;rn.pelvis.y=y+h*.69;rn.neck.x=x+w*.5;rn.neck.y=y+h*.22;rn.head.x=x+w*.5;rn.head.y=y+h*.12;
+ rn.shoulderL.x=x+w*.19;rn.shoulderL.y=y+h*.36;rn.elbowL.x=x+w*.12;rn.elbowL.y=y+h*.57;rn.wristL.x=x+w*.1;rn.wristL.y=y+h*.68;
+ rn.shoulderR.x=x+w*.81;rn.shoulderR.y=y+h*.36;rn.elbowR.x=x+w*.88;rn.elbowR.y=y+h*.57;rn.wristR.x=x+w*.9;rn.wristR.y=y+h*.68;
+ rn.weaponMount.x=x+w*.84;rn.weaponMount.y=y+h*.54;rn.muzzle.x=x+w*1.04;rn.muzzle.y=y+h*.31;rn.armorL.x=x+w*.15;rn.armorL.y=y+h*.43;rn.armorR.x=x+w*.85;rn.armorR.y=y+h*.43;
+ if(!boss.rigPose)boss.rigPose={leftArm:0,rightArm:0,head:0,weaponRecoil:0,armorLag:0};
+ var rp=boss.rigPose;rp.leftArm=rigJointAngle(rigT*7,.055+rigRun*.09,0)+rigHit*.06;rp.rightArm=rigJointAngle(rigT*7,.055+rigRun*.09,Math.PI)+(boss.attack>0?-.12:0);rp.head=rigJointAngle(rigT*2,.018,0)+rigHit*.025;rp.weaponRecoil=boss.attack>0?.12:0;rp.armorLag=Math.max(-.08,Math.min(.08,(boss.visualVx||0)/1200));
  // Visual-only rigid-body response: velocity stretches the silhouette; impacts and heavy attacks compress it.
  var vx=boss.visualVx||0,vy=boss.visualVy||0,speed=Math.min(1,Math.abs(vx)/360),lift=Math.min(1,Math.abs(vy)/260);
  var sx=1+speed*.075,sy=1-speed*.055;
@@ -694,8 +700,8 @@ function drawBoss(){
   for(var tr=0;tr<8;tr++){ctx.fillStyle=tr%2?'#737c82':'#262f3a';ctx.fillRect(x+15+tr*14,y+h*.77,10,7);ctx.fillStyle='#111923';ctx.fillRect(x+18+tr*14,y+h*.79,4,2)}
   plate(x+15,y+31,w-30,h*.46,'#39434d');plate(x+24,y+38,w-48,25,'#242e3a');
   // broad angular shoulder armor
-  poly([[x+22,y+27],[x+5,y+18],[x+2,y+53],[x+20,y+66],[x+45,y+59],[x+45,y+34]],'#4c5962',edge,4);
-  poly([[x+w-22,y+27],[x+w-5,y+18],[x+w-2,y+53],[x+w-20,y+66],[x+w-45,y+59],[x+w-45,y+34]],'#4c5962',edge,4);
+  ctx.save();rigPivot(x+24,y+42,(boss.rigPose?boss.rigPose.armorLag:0)-.025);poly([[x+22,y+27],[x+5,y+18],[x+2,y+53],[x+20,y+66],[x+45,y+59],[x+45,y+34]],'#4c5962',edge,4);ctx.restore();
+  ctx.save();rigPivot(x+w-24,y+42,-((boss.rigPose?boss.rigPose.armorLag:0)-.025));poly([[x+w-22,y+27],[x+w-5,y+18],[x+w-2,y+53],[x+w-20,y+66],[x+w-45,y+59],[x+w-45,y+34]],'#4c5962',edge,4);ctx.restore();
   for(var side=0;side<2;side++){
    var gx=side?x+w-31:x+31;
    // Cannon mount rotates by a few degrees under recoil; barrel, socket and armor stay linked.
