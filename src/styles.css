@@ -5888,7 +5888,6 @@ html.visual-comfort-enabled video{
 .portal-game-fullscreen .game-portal{display:block!important;width:100%!important;height:100%!important;padding:0!important;margin:0!important}
 .portal-game-fullscreen .game-section-head{display:none!important}
 .portal-game-fullscreen .game-story-block{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:100%!important;padding:0!important;margin:0!important}
-.portal-game-fullscreen .freezzz-mafia{width:100%!important;height:100%!important;min-height:100%!important;margin:0!important;padding:0!important;border:0!important;background:#07090b!important}
 .portal-game-fullscreen .freezzz-mafia-frame{position:relative!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;border:0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#07090b!important}
 .portal-game-fullscreen .freezzz-mafia-canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;aspect-ratio:auto!important;transform:none!important;object-fit:fill!important;image-rendering:pixelated!important}
 .portal-game-fullscreen .mafia-select-grid{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:grid!important;grid-template-columns:repeat(2,1fr)!important;grid-template-rows:repeat(2,26.5vh)!important;gap:2vh 3.5vw!important;padding:18vh 6vw 18vh!important;box-sizing:border-box!important;align-content:start!important;pointer-events:auto!important}
@@ -5944,20 +5943,6 @@ html.visual-comfort-enabled video{
 }
 
 /* CARGO DECK — exact 3px safety frame inside the maximum Telegram Mini App surface. */
-.portal-game-fullscreen .freezzz-mafia-frame.cargo-deck-frame{
-  position:absolute!important;
-  left:3px!important;
-  top:3px!important;
-  right:3px!important;
-  bottom:3px!important;
-  width:auto!important;
-  height:auto!important;
-  max-width:none!important;
-  min-height:0!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-}
-
 /* Portrait-first Mini App presentation — tuned for 694x1320 class devices */
 .portal-game-fullscreen .freezzz-mafia-frame{width:100vw!important;height:100dvh!important;min-height:0!important;max-width:none!important;background:#07090b!important}
 .portal-game-fullscreen .freezzz-mafia-canvas{width:100%!important;height:100%!important;image-rendering:pixelated!important;display:block!important}
@@ -9636,7 +9621,6 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   box-sizing:border-box!important;
 }
 .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item,
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button,
 .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
   grid-column:auto!important;
   grid-row:1!important;
@@ -9652,28 +9636,6 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   box-sizing:border-box!important;
   justify-self:stretch!important;
   align-self:center!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:1fr!important;
-  place-items:center!important;
-  gap:0!important;
-  border-radius:10px!important;
-  overflow:hidden!important;
-  white-space:normal!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button .portal-toolbar-icon{
-  width:36px!important;
-  height:36px!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:100%!important;
-  max-height:36px!important;
-  margin:0!important;
-}
-.portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button span{
-  display:none!important;
 }
 .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-language-wrap{
   position:relative!important;
@@ -9696,18 +9658,9 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 }
 @media(max-width:520px){
   .portal-workspace > .portal-toolbar .portal-toolbar-nav{
-    grid-template-columns:repeat(8,minmax(0,1fr))!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
     gap:2px!important;
   }
   .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon,
   .portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon,
-  .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-spark-button .portal-toolbar-icon{
-    width:clamp(23px,8vw,34px)!important;
-    height:clamp(23px,8vw,34px)!important;
-    min-width:0!important;
-    min-height:0!important;
-    max-width:100%!important;
-    max-height:34px!important;
-    flex:0 1 auto!important;
   }
-}
