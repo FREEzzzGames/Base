@@ -613,12 +613,14 @@ function drawEnemy(e){
   line(-w*.27,-h*.11,-w*.2,h*.03,'#8ca4b9',1);line(w*.27,-h*.11,w*.2,h*.03,'#8ca4b9',1);
   ctx.save();rigPivot(en.shoulderL.x,en.shoulderL.y,Math.sin(movePhase)*.035);rr(-w*.48,-h*.13,w*.22,h*.28,5,'#3b5066');rr(-w*.42,-h*.08,w*.1,h*.11,3,'#6e849a');ctx.restore();
   ctx.save();rigPivot(en.shoulderR.x,en.shoulderR.y,-Math.sin(movePhase)*.035+((e.fireT||e.attackT||0)>0?-.09:0));rr(w*.26,-h*.13,w*.22,h*.28,5,'#3b5066');rr(w*.32,-h*.08,w*.1,h*.11,3,'#6e849a');ctx.restore();
+  // Neck pivot carries helmet, faceplate and antenna as a connected assembly.
+  ctx.save();rigPivot(0,-h*.28,Math.sin(movePhase*.45)*.018+((e.hitKick||0)!==0?.025:0));
   rr(-w*.29,-h*.48,w*.58,h*.35,Math.min(8,w*.19),t==='shield'?'#71859c':shell);
   rr(-w*.23,-h*.4,w*.46,h*.11,4,'#43576d');rr(-w*.2,-h*.28,w*.4,h*.1,4,'#101a28');
   rr(-w*.16,-h*.27,w*.12,Math.max(2,h*.045),2,glow);rr(w*.04,-h*.27,w*.12,Math.max(2,h*.045),2,glow);
   circ(-w*.1,-h*.27,1,'#f3ffff');circ(w*.1,-h*.27,1,'#f3ffff');
-  // Small antenna, vents and type-specific silhouette.
-  line(0,-h*.47,0,-h*.55,'#728aa1',1.4);circ(0,-h*.56,Math.max(1.3,w*.035),glow);
+  line(0,-h*.47,0,-h*.55,'#728aa1',1.4);circ(0,-h*.56,Math.max(1.3,w*.035),glow);ctx.restore();
+  // Vents and type-specific attachments remain on the torso/weapon rig.
   for(var v=0;v<3;v++)line(-w*.1+v*w*.1,h*.08,-w*.1+v*w*.1,h*.12,'#8da2b6',.8);
   if(t==='shield'){
    rr(w*.28,-h*.42,w*.22,h*.72,5,'#526b84');rr(w*.33,-h*.35,w*.12,h*.58,4,'#9db3c7');
