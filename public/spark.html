@@ -515,6 +515,8 @@ function hud(){$('hp').style.width=p.hp+'%';$('en').style.width=p.en+'%';$('scra
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
 
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
+function rigJointAngle(phase,amp,offset){return Math.sin(phase+offset)*amp}
+function rigPivot(px,py,angle){ctx.translate(px,py);ctx.rotate(angle);ctx.translate(-px,-py)}
 function drawOperator(x,y,face,ch,anim,attacking){
  var bob=Math.sin(anim*9)*.65,step=Math.sin(anim*13)*1.6,edge='#080d16',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  ctx.save();ctx.translate(Math.round(x+12),Math.round(y+bob));ctx.scale(face||1,1);ctx.translate(-12,0);
@@ -642,6 +644,10 @@ function drawBoss(){
  function line(points,color,lw){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(var q=1;q<points.length;q++)ctx.lineTo(points[q][0],points[q][1]);ctx.strokeStyle=color;ctx.lineWidth=lw||2;ctx.lineJoin='miter';ctx.stroke()}
  function plate(px,py,pw,ph,fill){outlineRect(px,py,pw,ph,fill,edge,3);ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(px+3,py+3,Math.max(2,pw-6),2);ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(px+3,py+ph-4,Math.max(2,pw-6),2)}
  ctx.save();
+ // Rig landmarks are recomputed from the bind pose each frame; never accumulate transforms.
+ var rigT=boss.pattern||0,rigRun=Math.min(1,Math.abs(boss.visualVx||0)/180),rigHit=Math.min(1,(boss.hitFlash||0)*3);
+ boss.rigNodes={root:{x:x+w*.5,y:y+h*.86},pelvis:{x:x+w*.5,y:y+h*.69},neck:{x:x+w*.5,y:y+h*.22},head:{x:x+w*.5,y:y+h*.12},shoulderL:{x:x+w*.19,y:y+h*.36},elbowL:{x:x+w*.12,y:y+h*.57},wristL:{x:x+w*.1,y:y+h*.68},shoulderR:{x:x+w*.81,y:y+h*.36},elbowR:{x:x+w*.88,y:y+h*.57},wristR:{x:x+w*.9,y:y+h*.68},weaponMount:{x:x+w*.84,y:y+h*.54},muzzle:{x:x+w*1.04,y:y+h*.31},armorL:{x:x+w*.15,y:y+h*.43},armorR:{x:x+w*.85,y:y+h*.43}};
+ boss.rigPose={leftArm:rigJointAngle(rigT*7,.055+rigRun*.09,0)+rigHit*.06,rightArm:rigJointAngle(rigT*7,.055+rigRun*.09,Math.PI)+(boss.attack>0?-.12:0),head:rigJointAngle(rigT*2,.018,0)+rigHit*.025,weaponRecoil:boss.attack>0?.12:0,armorLag:Math.max(-.08,Math.min(.08,(boss.visualVx||0)/1200))};
  // Visual-only rigid-body response: velocity stretches the silhouette; impacts and heavy attacks compress it.
  var vx=boss.visualVx||0,vy=boss.visualVy||0,speed=Math.min(1,Math.abs(vx)/360),lift=Math.min(1,Math.abs(vy)/260);
  var sx=1+speed*.075,sy=1-speed*.055;
