@@ -73,11 +73,11 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Character/enemy/boss drawing remains in the same HTML runtime; no separate portal economy or old tender/mission interface was added.
 - The audit confirms source-level presence only; runtime behavior still requires the published build and device smoke test to be checked.
 
-## 2026-10-09 SPARK landscape and vertical traversal
+## 2026-10-09 Ichiraku Ramen portrait release pass
 
-- Changed the SPARK logical viewport to 960×540 for landscape play; portrait view is blocked by a rotate-device prompt.
-- Added vertical camera tracking and expanded the playable world to support upper platform routes.
-- Rebuilt platform placement as staggered, jump-reachable tiers and increased jump impulse to reach them.
-- Repositioned selected weapon pickups on elevated routes and resized touch controls/HUD for landscape screens.
-- Existing combat, enemy types, boss phases, repair, weapons, and operator selection remain in the same runtime.
-- Source update committed; verify CI and perform a landscape-device smoke test before treating the build as runtime-validated.
+- Rebranded the existing SPARK runtime as **Ichiraku Ramen // Shinobi Ops** without replacing the working combat simulation.
+- Restored the 360×640 logical portrait viewport and removed the landscape-only gate, rotate-screen overlay, and the duplicated/stacked CSS override blocks.
+- Retained vertical camera tracking and expanded the world height to 900 units; raised the ground plane so upper platforms and the lower arena remain visible across vertical camera movement.
+- Reworked the UI palette toward ramen-shop reds, lantern amber, warm cream, and night-village charcoal; replaced the industrial skyline with layered night-market facades and lanterns.
+- Renamed arena markers to Ichiraku, rooftops, market, and shrine; medkit pickups now identify as ramen recovery, while existing weapon, enemy, boss, and three-phase combat mechanics remain.
+- Source commit: `98523c5163a90f4a289d6cc66a8ffddf1b4390bf`. This is a source change, not yet a runtime/device smoke-test claim; validate CI and published output before marking it released.
