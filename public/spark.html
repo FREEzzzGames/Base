@@ -340,47 +340,45 @@ function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y
 
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
 function drawOperator(x,y,face,ch,anim,attacking){
- var bob=Math.sin(anim*9)*.8,step=Math.sin(anim*13)*1.7,skin=ch.skin,dark='#101725',edge='#070b13',accent=ch.color||'#ffad32',shot=ch.shot||accent;
+ var bob=Math.sin(anim*9)*.65,step=Math.sin(anim*13)*1.6,edge='#080d16',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  ctx.save();ctx.translate(Math.round(x+12),Math.round(y+bob));ctx.scale(face||1,1);ctx.translate(-12,0);
- // contact shadow and warm/cool rim light
- ctx.fillStyle='#02050cba';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
- ctx.globalAlpha=.28;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
- // segmented boots, ankle guards and metal reflections
- outlineRect(4,25+Math.max(0,step),6,9,ch.pants,edge,2);outlineRect(14,25+Math.max(0,-step),6,9,ch.pants,edge,2);
- outlineRect(3,28+Math.max(0,step),7,3,'#3a4a60',edge,1);outlineRect(14,28+Math.max(0,-step),7,3,'#3a4a60',edge,1);
- outlineRect(1,32+Math.max(0,step),10,5,'#202d41',edge,2);outlineRect(12,32+Math.max(0,-step),11,5,'#202d41',edge,2);
- ctx.fillStyle='#a8c4d5';ctx.fillRect(3,33,5,1);ctx.fillRect(15,33,5,1);ctx.fillStyle=accent;ctx.fillRect(4,30,3,1);ctx.fillRect(16,30,3,1);
- // rear equipment pack with light strip
- outlineRect(1,13,6,14,'#26364c',edge,2);outlineRect(2,16,4,5,'#41546b',edge,1);ctx.fillStyle=shot;ctx.fillRect(2,22,3,2);ctx.fillStyle='#8fb2c7';ctx.fillRect(3,15,2,1);
- // torso silhouette, layered chest armor and shoulder plates
- outlineRect(3,13,18,14,ch.coat,edge,2);outlineRect(5,14,14,3,accent,edge,1);outlineRect(6,17,11,7,'#26384d',edge,1);
- outlineRect(7,18,8,3,ch.color,edge,1);outlineRect(8,19,5,1,'#eaf6f5',edge,1);
- outlineRect(2,14,5,5,ch.coat,edge,1);outlineRect(18,13,5,6,ch.coat,edge,1);
- ctx.fillStyle='#d9e7f0';ctx.fillRect(3,15,2,1);ctx.fillRect(19,14,2,1);
- outlineRect(5,23,13,3,'#172338',edge,1);ctx.fillStyle=shot;ctx.fillRect(8,24,7,1);
- // forearm guards, gloves and a detailed energy rifle
- outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(18,16,5,7,ch.coat,edge,2);
- outlineRect(0,22,5,5,'#303f54',edge,1);outlineRect(18,21,5,5,'#303f54',edge,1);
+ // contact shadow and a subtle team-colour pool
+ ctx.fillStyle='rgba(1,4,10,.72)';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=.17;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
+ // shinobi boots, articulated shin guards and sole highlights
+ outlineRect(4,25+Math.max(0,step),6,8,ch.pants,edge,2);outlineRect(14,25+Math.max(0,-step),6,8,ch.pants,edge,2);
+ outlineRect(3,28+Math.max(0,step),7,3,'#40516a',edge,1);outlineRect(14,28+Math.max(0,-step),7,3,'#40516a',edge,1);
+ ctx.fillStyle='#a6c1d5';ctx.fillRect(4,29+Math.max(0,step),3,1);ctx.fillRect(15,29+Math.max(0,-step),3,1);
+ outlineRect(1,32+Math.max(0,step),10,5,'#1b283b',edge,2);outlineRect(12,32+Math.max(0,-step),11,5,'#1b283b',edge,2);
+ ctx.fillStyle='#d6e4eb';ctx.fillRect(3,33+Math.max(0,step),5,1);ctx.fillRect(15,33+Math.max(0,-step),5,1);ctx.fillStyle=accent;ctx.fillRect(5,31,3,1);ctx.fillRect(16,31,3,1);
+ // rear utility pack, scroll tube and glowing clasp
+ outlineRect(1,13,6,14,'#26364b',edge,2);outlineRect(2,15,4,7,'#43566b',edge,1);ctx.fillStyle='#90a9bd';ctx.fillRect(3,16,2,1);ctx.fillRect(3,19,2,1);ctx.fillStyle=shot;ctx.fillRect(2,22,3,2);
+ // layered jacket and shoulder silhouette
+ outlineRect(3,13,18,14,ch.coat,edge,2);outlineRect(5,14,14,3,accent,edge,1);ctx.fillStyle='#ffffff';ctx.globalAlpha=.2;ctx.fillRect(6,14,9,1);ctx.globalAlpha=1;
+ outlineRect(5,17,14,7,'#27394e',edge,1);outlineRect(7,18,9,4,ch.coat,edge,1);outlineRect(8,19,6,2,accent,edge,1);ctx.fillStyle='#eaf7f7';ctx.fillRect(9,19,3,1);
+ // diagonal strap, pouch and segmented shoulder guards
+ ctx.strokeStyle='#101827';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(6,16);ctx.lineTo(16,24);ctx.stroke();ctx.strokeStyle='#a9bfd0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(7,16);ctx.lineTo(16,23);ctx.stroke();
+ outlineRect(3,14,5,5,ch.coat,edge,1);outlineRect(17,13,6,6,ch.coat,edge,1);ctx.fillStyle='#f0d4b0';ctx.fillRect(4,15,2,1);ctx.fillRect(19,14,2,1);
+ outlineRect(5,23,13,3,'#172338',edge,1);ctx.fillStyle=shot;ctx.fillRect(8,24,6,1);
+ // arms and forearm guards, kept inside the established collision silhouette
+ outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(18,16,5,7,ch.coat,edge,2);outlineRect(0,22,5,5,'#303f54',edge,1);outlineRect(18,21,5,5,'#303f54',edge,1);
  ctx.fillStyle=accent;ctx.fillRect(1,23,3,1);ctx.fillRect(19,22,3,1);
- outlineRect(17,18,10,4,'#18263a',edge,2);outlineRect(21,17,7,3,'#34475c',edge,1);
- outlineRect(23,18,5,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(26,18,2,1);
- ctx.fillStyle=shot;ctx.fillRect(19,20,4,1);ctx.fillStyle='#6d8499';ctx.fillRect(18,22,3,2);
- // muzzle pulse when attacking
- if(attacking>0){ctx.save();ctx.globalAlpha=.7;ctx.shadowColor=shot;ctx.shadowBlur=8;ctx.fillStyle=shot;ctx.beginPath();ctx.moveTo(28,16);ctx.lineTo(36,19);ctx.lineTo(29,23);ctx.closePath();ctx.fill();ctx.fillStyle='#fff4ca';ctx.fillRect(28,18,5,2);ctx.restore()}
- // neck, face, hair silhouette and shinobi headband
- outlineRect(8,9,7,5,skin,edge,1);outlineRect(4,2,15,13,skin,edge,2);
- // cheek shadows and face highlight
- ctx.fillStyle='#6d4652';ctx.fillRect(5,10,3,2);ctx.fillRect(15,10,3,2);ctx.fillStyle='#f6d5b1';ctx.fillRect(6,4,2,3);
+ // compact weapon with stock, receiver, barrel, sight and energy core
+ outlineRect(16,18,11,4,'#17263a',edge,2);outlineRect(19,17,7,3,'#3d5067',edge,1);outlineRect(23,18,6,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(27,18,2,1);
+ ctx.fillStyle='#7e94a8';ctx.fillRect(18,22,3,2);ctx.fillStyle=shot;ctx.fillRect(20,20,4,1);ctx.fillStyle='#101827';ctx.fillRect(21,22,2,2);
+ if(attacking>0){ctx.save();ctx.globalAlpha=.8;ctx.shadowColor=shot;ctx.shadowBlur=8;ctx.fillStyle=shot;ctx.beginPath();ctx.moveTo(28,16);ctx.lineTo(36,19);ctx.lineTo(29,23);ctx.closePath();ctx.fill();ctx.fillStyle='#fff6d7';ctx.fillRect(28,18,5,2);ctx.restore()}
+ // neck and larger expressive face with cheek shadows
+ outlineRect(8,9,7,5,ch.skin,edge,1);outlineRect(4,2,15,13,ch.skin,edge,2);
+ ctx.fillStyle='#bd776c';ctx.fillRect(5,10,3,2);ctx.fillRect(15,10,3,2);ctx.fillStyle='#ffe0bb';ctx.fillRect(6,4,2,3);ctx.fillRect(7,3,5,1);
+ // hair silhouette varies naturally by character hair colour
  outlineRect(3,0,17,6,ch.hair,edge,2);outlineRect(2,3,4,8,ch.hair,edge,1);outlineRect(17,3,4,7,ch.hair,edge,1);
- // hair highlights and signature headband
- ctx.fillStyle='#ffffff';ctx.globalAlpha=.17;ctx.fillRect(5,1,8,1);ctx.fillRect(4,3,3,1);ctx.globalAlpha=1;
- outlineRect(4,5,14,2,accent,edge,1);ctx.fillStyle='#eaf7ff';ctx.fillRect(8,5,6,1);ctx.fillStyle='#536b82';ctx.fillRect(14,6,2,1);
- // eyes, glints and mouth
- ctx.fillStyle='#101827';ctx.fillRect(7,8,3,2);ctx.fillRect(14,8,3,2);ctx.fillStyle='#fff0d6';ctx.fillRect(8,8,1,1);ctx.fillRect(15,8,1,1);
- ctx.fillStyle='#9b4e54';ctx.fillRect(11,11,3,1);ctx.fillStyle='#f3b9a0';ctx.fillRect(10,12,4,1);
- // silhouette bevels
- ctx.fillStyle='#ffffff';ctx.globalAlpha=.2;ctx.fillRect(4,13,13,1);ctx.fillRect(4,2,1,10);ctx.globalAlpha=1;
- ctx.lineWidth=1.5;ctx.strokeStyle=edge;ctx.strokeRect(3,0,17,15);
+ ctx.fillStyle='#ffffff';ctx.globalAlpha=.2;ctx.fillRect(5,1,8,1);ctx.fillRect(4,3,3,1);ctx.globalAlpha=1;
+ // headband, plate, engraved glint and side ties
+ outlineRect(4,5,14,2,accent,edge,1);ctx.fillStyle='#eaf7ff';ctx.fillRect(7,5,7,1);ctx.fillStyle='#637e94';ctx.fillRect(14,6,2,1);ctx.fillStyle=accent;ctx.fillRect(18,6,3,1);
+ // eyes with brows and tiny mouth pixels
+ ctx.fillStyle='#101827';ctx.fillRect(7,8,3,2);ctx.fillRect(14,8,3,2);ctx.fillStyle='#fff0d6';ctx.fillRect(8,8,1,1);ctx.fillRect(15,8,1,1);ctx.fillStyle='#3c2935';ctx.fillRect(7,7,3,1);ctx.fillRect(14,7,3,1);ctx.fillStyle='#9b4e54';ctx.fillRect(11,11,3,1);ctx.fillStyle='#f3b9a0';ctx.fillRect(10,12,4,1);
+ // silhouette ink and cloth rim light
+ ctx.fillStyle='#ffffff';ctx.globalAlpha=.16;ctx.fillRect(4,13,13,1);ctx.fillRect(4,2,1,10);ctx.globalAlpha=1;ctx.lineWidth=1.5;ctx.strokeStyle=edge;ctx.strokeRect(3,0,17,15);
  ctx.restore();
 }
 function drawEnemy(e){
@@ -507,6 +505,15 @@ function drawAtmosphere(){
  ctx.globalAlpha=1;
  var mx=W*.82,my=H*.105,mn=ctx.createRadialGradient(mx,my,3,mx,my,35);mn.addColorStop(0,'rgba(255,222,177,.34)');mn.addColorStop(.38,'rgba(255,136,105,.12)');mn.addColorStop(1,'rgba(255,100,70,0)');ctx.fillStyle=mn;ctx.fillRect(mx-36,my-36,72,72);
  ctx.fillStyle='#e7d7cb';ctx.beginPath();ctx.arc(mx,my,10,0,Math.PI*2);ctx.fill();ctx.fillStyle='#aeb9d1';ctx.beginPath();ctx.arc(mx+4,my-3,9,0,Math.PI*2);ctx.fill();
+ // Distant industrial gantries and ventilation stacks create a layered facility silhouette.
+ ctx.fillStyle='#0b1422';ctx.fillRect(0,H*.405,W,H*.025);
+ for(var g=0;g<5;g++){var gx=((g*91-cam*.12)%(W+80)+W+80)%(W+80)-35,gy=H*(.38+(g%2)*.045),gw=44+(g%3)*12;
+  ctx.fillStyle='#111b2b';ctx.fillRect(gx,gy,gw,5);ctx.fillRect(gx+3,gy+5,3,H*.11);ctx.fillRect(gx+gw-6,gy+5,3,H*.11);
+  ctx.fillStyle='#304257';ctx.fillRect(gx+4,gy+2,gw-8,2);ctx.fillStyle='#ff9c43';ctx.fillRect(gx+8,gy+7,4,2);ctx.fillStyle='#35d8eb';ctx.fillRect(gx+gw-13,gy+7,5,2);
+ }
+ // Hanging cables, pipe elbows, vents and hazard-lit service panels.
+ ctx.strokeStyle='#080f1d';ctx.lineWidth=3;
+ for(var cable=0;cable<4;cable++){var cx=((cable*103-cam*.19)%(W+90)+W+90)%(W+90)-30,cy=H*(.43+(cable%2)*.045);ctx.beginPath();ctx.moveTo(cx,cy);ctx.bezierCurveTo(cx+8,cy+7,cx+19,cy+7,cx+27,cy+1);ctx.stroke();ctx.strokeStyle='#35445a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,cy);ctx.bezierCurveTo(cx+8,cy+6,cx+19,cy+6,cx+27,cy+1);ctx.stroke();ctx.strokeStyle='#080f1d';ctx.lineWidth=3;}
  // Mountain silhouette and multiple skyline planes.
  ctx.fillStyle='#11182a';ctx.beginPath();ctx.moveTo(0,H*.34);for(var m=0;m<=8;m++)ctx.lineTo(m*W/8,H*(.25+(m%3)*.035));ctx.lineTo(W,H*.43);ctx.lineTo(0,H*.43);ctx.closePath();ctx.fill();
  for(var layer=0;layer<3;layer++){var parallax=[.08,.16,.25][layer],base=[H*.47,H*.54,H*.62][layer],widths=[38,47,34][layer];for(var b=0;b<13;b++){var bw=widths+(b*11%17),bh=38+(b*31%76),bx=((b*47-cam*parallax)%(W+bw)+W+bw)%(W+bw)-bw,by=base-bh+(b%3)*4;var wall=ctx.createLinearGradient(bx,by,bx+bw,by);wall.addColorStop(0,layer===0?'#20243a':layer===1?'#241e2d':'#201a27');wall.addColorStop(1,layer===0?'#121a2b':layer===1?'#151622':'#11121b');ctx.fillStyle=wall;ctx.fillRect(bx,by,bw,bh);ctx.fillStyle=layer===2?'#693c43':'#54313b';ctx.fillRect(bx,by,bw,3);ctx.fillStyle='#ffad64';for(var wy=by+10;wy<base-4;wy+=12){for(var wx=bx+5;wx<bx+bw-4;wx+=11){if(((Math.floor(wx+wy)+b)%4)!==0){ctx.globalAlpha=.42+(b%3)*.12;ctx.fillRect(wx,wy,3,5)}}}ctx.globalAlpha=1;if(b%4===0){ctx.fillStyle='#ff704b';ctx.fillRect(bx+bw*.5,by-4,2,5);ctx.fillStyle='#43d9e7';ctx.fillRect(bx+bw*.5+3,by-1,4,1)}}}
@@ -514,7 +521,10 @@ function drawAtmosphere(){
  var haze=ctx.createLinearGradient(0,H*.5,0,H);haze.addColorStop(0,'rgba(255,105,67,0)');haze.addColorStop(.7,'rgba(255,90,61,.045)');haze.addColorStop(1,'rgba(0,0,0,.32)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
  var vg=ctx.createRadialGradient(W*.5,H*.46,70,W*.5,H*.46,260);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.34)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 }
-function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.setTransform(scale*dpr,0,0,scale*dpr,ox*dpr,oy*dpr);if(state==='MENU'){drawMenuBackdrop();return}drawAtmosphere();drawPickups();ctx.save();ctx.translate(-cam,-camY);platforms.forEach(function(q){var pg=ctx.createLinearGradient(0,q.y,0,q.y+q.h);pg.addColorStop(0,'#ffb86c');pg.addColorStop(.12,'#ff7b45');pg.addColorStop(.34,'#8d3b3b');pg.addColorStop(.58,'#38212d');pg.addColorStop(1,'#10121c');ctx.fillStyle=pg;ctx.fillRect(q.x,q.y+2,q.w,q.h);ctx.save();ctx.shadowColor='#ff7547';ctx.shadowBlur=q.y<230?7:3;ctx.fillStyle='#ff9d58';ctx.fillRect(q.x,q.y,q.w,2);ctx.restore();rect(q.x,q.y+3,q.w,2,'#e45f45');rect(q.x+2,q.y+6,q.w-4,1,'#ffd28a');rect(q.x,q.y+q.h-3,q.w,3,'#090a11');rect(q.x+2,q.y+q.h-5,q.w-4,1,'#59323a');for(var tile=q.x;tile<q.x+q.w;tile+=24){rect(tile,q.y+7,12,2,'#704038');if(tile%3===0)rect(tile+15,q.y+8,4,2,'#00bcd4')}for(var bolt=q.x+10;bolt<q.x+q.w-8;bolt+=32){rect(bolt,q.y+1,2,2,'#ffe4b0');rect(bolt+1,q.y+9,2,2,'#572a31')}if(q.y<230){rect(q.x+4,q.y-6,q.w-8,2,'#3b2637');rect(q.x+6,q.y-3,q.w-12,2,'#00dff5');rect(q.x+8,q.y-1,q.w-16,2,'#ff7040')}if(q.y!==ground){for(var brace=q.x+18;brace<q.x+q.w-8;brace+=54){rect(brace,q.y+q.h,4,7,'#3b2730');rect(brace+1,q.y+q.h+1,2,4,'#ff9c3a');rect(brace+4,q.y+q.h+5,8,2,'#00bcd4')}}if(q.y===ground){rect(q.x,q.y+10,q.w,3,'#3a202b');for(var plate=q.x+8;plate<q.x+q.w-8;plate+=42){rect(plate,q.y+18,34,38,'#1a1722');rect(plate+2,q.y+20,30,2,'#3e2830');rect(plate+2,q.y+52,30,2,'#10111b');rect(plate+4,q.y+24,2,3,'#ff9c3a');rect(plate+28,q.y+24,2,3,'#00dff5')}for(var rib=q.x+20;rib<q.x+q.w;rib+=84){rect(rib,q.y+65,3,62,'#15131d');rect(rib+4,q.y+65,1,62,'#30202a')}}});consoles.forEach(function(q){rect(q.x,q.y-25,20,25,'#40242a');rect(q.x+3,q.y-20,14,10,'#ff9c3a');rect(q.x+5,q.y-18,10,6,'#ffd28a');rect(q.x+3,q.y-5,5,2,'#ff4a3d')});['ICHIRAKU','КРЫШИ','РЫНОК','ХРАМ','ВЕРХНИЙ МАРШРУТ','НЕОНОВЫЙ МОСТ'].forEach(function(s,i){var x=[150,650,1160,1710,1460,2110][i],y=[310,330,290,270,155,85][i];rect(x,y,90,23,'#0a0e14');ctx.strokeStyle=i===2?'#ff8a1e':'#00f0ff';ctx.strokeRect(x,y,90,23);ctx.fillStyle=ctx.strokeStyle;ctx.font='bold 11px monospace';ctx.fillText(s,x+7,y+15)});enemies.forEach(function(e){if(e.hp<=0)return;drawEnemy(e);});if(boss.active&&!boss.dead)drawBoss();bullets.forEach(function(b){rect(b.x-2,b.y-2,4,4,b.c);rect(b.x,b.y,2,2,'#fff')});fx.forEach(function(f){ctx.globalAlpha=Math.max(0,f.life/f.max);rect(f.x,f.y,2,2,f.c)});ctx.globalAlpha=1;if(!p.dead){if(p.inv>0&&Math.floor(p.inv*20)%2===0)ctx.globalAlpha=.35;var ch=selectedCharacter;drawOperator(p.x,p.y,p.face,ch,p.anim,p.atk);ctx.globalAlpha=1}ctx.restore()}
+function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.setTransform(scale*dpr,0,0,scale*dpr,ox*dpr,oy*dpr);if(state==='MENU'){drawMenuBackdrop();return}drawAtmosphere();drawPickups();ctx.save();ctx.translate(-cam,-camY);platforms.forEach(function(q){var pg=ctx.createLinearGradient(0,q.y,0,q.y+q.h);pg.addColorStop(0,'#ffb86c');pg.addColorStop(.12,'#ff7b45');pg.addColorStop(.34,'#8d3b3b');pg.addColorStop(.58,'#38212d');pg.addColorStop(1,'#10121c');ctx.fillStyle=pg;ctx.fillRect(q.x,q.y+2,q.w,q.h);ctx.save();ctx.shadowColor='#ff7547';ctx.shadowBlur=q.y<230?7:3;ctx.fillStyle='#ff9d58';ctx.fillRect(q.x,q.y,q.w,2);ctx.restore();rect(q.x,q.y+3,q.w,2,'#e45f45');rect(q.x+2,q.y+6,q.w-4,1,'#ffd28a');rect(q.x,q.y+q.h-3,q.w,3,'#090a11');rect(q.x+2,q.y+q.h-5,q.w-4,1,'#59323a');for(var tile=q.x;tile<q.x+q.w;tile+=24){rect(tile,q.y+7,12,2,'#704038');if(tile%3===0)rect(tile+15,q.y+8,4,2,'#00bcd4')}for(var bolt=q.x+10;bolt<q.x+q.w-8;bolt+=32){rect(bolt,q.y+1,2,2,'#ffe4b0');rect(bolt+1,q.y+9,2,2,'#572a31')}
+ // top bevel, inset service panels and diagonal hazard ticks
+ rect(q.x+3,q.y+2,q.w-6,1,'#ffe0a2');for(var seam=q.x+18;seam<q.x+q.w-12;seam+=48){rect(seam,q.y+3,1,3,'#ffb46a');rect(seam+2,q.y+4,7,1,'#4a2c37');rect(seam+4,q.y+5,5,1,'#00bfd0')}
+ if(q.y!==ground){for(var rib=q.x+12;rib<q.x+q.w-6;rib+=38){rect(rib,q.y+q.h,3,5,'#111a2a');rect(rib+1,q.y+q.h+1,1,3,'#647b8c');rect(rib+4,q.y+q.h+4,6,2,'#00cddd')}rect(q.x+5,q.y+q.h-1,Math.max(0,q.w-10),1,'#ffad57')}if(q.y<230){rect(q.x+4,q.y-6,q.w-8,2,'#3b2637');rect(q.x+6,q.y-3,q.w-12,2,'#00dff5');rect(q.x+8,q.y-1,q.w-16,2,'#ff7040')}if(q.y!==ground){for(var brace=q.x+18;brace<q.x+q.w-8;brace+=54){rect(brace,q.y+q.h,4,7,'#3b2730');rect(brace+1,q.y+q.h+1,2,4,'#ff9c3a');rect(brace+4,q.y+q.h+5,8,2,'#00bcd4')}}if(q.y===ground){rect(q.x,q.y+10,q.w,3,'#3a202b');for(var plate=q.x+8;plate<q.x+q.w-8;plate+=42){rect(plate,q.y+18,34,38,'#1a1722');rect(plate+2,q.y+20,30,2,'#3e2830');rect(plate+2,q.y+52,30,2,'#10111b');rect(plate+4,q.y+24,2,3,'#ff9c3a');rect(plate+28,q.y+24,2,3,'#00dff5')}for(var rib=q.x+20;rib<q.x+q.w;rib+=84){rect(rib,q.y+65,3,62,'#15131d');rect(rib+4,q.y+65,1,62,'#30202a')}}});consoles.forEach(function(q){rect(q.x,q.y-25,20,25,'#40242a');rect(q.x+3,q.y-20,14,10,'#ff9c3a');rect(q.x+5,q.y-18,10,6,'#ffd28a');rect(q.x+3,q.y-5,5,2,'#ff4a3d')});['ICHIRAKU','КРЫШИ','РЫНОК','ХРАМ','ВЕРХНИЙ МАРШРУТ','НЕОНОВЫЙ МОСТ'].forEach(function(s,i){var x=[150,650,1160,1710,1460,2110][i],y=[310,330,290,270,155,85][i];rect(x,y,90,23,'#0a0e14');ctx.strokeStyle=i===2?'#ff8a1e':'#00f0ff';ctx.strokeRect(x,y,90,23);ctx.fillStyle=ctx.strokeStyle;ctx.font='bold 11px monospace';ctx.fillText(s,x+7,y+15)});enemies.forEach(function(e){if(e.hp<=0)return;drawEnemy(e);});if(boss.active&&!boss.dead)drawBoss();bullets.forEach(function(b){rect(b.x-2,b.y-2,4,4,b.c);rect(b.x,b.y,2,2,'#fff')});fx.forEach(function(f){ctx.globalAlpha=Math.max(0,f.life/f.max);rect(f.x,f.y,2,2,f.c)});ctx.globalAlpha=1;if(!p.dead){if(p.inv>0&&Math.floor(p.inv*20)%2===0)ctx.globalAlpha=.35;var ch=selectedCharacter;drawOperator(p.x,p.y,p.face,ch,p.anim,p.atk);ctx.globalAlpha=1}ctx.restore()}
 function frame(t){requestAnimationFrame(frame);if(!last)last=t;var dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;if(document.hidden){acc=0;return}acc+=dt;var n=0;while(acc>=1/60&&n<5){update(1/60);acc-=1/60;n++}if(n===5)acc=0;draw()}
 /* Pointer-first hub input: Android Telegram WebViews may fail to synthesize click after touch. */
 function activateHubButton(b){
