@@ -6,6 +6,7 @@
 - `spark.js` is the runtime entry point and owns private game-session state.
 - `spark-physics.js` contains pure, allocation-free geometry/collision primitives.
 - `spark-effects.js` owns bounded particle-burst and projectile creation primitives; the runtime passes its active pools into these functions.
+- `spark-audio.js` owns lazy Web Audio context creation and short sound effects.
 - The game remains dependency-free and uses Canvas 2D.
 
 ## Subsystem boundaries inside `spark.js`
