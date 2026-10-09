@@ -59,7 +59,7 @@ const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
 let sparkOpen=false;
-window.addEventListener("keydown",e=>{if(e.key==="Escape"&&sparkOpen){e.preventDefault();sparkOpen=false;render();}});
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&sparkOpen){e.preventDefault();sparkOpen=false;render();if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});}});
 const telegramAuth=await Promise.race<TelegramAuthResult>([
   verifyTelegramSession(),
   new Promise<TelegramAuthResult>(resolve=>window.setTimeout(()=>resolve({ok:false,error:"AUTH_TIMEOUT"}),2500))
@@ -457,9 +457,8 @@ function renderPortalToolbar(){
   </nav>`;
 }
 function renderSparkOverlay(){
-  return `<section class="spark-portal-overlay" role="dialog" aria-modal="true" aria-label="SPARK Central Complex">
-    <header class="spark-portal-header"><div class="spark-portal-brand"><span class="spark-portal-mark">⚡</span><span>SPARK <small>// CENTRAL COMPLEX</small></span></div><button type="button" class="spark-portal-close" data-spark-close aria-label="Close SPARK" title="Close SPARK">×</button></header>
-    <iframe class="spark-portal-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="SPARK // Central Complex" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
+  return `<section class="spark-portal-overlay" role="dialog" aria-modal="true" aria-label="SPARK">
+    <iframe class="spark-portal-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="SPARK" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
   </section>`;
 }
 function render(){
@@ -858,11 +857,13 @@ function bind(){
     if(url)openExternalUrl(url);
   });
   document.querySelector<HTMLElement>("[data-spark-launch]")?.addEventListener("click",function(e){
-    e.preventDefault();e.stopPropagation();sparkOpen=true;languageMenuOpen=false;render();
-    document.querySelector<HTMLButtonElement>("[data-spark-close]")?.focus();
+    e.preventDefault();e.stopPropagation();
+    const root=document.documentElement;
+    if(!document.fullscreenElement&&root.requestFullscreen)void root.requestFullscreen({navigationUI:"hide"}).catch(()=>{});
+    sparkOpen=true;languageMenuOpen=false;render();
   });
   document.querySelector<HTMLElement>("[data-spark-close]")?.addEventListener("click",function(e){
-    e.preventDefault();e.stopPropagation();sparkOpen=false;render();
+    e.preventDefault();e.stopPropagation();sparkOpen=false;render();if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});
   });
   document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
