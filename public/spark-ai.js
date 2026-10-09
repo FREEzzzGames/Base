@@ -17,7 +17,7 @@ function nearestTarget(enemies,boss,x,y,maxDistance){
 function bossPhase(hp,maxHp){return hp>maxHp*.66?1:hp>maxHp*.33?2:3;}
 
 function updateEnemies(enemies,p,dt,levelAI,levelW,shoot,burst,hit,wSafe,hurt){
- 
+ enemies.forEach(function(e){
  if(e.hp<=0)return;
  var dx=(p.x+p.w*.5)-(e.x+e.w*.5),dy=(p.y+p.h*.5)-(e.y+e.h*.5),dist=Math.hypot(dx,dy),dir=dx<0?-1:1;
  e.anim=(e.anim||0)+dt;e.fireAnim=Math.max(0,(e.fireAnim||0)-dt);e.flash=Math.max(0,(e.flash||0)-dt);e.hitStun=Math.max(0,(e.hitStun||0)-dt);e.hitKick=(e.hitKick||0)*Math.pow(.0008,dt);e.cd-=dt;
@@ -63,6 +63,7 @@ function updateEnemies(enemies,p,dt,levelAI,levelW,shoot,burst,hit,wSafe,hurt){
  }
  if(hit(p,e)&&p.inv<=0&&Math.abs(dx)<wSafe(e)&&Math.abs(dy)<Math.max(45,e.h))hurt(e.type==='shield'?18:e.type==='runner'?18:8);
 
+ });
 }
 root.SparkAI=Object.freeze({nearestTarget:nearestTarget,bossPhase:bossPhase,updateEnemies:updateEnemies});
 })(typeof window!=='undefined'?window:globalThis);
