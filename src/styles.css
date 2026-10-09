@@ -8958,5 +8958,12 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
     gap:2px!important;
   }
   .portal-workspace > .portal-toolbar .portal-toolbar-nav > .portal-toolbar-item .portal-toolbar-icon,
-  .portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon,
+  .portal-workspace > .portal-toolbar .portal-toolbar-language-button .portal-toolbar-icon{
+    width:clamp(23px,8vw,34px)!important;
+    height:clamp(23px,8vw,34px)!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:100%!important;
+    max-height:34px!important;
   }
+}
