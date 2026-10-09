@@ -748,6 +748,42 @@ function drawBoss(){
  }
  // Fine emissive seams only on selected edges to preserve contrast against the level.
  ctx.globalAlpha=.72;ctx.strokeStyle=glow;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+8,y+h-2);ctx.lineTo(x+24,y+h-2);ctx.moveTo(x+w-24,y+h-2);ctx.lineTo(x+w-8,y+h-2);ctx.stroke();ctx.restore();
+ // Production polish: layered inset panels, readable fasteners and phase-specific lighting.
+ ctx.save();
+ if(b.kind==='samurai'){
+  // layered collar and inset shoulder insignia
+  poly([[x+31,y+31],[x+48,y+35],[x+43,y+45],[x+29,y+41]],'#151c28',edge,2);
+  poly([[x+w-31,y+31],[x+w-48,y+35],[x+w-43,y+45],[x+w-29,y+41]],'#151c28',edge,2);
+  ctx.fillStyle='#eab86c';ctx.fillRect(x+35,y+37,5,2);ctx.fillRect(x+w-40,y+37,5,2);
+  // diagonal lamellar lines, alternating highlight and shadow
+  for(var lm=0;lm<4;lm++){ctx.strokeStyle=lm%2?'#3b1c2a':'#c34b5b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+48+lm*7,y+53);ctx.lineTo(x+43+lm*7,y+62);ctx.moveTo(x+w-48-lm*7,y+53);ctx.lineTo(x+w-43-lm*7,y+62);ctx.stroke()}
+  ctx.strokeStyle='#f2c67b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w-16,y+72);ctx.lineTo(x+w+29,y+31);ctx.stroke();
+ }else if(b.kind==='siege'){
+  // layered armor overlaps and luminous status strips
+  poly([[x+18,y+28],[x+33,y+32],[x+30,y+43],[x+16,y+40]],'#69757e',edge,2);
+  poly([[x+w-18,y+28],[x+w-33,y+32],[x+w-30,y+43],[x+w-16,y+40]],'#69757e',edge,2);
+  ctx.fillStyle='#ffbd55';ctx.fillRect(x+21,y+32,6,2);ctx.fillRect(x+w-27,y+32,6,2);
+  for(var hs=0;hs<4;hs++){ctx.fillStyle=hs%2?'#1a222d':'#d5dadd';ctx.fillRect(x+34+hs*10,y+h*.69,6,2)}
+  // heat bloom in cannon barrels during an attack
+  if(flash){ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=9;ctx.fillStyle='#fff1c4';ctx.fillRect(x+26,y+1,10,3);ctx.fillRect(x+w-36,y+1,10,3);ctx.restore()}
+ }else if(b.kind==='drone'){
+  // cyan ceramic shell panels with dark separation grooves
+  poly([[x+w*.5,y+3],[x+w*.62,y+20],[x+w*.5,y+31],[x+w*.38,y+20]],'#15324b','#3a9dc0',2);
+  ctx.strokeStyle='#86f4ff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.5,y+5);ctx.lineTo(x+w*.5,y+18);ctx.moveTo(x+w*.42,y+21);ctx.lineTo(x+w*.5,y+28);ctx.lineTo(x+w*.58,y+21);ctx.stroke();
+  for(var scan=0;scan<3;scan++){ctx.globalAlpha=.35+scan*.15;ctx.fillStyle=glow;ctx.fillRect(x+8,y+33+scan*5,w-16,1)}ctx.globalAlpha=1;
+  if(flash){ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=14;ctx.strokeStyle='#eaffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,27+pulse*4,0,Math.PI*2);ctx.stroke();ctx.restore()}
+ }else{
+  // asymmetric segmented armor and a sharply defined mask seam
+  poly([[x+38,y+47],[x+52,y+51],[x+48,y+61],[x+35,y+57]],'#4b2940',edge,2);
+  poly([[x+w-38,y+47],[x+w-52,y+51],[x+w-48,y+61],[x+w-35,y+57]],'#4b2940',edge,2);
+  ctx.strokeStyle='#f1eaf3';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+45,y+35);ctx.lineTo(x+w*.5,y+40);ctx.lineTo(x+w-45,y+35);ctx.stroke();
+  ctx.fillStyle=glow;ctx.fillRect(x+39,y+67,5,2);ctx.fillRect(x+w-44,y+67,5,2);
+  if(flash){ctx.globalAlpha=.45;line([[x+3,y+19],[x+22,y+38],[x+8,y+47]],glow,2);line([[x+w-3,y+19],[x+w-22,y+38],[x+w-8,y+47]],glow,2);ctx.globalAlpha=1}
+ }
+ // phase 2/3 change the core pulse without hiding the boss's underlying shape
+ if(phase>=2){ctx.strokeStyle=glow;ctx.lineWidth=1;ctx.globalAlpha=.55;ctx.strokeRect(x+3,y+3,w-6,h-6);ctx.globalAlpha=1}
+ if(phase>=3){ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=10+8*pulse;ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x+w*.5,y+h*.54,31+pulse*5,0,Math.PI*2);ctx.stroke();ctx.restore()}
+ ctx.restore();
  // Shared weak point, framed as an inset mechanical component.
  var cx=x+w*.5,cy=y+h*.54;
  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=phase===3?20:10;
