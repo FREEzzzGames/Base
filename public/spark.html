@@ -680,9 +680,11 @@ function drawBoss(){
   poly([[x+w-31,y+27],[x+w-10,y+15],[x+w-22,y+39],[x+w-39,y+45]],'#5c2538',edge,3);plate(x+w-50,y+35,35,38,'#4c2536');ctx.restore();
   plate(x+20,y+65,30,h*.22,'#202938');plate(x+w-50,y+65,30,h*.22,'#202938');
   plate(x+8,y+h-20,47,18,'#171e2a');plate(x+w-55,y+h-20,47,18,'#171e2a');
+  // Kabuto and faceplate pivot at the neck joint; chest armor remains on the torso.
+  ctx.save();rigPivot(x+w*.5,y+30,boss.rigPose?boss.rigPose.head:0);
   poly([[x+34,y+17],[x+40,y+4],[x+w*.5,y-11],[x+w-40,y+4],[x+w-34,y+17],[x+w-46,y+31],[x+46,y+31]],'#141a27',edge,4);
   poly([[x+44,y+18],[x+w*.5,y+8],[x+w-44,y+18],[x+w-49,y+26],[x+49,y+26]],'#612638','#a84a55',2);
-  ctx.fillStyle=glow;ctx.fillRect(x+51,y+20,13,4);ctx.fillRect(x+w-64,y+20,13,4);
+  ctx.fillStyle=glow;ctx.fillRect(x+51,y+20,13,4);ctx.fillRect(x+w-64,y+20,13,4);ctx.restore();
   plate(x+28,y+34,w-56,h*.48,'#2a3140');
   poly([[x+35,y+43],[x+w*.5,y+51],[x+w-35,y+43],[x+w-40,y+64],[x+w*.5,y+73],[x+40,y+64]],b.armor,edge,3);
   for(var la=0;la<4;la++){ctx.fillStyle=la%2?'#a23a4a':'#632638';ctx.fillRect(x+42,y+49+la*6,w-84,4);ctx.fillStyle='#f2bd72';ctx.fillRect(x+48,y+50+la*6,3,2);ctx.fillRect(x+w-51,y+50+la*6,3,2)}
@@ -735,12 +737,14 @@ function drawBoss(){
   // KAGE: compact humanoid assassin, pale swept crest, angular mask, scarf tails and twin red blades.
   plate(x+17,y+h*.57,24,h*.29,'#272638');plate(x+w-41,y+h*.57,24,h*.29,'#272638');
   plate(x+6,y+h-14,39,13,'#111722');plate(x+w-45,y+h-14,39,13,'#111722');
+  // Kage helmet, crest and mask rotate together around the neck pivot.
+  ctx.save();rigPivot(x+w*.5,y+34,boss.rigPose?boss.rigPose.head:0);
   poly([[x+27,y+24],[x+41,y+9],[x+w-41,y+9],[x+w-27,y+24],[x+w-34,y+46],[x+34,y+46]],'#252638',edge,4);
   // hair silhouette with several distinct spikes
   poly([[x+39,y+16],[x+26,y-5],[x+49,y+6],[x+62,y-12],[x+72,y+7],[x+w*.5+4,y-5],[x+w*.5+15,y+8],[x+w-35,y-7],[x+w-42,y+17],[x+w-50,y+21]],'#e2dce7',edge,3);
   poly([[x+43,y+20],[x+w*.5,y+25],[x+w-43,y+20],[x+w-48,y+35],[x+w*.5,y+42],[x+48,y+35]],'#101522','#77798b',2);
   ctx.fillStyle=glow;ctx.fillRect(x+51,y+26,12,3);ctx.fillRect(x+w-63,y+26,12,3);
-  poly([[x+46,y+37],[x+w*.5,y+43],[x+w-46,y+37],[x+w-51,y+48],[x+w*.5,y+53],[x+51,y+48]],'#d0cbd6',edge,2);
+  poly([[x+46,y+37],[x+w*.5,y+43],[x+w-46,y+37],[x+w-51,y+48],[x+w*.5,y+53],[x+51,y+48]],'#d0cbd6',edge,2);ctx.restore();
   plate(x+10,y+45,22,29,'#24283a');plate(x+w-32,y+45,22,29,'#24283a');
   // Blade mounts pivot at the shoulders; both blades share a controlled attack arc.
   ctx.save();rigPivot(x+17,y+51,rigJointAngle(rigT*5,.025,0)+(boss.attack>0?-.14:0));poly([[x+17,y+51],[x-10,y+21],[x+3,y+56]],glow,edge,2);ctx.restore();
