@@ -156,8 +156,8 @@ jobs:
           if (!effects.includes("function burst(") || !effects.includes("function shoot(")) throw new Error("SPARK effects primitives missing");
           if (!audio.includes("function beep(")) throw new Error("SPARK audio primitive missing");
           if (!data.includes("function createPlayer(")) throw new Error("SPARK data factory missing");
-          if (!ai.includes("function nearestTarget(") || !ai.includes("function bossPhase(")) throw new Error("SPARK AI decisions missing");
-          if (!render.includes("function smoothPose(")) throw new Error("SPARK render math missing");
+          if (!ai.includes("function nearestTarget(") || !ai.includes("function bossPhase(") || !ai.includes("function updateEnemies(")) throw new Error("SPARK AI decisions/behavior missing");
+          if (!render.includes("function smoothPose(") || !render.includes("function drawRigLink(") || !render.includes("function drawRigHinge(")) throw new Error("SPARK render helpers missing");
           if (!simulation.includes("function start(") || !simulation.includes("function resetClock(")) throw new Error("SPARK simulation lifecycle missing");
           if (!session.includes("function later(") || !session.includes("function clear(")) throw new Error("SPARK session lifecycle missing");
           console.log("SPARK_RUNTIME_REFERENCE_OK");
@@ -173,7 +173,7 @@ jobs:
           node --check public/spark-simulation.js
           node --check public/spark-session.js
           node --check public/spark.js
-          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs
+          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs public/spark-ai.test.mjs public/spark-render.test.mjs
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
