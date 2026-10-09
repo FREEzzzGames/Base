@@ -933,6 +933,49 @@ function drawAtmosphere(){
   ctx.fillRect(vx+4+Math.sin(tick*.8+vent)*4,vy-drift-5,2,5);
  }
  ctx.globalAlpha=1;
+ // Window activity: tiny silhouettes move behind lit windows; warning lights react to combat intensity.
+ var actionTime=performance.now()*.001;
+ var danger=(typeof boss!=='undefined'&&boss.active&&!boss.dead)?(boss.phase||1):0;
+ var combatPulse=(typeof p!=='undefined'&&p.atk>0)?1:0;
+ for(var wl2=0;wl2<3;wl2++){
+  var par=[.08,.16,.25][wl2],base2=[H*.47,H*.54,H*.62][wl2],width2=[38,47,34][wl2];
+  for(var wi2=0;wi2<13;wi2++){
+   var bw2=width2+(wi2*11%17),bh2=38+(wi2*31%76),bx2=((wi2*47-cam*par)%(W+bw2)+W+bw2)%(W+bw2)-bw2,by2=base2-bh2+(wi2%3)*4;
+   for(var row=0;row<3;row++){
+    var wy2=by2+12+row*13;
+    if(wy2>=base2-5)continue;
+    var wx2=bx2+7+((wi2+row)%3)*10;
+    if(wx2>bx2+bw2-7)continue;
+    var moving=((actionTime*(5+wi2%4)+wi2*13+row*17)%28);
+    var wc=levelTheme===1?'#9ce6ff':levelTheme===2?'#ffb347':levelTheme===3?'#5cf5d6':'#ffc078';
+    ctx.globalAlpha=.25+.2*Math.sin(actionTime*2+wi2+row);
+    ctx.fillStyle=wc;
+    ctx.fillRect(wx2+moving*.12,wy2,2,3);
+    ctx.fillRect(wx2-1+moving*.12,wy2+3,4,2);
+   }
+  }
+ }
+ ctx.globalAlpha=1;
+ // Combat state changes the world's lighting: boss phases trigger local emergency strobes.
+ if(danger>=2){
+  var alarm=.045+.045*(.5+.5*Math.sin(actionTime*(danger===3?9:5)));
+  ctx.fillStyle=levelTheme===3?'rgba(255,45,94,'+alarm+')':levelTheme===1?'rgba(80,190,255,'+alarm+')':'rgba(255,74,44,'+alarm+')';
+  ctx.fillRect(0,H*.25,W,H*.42);
+  for(var beacon=0;beacon<4;beacon++){
+   var bxx=((beacon*W*.31+actionTime*(danger===3?35:19))%(W+18))-9;
+   ctx.globalAlpha=.25+.5*(.5+.5*Math.sin(actionTime*8+beacon));
+   ctx.fillStyle=levelTheme===1?'#71dfff':levelTheme===3?'#42f4d4':'#ff4b42';
+   ctx.fillRect(bxx,H*.39+(beacon%2)*H*.035,7,2);
+  }
+  ctx.globalAlpha=1;
+ }
+ // Shot flashes softly illuminate the scenery instead of covering the combat silhouettes.
+ if(combatPulse){
+  ctx.globalAlpha=.035;
+  ctx.fillStyle=levelTheme===1?'#65dfff':levelTheme===3?'#47ffe0':'#ff9a45';
+  ctx.fillRect(0,H*.3,W,H*.5);
+  ctx.globalAlpha=1;
+ }
  // Warm ground haze and subtle vignette keep the player and platform silhouettes readable.
  var haze=ctx.createLinearGradient(0,H*.5,0,H);haze.addColorStop(0,'rgba(255,105,67,0)');haze.addColorStop(.7,'rgba(255,90,61,.045)');haze.addColorStop(1,'rgba(0,0,0,.32)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
  var vg=ctx.createRadialGradient(W*.5,H*.46,70,W*.5,H*.46,260);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.34)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
