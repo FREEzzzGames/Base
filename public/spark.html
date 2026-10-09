@@ -677,45 +677,6 @@ function drawBoss(){
   poly([[x+31,y+43],[x+6,y+55],[x+22,y+57],[x+42,y+49]],'#7d2447',edge,2);poly([[x+w-31,y+43],[x+w-6,y+55],[x+w-22,y+57],[x+w-42,y+49]],'#7d2447',edge,2);
   plate(x+33,y+56,w-66,h*.19,'#171b2a');ctx.fillStyle='#ff315c';ctx.fillRect(x+40,y+61,8,2);ctx.fillRect(x+w-48,y+61,8,2);
  }
- // Final silhouette polish: layered outer shells, engraved seams and readable mechanical joints.
- ctx.save();
- if(b.kind==='samurai'){
-  // shoulder mantlets, collar and segmented hip guards reinforce samurai proportions
-  poly([[x+14,y+43],[x+1,y+37],[x+4,y+62],[x+20,y+70],[x+30,y+60]],'#3b2433',edge,3);
-  poly([[x+w-14,y+43],[x+w-1,y+37],[x+w-4,y+62],[x+w-20,y+70],[x+w-30,y+60]],'#3b2433',edge,3);
-  ctx.strokeStyle='#b44a58';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+12,y+48);ctx.lineTo(x+20,y+59);ctx.moveTo(x+w-12,y+48);ctx.lineTo(x+w-20,y+59);ctx.stroke();
-  poly([[x+36,y+72],[x+48,y+78],[x+44,y+91],[x+30,y+85]],'#75283a',edge,2);
-  poly([[x+w-36,y+72],[x+w-48,y+78],[x+w-44,y+91],[x+w-30,y+85]],'#75283a',edge,2);
-  for(var riv=0;riv<3;riv++){ctx.fillStyle='#e5b76d';ctx.fillRect(x+34+riv*5,y+79,2,2);ctx.fillRect(x+w-48+riv*5,y+79,2,2)}
-  // scabbard on the back, separated from the active blade
-  line([[x+20,y+35],[x+7,y+62]],'#111722',7);line([[x+20,y+35],[x+7,y+62]],'#a04a57',3);
- }else if(b.kind==='siege'){
-  // heavy side skirts, suspension wheels, muzzle rings and recessed cooling vents
-  for(var wh=0;wh<5;wh++){var wx=x+19+wh*((w-38)/4);ctx.fillStyle='#111821';ctx.beginPath();ctx.arc(wx,y+h*.78,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#89949b';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#ffb23b';ctx.fillRect(wx-1,y+h*.78-1,2,2)}
-  poly([[x+8,y+58],[x+20,y+66],[x+28,y+85],[x+12,y+81]],'#303b45',edge,2);
-  poly([[x+w-8,y+58],[x+w-20,y+66],[x+w-28,y+85],[x+w-12,y+81]],'#303b45',edge,2);
-  for(var cv=0;cv<4;cv++){ctx.fillStyle='#151d27';ctx.fillRect(x+42+cv*10,y+74,6,5);ctx.fillStyle='#85939c';ctx.fillRect(x+42+cv*10,y+74,6,1)}
-  ctx.strokeStyle='#ffca68';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x+31,y+8,5,0,Math.PI*2);ctx.arc(x+w-31,y+8,5,0,Math.PI*2);ctx.stroke();
- }else if(b.kind==='drone'){
-  // separate blade-fin tips and an articulated central keel; never use a rectangular body fill
-  poly([[x+8,y+37],[x-22,y+31],[x-12,y+43],[x+9,y+48]],'#1d7098',edge,2);
-  poly([[x+w-8,y+37],[x+w+22,y+31],[x+w+12,y+43],[x+w-9,y+48]],'#1d7098',edge,2);
-  line([[x+w*.5,y+42],[x+w*.5,y+h*.48-22]],'#8beeff',3);
-  poly([[x+w*.5-8,y+h*.48+22],[x+w*.5,y+h*.48+38],[x+w*.5+8,y+h*.48+22]],'#17415a','#55dff5',2);
-  for(var pin=0;pin<4;pin++){var py=y+18+pin*7;ctx.fillStyle=pin%2?'#164d6a':'#6eeaff';ctx.fillRect(x+29,py,5,2);ctx.fillRect(x+w-34,py,5,2)}
- }else{
-  // shoulder guards, shin plates and an asymmetrical trailing scarf give Kage a leaner outline
-  poly([[x+24,y+46],[x+8,y+42],[x+3,y+61],[x+20,y+68],[x+30,y+57]],'#333044',edge,3);
-  poly([[x+w-24,y+46],[x+w-8,y+42],[x+w-3,y+61],[x+w-20,y+68],[x+w-30,y+57]],'#333044',edge,3);
-  ctx.strokeStyle='#8d8ca0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+23,y+62);ctx.lineTo(x+29,y+74);ctx.moveTo(x+w-23,y+62);ctx.lineTo(x+w-29,y+74);ctx.stroke();
-  poly([[x+w-29,y+44],[x+w+7,y+53],[x+w-5,y+62],[x+w-35,y+53]],'#76213f',edge,2);
-  poly([[x+31,y+h*.7],[x+44,y+h*.72],[x+41,y+h*.88],[x+29,y+h*.86]],'#414052',edge,2);
-  poly([[x+w-31,y+h*.7],[x+w-44,y+h*.72],[x+w-41,y+h*.88],[x+w-29,y+h*.86]],'#414052',edge,2);
- }
- // controlled edge highlights establish depth without washing out the pixel-art palette
- ctx.globalAlpha=.85;ctx.strokeStyle=b.metal;ctx.lineWidth=1;
- ctx.beginPath();ctx.moveTo(x+4,y+h-5);ctx.lineTo(x+w-4,y+h-5);ctx.stroke();
- ctx.restore();
  // Final detail pass: inset lenses, emissive seams and readable joints at phone scale.
  ctx.save();
  if(b.kind==='samurai'){
