@@ -22,3 +22,17 @@ test("rig drawing helpers safely draw through supplied canvas context", () => {
  render.drawRigHinge(ctx,2,2,1,"#000","#fff");
  assert.ok(calls>=4);
 });
+
+test("two-bone IK writes reusable joint coordinates without allocating a result", () => {
+ const out={x:0,y:0,tx:0,ty:0};
+ const result=render.solve2Bone(out,0,0,8,0,5,5,1);
+ assert.equal(result,out);
+ assert.equal(out.tx,8); assert.equal(out.ty,0);
+ assert.ok(Number.isFinite(out.x)&&Number.isFinite(out.y));
+});
+test("rig pivot applies transforms in a stable order", () => {
+ const calls=[];
+ const ctx={translate(...v){calls.push(["translate",...v])},rotate(v){calls.push(["rotate",v])}};
+ render.pivot(ctx,4,5,.25);
+ assert.deepEqual(calls,[["translate",4,5],["rotate",.25],["translate",-4,-5]]);
+});
