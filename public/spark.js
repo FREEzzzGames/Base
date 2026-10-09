@@ -96,21 +96,13 @@ function hud(){$('hp').style.width=p.hp+'%';$('en').style.width=p.en+'%';$('scra
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
 
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
-function rigJointAngle(phase,amp,offset){return Math.sin(phase+offset)*amp}
+function rigJointAngle(phase,amp,offset){return SparkRenderMath.jointAngle(phase,amp,offset)}
 // Render-only critically damped approximation: never writes to simulation x/y or collision state.
 function smoothRenderPose(o,tx,ty,dt,teleportLimit){SparkRenderMath.smoothPose(o,tx,ty,dt,teleportLimit)}
 // Mild depth scale around the feet: distant upper platforms are smaller, near ground sprites larger.
 function depthScaleAt(y){return SparkRenderMath.depthScale(y,ground)}
-function rigPivot(px,py,angle){ctx.translate(px,py);ctx.rotate(angle);ctx.translate(-px,-py)}
-// Two-bone IK in 2D. Output objects are caller-owned and reused; no per-frame allocation.
-function rigSolve2Bone(out,ax,ay,tx,ty,lenA,lenB,bend){
- var dx=tx-ax,dy=ty-ay,d=Math.sqrt(dx*dx+dy*dy);
- d=Math.max(.001,Math.min(lenA+lenB-.001,Math.max(Math.abs(lenA-lenB)+.001,d)));
- var along=(lenA*lenA-lenB*lenB+d*d)/(2*d),height=Math.sqrt(Math.max(0,lenA*lenA-along*along));
- var nx=dx/Math.sqrt((tx-ax)*(tx-ax)+(ty-ay)*(ty-ay)||1),ny=dy/Math.sqrt((tx-ax)*(tx-ax)+(ty-ay)*(ty-ay)||1);
- out.x=ax+nx*along-ny*height*bend;out.y=ay+ny*along+nx*height*bend;
- out.tx=tx;out.ty=ty;return out;
-}
+function rigPivot(px,py,angle){SparkRenderMath.pivot(ctx,px,py,angle)}
+function rigSolve2Bone(out,ax,ay,tx,ty,lenA,lenB,bend){return SparkRenderMath.solve2Bone(out,ax,ay,tx,ty,lenA,lenB,bend)}
 // Rig primitives are owned by spark-render.js to keep drawing helpers out of runtime.
 function drawRigLink(ax,ay,bx,by,outer,inner,width){SparkRenderMath.drawRigLink(ctx,ax,ay,bx,by,outer,inner,width)}
 function drawRigHinge(x,y,r,outer,inner){SparkRenderMath.drawRigHinge(ctx,x,y,r,outer,inner)}
