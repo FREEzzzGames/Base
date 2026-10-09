@@ -679,8 +679,10 @@ function drawBoss(){
   poly([[x+w*.5,y+51],[x+w*.5+7,y+59],[x+w*.5,y+68],[x+w*.5-7,y+59]],'#ffbf6a','#ffe5a8',1);
   // arms and hands visibly connect the sword to the body
   plate(x+2,y+48,24,30,'#333b4b');plate(x+w-26,y+48,24,30,'#333b4b');plate(x+4,y+71,18,11,'#8b3444');plate(x+w-22,y+71,18,11,'#8b3444');
+  // Katana is attached to the wrist joint; attack recoil rotates the whole blade assembly.
+  ctx.save();rigPivot(x+w-14,y+75,(boss.rigPose&&boss.rigPose.rightArm||0)+(boss.attack>0?-.16:0));
   line([[x+w-14,y+75],[x+w+38,y+28]],'#10151f',8);line([[x+w-14,y+73],[x+w+38,y+26]],'#cfd4dc',4);line([[x+w-14,y+73],[x+w+38,y+26]],glow,1);
-  line([[x+w-21,y+68],[x+w-7,y+82]],'#e5b16d',4);line([[x+w-22,y+67],[x+w-7,y+82]],edge,1);
+  line([[x+w-21,y+68],[x+w-7,y+82]],'#e5b16d',4);line([[x+w-22,y+67],[x+w-7,y+82]],edge,1);ctx.restore();
   ctx.fillStyle='#ffb15e';ctx.fillRect(x+22,y+84,6,3);ctx.fillRect(x+w-28,y+84,6,3);
  }else if(b.kind==='siege'){
   // GOLIATH: low tracked chassis, layered shoulder blocks, paired cannon towers and exposed hydraulics.
@@ -692,9 +694,11 @@ function drawBoss(){
   poly([[x+w-22,y+27],[x+w-5,y+18],[x+w-2,y+53],[x+w-20,y+66],[x+w-45,y+59],[x+w-45,y+34]],'#4c5962',edge,4);
   for(var side=0;side<2;side++){
    var gx=side?x+w-31:x+31;
+   // Cannon mount rotates by a few degrees under recoil; barrel, socket and armor stay linked.
+   ctx.save();rigPivot(gx,y+12,(boss.attack>0?-.1:0)+(boss.rigPose?boss.rigPose.armorLag*(side?1:-1):0));
    plate(gx-10,y+1,20,35,'#27313d');plate(gx-6,y-5,12,16,'#7c878e');
    ctx.fillStyle='#080e17';ctx.fillRect(gx-4,y-2,8,9);ctx.fillStyle=glow;ctx.fillRect(gx-2,y+1,4,2);
-   ctx.fillStyle='#d2d6d7';ctx.fillRect(gx-9,y+34,18,3);
+   ctx.fillStyle='#d2d6d7';ctx.fillRect(gx-9,y+34,18,3);ctx.restore();
   }
   plate(x+35,y+42,w-70,28,'#d95a27');plate(x+43,y+47,w-86,17,'#ff9c2e');
   // central reactor is a recessed lens, not a flat dot
