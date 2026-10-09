@@ -58,6 +58,8 @@ let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language")
 const T=(key:string)=>pt(lang,key);
 let profileOpen=false;
 let languageMenuOpen=false;
+let sparkOpen=false;
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&sparkOpen){e.preventDefault();sparkOpen=false;render();}});
 const telegramAuth=await Promise.race<TelegramAuthResult>([
   verifyTelegramSession(),
   new Promise<TelegramAuthResult>(resolve=>window.setTimeout(()=>resolve({ok:false,error:"AUTH_TIMEOUT"}),2500))
@@ -441,6 +443,7 @@ function renderPortalToolbar(){
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
+        <button class="portal-toolbar-spark-button" data-spark-launch type="button" aria-label="SPARK — Central Complex" title="SPARK // Central Complex">${icon("zap","portal-toolbar-icon")}<span>SPARK</span></button>
         <div class="portal-toolbar-language-wrap">
           <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
           <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
@@ -452,6 +455,12 @@ function renderPortalToolbar(){
       </div>
     </div>
   </nav>`;
+}
+function renderSparkOverlay(){
+  return `<section class="spark-portal-overlay" role="dialog" aria-modal="true" aria-label="SPARK Central Complex">
+    <header class="spark-portal-header"><div class="spark-portal-brand"><span class="spark-portal-mark">⚡</span><span>SPARK <small>// CENTRAL COMPLEX</small></span></div><button type="button" class="spark-portal-close" data-spark-close aria-label="Close SPARK" title="Close SPARK">×</button></header>
+    <iframe class="spark-portal-frame" src="./spark.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="SPARK // Central Complex" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
+  </section>`;
 }
 function render(){
   if(freezzzArenaCleanup){ freezzzArenaCleanup(); freezzzArenaCleanup=null; }
@@ -578,7 +587,7 @@ function render(){
       </div>
       ${renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang})}
       ${profileOpen?renderProfileCard():""}
-
+      ${sparkOpen?renderSparkOverlay():""}
     </div>`;
 
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
@@ -590,7 +599,8 @@ function render(){
   }
   bindHudTouchGesture();
   updateHomeClock();
-  bindTelegramBackButton(view!=="home" || profileOpen,()=>{
+  bindTelegramBackButton(view!=="home" || profileOpen || sparkOpen,()=>{
+    if(sparkOpen){sparkOpen=false;render();return;}
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
     portalEvents.emit("navigation:changed",{view:"home"});
   });
@@ -846,6 +856,13 @@ function bind(){
     const stream=popup?getLiveStreams().find(s=>s.name===popup.name):undefined;
     const url=stream?(popup?.source==="twitch"?stream.twitch:popup?.source==="replay"?stream.lastRecordingUrl:stream.youtube):"";
     if(url)openExternalUrl(url);
+  });
+  document.querySelector<HTMLElement>("[data-spark-launch]")?.addEventListener("click",function(e){
+    e.preventDefault();e.stopPropagation();sparkOpen=true;languageMenuOpen=false;render();
+    document.querySelector<HTMLButtonElement>("[data-spark-close]")?.focus();
+  });
+  document.querySelector<HTMLElement>("[data-spark-close]")?.addEventListener("click",function(e){
+    e.preventDefault();e.stopPropagation();sparkOpen=false;render();
   });
   document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
   document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
