@@ -495,7 +495,7 @@ if(bossAI==='aerial'){
  var hop=(boss.phase===1?9:boss.phase===2?25:42);
  boss.y=ground-boss.h-Math.max(0,Math.sin(boss.moveT*(boss.phase===3?5.2:3.2)))*hop;
  var dashPeriod=boss.phase===1?5.2:boss.phase===2?3.8:2.9,windowId=Math.floor(boss.moveT/dashPeriod);
- if(boss.phase>=2&&windowId!==(boss.dashWindow||-1)&&boss.moveT%dashPeriod<dt+.025){
+ if(boss.phase>=2&&boss.dashWindow!==windowId&&boss.moveT%dashPeriod<dt+.025){
   boss.dashWindow=windowId;boss.dashT=boss.phase===3?.34:.27;boss.dashDir=playerDir;
   burst(boss.x+boss.w/2,boss.y+boss.h*.72,8,'#d45bff');
  }
