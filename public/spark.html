@@ -623,6 +623,41 @@ function drawBoss(){
   outlineRect(x+42,y+6,w-84,24,'#e2d7df',edge,3);ctx.fillStyle='#c9becb';ctx.beginPath();ctx.moveTo(x+43,y+12);ctx.lineTo(x+33,y-7);ctx.lineTo(x+56,y+6);ctx.lineTo(x+70,y-10);ctx.lineTo(x+76,y+7);ctx.lineTo(x+w-42,y-5);ctx.lineTo(x+w-47,y+17);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();outlineRect(x+49,y+15,w-98,7,'#090d17',edge,1);ctx.fillStyle=glow;ctx.fillRect(x+55,y+17,13,3);ctx.fillRect(x+w-68,y+17,13,3);
   ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=13;ctx.strokeStyle=glow;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+22,y+49);ctx.lineTo(x-7,y+19);ctx.moveTo(x+w-22,y+49);ctx.lineTo(x+w+7,y+19);ctx.stroke();ctx.restore();
  }
+ // Material pass: bevel highlights, bolts, vents and a distinct silhouette per boss.
+ ctx.save();
+ if(b.kind==='samurai'){
+  // segmented lamellar armour and gold fittings
+  for(var plate=0;plate<4;plate++){
+   ctx.fillStyle=plate%2?'#8e3445':'#5b2a3a';
+   ctx.fillRect(x+29+plate*7,y+31,5,13);ctx.fillRect(x+w-34-plate*7,y+31,5,13);
+   ctx.fillStyle='#e8a15c';ctx.fillRect(x+30+plate*7,y+32,2,2);ctx.fillRect(x+w-33-plate*7,y+32,2,2);
+  }
+  ctx.fillStyle='#111927';ctx.fillRect(x+37,y+67,w-74,7);
+  ctx.fillStyle='#f5c36a';ctx.fillRect(x+43,y+69,5,2);ctx.fillRect(x+w-48,y+69,5,2);
+  // blade guard and handle wrap
+  ctx.strokeStyle='#d9dbe0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w-29,y+57);ctx.lineTo(x+w-17,y+68);ctx.stroke();
+  ctx.strokeStyle='#f0a85b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w-25,y+61);ctx.lineTo(x+w-20,y+65);ctx.stroke();
+ }else if(b.kind==='siege'){
+  // exposed hydraulics, armour welds and a clear tracked undercarriage
+  ctx.strokeStyle='#8995a0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+23,y+54);ctx.lineTo(x+33,y+73);ctx.lineTo(x+44,y+77);ctx.moveTo(x+w-23,y+54);ctx.lineTo(x+w-33,y+73);ctx.lineTo(x+w-44,y+77);ctx.stroke();
+  ctx.strokeStyle='#ffbd55';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+23,y+54);ctx.lineTo(x+33,y+73);ctx.moveTo(x+w-23,y+54);ctx.lineTo(x+w-33,y+73);ctx.stroke();
+  for(var bolt=0;bolt<4;bolt++){ctx.fillStyle='#b8c0c4';ctx.fillRect(x+25+bolt*9,y+42,3,3);ctx.fillRect(x+w-28-bolt*9,y+42,3,3)}
+  ctx.fillStyle='#ffb43d';ctx.fillRect(x+16,y+h-8,18,2);ctx.fillRect(x+w-34,y+h-8,18,2);
+ }else if(b.kind==='drone'){
+  // fin panel lines and cyan thrust columns under the levitating core
+  ctx.strokeStyle='#6ddcf3';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w*.5,y+9);ctx.lineTo(x+w*.5,y+25);ctx.moveTo(x+w*.31,y+28);ctx.lineTo(x+w*.42,y+40);ctx.moveTo(x+w*.69,y+28);ctx.lineTo(x+w*.58,y+40);ctx.stroke();
+  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=10;ctx.fillStyle=glow;ctx.fillRect(x+w*.5-3,y+h-3,6,10+pulse*5);ctx.fillRect(x+20,y+h*.67,4,8+pulse*4);ctx.fillRect(x+w-24,y+h*.67,4,8+pulse*4);ctx.restore();
+  ctx.strokeStyle='#c4faff';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x+w*.5,y+h*.48,11,0,Math.PI*2);ctx.stroke();
+ }else{
+  // layered ninja scarf, armoured mask and thin red edge-light
+  ctx.fillStyle='#7a203d';ctx.beginPath();ctx.moveTo(x+31,y+34);ctx.lineTo(x+12,y+45);ctx.lineTo(x+26,y+47);ctx.lineTo(x+40,y+40);ctx.closePath();ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#3a2438';ctx.fillRect(x+42,y+27,w-84,5);ctx.fillStyle=glow;ctx.fillRect(x+46,y+28,8,2);ctx.fillRect(x+w-54,y+28,8,2);
+  ctx.strokeStyle='#9e9eaf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+17,y+54);ctx.lineTo(x+28,y+62);ctx.moveTo(x+w-17,y+54);ctx.lineTo(x+w-28,y+62);ctx.stroke();
+  ctx.fillStyle='#ff315c';ctx.fillRect(x+31,y+h-18,8,2);ctx.fillRect(x+w-39,y+h-18,8,2);
+ }
+ // Tiny specular marks and a low-opacity aura keep pixel edges readable.
+ ctx.globalAlpha=.7;ctx.fillStyle='#e7f7ff';ctx.fillRect(x+Math.round(w*.5)-2,y+4,4,2);ctx.globalAlpha=1;
+ ctx.restore();
  // Signature-specific silhouette accents and restrained animation.
  var pulse=.5+.5*Math.sin((boss.pattern||0)*5),flash=boss.attack>0;
  ctx.save();
