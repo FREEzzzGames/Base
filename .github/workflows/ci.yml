@@ -122,6 +122,19 @@ jobs:
           node -e 'const fs=require("fs"); const p=require("./package.json"); const b=process.env.GITHUB_SHA; fs.writeFileSync("public/version.json", JSON.stringify({version:p.version,build:b,generatedAt:new Date().toISOString()}));'
           node -e 'const fs=require("fs"); const s=fs.readFileSync("src/build-info.ts","utf8"); if(!s.includes(process.env.GITHUB_SHA)) throw new Error("build-info.ts was not stamped with GITHUB_SHA");'
 
+      - name: Validate SPARK inline JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const html = readFileSync("public/spark.html", "utf8");
+          const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
+          if (scripts.length !== 1) throw new Error(`Expected one inline SPARK script, found ${scripts.length}`);
+          writeFileSync("/tmp/spark-inline.js", scripts[0][1]);
+          NODE
+          node --check /tmp/spark-inline.js
+
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
       - name: Telegram gateway syntax check
