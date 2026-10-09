@@ -320,61 +320,110 @@ function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y
 
 function outlineRect(x,y,w,h,fill,stroke,lw){ctx.fillStyle=fill;ctx.fillRect(Math.round(x),Math.round(y),w,h);ctx.lineWidth=lw||2;ctx.strokeStyle=stroke||'#080d17';ctx.strokeRect(Math.round(x),Math.round(y),w,h)}
 function drawOperator(x,y,face,ch,anim,attacking){
- var bob=Math.sin(anim*9)*.8,step=Math.sin(anim*13)*1.7,skin=ch.skin,dark='#101725',edge='#070b13';
+ var bob=Math.sin(anim*9)*.8,step=Math.sin(anim*13)*1.7,skin=ch.skin,dark='#101725',edge='#070b13',accent=ch.color||'#ffad32',shot=ch.shot||accent;
  ctx.save();ctx.translate(Math.round(x+12),Math.round(y+bob));ctx.scale(face||1,1);ctx.translate(-12,0);
- // grounded shadow, boots and articulated legs
- ctx.fillStyle='#02060bb0';ctx.beginPath();ctx.ellipse(12,39,13,2.7,0,0,Math.PI*2);ctx.fill();
+ // contact shadow and warm/cool rim light
+ ctx.fillStyle='#02050cba';ctx.beginPath();ctx.ellipse(12,39,14,3,0,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=.28;ctx.fillStyle=accent;ctx.fillRect(2,37,7,1);ctx.fillRect(15,37,7,1);ctx.globalAlpha=1;
+ // segmented boots, ankle guards and metal reflections
  outlineRect(4,25+Math.max(0,step),6,9,ch.pants,edge,2);outlineRect(14,25+Math.max(0,-step),6,9,ch.pants,edge,2);
- outlineRect(2,32+Math.max(0,step),9,5,'#27364b',edge,2);outlineRect(13,32+Math.max(0,-step),10,5,'#27364b',edge,2);
- ctx.fillStyle='#8da4b7';ctx.fillRect(3,33,5,1);ctx.fillRect(15,33,5,1);
- // backpack and armored torso
- outlineRect(1,14,5,12,'#34445a',edge,2);outlineRect(3,13,18,14,ch.coat,edge,2);
- outlineRect(6,15,10,4,ch.color,edge,1);outlineRect(7,20,8,4,'#27364b',edge,1);
- ctx.fillStyle='#d8e8ee';ctx.fillRect(8,16,5,1);
- // arms, gloves, and weapon
- outlineRect(0,16,5,9,ch.coat,edge,2);outlineRect(18,15,5,9,ch.coat,edge,2);
- outlineRect(0,23,5,4,skin,edge,1);outlineRect(18,22,5,4,skin,edge,1);
- outlineRect(18,18,9,4,'#1c2c40',edge,2);outlineRect(23,18,5,3,ch.shot,edge,1);
- if(attacking>0){ctx.globalAlpha=.75;ctx.fillStyle=ch.shot;ctx.beginPath();ctx.moveTo(27,16);ctx.lineTo(34,19);ctx.lineTo(27,23);ctx.closePath();ctx.fill();ctx.globalAlpha=1}
- // neck, face, hair and signature headband
+ outlineRect(3,28+Math.max(0,step),7,3,'#3a4a60',edge,1);outlineRect(14,28+Math.max(0,-step),7,3,'#3a4a60',edge,1);
+ outlineRect(1,32+Math.max(0,step),10,5,'#202d41',edge,2);outlineRect(12,32+Math.max(0,-step),11,5,'#202d41',edge,2);
+ ctx.fillStyle='#a8c4d5';ctx.fillRect(3,33,5,1);ctx.fillRect(15,33,5,1);ctx.fillStyle=accent;ctx.fillRect(4,30,3,1);ctx.fillRect(16,30,3,1);
+ // rear equipment pack with light strip
+ outlineRect(1,13,6,14,'#26364c',edge,2);outlineRect(2,16,4,5,'#41546b',edge,1);ctx.fillStyle=shot;ctx.fillRect(2,22,3,2);ctx.fillStyle='#8fb2c7';ctx.fillRect(3,15,2,1);
+ // torso silhouette, layered chest armor and shoulder plates
+ outlineRect(3,13,18,14,ch.coat,edge,2);outlineRect(5,14,14,3,accent,edge,1);outlineRect(6,17,11,7,'#26384d',edge,1);
+ outlineRect(7,18,8,3,ch.color,edge,1);outlineRect(8,19,5,1,'#eaf6f5',edge,1);
+ outlineRect(2,14,5,5,ch.coat,edge,1);outlineRect(18,13,5,6,ch.coat,edge,1);
+ ctx.fillStyle='#d9e7f0';ctx.fillRect(3,15,2,1);ctx.fillRect(19,14,2,1);
+ outlineRect(5,23,13,3,'#172338',edge,1);ctx.fillStyle=shot;ctx.fillRect(8,24,7,1);
+ // forearm guards, gloves and a detailed energy rifle
+ outlineRect(0,17,5,7,ch.coat,edge,2);outlineRect(18,16,5,7,ch.coat,edge,2);
+ outlineRect(0,22,5,5,'#303f54',edge,1);outlineRect(18,21,5,5,'#303f54',edge,1);
+ ctx.fillStyle=accent;ctx.fillRect(1,23,3,1);ctx.fillRect(19,22,3,1);
+ outlineRect(17,18,10,4,'#18263a',edge,2);outlineRect(21,17,7,3,'#34475c',edge,1);
+ outlineRect(23,18,5,2,shot,edge,1);ctx.fillStyle='#f5e8d2';ctx.fillRect(26,18,2,1);
+ ctx.fillStyle=shot;ctx.fillRect(19,20,4,1);ctx.fillStyle='#6d8499';ctx.fillRect(18,22,3,2);
+ // muzzle pulse when attacking
+ if(attacking>0){ctx.save();ctx.globalAlpha=.7;ctx.shadowColor=shot;ctx.shadowBlur=8;ctx.fillStyle=shot;ctx.beginPath();ctx.moveTo(28,16);ctx.lineTo(36,19);ctx.lineTo(29,23);ctx.closePath();ctx.fill();ctx.fillStyle='#fff4ca';ctx.fillRect(28,18,5,2);ctx.restore()}
+ // neck, face, hair silhouette and shinobi headband
  outlineRect(8,9,7,5,skin,edge,1);outlineRect(4,2,15,13,skin,edge,2);
+ // cheek shadows and face highlight
+ ctx.fillStyle='#6d4652';ctx.fillRect(5,10,3,2);ctx.fillRect(15,10,3,2);ctx.fillStyle='#f6d5b1';ctx.fillRect(6,4,2,3);
  outlineRect(3,0,17,6,ch.hair,edge,2);outlineRect(2,3,4,8,ch.hair,edge,1);outlineRect(17,3,4,7,ch.hair,edge,1);
- outlineRect(4,5,14,2,ch.color,edge,1);ctx.fillStyle='#eaf7ff';ctx.fillRect(8,5,6,1);
- ctx.fillStyle='#111827';ctx.fillRect(7,8,3,2);ctx.fillRect(14,8,3,2);
- ctx.fillStyle='#fff0d6';ctx.fillRect(8,9,1,1);ctx.fillRect(15,9,1,1);
- ctx.fillStyle='#9b4e54';ctx.fillRect(11,11,3,1);
- // cel-shaded highlight and bold silhouette
+ // hair highlights and signature headband
+ ctx.fillStyle='#ffffff';ctx.globalAlpha=.17;ctx.fillRect(5,1,8,1);ctx.fillRect(4,3,3,1);ctx.globalAlpha=1;
+ outlineRect(4,5,14,2,accent,edge,1);ctx.fillStyle='#eaf7ff';ctx.fillRect(8,5,6,1);ctx.fillStyle='#536b82';ctx.fillRect(14,6,2,1);
+ // eyes, glints and mouth
+ ctx.fillStyle='#101827';ctx.fillRect(7,8,3,2);ctx.fillRect(14,8,3,2);ctx.fillStyle='#fff0d6';ctx.fillRect(8,8,1,1);ctx.fillRect(15,8,1,1);
+ ctx.fillStyle='#9b4e54';ctx.fillRect(11,11,3,1);ctx.fillStyle='#f3b9a0';ctx.fillRect(10,12,4,1);
+ // silhouette bevels
+ ctx.fillStyle='#ffffff';ctx.globalAlpha=.2;ctx.fillRect(4,13,13,1);ctx.fillRect(4,2,1,10);ctx.globalAlpha=1;
  ctx.lineWidth=1.5;ctx.strokeStyle=edge;ctx.strokeRect(3,0,17,15);
  ctx.restore();
 }
 function drawEnemy(e){
  var x=Math.round(e.x),y=Math.round(e.y),w=e.w,h=e.h;
- var body=e.type==='drone'?'#4c91a4':e.type==='sniper'?'#8158b6':e.type==='support'?'#3f9d77':e.type==='shield'?'#8c435c':e.type==='turret'?'#a94352':e.type==='runner'?'#e16a70':'#cf5862';
- var glow=e.type==='sniper'?'#d45bff':e.type==='support'?'#43e6a0':e.type==='drone'?'#52dfff':e.type==='turret'?'#ff8a1e':'#ff5365',edge='#080d17';
+ var body=e.type==='drone'?'#377e99':e.type==='sniper'?'#6843a2':e.type==='support'?'#277e68':e.type==='shield'?'#8c435c':e.type==='turret'?'#a94352':e.type==='runner'?'#c94b60':'#9f3f50';
+ var glow=e.type==='sniper'?'#d45bff':e.type==='support'?'#43e6a0':e.type==='drone'?'#52dfff':e.type==='turret'?'#ff9a35':e.type==='shield'?'#ff6b7c':'#ff5365',edge='#080d17';
  ctx.save();
- ctx.fillStyle='#02050ab0';ctx.beginPath();ctx.ellipse(x+w/2,y+h-1,w*.46,3,0,0,Math.PI*2);ctx.fill();
+ // contact shadow and type-coloured underglow
+ ctx.fillStyle='#02050ab8';ctx.beginPath();ctx.ellipse(x+w/2,y+h-1,w*.5,3,0,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=.16;ctx.fillStyle=glow;ctx.fillRect(x+w*.2,y+h-2,w*.6,1);ctx.globalAlpha=1;
  if(e.type==='drone'){
-  ctx.beginPath();ctx.moveTo(x+w*.08,y+h*.45);ctx.lineTo(x-5,y+h*.12);ctx.lineTo(x+w*.3,y+h*.28);ctx.lineTo(x+w*.7,y+h*.28);ctx.lineTo(x+w+5,y+h*.12);ctx.lineTo(x+w*.92,y+h*.48);ctx.closePath();ctx.fillStyle='#33475b';ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
-  outlineRect(x+w*.2,y+h*.22,w*.6,h*.52,body,edge,2);outlineRect(x+w*.39,y+h*.34,w*.22,h*.2,glow,edge,1);ctx.fillStyle='#e8fcff';ctx.fillRect(x+w*.45,y+h*.37,3,2);
+  // twin rotors, angular chassis and luminous sensor eye
+  ctx.strokeStyle='#25364b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w*.22,y+h*.26);ctx.lineTo(x-5,y+h*.12);ctx.moveTo(x+w*.78,y+h*.26);ctx.lineTo(x+w+5,y+h*.12);ctx.stroke();
+  outlineRect(x-7,y+h*.08,12,3,'#536a80',edge,1);outlineRect(x+w-5,y+h*.08,12,3,'#536a80',edge,1);
+  ctx.beginPath();ctx.moveTo(x+w*.08,y+h*.48);ctx.lineTo(x-4,y+h*.16);ctx.lineTo(x+w*.3,y+h*.28);ctx.lineTo(x+w*.7,y+h*.28);ctx.lineTo(x+w+4,y+h*.16);ctx.lineTo(x+w*.92,y+h*.48);ctx.closePath();ctx.fillStyle='#26384d';ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
+  outlineRect(x+w*.18,y+h*.22,w*.64,h*.52,body,edge,2);outlineRect(x+w*.3,y+h*.28,w*.4,h*.1,'#5b7891',edge,1);outlineRect(x+w*.37,y+h*.38,w*.26,h*.19,'#101c2d',edge,1);
+  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=8;outlineRect(x+w*.4,y+h*.41,w*.2,h*.1,glow,edge,1);ctx.restore();
+  ctx.fillStyle='#e8fcff';ctx.fillRect(x+w*.46,y+h*.42,2,1);ctx.fillRect(x+w*.53,y+h*.42,2,1);
+  ctx.fillStyle=glow;ctx.fillRect(x+w*.08,y+h*.48,4,1);ctx.fillRect(x+w*.84,y+h*.48,4,1);
  }else if(e.type==='turret'){
-  outlineRect(x+5,y+h*.48,w-10,h*.43,body,edge,2);outlineRect(x+10,y+h*.22,w-20,h*.36,'#34445a',edge,2);outlineRect(x+w*.42,y+h*.28,w*.2,h*.13,glow,edge,1);outlineRect(x+w-4,y+h*.36,14,5,'#ff9a42',edge,2);outlineRect(x+9,y+h-5,8,5,'#172334',edge,1);outlineRect(x+w-17,y+h-5,8,5,'#172334',edge,1);
+  // tracked base, layered turret housing and long cannon
+  outlineRect(x+4,y+h*.77,w-8,h*.18,'#202d41',edge,2);ctx.fillStyle='#ffad42';for(var ti=0;ti<4;ti++)ctx.fillRect(x+8+ti*5,y+h*.85,2,1);
+  outlineRect(x+7,y+h*.46,w-14,h*.34,body,edge,2);outlineRect(x+10,y+h*.2,w-20,h*.36,'#34445a',edge,2);
+  outlineRect(x+w*.28,y+h*.25,w*.44,h*.12,'#151e2c',edge,1);outlineRect(x+w*.4,y+h*.28,w*.2,h*.1,glow,edge,1);
+  outlineRect(x+w-5,y+h*.34,16,5,'#ff9a42',edge,2);outlineRect(x+w+8,y+h*.35,4,3,'#ffd7a0',edge,1);
+  ctx.fillStyle='#778ca1';ctx.fillRect(x+12,y+h*.23,3,2);ctx.fillRect(x+w-15,y+h*.23,3,2);
+  ctx.fillStyle=glow;ctx.fillRect(x+w*.48,y+h*.54,Math.max(3,w*.1),2);
  }else{
-  // legs and broad armored torso
-  outlineRect(x+w*.23,y+h*.69,w*.2,h*.27,'#273448',edge,2);outlineRect(x+w*.58,y+h*.69,w*.2,h*.27,'#273448',edge,2);
+  // articulated legs, knee guards and armored torso
+  outlineRect(x+w*.22,y+h*.69,w*.23,h*.27,'#202d41',edge,2);outlineRect(x+w*.57,y+h*.69,w*.23,h*.27,'#202d41',edge,2);
+  ctx.fillStyle='#647b90';ctx.fillRect(x+w*.25,y+h*.74,w*.13,1);ctx.fillRect(x+w*.6,y+h*.74,w*.13,1);
   outlineRect(x+w*.12,y+h*.35,w*.76,h*.42,body,edge,2);
+  // chest bevel, armor plates and exposed seams
+  ctx.fillStyle='#ffffff';ctx.globalAlpha=.18;ctx.fillRect(x+w*.2,y+h*.37,w*.55,2);ctx.globalAlpha=1;
+  outlineRect(x+w*.22,y+h*.4,w*.56,h*.12,'#25364b',edge,1);outlineRect(x+w*.29,y+h*.42,w*.42,h*.08,glow,edge,1);
   outlineRect(x+w*.06,y+h*.39,w*.18,h*.32,'#344256',edge,2);outlineRect(x+w*.76,y+h*.39,w*.18,h*.32,'#344256',edge,2);
-  // helmet brow and glowing optics
+  ctx.fillStyle='#8196a9';ctx.fillRect(x+w*.08,y+h*.43,Math.max(2,w*.12),1);ctx.fillRect(x+w*.79,y+h*.43,Math.max(2,w*.12),1);
+  // helmet and glowing optics
   outlineRect(x+w*.18,y+h*.06,w*.64,h*.35,e.type==='shield'?'#aeb8c7':body,edge,2);
+  outlineRect(x+w*.23,y+h*.12,w*.54,h*.08,'#35465b',edge,1);
   outlineRect(x+w*.25,y+h*.2,w*.5,h*.12,'#151e2c',edge,1);
-  ctx.fillStyle=glow;ctx.fillRect(x+w*.31,y+h*.22,Math.max(3,w*.12),Math.max(2,h*.05));ctx.fillRect(x+w*.58,y+h*.22,Math.max(3,w*.12),Math.max(2,h*.05));
+  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=6;ctx.fillStyle=glow;ctx.fillRect(x+w*.31,y+h*.22,Math.max(3,w*.12),Math.max(2,h*.05));ctx.fillRect(x+w*.58,y+h*.22,Math.max(3,w*.12),Math.max(2,h*.05));ctx.restore();
   ctx.fillStyle='#fff4dd';ctx.fillRect(x+w*.34,y+h*.22,2,1);ctx.fillRect(x+w*.61,y+h*.22,2,1);
-  outlineRect(x+w*.38,y+h*.48,w*.24,h*.1,glow,edge,1);
-  if(e.type==='shield'){outlineRect(x+w*.83,y+h*.1,w*.14,h*.8,'#c6d2df',edge,2);ctx.fillStyle='#f2f7ff';ctx.fillRect(x+w*.86,y+h*.2,2,h*.5)}
-  if(e.type==='sniper'){outlineRect(x+w*.68,y+h*.43,w*.43,3,'#d45bff',edge,1);ctx.fillStyle='#f7dcff';ctx.fillRect(x+w*.99,y+h*.4,4,2)}
-  if(e.type==='support'){ctx.strokeStyle='#a5ffd8';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+w*.5,y+h*.43);ctx.lineTo(x+w*.5,y+h*.57);ctx.moveTo(x+w*.43,y+h*.5);ctx.lineTo(x+w*.57,y+h*.5);ctx.stroke()}
-  if(e.type==='runner'){outlineRect(x+w*.38,y+h*.01,w*.25,3,'#ffd2d5',edge,1)}
+  // type-specific silhouettes/equipment
+  if(e.type==='shield'){
+   outlineRect(x+w*.81,y+h*.08,w*.2,h*.82,'#71869c',edge,2);outlineRect(x+w*.84,y+h*.13,w*.13,h*.7,'#bdcad6',edge,1);
+   ctx.fillStyle=glow;ctx.fillRect(x+w*.87,y+h*.2,2,h*.48);ctx.fillStyle='#f4f8ff';ctx.fillRect(x+w*.86,y+h*.18,3,2);
+  }
+  if(e.type==='sniper'){
+   outlineRect(x+w*.62,y+h*.43,w*.52,3,'#252b47',edge,1);outlineRect(x+w*.77,y+h*.4,w*.34,2,glow,edge,1);ctx.fillStyle='#f7dcff';ctx.fillRect(x+w*1.02,y+h*.39,3,2);
+   outlineRect(x+w*.4,y+h*.06,w*.2,2,'#d5b5ff',edge,1);
+  }
+  if(e.type==='support'){
+   outlineRect(x+w*.37,y+h*.01,w*.26,4,'#1d544b',edge,1);ctx.strokeStyle='#a5ffd8';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+w*.5,y+h*.43);ctx.lineTo(x+w*.5,y+h*.57);ctx.moveTo(x+w*.43,y+h*.5);ctx.lineTo(x+w*.57,y+h*.5);ctx.stroke();
+  }
+  if(e.type==='runner'){
+   ctx.fillStyle=glow;ctx.fillRect(x+w*.38,y+h*.01,w*.25,2);ctx.fillRect(x+w*.08,y+h*.56,w*.12,2);ctx.fillRect(x+w*.8,y+h*.61,w*.12,2);
+  }
+  if(e.type==='shield'||e.type==='support'){ctx.fillStyle='#e8fcff';ctx.fillRect(x+w*.42,y+h*.49,2,1)}
  }
+ // silhouette outline, small bolts and damage indicator
  ctx.lineWidth=2;ctx.strokeStyle=edge;ctx.strokeRect(x,y,w,h);
+ if(w>24){ctx.fillStyle='#b9c8d5';ctx.fillRect(x+4,y+h*.58,2,2);ctx.fillRect(x+w-7,y+h*.58,2,2)}
  if(e.hp<e.maxHp){outlineRect(x,y-7,w,4,'#121a29',edge,1);ctx.fillStyle=glow;ctx.fillRect(x+1,y-6,Math.max(0,(w-2)*e.hp/e.maxHp),2)}
  ctx.restore();
 }
