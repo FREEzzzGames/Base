@@ -350,7 +350,53 @@ function update(dt){if(state!=='PLAY')return;updatePickups(dt);p.inv=Math.max(0,
 if(keys.attack||keys.attackEdge){keys.attackEdge=false;var wp=WEAPONS[p.weapon]||WEAPONS.pistol;if(p.cd<=0&&p.en>=wp.cost){p.cd=wp.cd;p.atk=.16;p.en-=wp.cost;var bx=p.x+p.w/2,by=p.y+p.h*.48,target=null,best=460;enemies.forEach(function(e){if(e.hp<=0)return;var d=Math.hypot(e.x+e.w/2-bx,e.y+e.h/2-by);if(d<best&&Math.abs(e.x+e.w/2-bx)>5){best=d;target=e}});if(boss.active&&!boss.dead){var bd=Math.hypot(boss.x+boss.w/2-bx,boss.y+boss.h*.5-by);if(bd<best)target=boss}var baseAng=target?Math.atan2((target.y+target.h*.5)-by,(target.x+target.w*.5)-bx):(p.face>0?0:Math.PI);if(Math.cos(baseAng)!==0)p.face=Math.cos(baseAng)>0?1:-1;bx+=p.face*8;for(var wi=0;wi<wp.count;wi++){var tt=wp.count===1?0:(wi/(wp.count-1)-.5)*2,ang=baseAng+tt*wp.spread;shoot(bx,by,Math.cos(ang)*wp.spd,Math.sin(ang)*wp.spd,wp.dmg,'p',selectedCharacter.shot)}beep(850,.05,'sawtooth')}}
 if(keys.interactEdge){keys.interactEdge=false;if(p.shieldCd<=0&&p.en>=22){p.en-=22;p.shield=2.4;p.shieldCd=6;burst(p.x+p.w/2,p.y+p.h/2,12,'#55dff3');beep(760,.12);toast('ЩИТ АКТИВИРОВАН')}else if(p.shieldCd>0)toast('ЩИТ ПЕРЕЗАРЯЖАЕТСЯ');else toast('НЕДОСТАТОЧНО ЭНЕРГИИ')}
 p.en=Math.min(100,p.en+18*dt);p.anim+=dt;if(p.y>worldH)hurt(999);
-enemies.forEach(function(e){if(e.hp<=0)return;var dx=p.x-e.x,dy=p.y-e.y;e.cd-=dt;if(e.type==='drone'){e.t+=dt;e.x+=Math.sign(dx)*24*dt;e.y=e.base+Math.sin(e.t*2.4)*23} else if(e.type==='runner'){e.x+=Math.sign(dx)*e.v*dt;if(Math.abs(dx)<34&&e.cd<=0){e.cd=2;e.hp=0;hurt(18);burst(e.x+e.w/2,e.y+e.h/2,22,'#ff8a1e')}} else if(e.type==='turret'){if(e.cd<=0&&Math.abs(dx)<430){e.cd=1.25;var ta=Math.atan2(dy,dx);shoot(e.x+e.w/2,e.y+8,Math.cos(ta)*230,Math.sin(ta)*230,10,'e','#ff5c67')}} else {e.x+=e.v*dt;if(e.x<e.x1){e.x=e.x1;e.v=Math.abs(e.v)}if(e.x+e.w>e.x2){e.x=e.x2-e.w;e.v=-Math.abs(e.v)}}if(e.type!=='runner'&&e.type!=='turret'&&e.cd<=0&&Math.abs(dx)<(e.type==='sniper'?470:250)){e.cd=e.type==='sniper'?2.3:1.5;var aa=Math.atan2(dy,dx),sp=e.type==='sniper'?310:175,dm=e.type==='sniper'?16:8;shoot(e.x+e.w/2,e.y+e.h/2,Math.cos(aa)*sp,Math.sin(aa)*sp,dm,'e',e.type==='sniper'?'#d45bff':'#ff8a1e')}if(hit(p,e)&&p.inv<=0)hurt(e.type==='shield'?18:8)});
+enemies.forEach(function(e){
+ if(e.hp<=0)return;
+ var dx=(p.x+p.w*.5)-(e.x+e.w*.5),dy=(p.y+p.h*.5)-(e.y+e.h*.5),dist=Math.hypot(dx,dy),dir=dx<0?-1:1;
+ e.anim=(e.anim||0)+dt;e.fireAnim=Math.max(0,(e.fireAnim||0)-dt);e.flash=Math.max(0,(e.flash||0)-dt);e.cd-=dt;
+ if(e.face===undefined)e.face=dir;
+ if(e.type==='drone'){
+  // Hover flight: bobbing, slight pursuit and a short strafe before firing.
+  e.t=(e.t||0)+dt;
+  var homeY=e.base===undefined?e.y:e.base;
+  e.x+=Math.sign(dx)*Math.min(16,Math.abs(dx)*.025)*dt;
+  e.y=homeY+Math.sin(e.t*2.8)*13+Math.sin(e.t*5.1)*2.5;
+  e.face=dir;
+  if(e.cd<=0&&dist<390){e.cd=2.0;e.fireAnim=.24;var leadX=dx+p.vx*.16,leadY=dy+p.vy*.1,aa=Math.atan2(leadY,leadX);shoot(e.x+e.w/2+dir*8,e.y+e.h*.58,Math.cos(aa)*205,Math.sin(aa)*205,8,'e','#50eaff');burst(e.x+e.w/2+dir*8,e.y+e.h*.58,3,'#50eaff')}
+ }else if(e.type==='runner'){
+  // Wheeled/low runner: accelerates into a charge, brakes, then re-engages.
+  e.charge=(e.charge||0)-dt;
+  if(e.charge<=0&&Math.abs(dx)<300){e.charge=1.1;e.vxRun=dir*(Math.abs(dx)<90?112:82)}
+  if(e.vxRun){e.x+=e.vxRun*dt;e.face=e.vxRun<0?-1:1;if(Math.abs(dx)<30&&Math.abs(dy)<58&&e.cd<=0){e.cd=1.5;e.vxRun=0;e.flash=.18;hurt(18);burst(e.x+e.w/2,e.y+e.h/2,12,'#ff8a1e')}if(Math.abs(e.x-(e.x1||0))<3||Math.abs(e.x-(e.x2||levelW))<3)e.vxRun=0;if(e.charge<.15)e.vxRun=0}else{e.x+=dir*e.v*dt*.22;e.face=dir}
+  e.x=Math.max(e.x1||0,Math.min((e.x2||levelW)-e.w,e.x));
+ }else if(e.type==='turret'){
+  // Tracked turret rolls to a firing lane, turns, then fires a deliberate burst.
+  e.wheel=(e.wheel||0)+dt*Math.abs(dx)*.035;
+  if(Math.abs(dx)>210){e.x+=dir*Math.min(20,Math.abs(dx)*.045)*dt;e.x=Math.max(0,Math.min(levelW-e.w,e.x))}
+  e.face=dir;
+  if(e.cd<=0&&dist<480){e.cd=1.7;e.fireAnim=.34;var ta=Math.atan2(dy+p.vy*.12,dx+p.vx*.12);for(var sh=0;sh<2;sh++)shoot(e.x+e.w/2+dir*12,e.y+e.h*.43,Math.cos(ta+(sh-.5)*.055)*250,Math.sin(ta+(sh-.5)*.055)*250,9,'e','#ffad50');burst(e.x+e.w/2+dir*12,e.y+e.h*.43,4,'#ffad50')}
+ }else if(e.type==='sniper'){
+  // Footwork is slow; it pauses to aim and emits a fast, accurate shot.
+  e.aim=(e.aim||0);
+  if(Math.abs(dx)>185){e.x+=dir*e.v*dt;e.aim=0}else e.aim+=dt;
+  e.face=dir;
+  if(e.cd<=0&&dist<520&&e.aim>.42){e.cd=2.5;e.aim=0;e.fireAnim=.4;var sa=Math.atan2(dy+p.vy*.08,dx+p.vx*.08);shoot(e.x+e.w/2+dir*10,e.y+e.h*.3,Math.cos(sa)*360,Math.sin(sa)*360,16,'e','#d68aff');burst(e.x+e.w/2+dir*10,e.y+e.h*.3,5,'#d68aff')}
+ }else if(e.type==='shield'){
+  // Heavy shield unit advances slowly and only exposes its weapon during short volleys.
+  if(Math.abs(dx)>68)e.x+=dir*e.v*dt*.55;
+  e.face=dir;
+  if(e.cd<=0&&dist<260){e.cd=2.2;e.fireAnim=.28;var ha=Math.atan2(dy,dx);for(var hs=-1;hs<=1;hs++)shoot(e.x+e.w/2+dir*13,e.y+e.h*.42,Math.cos(ha+hs*.12)*180,Math.sin(ha+hs*.12)*180,7,'e','#ff718f')}
+ }else if(e.type==='support'){
+  // Support unit keeps its patrol lane and fires a slower, energy-heavy bolt.
+  e.x+=e.v*dt;if(e.x<e.x1){e.x=e.x1;e.v=Math.abs(e.v)}if(e.x+e.w>e.x2){e.x=e.x2-e.w;e.v=-Math.abs(e.v)}e.face=dir;
+  if(e.cd<=0&&dist<330){e.cd=2.7;e.fireAnim=.3;var ua=Math.atan2(dy,dx);shoot(e.x+e.w/2+dir*8,e.y+e.h*.45,Math.cos(ua)*155,Math.sin(ua)*155,10,'e','#65ffd1')}
+ }else{
+  // Standard infantry patrols, turns toward the player and fires a controlled 3-shot burst.
+  e.x+=e.v*dt;if(e.x<e.x1){e.x=e.x1;e.v=Math.abs(e.v)}if(e.x+e.w>e.x2){e.x=e.x2-e.w;e.v=-Math.abs(e.v)}e.face=dir;
+  if(e.cd<=0&&dist<300){e.cd=2.0;e.fireAnim=.25;var ia=Math.atan2(dy+p.vy*.06,dx+p.vx*.06);for(var is=-1;is<=1;is++)shoot(e.x+e.w/2+dir*10,e.y+e.h*.36,Math.cos(ia+is*.075)*205,Math.sin(ia+is*.075)*205,7,'e','#ff6474');burst(e.x+e.w/2+dir*10,e.y+e.h*.36,3,'#ff6474')}
+ }
+ if(hit(p,e)&&p.inv<=0&&Math.abs(dx)<wSafe(e)&&Math.abs(dy)<Math.max(45,e.h))hurt(e.type==='shield'?18:e.type==='runner'?18:8);
+});
 enemies=enemies.filter(function(e){return e.hp>0});
 if(p.x>2080&&!boss.active){boss.active=true;$('bossMeter').style.display='block';toast('МЕХА-КУРАМА АКТИВИРОВАН');beep(120,.35,'sawtooth')}
 if(boss.active&&!boss.dead){boss.phase=boss.hp>360?1:boss.hp>180?2:3;boss.cd-=dt;boss.attack=Math.max(0,boss.attack-dt);var bx=boss.x+boss.w/2,by=boss.y+boss.h*.52,ang=Math.atan2(p.y+p.h/2-by,p.x+p.w/2-bx);if(Math.abs(p.x-bx)>145)boss.x+=Math.sign(p.x-bx)*(boss.phase===1?18:boss.phase===2?30:43)*dt;boss.x=Math.max(2100,Math.min(2450,boss.x));if(boss.cd<=0){boss.cd=boss.phase===1?1.65:boss.phase===2?1.5:1.3;boss.attack=.32;if(boss.phase===2){for(var k=-1;k<=1;k++)shoot(bx,by,Math.cos(ang+k*.24)*245,Math.sin(ang+k*.24)*245,11,'e','#ff8a1e')}else if(boss.phase===3){for(var j=0;j<10;j++)shoot(bx,by,Math.cos(j*Math.PI/5)*205,Math.sin(j*Math.PI/5)*205,12,'e','#ff2fa0')}else{shoot(bx,by,Math.cos(ang)*225,Math.sin(ang)*225,12,'e','#ff8a1e');shoot(bx,by,Math.cos(ang+.12)*225,Math.sin(ang+.12)*225,12,'e','#ff5365')}}}
