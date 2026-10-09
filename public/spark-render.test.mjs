@@ -36,3 +36,14 @@ test("rig pivot applies transforms in a stable order", () => {
  render.pivot(ctx,4,5,.25);
  assert.deepEqual(calls,[["translate",4,5],["rotate",.25],["translate",-4,-5]]);
 });
+
+test("actor interpolation delegates smoothing and advances gait without changing world coordinates", () => {
+ const enemy={x:20,y:30,type:"runner",_rvx:10};
+ const drone={x:40,y:50,type:"drone"};
+ const boss={active:true,dead:false,x:80,y:90};
+ const player={x:5,y:6};
+ const seen=[];
+ render.interpolateActors([enemy,drone],boss,player,1/60,(o,x,y,dt,limit)=>{seen.push([o,x,y,limit]);o._rvx=o._rvx||0;});
+ assert.equal(seen.length,4); assert.equal(seen[0][3],180); assert.equal(seen[2][3],220); assert.equal(seen[3][3],140);
+ assert.ok(enemy._gaitPhase>0); assert.equal(enemy.x,20); assert.equal(player.y,6);
+});
