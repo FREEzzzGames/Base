@@ -630,7 +630,7 @@ function drawMenuBackdrop(){
  for(var p=0;p<24;p++){var px=(p*59+Math.floor(performance.now()/90)*(p%3+1))%W,py=(p*71+Math.floor(performance.now()/130)*(p%4+1))%H;ctx.fillStyle=p%3?'#ff8eb9':'#ffd0dc';ctx.globalAlpha=.45+(p%4)*.12;ctx.fillRect(px,py,2,3)}ctx.globalAlpha=1;
  var vign=ctx.createRadialGradient(W*.5,H*.48,H*.15,W*.5,H*.48,H*.75);vign.addColorStop(0,'rgba(0,0,0,0)');vign.addColorStop(1,'rgba(0,0,0,.42)');ctx.fillStyle=vign;ctx.fillRect(0,0,W,H);
 }
-function drawAtmosphere(){
+function renderAtmosphereUncached(){
  var skies=[['#10182e','#283b56','#69434a','#10121c'],['#071b38','#174b70','#3d7390','#07111f'],['#260d16','#61251e','#a34a27','#160b12'],['#03151b','#0a3038','#15515a','#03090f']];var sc=skies[levelTheme]||skies[0],sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,sc[0]);sky.addColorStop(.38,sc[1]);sky.addColorStop(.72,sc[2]);sky.addColorStop(1,sc[3]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
  // Distant stars and moon: fixed to the screen for a calm layered parallax effect.
  for(var s=0;s<46;s++){var sx=(s*67+19)%W,sy=(s*43+11)%(H*.47);ctx.globalAlpha=.08+(s%4)*.045;ctx.fillStyle=s%7===0?'#ffb5a0':'#b9dfff';ctx.fillRect(sx,sy,s%9===0?2:1,1)}
@@ -759,6 +759,32 @@ function drawAtmosphere(){
  focus.addColorStop(.7,'rgba(0,0,0,.04)');
  focus.addColorStop(1,'rgba(0,0,0,.20)');
  ctx.fillStyle=focus;ctx.fillRect(0,0,W,H);ctx.restore();
+}
+var atmosphereLayerCanvas=null,atmosphereLayerKey='';
+function drawAtmosphere(){
+ var key=[W,H,levelTheme].join(':');
+ if(!atmosphereLayerCanvas)atmosphereLayerCanvas=document.createElement('canvas');
+ if(atmosphereLayerKey!==key||atmosphereLayerCanvas.width!==W||atmosphereLayerCanvas.height!==H){
+  atmosphereLayerCanvas.width=W;atmosphereLayerCanvas.height=H;
+  var screenContext=ctx,screenCam=cam;
+  ctx=atmosphereLayerCanvas.getContext('2d');
+  try{
+   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);cam=0;
+   renderAtmosphereUncached();
+   atmosphereLayerKey=key;
+  }finally{ctx=screenContext;cam=screenCam;}
+ }
+ ctx.drawImage(atmosphereLayerCanvas,0,0);
+ // Keep a small, allocation-free ambient motion layer above the cached backdrop.
+ var t=performance.now()*.001;
+ var moteColor=levelTheme===1?'#9adfff':levelTheme===2?'#ff9a5a':levelTheme===3?'#54f5dc':'#d4e6f7';
+ for(var i=0;i<12;i++){
+  var x=(i*71+13+Math.sin(t*.8+i)*7)%W;
+  var y=(i*47+9+t*(levelTheme===2?14:7+i%5))%(H*.64);
+  ctx.globalAlpha=.07+.08*(.5+.5*Math.sin(t*2+i));
+  ctx.fillStyle=moteColor;ctx.fillRect(x,y,2,levelTheme===2?3:2);
+ }
+ ctx.globalAlpha=1;
 }
 function drawLightingOverlay(){
  // Lightweight screen-space 2D lighting: fixed ambient base + a few moving local lights.
