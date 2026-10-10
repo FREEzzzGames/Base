@@ -176,7 +176,7 @@ jobs:
           node --check public/spark.js
           node --check public/spark-simulation.js
           npm run spark:smoke
-          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs public/spark-ai.test.mjs public/spark-render.test.mjs public/spark-simulation.test.mjs public/spark-ui.test.mjs
+          node --test public/spark-physics.test.mjs public/spark-effects.test.mjs public/spark-audio.test.mjs public/spark-ai.test.mjs public/spark-render.test.mjs public/spark-simulation.test.mjs public/spark-viewport.test.mjs public/spark-ui.test.mjs
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
