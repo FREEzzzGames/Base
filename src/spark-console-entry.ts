@@ -17,8 +17,7 @@ function keyEvent(key:string,down:boolean):void{
   if(!held.has(key))return;
   held.delete(key);
  }
- const EventCtor=win.KeyboardEvent;
- win.dispatchEvent(new EventCtor(down?"keydown":"keyup",{key,bubbles:true,cancelable:true}));
+ win.dispatchEvent(new KeyboardEvent(down?"keydown":"keyup",{key,bubbles:true,cancelable:true}));
 }
 function tapKey(key:string):void{keyEvent(key,true);keyEvent(key,false)}
 function clickGame(selector:string):boolean{
