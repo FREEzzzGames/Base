@@ -316,7 +316,7 @@ function update(dt:number){
   }
 
   if(auto)fire(false);
-  else if(fireHeld)fire(true);
+  else if(fireHeld){const target=enemyTarget(player.x,player.y,weapon().range);if(target)aim=Math.atan2(target.y-player.y,target.x-player.x);fire(true);}
 
   for(const m of mobs)updateMob(m,dt);
   updateBullets(dt);
