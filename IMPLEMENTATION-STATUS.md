@@ -106,5 +106,5 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Corrected the canonical project context: GAME is SPARK / Ichiraku Ramen: Shinobi Ops; CARGO DECK is only a legacy redirect, not the active runtime.
 - Expanded `scripts/release-smoke.mjs` to require the published portal entry, SPARK console page, embedded SPARK game page, and core runtime modules. It also verifies that the console embeds SPARK and that the game page loads the SPARK runtime.
 - This closes a validation gap: the previous smoke test could pass while the GAME route or its core runtime files were absent from the production artifact.
-- Automated build/deploy verification is pending for commit `0933b719c43b29666e598091a6642db61c4e3cb9` and subsequent context correction.
+- Verified release commit: `73fbc69cc7ad6662d84352ff6b12f77e1883e7f1`; build, typecheck, ESLint, SPARK runtime validation, release smoke, Pages deployment, and published-build verification passed in [workflow run 38091886209](https://github.com/FREEzzzGames/Base/actions/runs/38091886209).
 - Real Telegram Android touch, module-isolation, LIVE playback, CHAT connection, RADIO playback, LIBRARY import/emulation, and SPARK FPS remain device/runtime checks; they are not marked complete by this source-level gate.
