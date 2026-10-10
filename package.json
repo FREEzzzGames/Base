@@ -9,7 +9,8 @@
     "release:smoke": "node scripts/release-smoke.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "eslint . --max-warnings=0",
+    "spark:smoke": "node scripts/spark-smoke.mjs"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0"
