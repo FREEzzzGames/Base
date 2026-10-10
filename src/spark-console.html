@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0c10">
+<title>FREEzzz GAMES — ICHIRAKU RAMEN: SHINOBI OPS</title>
+</head>
+<body>
+<main class="console" aria-label="FREEzzz retro console — Shinobi Ops">
+ <header class="brand">
+  <div class="brand-name"><span class="power-mark"></span> FREEzzz GAMES</div>
+  <div class="model">SHINOBI OPS · 8 CHARACTERS</div>
+  <div class="stripe"><i></i><i></i><i></i><i></i></div>
+ </header>
+ <section class="screen-shell" aria-label="Shinobi Ops game screen">
+  <div id="cargo-game"><iframe id="spark-game" title="Ichiraku Ramen: Shinobi Ops" src="./spark.html?embedded=console" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe></div>
+ </section>
+ <div class="screen-caption"><span>ICHIRAKU RAMEN</span><span>SHINOBI OPS · 8 SHINOBI</span></div>
+ <section class="control-deck" aria-label="Shinobi Ops controls">
+  <div class="movement-column">
+   <div class="move-label">MOVE / JUMP</div>
+   <div class="move-pad" id="shinobi-pad" aria-label="Move left and right; push up to jump"><span class="move-ring"></span><span class="move-thumb"></span><i class="arrow a-up"></i><i class="arrow a-right"></i><i class="arrow a-down"></i><i class="arrow a-left"></i></div>
+   <div class="sensor-label">DIRECTION SENSOR</div>
+  </div>
+  <div class="actions shinobi-actions">
+   <button class="key blue" data-action="weapon-prev" aria-label="Previous weapon"><b>‹</b><small>WEAPON −</small></button>
+   <button class="key green" data-action="shield" aria-label="Energy shield"><b>⬡</b><small>SHIELD</small></button>
+   <button class="key blue" data-action="weapon-next" aria-label="Next weapon"><b>›</b><small>WEAPON +</small></button>
+   <button class="key amber" data-action="blink" aria-label="Blink"><b>➤</b><small>BLINK</small></button>
+   <button class="key attack" data-action="attack" aria-label="Hold to shoot"><b>✦</b><small>FIRE</small></button>
+   <button class="key green" data-action="jump" aria-label="Jump"><b>▲</b><small>JUMP</small></button>
+   <button class="key amber menu-key" data-action="menu" aria-label="Menu or character selection"><b>⌂</b><small>MENU</small></button>
+  </div>
+ </section>
+ <footer class="console-footer"><span>8 SHINOBI · 4 WEAPON CLASSES</span><button data-action="start">START / RESET ↻</button></footer>
+</main>
+<script type="module" src="./spark-console-entry.ts"></script>
+</body>
+</html>
