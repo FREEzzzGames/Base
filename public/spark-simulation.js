@@ -13,8 +13,8 @@ function tick(timestamp){
  if(renderFn)renderFn(Math.min(maxDelta,dt));
 }
 function start(update,render){
- updateFn=update;renderFn=render;
  if(started)return;
+ updateFn=update;renderFn=render;
  started=true;root.requestAnimationFrame(tick);
 }
 root.SparkSimulation=Object.freeze({start:start,resetClock:resetClock});
