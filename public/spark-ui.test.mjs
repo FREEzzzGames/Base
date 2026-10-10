@@ -4,10 +4,19 @@ import { readFileSync } from "node:fs";
 
 const html = readFileSync("public/spark.html", "utf8");
 const runtime = readFileSync("public/spark.js", "utf8");
+const css = readFileSync("public/spark.css", "utf8");
 
 function allMatches(regex, source = html) {
   return [...source.matchAll(regex)];
 }
+
+
+test("SPARK stylesheet is external and preserves mobile layout rules", () => {
+  assert.match(html, /<link\\s+rel=["']stylesheet["']\\s+href=["']\\.\\/spark\\.css["']/i);
+  assert.ok(css.includes(":root{"), "design tokens are missing");
+  assert.ok(css.includes("@media(max-width:390px)"), "small-screen layout rules are missing");
+  assert.ok(css.includes("touch-action:none"), "touch input styling is missing");
+});
 
 test("SPARK document has unique IDs for every critical UI control", () => {
   const ids = allMatches(/\bid=["']([^"']+)["']/g).map(match => match[1]);
