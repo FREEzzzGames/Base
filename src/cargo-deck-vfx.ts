@@ -123,7 +123,7 @@ export function emitExplosion(x0:number,y0:number,radius:number){
   emitBurst(x0,y0,9,radius*1.7,.5,4.5,VFX_COLORS.CRIMSON,TAU,0,4,.9,24,1);
 }
 
-export function emitDeath(x0:number,y0:number,colorIdx=VFX_COLORS.CRIMSON){
+export function emitDeath(x0:number,y0:number,colorIdx:number=VFX_COLORS.CRIMSON){
   emitFlash(x0,y0,10,.07,colorIdx,.8);
   emitBurst(x0,y0,10,55,.3,2.6,colorIdx,TAU,0,-12,1.8,70,1);
 }
