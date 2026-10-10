@@ -18,3 +18,21 @@ test("segment collision preserves 3px tolerance", () => {
  assert.equal(physics.segmentHitsRect(0,7,30,7,{x:10,y:10,w:10,h:10}), true);
  assert.equal(physics.segmentHitsRect(0,6,30,6,{x:10,y:10,w:10,h:10}), false);
 });
+
+test("platform collision resolves falling actors onto a ledge", () => {
+ const actor={x:10,y:0,w:10,h:10,vx:0,vy:120,onGround:false};
+ physics.moveAndCollide(actor,0.2,[{x:0,y:20,w:100,h:10}],100);
+ assert.equal(actor.y,10);
+ assert.equal(actor.vy,0);
+ assert.equal(actor.onGround,true);
+});
+
+test("platform collision blocks horizontal motion and clamps world edges", () => {
+ const actor={x:0,y:25,w:10,h:10,vx:100,vy:0,onGround:false};
+ physics.moveAndCollide(actor,0.2,[{x:20,y:20,w:10,h:30}],100);
+ assert.equal(actor.x,10);
+ assert.equal(actor.vx,0);
+ const edge={x:98,y:0,w:10,h:10,vx:100,vy:0,onGround:false};
+ physics.moveAndCollide(edge,0.2,[],100);
+ assert.equal(edge.x,90);
+});
