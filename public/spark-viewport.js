@@ -20,8 +20,10 @@
   }
 
   function resize(canvas, logicalWidth, logicalHeight) {
+    var telegram = root.Telegram && root.Telegram.WebApp;
     var width = root.innerWidth || (root.document && root.document.documentElement.clientWidth) || logicalWidth;
-    var height = root.innerHeight || (root.document && root.document.documentElement.clientHeight) || logicalHeight;
+    var telegramHeight = telegram && (Number(telegram.viewportHeight) || Number(telegram.viewportStableHeight));
+    var height = telegramHeight || root.innerHeight || (root.document && root.document.documentElement.clientHeight) || logicalHeight;
     var view = measure(width, height, root.devicePixelRatio || 1, logicalWidth, logicalHeight);
     if (canvas.width !== view.pixelWidth) canvas.width = view.pixelWidth;
     if (canvas.height !== view.pixelHeight) canvas.height = view.pixelHeight;
