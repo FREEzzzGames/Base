@@ -173,6 +173,7 @@ jobs:
           node --check public/spark-simulation.js
           node --check public/spark-session.js
           node --check public/spark-viewport.js
+          node --check public/spark-input.js
           node --check public/spark.js
           node --check public/spark-simulation.js
           npm run spark:smoke
