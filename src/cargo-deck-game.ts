@@ -688,7 +688,7 @@ function loop(t:number){
 function setup(){load();render();last=0;raf=requestAnimationFrame(loop)}
 function handleCanvasClick(e:MouseEvent){
  if(!canvas)return;
- const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/worldScale,y=(e.clientY-r.top)/worldScale;
+ const r=canvas.getBoundingClientRect(),y=(e.clientY-r.top)/worldScale;
  if(mode==="loadout"){
   for(let i=0;i<3;i++){const top=135+i*145;if(y>=top&&y<=top+116){sel=(["ASSAULT","VANGUARD","RECON"] as LoadoutId[])[i];save.loadout=sel;persist();renderCanvas();return}}
  }else if(mode==="weapon"){
@@ -701,7 +701,7 @@ export function cargoDeckAction(action:string){
  if(!root)return;
  if(action==="start"||action==="reset"||action==="retry"){start();return}
  if(action==="menu"){if(mode==="weapon")mode="play";else{mode="loadout";save.loadout=sel;persist()}renderUI();renderCanvas();return}
- if(mode==="loadout"){if(action==="weapon"){mode="weapon";renderUI();renderCanvas()}return}
+ if(mode==="loadout"){if(action==="weapon"){const ids=["ASSAULT","VANGUARD","RECON"] as LoadoutId[];sel=ids[(ids.indexOf(sel)+1)%ids.length];save.loadout=sel;persist();renderCanvas()}return}
  if(mode==="result")return;
  if(action==="weapon"){mode=mode==="weapon"?"play":"weapon";renderUI();renderCanvas()}
  else if(action==="reload")startReload(player.combat,weapon());
