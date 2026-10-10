@@ -686,4 +686,36 @@ function loop(t:number){
   raf=requestAnimationFrame(loop);
 }
 function setup(){load();render();last=0;raf=requestAnimationFrame(loop)}
-export function mountCargoDeck(host:HTMLElement){cleanup();root=host;setup();const k=(e:KeyboardEvent)=>key(e),u=(e:KeyboardEvent)=>up(e),r=()=>{resize();renderCanvas()};addEventListener("keydown",k);addEventListener("keyup",u);addEventListener("resize",r);cleanup=()=>{cancelAnimationFrame(raf);removeEventListener("keydown",k);removeEventListener("keyup",u);removeEventListener("resize",r);root=null;canvas=null;ctx=null;ui=null};return()=>cleanup()}
+function handleCanvasClick(e:MouseEvent){
+ if(!canvas)return;
+ const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/worldScale,y=(e.clientY-r.top)/worldScale;
+ if(mode==="loadout"){
+  for(let i=0;i<3;i++){const top=135+i*145;if(y>=top&&y<=top+116){sel=(["ASSAULT","VANGUARD","RECON"] as LoadoutId[])[i];save.loadout=sel;persist();renderCanvas();return}}
+ }else if(mode==="weapon"){
+  const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length)),i=Math.floor((y-78)/(h+5));
+  if(i>=0&&i<save.inventory.length&&y>=78){chooseWeapon(save.inventory[i]);return}
+  mode="play";renderCanvas();
+ }
+}
+export function cargoDeckAction(action:string){
+ if(!root)return;
+ if(action==="start"||action==="reset"||action==="retry"){start();return}
+ if(action==="menu"){if(mode==="weapon")mode="play";else{mode="loadout";save.loadout=sel;persist()}renderUI();renderCanvas();return}
+ if(mode==="loadout"){if(action==="weapon"){mode="weapon";renderUI();renderCanvas()}return}
+ if(mode==="result")return;
+ if(action==="weapon"){mode=mode==="weapon"?"play":"weapon";renderUI();renderCanvas()}
+ else if(action==="reload")startReload(player.combat,weapon());
+ else if(action==="auto"){auto=!auto;msg=auto?"АВТОСТРЕЛЬБА · ВКЛ":"РУЧНАЯ СТРЕЛЬБА · ВКЛ";msgT=60}
+ else if(action==="grenade")grenade();
+ else if(action==="medkit")medkit();
+ else if(action==="ability")special();
+}
+export function cargoDeckSetMovement(x:number,y:number){moveX=Math.max(-1,Math.min(1,x));moveY=Math.max(-1,Math.min(1,y))}
+export function cargoDeckSetFire(held:boolean){fireHeld=held}
+export function mountCargoDeck(host:HTMLElement){
+ cleanup();root=host;setup();
+ const k=(e:KeyboardEvent)=>key(e),u=(e:KeyboardEvent)=>up(e),r=()=>{resize();renderCanvas()};
+ addEventListener("keydown",k);addEventListener("keyup",u);addEventListener("resize",r);
+ cleanup=()=>{cancelAnimationFrame(raf);removeEventListener("keydown",k);removeEventListener("keyup",u);removeEventListener("resize",r);moveX=moveY=0;fireHeld=false;root=null;canvas=null;ctx=null;ui=null};
+ return()=>cleanup();
+}
