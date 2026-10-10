@@ -100,3 +100,11 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Mission 1-1 launches the existing arena; additional mission cards are explicitly locked and are not represented as implemented levels.
 - UI source commit: `b0bdbd4ebedd4c27a95fef264d4a5905cc4ae3a3`; follow-up interaction fixes: `209af0f119d32e907b780f3d927b945f176526`.
 - Device-level visual verification remains pending; the concept board is a design target, not proof that every pictured asset or animation is implemented. Enemy and character art still needs a dedicated asset pass against the approved sprite reference.
+
+## 2026-10-10 Portal release-gate correction
+
+- Corrected the canonical project context: GAME is SPARK / Ichiraku Ramen: Shinobi Ops; CARGO DECK is only a legacy redirect, not the active runtime.
+- Expanded `scripts/release-smoke.mjs` to require the published portal entry, SPARK console page, embedded SPARK game page, and core runtime modules. It also verifies that the console embeds SPARK and that the game page loads the SPARK runtime.
+- This closes a validation gap: the previous smoke test could pass while the GAME route or its core runtime files were absent from the production artifact.
+- Automated build/deploy verification is pending for commit `0933b719c43b29666e598091a6642db61c4e3cb9` and subsequent context correction.
+- Real Telegram Android touch, module-isolation, LIVE playback, CHAT connection, RADIO playback, LIBRARY import/emulation, and SPARK FPS remain device/runtime checks; they are not marked complete by this source-level gate.
