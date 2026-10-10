@@ -1,7 +1,7 @@
 # FREEzzz Portal — Project Context
 
 > Canonical project context for continued work.
-> Last reviewed: 2026-10-09
+> Last reviewed: 2026-10-10
 > Repository: FREEzzzGames/Base
 > Branch: main
 
@@ -52,26 +52,17 @@ The previously planned portal-economy Stage 21 is permanently excluded:
 
 Game-specific gameplay mechanics are separate from portal infrastructure.
 
-## 5. GAME / CARGO DECK scope
+## 5. GAME / SPARK scope
 
-Current game direction is **CARGO DECK**, a Telegram Mini App game.
+The current GAME route is **SPARK / Ichiraku Ramen: Shinobi Ops**, embedded by `src/spark-console.html` and backed by the runtime in `public/spark.html` and `public/spark-*.js`.
 
-Current development constraints:
-- HTML5 / TypeScript / Vite architecture.
-- Mobile-first vertical presentation.
-- Current work has included a model-test arena and Space Marine source model calibration.
-- Preserve the existing game architecture and public APIs unless a change is explicitly required.
-- Performance target remains suitable for low-end Android and 60 FPS where practical.
-- Avoid per-frame allocations in hot paths.
-- VFX and combat systems remain modular.
+- Preserve the eight-shinobi action-platformer/shooter and its existing combat simulation.
+- Do not restore CARGO DECK as the active GAME runtime; its legacy URL redirects to SPARK.
+- The console provides movement, jump, weapon selection, shield, blink, fire, menu and restart controls.
+- Keep portrait/mobile Telegram Mini App presentation and optimize rendering for low-end Android.
+- Avoid per-frame allocations and expensive repeated background rendering.
+- A successful build or source audit does not prove touch behavior or frame rate on a real Android/Telegram WebView device; those remain explicit runtime verification tasks.
 
-Recent repository commits show the current game branch has been focused on:
-- Space Marine source-axis / ground-pose calibration;
-- rigid model pose optimization;
-- recoil correction without cumulative transform mutation;
-- temporarily stripped/controlled model-test arena presentation.
-
-These recent GAME changes are part of the current Base/main state and must be considered before modifying GAME runtime.
 
 ## 6. Telegram boundary
 
@@ -126,13 +117,13 @@ Rules:
 
 ## 11. Current repository checkpoint
 
-At the latest repository inspection on 2026-10-07:
+At the latest repository inspection on 2026-10-10:
 - repository exists and is accessible;
 - default branch is `main);
-- the latest observed commits are GAME/model-test changes from 2026-10-05;
+- the current GAME route is SPARK / Ichiraku Ramen: Shinobi Ops; CARGO DECK is not the active runtime;
 - `README.md`, `IMPLEMENTATION-STATUS.md`, and `LAW-2.0.md` are present;
 - `IMPLEMENTATION-STATUS.md` remains the implementation status source;
-- deployment success must be re-verified from GitHub Actions before being described as currently green.
+- deployment success must be re-verified from GitHub Actions and the published build before being described as currently green.
 
 ## 12. Working rule for future sessions
 
