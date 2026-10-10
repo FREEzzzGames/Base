@@ -39,8 +39,8 @@ if (/constructor|editor-layout|data-editor-/i.test(html)) throw new Error("Obsol
 if (!/spark\.html\?embedded=console/.test(gameHtml)) {
   throw new Error("GAME console does not embed the SPARK runtime.");
 }
-if (!/spark-console-entry/.test(gameHtml)) {
-  throw new Error("SPARK console controls entry is missing.");
+if (!/assets\/sparkConsole-[^"]+\.js/.test(gameHtml)) {
+  throw new Error("Compiled SPARK console controls entry is missing.");
 }
 if (!/spark\.js/.test(sparkHtml)) {
   throw new Error("SPARK page does not load its runtime.");
