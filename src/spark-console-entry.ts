@@ -70,7 +70,7 @@ function action(name:string):void{
    if(visible("#pauseMenu")&&clickGame("#pauseRestart"))break;
    if(visible("#over")&&clickGame("#retry"))break;
    if(visible("#win")&&clickGame("#again"))break;
-   if(visible("#hud"))clickGame("#pauseButton");
+   if(visible("#hud")){clickGame("#pauseButton");if(visible("#pauseMenu"))clickGame("#pauseRestart");}
    break;
   }
  }
