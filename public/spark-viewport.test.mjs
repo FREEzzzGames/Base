@@ -25,6 +25,15 @@ test("viewport contains the entire scene on short landscape-sized webviews", () 
   assert.equal(viewport.offsetY, 0);
 });
 
+test("Telegram viewport height takes precedence over the outer WebView height", () => {
+  const window = { innerWidth: 390, innerHeight: 900, devicePixelRatio: 2, Telegram: { WebApp: { viewportHeight: 700 } } };
+  vm.runInNewContext(readFileSync("public/spark-viewport.js", "utf8"), { window });
+  const canvas = { width: 0, height: 0 };
+  const view = window.SparkViewport.resize(canvas, 360, 640);
+  assert.equal(view.height, 700);
+  assert.equal(view.pixelHeight, 1400);
+});
+
 test("invalid dimensions are normalized and scale remains finite", () => {
   const viewport = loadViewport().SparkViewport.measure(0, -10, 0, 360, 640);
   assert.ok(Number.isFinite(viewport.scale));
