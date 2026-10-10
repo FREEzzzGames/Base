@@ -12,7 +12,7 @@ function allMatches(regex, source = html) {
 
 
 test("SPARK stylesheet is external and preserves mobile layout rules", () => {
-  assert.match(html, /<link\\s+rel=["']stylesheet["']\\s+href=["']\\.\\/spark\\.css["']/i);
+  assert.ok(html.includes('<link rel="stylesheet" href="./spark.css">'), "external stylesheet link is missing");
   assert.ok(css.includes(":root{"), "design tokens are missing");
   assert.ok(css.includes("@media(max-width:390px)"), "small-screen layout rules are missing");
   assert.ok(css.includes("touch-action:none"), "touch input styling is missing");
