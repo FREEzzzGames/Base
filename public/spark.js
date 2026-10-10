@@ -73,7 +73,7 @@ function reset(){clearTimers();clearToastTimer();resetInput();worldShake=worldSh
  SparkSimulation.resetClock();last=0;acc=0;state='PLAY';$('menu').classList.add('hidden');$('pauseMenu').classList.add('hidden');$('over').classList.add('hidden');$('win').classList.add('hidden');$('hud').classList.remove('hidden');$('controls').classList.remove('hidden');$('bossMeter').style.display='none';hud()}
 // PHYSICS: collision tests, projectiles, damage and fixed-step simulation.
 function hit(a,b){return SparkPhysics.hit(a,b)}
-function collide(e,dt){var oldX=e.x,oldY=e.y,oldBottom=oldY+e.h;e.onGround=false;e.y+=e.vy*dt;platforms.forEach(function(q){if(e.x<q.x+q.w&&e.x+e.w>q.x&&e.y<q.y+q.h&&e.y+e.h>q.y){if(e.vy>=0&&oldBottom<=q.y+10){e.y=q.y-e.h;e.vy=0;e.onGround=true}else if(e.vy<0&&oldY>=q.y+q.h-3){e.y=q.y+q.h;e.vy=0}}});e.x+=e.vx*dt;platforms.forEach(function(q){if(hit(e,q)){if(e.vx>0&&oldX+e.w<=q.x+3)e.x=q.x-e.w;else if(e.vx<0&&oldX>=q.x+q.w-3)e.x=q.x+q.w;e.vx=0}});e.x=Math.max(0,Math.min(levelW-e.w,e.x))}
+function collide(e,dt){SparkPhysics.moveAndCollide(e,dt,platforms,levelW)}
 function burst(x,y,n,c){SparkEffects.burst(fx,x,y,n,c)}
 function shoot(x,y,vx,vy,dmg,owner,c){SparkEffects.shoot(bullets,x,y,vx,vy,dmg,owner,c)}
 function segmentHitsRect(x1,y1,x2,y2,r){return SparkPhysics.segmentHitsRect(x1,y1,x2,y2,r)}
