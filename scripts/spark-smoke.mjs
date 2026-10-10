@@ -16,7 +16,7 @@ const requiredIds = [
 for (const id of requiredIds) {
   assert.match(html, new RegExp('id="' + id + '"'), "Missing UI control: " + id);
 }
-for (const file of ["spark-data.js", "spark-physics.js", "spark-effects.js", "spark-audio.js", "spark-ai.js", "spark-render.js", "spark-simulation.js", "spark-session.js", "spark-viewport.js", "spark.js"]) {
+for (const file of ["spark-data.js", "spark-physics.js", "spark-effects.js", "spark-audio.js", "spark-ai.js", "spark-render.js", "spark-simulation.js", "spark-session.js", "spark-viewport.js", "spark-input.js", "spark.js"]) {
   assert.ok(html.includes('src="./' + file + '"'), "Missing runtime module script: " + file);
 }
 assert.equal((data.match(/\{id:'(?:naru|kai|itachi|sando|hina|shin|roku|miko)'/g) || []).length, 8, "Expected 8 playable characters");
@@ -31,6 +31,7 @@ assert.ok(html.indexOf('src="./spark-viewport.js"') < html.indexOf('src="./spark
 assert.ok(viewport.includes("function measure(") && viewport.includes("function resize("), "Dedicated viewport adapter missing");
 assert.ok(viewport.includes("Math.min(w / logicalWidth, h / logicalHeight)"), "Viewport adapter must preserve the full 9:16 frame");
 assert.ok(runtime.includes("SparkViewport.resize(canvas,W,H)"), "Runtime must use the dedicated viewport adapter");
+assert.ok(runtime.includes("SparkInput.bind({keys:keys"), "Runtime must use extracted input adapter");
 assert.ok(runtime.includes("function update(dt)"), "Gameplay update loop missing");
 assert.ok(runtime.includes("function renderFrame"), "Render loop missing");
 console.log("SPARK_SMOKE_OK", JSON.stringify({ controls: requiredIds.length, characters: 8, weapons: 4, bossProfiles: 4, enemyTypes: 6, viewport: "contain 9:16" }));
