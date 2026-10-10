@@ -54,7 +54,7 @@ test("SPARK runtime scripts load in dependency order", () => {
   const scripts = allMatches(/<script\b[^>]*src=["']\.\/([^"']+)["'][^>]*>/gi).map(match => match[1]);
   const expected = [
     "spark-data.js", "spark-physics.js", "spark-effects.js", "spark-audio.js",
-    "spark-ai.js", "spark-render.js", "spark-simulation.js", "spark-session.js", "spark.js"
+    "spark-ai.js", "spark-render.js", "spark-simulation.js", "spark-session.js", "spark-viewport.js", "spark.js"
   ];
   for (const file of expected) assert.ok(scripts.includes(file), "missing runtime script " + file);
   assert.deepEqual(scripts.filter(file => expected.includes(file)), expected);
