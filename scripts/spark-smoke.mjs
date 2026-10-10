@@ -32,6 +32,9 @@ assert.ok(viewport.includes("function measure(") && viewport.includes("function 
 assert.ok(viewport.includes("Math.min(w / logicalWidth, h / logicalHeight)"), "Viewport adapter must preserve the full 9:16 frame");
 assert.ok(runtime.includes("SparkViewport.resize(canvas,W,H)"), "Runtime must use the dedicated viewport adapter");
 assert.ok(runtime.includes("SparkInput.bind({keys:keys"), "Runtime must use extracted input adapter");
+const physics = readFileSync("public/spark-physics.js", "utf8");
+assert.ok(runtime.includes("SparkPhysics.moveAndCollide(e,dt,platforms,levelW)"), "Runtime must delegate actor collision to physics module");
+assert.ok(physics.includes("function moveAndCollide("), "Physics module must own platform collision");
 assert.ok(runtime.includes("function update(dt)"), "Gameplay update loop missing");
 assert.ok(runtime.includes("function renderFrame"), "Render loop missing");
 console.log("SPARK_SMOKE_OK", JSON.stringify({ controls: requiredIds.length, characters: 8, weapons: 4, bossProfiles: 4, enemyTypes: 6, viewport: "contain 9:16" }));
