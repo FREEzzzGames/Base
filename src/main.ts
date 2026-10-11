@@ -58,6 +58,10 @@ const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRo
 let view:View=initialView;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 const T=(key:string)=>pt(lang,key);
+function safeModuleContent(moduleView:Exclude<PortalView,"home">,renderContent:()=>string):string{
+  const fallback=`<section class="module-fallback" role="status"><p>${escapeHtml(T("moduleUnavailable"))}</p><button type="button" data-module-retry>${escapeHtml(T("retry"))}</button></section>`;
+  return moduleManager.runIsolated(moduleView,renderContent,fallback);
+}
 let profileOpen=false;
 let languageMenuOpen=false;
 const telegramAuth=await Promise.race<TelegramAuthResult>([
@@ -487,7 +491,7 @@ function render(){
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>LIVE</h2><p>${T("liveSub")}</p></div>
         </div>
-        ${renderLiveCatalog(lang)}
+        ${safeModuleContent("live",()=>renderLiveCatalog(lang))}
       </div>`;
   }
   if(view==="chat"){
@@ -496,7 +500,7 @@ function render(){
         <div class="section-head portal-block" data-portal-block="header">
           <div><h2>CHAT</h2><p>${T("chatSub")}</p></div>
         </div>
-        <div class="chat portal-block" data-portal-block="messages">${renderTelegramChat()}</div>
+        <div class="chat portal-block" data-portal-block="messages">${safeModuleContent("chat",()=>renderTelegramChat())}</div>
       </div>`;
   }
 
@@ -565,7 +569,7 @@ function render(){
   }
 
   if(view==="library"){
-    body=renderLibrary();
+    body=safeModuleContent("library",()=>renderLibrary());
   }
 
   if(view==="echo9"){
@@ -806,6 +810,9 @@ function bind(){
       try{sessionStorage.setItem("freezzz:library:resume-on-open","1");}catch{}
       portalEvents.emit("navigation:changed",{view:"library"});
     });
+  });
+  document.querySelectorAll<HTMLElement>("[data-module-retry]").forEach(button=>{
+    button.addEventListener("click",()=>render());
   });
   document.querySelectorAll<HTMLElement>(".home-card[data-view]").forEach(function(x){
     const navigate=()=>{
