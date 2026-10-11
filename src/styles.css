@@ -8990,3 +8990,30 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .home-continue-game .home-continue-icon{width:18px;height:18px;flex:0 0 auto;color:#66fcf1;}
 .home-continue-game span{font-size:.82rem;opacity:.8;}
 .home-continue-game strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;}
+
+
+/* Isolated module error state: keep the shell navigable if a cluster fails. */
+.module-fallback{
+  display:grid;
+  place-items:center;
+  gap:12px;
+  min-height:180px;
+  margin:16px;
+  padding:24px;
+  border:1px solid rgba(102,252,241,.25);
+  border-radius:16px;
+  background:rgba(7,13,20,.92);
+  color:var(--tg-theme-text-color,#eefaff);
+  text-align:center;
+}
+.module-fallback p{max-width:32ch;margin:0;line-height:1.5;}
+.module-fallback button{
+  min-height:42px;
+  padding:9px 16px;
+  border:1px solid rgba(102,252,241,.5);
+  border-radius:10px;
+  background:rgba(18,51,58,.9);
+  color:inherit;
+  font:inherit;
+  cursor:pointer;
+}
