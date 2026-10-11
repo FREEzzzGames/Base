@@ -678,13 +678,19 @@ window.addEventListener("freezzz:radio-mini",event=>{
   if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();}
   if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();}
 });
+moduleManager.registerAdapter("game",{
+  onActivate:()=>beginGameActivity(),
+  onDeactivate:()=>endGameActivity()
+});
+moduleManager.registerAdapter("live",{
+  onDeactivate:()=>{
+    endLiveActivity();
+    livePopups=[];
+  }
+});
 portalEvents.on("navigation:changed",payload=>{
   if(!moduleManager.transition(payload.view))return;
-  const previousView=view;
   flushActivityTracking();
-  if(previousView==="game"&&payload.view!=="game")endGameActivity();
-  if(previousView!=="game"&&payload.view==="game")beginGameActivity();
-  if(previousView==="live"&&payload.view!=="live"){endLiveActivity();livePopups=[];}
   view=payload.view;
   portalState.view=payload.view;
   render();
