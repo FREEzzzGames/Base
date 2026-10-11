@@ -52,4 +52,19 @@ assert.deepEqual(lifecycle, [
 assert.equal(manager.transition("not-a-view"), false, "unknown routes must be rejected");
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
+// Exercise the emulator launch preflight without booting a browser emulator.
+globalThis.indexedDB = {};
+const librarySource = await readFile(new URL("../src/library-emulator.ts", import.meta.url), "utf8");
+const libraryCompiled = ts.transpileModule(librarySource, {
+  compilerOptions: {
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.ESNext
+  }
+}).outputText;
+const libraryUrl = "data:text/javascript;base64," + Buffer.from(libraryCompiled).toString("base64");
+const { getGameLaunchDiagnostics } = await import(libraryUrl);
+assert.deepEqual(getGameLaunchDiagnostics({ system: "nes", fileName: "demo.nes", size: 1024 }), []);
+assert.ok(getGameLaunchDiagnostics({ system: "nes", fileName: "demo.psx", size: 1024 }).includes("ROM_EXTENSION_MISMATCH"));
+assert.ok(getGameLaunchDiagnostics({ system: "nes", fileName: "demo.nes", size: 0 }).includes("ROM_SIZE_INVALID"));
+assert.ok(getGameLaunchDiagnostics({ system: "unknown", fileName: "demo.rom", size: 1024 }).includes("UNSUPPORTED_SYSTEM"));
 console.log("PORTAL_CORE_SMOKE_OK");
