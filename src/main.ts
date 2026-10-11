@@ -58,8 +58,8 @@ const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRo
 let view:View=initialView;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 const T=(key:string)=>pt(lang,key);
-function safeModuleContent(moduleView:Exclude<PortalView,"home">,renderContent:()=>string):string{
-  const fallback=`<section class="module-fallback" role="status"><p>${escapeHtml(T("moduleUnavailable"))}</p><button type="button" data-module-retry>${escapeHtml(T("retry"))}</button></section>`;
+function safeModuleContent(moduleView:Exclude<PortalView,"home">,renderContent:()=>string,fallbackOverride?:string):string{
+  const fallback=fallbackOverride??`<section class="module-fallback" role="status"><p>${escapeHtml(T("moduleUnavailable"))}</p><button type="button" data-module-retry>${escapeHtml(T("retry"))}</button></section>`;
   return moduleManager.runIsolated(moduleView,renderContent,fallback);
 }
 let profileOpen=false;
@@ -582,7 +582,7 @@ function render(){
         ${renderPortalToolbar()}
         <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}">${icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon")}</button>
       </div>
-      ${renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang})}
+      ${safeModuleContent("live",()=>renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang}),"")}
       ${profileOpen?renderProfileCard():""}
     </div>`;
 
