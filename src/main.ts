@@ -16,7 +16,7 @@ import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVi
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
-import { renderLibrary, bindLibraryView } from "./library-emulator";
+import { renderLibrary, bindLibraryView, getLastPlayedGameSummary, resumeLastPlayedGame } from "./library-emulator";
 
 initTelegramBridge();
 initVisualComfort();
@@ -50,6 +50,9 @@ const app=document.querySelector<HTMLDivElement>("#app")!;
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 const moduleManager=new PortalModuleManager();
+moduleManager.setErrorHandler((moduleView,phase,error)=>{
+  console.error("[FREEzzz module lifecycle]",moduleView,phase,error);
+});
 const overlayRoute=new URLSearchParams(window.location.search).get("freezzzOverlay");
 const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : portalState.view;
 let view:View=initialView;
@@ -467,6 +470,7 @@ function render(){
           </div>
           <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(PORTAL_NICKNAME)}</h1>
           <p>${T("homeDescription")}</p>
+          ${(()=>{const last=getLastPlayedGameSummary();return last?'<button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button>':"";})()}
           </div>
         </section>
         ${homeCard("live")}
@@ -675,6 +679,7 @@ window.addEventListener("freezzz:radio-mini",event=>{
   if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();}
 });
 portalEvents.on("navigation:changed",payload=>{
+  if(!moduleManager.transition(payload.view))return;
   const previousView=view;
   flushActivityTracking();
   if(previousView==="game"&&payload.view!=="game")endGameActivity();
@@ -787,6 +792,14 @@ function bind(){
       const target=next===view&&next!=="home"?"home":next;
       portalEvents.emit("navigation:changed",{view:target});
     };
+  });
+  document.querySelectorAll<HTMLElement>("[data-resume-last-game]").forEach(button=>{
+    button.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      try{sessionStorage.setItem("freezzz:library:resume-on-open","1");}catch{}
+      portalEvents.emit("navigation:changed",{view:"library"});
+    });
   });
   document.querySelectorAll<HTMLElement>(".home-card[data-view]").forEach(function(x){
     const navigate=()=>{
@@ -949,7 +962,15 @@ function bind(){
       render();
     }
   });
-  if(view==="library") bindLibraryView();
+  if(view==="library"){
+    bindLibraryView();
+    try{
+      if(sessionStorage.getItem("freezzz:library:resume-on-open")==="1"){
+        sessionStorage.removeItem("freezzz:library:resume-on-open");
+        void resumeLastPlayedGame();
+      }
+    }catch{}
+  }
 }
 
 function chatEmoji(m:{author:string;message:string}):string{
