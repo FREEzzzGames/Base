@@ -108,7 +108,7 @@ export class PortalModuleManager{
     }
   }
 
-  private invoke(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate"|"render"):void{
+  private invoke(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate"):void{
     const adapter=this.adapters.get(view);
     const callback=phase==="activate"?adapter?.onActivate:adapter?.onDeactivate;
     if(!callback)return;
