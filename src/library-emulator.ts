@@ -1190,6 +1190,22 @@ function stableGameId(id: string): number {
   return hash >>> 0;
 }
 
+export function getGameLaunchDiagnostics(game: Pick<LibraryGame, "system" | "fileName" | "size">): string[] {
+  const issues: string[] = [];
+  const system = SYSTEMS[game.system];
+  if (!system) issues.push("UNSUPPORTED_SYSTEM");
+  if (!Number.isFinite(game.size) || game.size <= 0) issues.push("ROM_SIZE_INVALID");
+  if (system) {
+    const extension = extensionOf(game.fileName);
+    if (extension !== "zip" && extension !== "7z" && !system.exts.includes(extension)) {
+      issues.push("ROM_EXTENSION_MISMATCH");
+    }
+  }
+  if (typeof indexedDB === "undefined") issues.push("INDEXEDDB_UNAVAILABLE");
+  if (typeof URL.createObjectURL !== "function") issues.push("OBJECT_URL_UNAVAILABLE");
+  return issues;
+}
+
 async function startGame(game: LibraryGame): Promise<void> {
   const token = ++emulatorToken;
   // Close the previous game immediately. Do not keep an old emulator alive
@@ -1204,6 +1220,8 @@ async function startGame(game: LibraryGame): Promise<void> {
   if (!root || !list || !filters || !head) return;
 
   try {
+    const diagnostics = getGameLaunchDiagnostics(game);
+    if (diagnostics.length) throw new Error("LAUNCH_PRECHECK_FAILED: " + diagnostics.join(", "));
     const blob = await getRom(game.id);
     if (token !== emulatorToken) return;
     activeGame = game;
