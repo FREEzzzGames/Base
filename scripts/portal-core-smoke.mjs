@@ -51,6 +51,7 @@ assert.deepEqual(lifecycle, [
 ]);
 assert.equal(manager.transition("not-a-view"), false, "unknown routes must be rejected");
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
+assert.equal(lifecycle.at(-1), "error:game:render");
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
 // Exercise the emulator launch preflight without booting a browser emulator.
 if (typeof globalThis.indexedDB === "undefined") {
