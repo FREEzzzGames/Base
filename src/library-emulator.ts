@@ -395,6 +395,25 @@ function gameCard(game: LibraryGame): string {
     '</article>';
 }
 
+export type LastPlayedGameSummary={id:string;name:string;system:SystemId;lastPlayedAt:string};
+
+export function getLastPlayedGameSummary():LastPlayedGameSummary|null{
+  const games=readMeta()
+    .filter(game=>Boolean(game.id&&game.name&&game.lastPlayedAt&&Number.isFinite(Date.parse(game.lastPlayedAt))))
+    .sort((a,b)=>Date.parse(b.lastPlayedAt||"")-Date.parse(a.lastPlayedAt||""));
+  const game=games[0];
+  return game?{id:game.id,name:game.name,system:game.system,lastPlayedAt:game.lastPlayedAt||""}:null;
+}
+
+export async function resumeLastPlayedGame():Promise<boolean>{
+  const last=getLastPlayedGameSummary();
+  if(!last)return false;
+  const game=readMeta().find(item=>item.id===last.id);
+  if(!game)return false;
+  await startGame(game);
+  return true;
+}
+
 export function renderLibrary(): string {
   const games = filteredGames();
   const total = readMeta().length;
