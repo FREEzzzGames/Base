@@ -10,6 +10,17 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - No UI constructor.
 - Local developer tools are build-gated and never included in the normal production build.
 
+## 2026-10-11 Functional release block
+
+- Added module lifecycle transitions and adapter hooks to the canonical module manager.
+- Wired GAME and LIVE activity cleanup through module lifecycle adapters rather than duplicate navigation conditionals.
+- Isolated event-bus listener failures so one listener cannot stop the remaining listeners.
+- Added a HOME **Continue game** action for the most recently played local library ROM. This relaunches the selected ROM; it does not claim to restore an in-game save state.
+- Added emulator launch preflight checks for system support, filename extension, non-empty ROM size and required browser APIs.
+- Added localized recovery UI for render failures in LIVE, CHAT and LIBRARY, with a retry action that keeps the portal shell available.
+- Added scripts/portal-core-smoke.mjs and made it a required CI step before build/deployment. It exercises event isolation, module lifecycle transitions and emulator preflight.
+- Release acceptance still requires the matching GitHub Actions build/deploy/published-build verification. Real Telegram Android touch, DS touch, LIVE playback, CHAT connection, RADIO playback and frame-rate checks remain device/runtime tasks and must not be inferred from source tests.
+
 ## Repository hygiene and quality gates (2026-10-09)
 
 - Expanded `.gitignore` for Node/Vite, Android/Gradle, IDE, and local environment artifacts.
@@ -30,9 +41,9 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - [x] Local developer diagnostics isolated behind `VITE_FREEZZ_DEV_TOOLS=1`.
 - [x] Portal economy remains excluded.
 - [ ] 06 Composition Root
-- [ ] 07 Module Manager
+- [x] 07 Module Manager — route transitions, adapter registration, lifecycle callbacks and isolated failures implemented.
 - [ ] 08 Module Contract — registry foundation exists; full module adapters remain.
-- [ ] 09 Event Bus — foundation exists; module events remain to be wired.
+- [x] 09 Event Bus — navigation/profile/media events are wired; listener failures are isolated and unsubscribe removes empty listener sets.
 - [ ] 10 Platform State — foundation exists; full persistence/adapters remain.
 - [ ] 11 Web UI / Logic separation
 - [ ] 12 Web Adapters

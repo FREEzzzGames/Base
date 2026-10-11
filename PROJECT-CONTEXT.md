@@ -1,7 +1,7 @@
 # FREEzzz Portal — Project Context
 
 > Canonical project context for continued work.
-> Last reviewed: 2026-10-10
+> Last reviewed: 2026-10-11
 > Repository: FREEzzzGames/Base
 > Branch: main
 
@@ -139,3 +139,15 @@ Before changing code:
 8. Update this context/status document when project architecture, constraints, or stable behavior materially changes.
 
 This document is project context, not a replacement for the actual implementation or `LAW-2.0.md`.
+
+
+## 13. 2026-10-11 implementation update
+
+- The module manager now tracks the active view, validates routes, supports per-module lifecycle adapters, and isolates adapter failures.
+- GAME and LIVE use lifecycle adapters for activity cleanup; event listeners are individually isolated.
+- HOME can explicitly relaunch the last played local library ROM. This is a relaunch shortcut, not an emulator save-state restore.
+- Emulator launch preflight validates the selected system, extension, non-empty file size, IndexedDB and object-URL support before boot.
+- LIVE, CHAT and LIBRARY have a localized render-failure fallback with a retry action.
+- CI now runs portal architecture smoke tests before the production build.
+- The current EmulatorJS system registry includes NES/Game Boy/Master System/Mega Drive/SNES/GBA/PlayStation/Nintendo DS. Nintendo 3DS is not currently a supported core in this registry and must not be represented as implemented without adding and validating a compatible core.
+- Device-level Telegram runtime validation remains separate from source/build tests.
