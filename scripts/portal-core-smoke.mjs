@@ -53,7 +53,9 @@ assert.equal(manager.transition("not-a-view"), false, "unknown routes must be re
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
 // Exercise the emulator launch preflight without booting a browser emulator.
-globalThis.indexedDB = {};
+if (typeof globalThis.indexedDB === "undefined") {
+  Object.defineProperty(globalThis, "indexedDB", { value: {}, configurable: true, writable: true });
+}
 const librarySource = await readFile(new URL("../src/library-emulator.ts", import.meta.url), "utf8");
 const libraryCompiled = ts.transpileModule(librarySource, {
   compilerOptions: {
