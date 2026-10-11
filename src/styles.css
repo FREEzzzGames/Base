@@ -8967,3 +8967,26 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
     max-height:34px!important;
   }
 }
+
+
+/* Play Continuity: explicit resume action; HOME remains the initial route. */
+.home-continue-game{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:min(100%,360px);
+  min-height:46px;
+  margin:16px 0 0;
+  padding:10px 14px;
+  border:1px solid rgba(102,252,241,.45);
+  border-radius:12px;
+  color:var(--tg-theme-text-color,#eefaff);
+  background:linear-gradient(135deg,rgba(14,45,53,.94),rgba(10,17,25,.94));
+  box-shadow:0 0 20px rgba(102,252,241,.08);
+  text-align:left;
+  cursor:pointer;
+}
+.home-continue-game:active{transform:scale(.985);}
+.home-continue-game .home-continue-icon{width:18px;height:18px;flex:0 0 auto;color:#66fcf1;}
+.home-continue-game span{font-size:.82rem;opacity:.8;}
+.home-continue-game strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;}
