@@ -71,7 +71,7 @@ export class PortalModuleManager{
   private readonly definitions:readonly PortalModuleDefinition[];
   private readonly adapters=new Map<Exclude<PortalView,"home">,PortalModuleAdapter>();
   private active:PortalView="home";
-  private errorHandler:(view:PortalView,phase:"activate"|"deactivate",error:unknown)=>void=()=>{};
+  private errorHandler:(view:PortalView,phase:"activate"|"deactivate"|"render",error:unknown)=>void=()=>{};
 
   constructor(definitions:readonly PortalModuleDefinition[]=PORTAL_MODULES){
     this.definitions=definitions.slice();
@@ -81,7 +81,7 @@ export class PortalModuleManager{
   has(view:PortalView):boolean{return view==="home"||this.definitions.some(module=>module.view===view);}
   get(view:Exclude<PortalView,"home">):PortalModuleDefinition|undefined{return this.definitions.find(module=>module.view===view);}
 
-  setErrorHandler(handler:(view:PortalView,phase:"activate"|"deactivate",error:unknown)=>void):void{
+  setErrorHandler(handler:(view:PortalView,phase:"activate"|"deactivate"|"render",error:unknown)=>void):void{
     this.errorHandler=handler;
   }
 
@@ -103,12 +103,12 @@ export class PortalModuleManager{
 
   runIsolated<T>(view:Exclude<PortalView,"home">,operation:()=>T,fallback:T):T{
     try{return operation();}catch(error){
-      this.errorHandler(view,"activate",error);
+      this.errorHandler(view,"render",error);
       return fallback;
     }
   }
 
-  private invoke(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate"):void{
+  private invoke(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate"|"render"):void{
     const adapter=this.adapters.get(view);
     const callback=phase==="activate"?adapter?.onActivate:adapter?.onDeactivate;
     if(!callback)return;
