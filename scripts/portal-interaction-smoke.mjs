@@ -53,3 +53,18 @@ assert.ok(catalog.includes('addEventListener("click"'), "GAME catalog buttons mu
 
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
+
+
+const styles = readFileSync("src/styles.css", "utf8");
+assert.ok(styles.includes('.portal-route-workspace > main > .portal-layout[data-portal-layout="game"]'),
+  "GAME route must fit the shared portal viewport");
+assert.ok(/\.open-games-portal \.open-games-grid\s*\{[^}]*overflow-y:auto!important/s.test(styles),
+  "GAME cards must have their own vertical scroll viewport");
+assert.ok(/\.open-games-portal \.open-game-categories\s*\{[^}]*overflow-x:auto!important/s.test(styles),
+  "GAME category filters must scroll horizontally on mobile");
+assert.ok(/\.open-games-portal \.open-game-catalog\s*\{[^}]*min-height:0!important/s.test(styles),
+  "GAME catalog container must allow its inner list to shrink and scroll");
+assert.ok(/\.open-games-portal \.open-game-frame,[\s\S]*?min-height:0!important/s.test(styles),
+  "Embedded games must fit the remaining portal viewport");
+assert.ok(/\.open-games-portal \.open-game-primary,[\s\S]*?background:#000!important/s.test(styles),
+  "GAME controls must follow the portal black/white/red theme");
