@@ -717,24 +717,28 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 function bindHudTouchGesture(){
   if(hudGestureBound)return;
   hudGestureBound=true;
-  let startX=0,startY=0,tracking=false,triggered=false,startedOnToolbar=false;
-  document.addEventListener("pointerdown",e=>{
-    if(e.pointerType==="mouse"&&e.button!==0)return;
-    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;startedOnToolbar=Boolean((e.target as HTMLElement|null)?.closest(".portal-toolbar"));
-  },{passive:true});
+  let startX=0,startY=0,tracking=false,triggered=false,startedInHudZone=false;
+  const begin=(x:number,y:number,target:EventTarget|null,button:number,pointerType?:string)=>{
+    if(pointerType==="mouse"&&button!==0)return;
+    startX=x;startY=y;tracking=true;triggered=false;
+    const onToolbar=Boolean((target as HTMLElement|null)?.closest?.(".portal-toolbar"));
+    const bottomZone=y>=window.innerHeight-120;
+    startedInHudZone=onToolbar||bottomZone;
+  };
+  document.addEventListener("pointerdown",e=>begin(e.clientX,e.clientY,e.target,e.button,e.pointerType),{passive:true});
   document.addEventListener("pointermove",e=>{
-    if(!tracking||triggered)return;
+    if(!tracking||triggered||!startedInHudZone)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.abs(dx)>Math.abs(dy)+8)return;
-    if(!hudHidden&&startedOnToolbar&&dy>44){
+    if(Math.abs(dy)<44||Math.abs(dx)>Math.abs(dy)*0.8)return;
+    if(!hudHidden&&dy>0){
       triggered=true;
       setHudHidden(true);
-    }else if(hudHidden&&startY<=window.innerHeight-20&&dy<-44){
+    }else if(hudHidden&&dy<0&&startY>=window.innerHeight-120){
       triggered=true;
       setHudHidden(false);
     }
   },{passive:true});
-  const end=()=>{tracking=false;};
+  const end=()=>{tracking=false;startedInHudZone=false;};
   document.addEventListener("pointerup",end,{passive:true});
   document.addEventListener("pointercancel",end,{passive:true});
 }
