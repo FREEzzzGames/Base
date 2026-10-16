@@ -238,6 +238,70 @@ button{font:inherit}
   .echo9-scene{height:29svh!important;min-height:170px!important}
   .echo9-text{padding:22px 14px 24px!important;font-size:16px!important;line-height:1.48!important}
 }
+</style>
+<style id="echo9-layout-recovery">
+/* Restore the ECHO reading surface: fixed viewport, opaque pages, predictable scrolling. */
+html,body{
+  position:relative!important;
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;
+  overflow:hidden!important;
+  background:#050609!important;
+}
+.echo9-root{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  overflow:hidden!important;background:#07090b!important;
+}
+.echo9-pages{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  overflow:hidden!important;
+}
+.echo9-page{
+  box-sizing:border-box!important;
+  background:#080b0e!important;
+  overflow:hidden!important;
+}
+.echo9-page.active{visibility:visible!important;pointer-events:auto!important}
+.echo9-page.under{visibility:visible!important;pointer-events:none!important}
+.echo9-sheet{
+  width:min(900px,100%)!important;
+  height:100%!important;min-height:0!important;
+  margin:0 auto!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  background:linear-gradient(180deg,rgba(9,12,15,.985),rgba(6,9,11,.995))!important;
+  color:#f2f2ee!important;
+  padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;
+}
+.echo9-text,.echo9-page-title,.echo9-kicker,.echo9-meta,.echo9-number,
+.echo9-cover-note,.echo9-quote,.echo9-credit{color:#f2f2ee}
+.echo9-controls{
+  position:absolute!important;z-index:100!important;
+  left:12px!important;right:12px!important;
+  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  pointer-events:none!important;
+}
+.echo9-control{
+  width:48px!important;height:48px!important;
+  min-width:48px!important;min-height:48px!important;
+  pointer-events:auto!important;
+  background:#080b0e!important;color:#f2f2ee!important;
+  opacity:1!important;
+}
+.echo9-counter{
+  background:#05080a!important;color:#f2f2ee!important;opacity:1!important;
+}
+@media(max-width:600px){
+  .echo9-sheet{
+    padding:18px 12px calc(124px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .echo9-text{font-size:16px!important;line-height:1.48!important}
+}
 </style></head>
 <body>
 <div class="echo9-root" id="echo9Root">
