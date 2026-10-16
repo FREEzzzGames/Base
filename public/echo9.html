@@ -476,76 +476,126 @@ button{font:inherit}
 </div>
 <script>
 (()=>{"use strict";
-const root=document.getElementById("echo9Pages"),pages=[...root.querySelectorAll(".echo9-page")],prev=document.getElementById("echo9Prev"),next=document.getElementById("echo9Next"),counter=document.getElementById("echo9Counter"),video=document.getElementById("echo9Video");
-let active=0,drag=false,dir=0,startX=0,startY=0,locked=false;
-const DURATION=1040,SNAP=720,THRESHOLD=58;
+const root=document.getElementById("echo9Pages");
+const pages=[...root.querySelectorAll(".echo9-page")];
+const prev=document.getElementById("echo9Prev");
+const next=document.getElementById("echo9Next");
+const counter=document.getElementById("echo9Counter");
+const video=document.getElementById("echo9Video");
+if(!root||pages.length===0||!prev||!next||!counter)return;
+let active=0,tracking=false,dragging=false,dir=0,startX=0,startY=0,locked=false,pointerId=null;
+const DURATION=1040,SNAP=320,THRESHOLD=52,INTENT=10;
+function syncControls(){
+  counter.textContent=String(active+1).padStart(2,"0")+" / "+String(pages.length).padStart(2,"0");
+  prev.disabled=locked||active===0;
+  next.disabled=locked||active===pages.length-1;
+  prev.setAttribute("aria-disabled",String(prev.disabled));
+  next.setAttribute("aria-disabled",String(next.disabled));
+}
 function renderUnder(){
-  pages.forEach((p,i)=>{p.classList.remove("active","under");p.style.removeProperty("--b");});
+  pages.forEach((p)=>{p.classList.remove("active","under");p.style.removeProperty("--b");});
   pages[active].classList.add("active");
   if(pages[active+1])pages[active+1].classList.add("under");
   if(pages[active-1])pages[active-1].classList.add("under");
-  counter.textContent=String(active+1).padStart(2,"0")+" / "+String(pages.length).padStart(2,"0");
+  syncControls();
 }
-function cleanup(p){p.classList.remove("turn-next","turn-prev","dragging","snap");p.style.removeProperty("transform");p.style.removeProperty("filter");}
+function cleanup(p){
+  if(!p)return;
+  p.classList.remove("turn-next","turn-prev","dragging","snap");
+  p.style.removeProperty("transform");
+  p.style.removeProperty("filter");
+}
+function resetGesture(){
+  tracking=false;dragging=false;dir=0;pointerId=null;
+}
 function turn(direction){
   if(locked)return;
   const target=active+(direction>0?1:-1);
   if(target<0||target>=pages.length)return;
   locked=true;
-  const p=pages[active];
-  p.classList.add(direction>0?"turn-next":"turn-prev");
-  window.setTimeout(()=>{cleanup(p);active=target;locked=false;renderUnder();pages[active].scrollTop=0},DURATION+35);
+  syncControls();
+  resetGesture();
+  const page=pages[active];
+  page.classList.add(direction>0?"turn-next":"turn-prev");
+  window.setTimeout(()=>{
+    cleanup(page);
+    active=target;
+    pages.forEach(p=>p.scrollTop=0);
+    locked=false;
+    renderUnder();
+  },DURATION+35);
 }
 function snapBack(){
-  const p=pages[active];
-  p.classList.remove("dragging");
-  p.classList.add("snap");
-  p.style.transform="rotateY(0deg)";
-  p.style.filter="brightness(1)";
-  window.setTimeout(()=>{cleanup(p);renderUnder()},SNAP+25);
+  const page=pages[active];
+  if(!dragging){cleanup(page);resetGesture();return;}
+  page.classList.remove("dragging");
+  page.classList.add("snap");
+  page.style.transform="rotateY(0deg)";
+  page.style.filter="brightness(1)";
+  resetGesture();
+  window.setTimeout(()=>{cleanup(page);renderUnder();},SNAP+25);
 }
 root.addEventListener("pointerdown",e=>{
-  if(locked||e.target.closest(".echo9-controls"))return;
+  if(locked||tracking)return;
   if(e.pointerType==="mouse"&&e.button!==0)return;
-  drag=true;dir=0;startX=e.clientX;startY=e.clientY;
-  pages[active].classList.add("dragging");
-  try{root.setPointerCapture(e.pointerId)}catch{}
+  if(e.target instanceof Element&&e.target.closest("button,a,input,textarea,select,[data-no-page-swipe]"))return;
+  tracking=true;dragging=false;dir=0;startX=e.clientX;startY=e.clientY;pointerId=e.pointerId;
 },{passive:true});
 root.addEventListener("pointermove",e=>{
-  if(!drag||locked)return;
+  if(!tracking||locked||e.pointerId!==pointerId)return;
   const dx=e.clientX-startX,dy=e.clientY-startY;
   if(!dir){
-    if(Math.abs(dx)<8)return;
-    if(Math.abs(dy)>=Math.abs(dx)*.9){drag=false;cleanup(pages[active]);return}
+    if(Math.max(Math.abs(dx),Math.abs(dy))<INTENT)return;
+    // Let the browser own vertical gestures so page text remains scrollable.
+    if(Math.abs(dy)>Math.abs(dx)*1.2){resetGesture();return;}
+    if(Math.abs(dx)<Math.abs(dy)*1.15)return;
     dir=dx<0?1:-1;
-    if((dir>0&&active===pages.length-1)||(dir<0&&active===0)){drag=false;cleanup(pages[active]);return}
+    if((dir>0&&active===pages.length-1)||(dir<0&&active===0)){resetGesture();return;}
+    dragging=true;
+    pages[active].classList.add("dragging");
+    try{root.setPointerCapture(e.pointerId)}catch{}
   }
+  if(!dragging)return;
   const progress=Math.max(0,Math.min(1,Math.abs(dx)/Math.max(root.clientWidth,1)));
   const angle=(dir>0?-1:1)*progress*174;
-  const p=pages[active];
-  p.style.transform="rotateY("+angle+"deg)";
-  p.style.filter="brightness("+(1-progress*.38)+")";
+  const page=pages[active];
+  page.style.transform="rotateY("+angle+"deg)";
+  page.style.filter="brightness("+(1-progress*.38)+")";
 },{passive:true});
 function release(e){
-  if(!drag)return;
-  drag=false;
-  try{root.releasePointerCapture(e.pointerId)}catch{}
+  if(!tracking||e.pointerId!==pointerId)return;
   const dx=e.clientX-startX,dy=e.clientY-startY;
-  if(dir&&Math.abs(dx)>=THRESHOLD&&Math.abs(dx)>Math.abs(dy)*1.15)turn(dir);else snapBack();
+  const direction=dir;
+  const wasDragging=dragging;
+  if(wasDragging){try{root.releasePointerCapture(e.pointerId)}catch{}}
+  if(direction&&wasDragging&&Math.abs(dx)>=THRESHOLD&&Math.abs(dx)>Math.abs(dy)*1.1)turn(direction);
+  else if(wasDragging)snapBack();
+  else resetGesture();
 }
 root.addEventListener("pointerup",release,{passive:true});
-root.addEventListener("pointercancel",()=>{if(drag){drag=false;snapBack()}},{passive:true});
-prev.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});
-next.addEventListener("pointerdown",e=>e.stopPropagation(),{passive:true});
-prev.addEventListener("click",()=>turn(-1));next.addEventListener("click",()=>turn(1));
-document.addEventListener("keydown",e=>{if(e.key==="ArrowLeft")turn(-1);if(e.key==="ArrowRight")turn(1);if(e.key==="Escape")window.parent!==window&&window.parent.postMessage({type:"echo9-close"},"*")});
+root.addEventListener("pointercancel",()=>{
+  if(dragging)snapBack();else resetGesture();
+},{passive:true});
+root.addEventListener("lostpointercapture",()=>{
+  if(dragging)snapBack();else resetGesture();
+},{passive:true});
+prev.addEventListener("click",e=>{e.preventDefault();turn(-1);});
+next.addEventListener("click",e=>{e.preventDefault();turn(1);});
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft")turn(-1);
+  if(e.key==="ArrowRight")turn(1);
+  if(e.key==="Escape"&&window.parent!==window)window.parent.postMessage({type:"echo9-close"},"*");
+});
 function startVideo(){
   if(!video)return;
   video.muted=true;video.defaultMuted=true;video.playsInline=true;video.playbackRate=.5;
-  const play=()=>{video.playbackRate=.5;const p=video.play();if(p&&p.catch)p.catch(()=>{})};
-  play();video.addEventListener("loadeddata",play,{once:true});document.addEventListener("pointerdown",play,{once:true,passive:true});
+  const play=()=>{video.playbackRate=.5;const result=video.play();if(result&&result.catch)result.catch(()=>{});};
+  play();
+  video.addEventListener("loadeddata",play,{once:true});
+  document.addEventListener("pointerdown",play,{once:true,passive:true});
 }
-renderUnder();startVideo();
+renderUnder();
+startVideo();
 })();
 </script>
 </body>
