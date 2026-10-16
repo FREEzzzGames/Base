@@ -119,3 +119,11 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - This closes a validation gap: the previous smoke test could pass while the GAME route or its core runtime files were absent from the production artifact.
 - Verified release commit: `73fbc69cc7ad6662d84352ff6b12f77e1883e7f1`; build, typecheck, ESLint, SPARK runtime validation, release smoke, Pages deployment, and published-build verification passed in [workflow run 38091886209](https://github.com/FREEzzzGames/Base/actions/runs/38091886209).
 - Real Telegram Android touch, module-isolation, LIVE playback, CHAT connection, RADIO playback, LIBRARY import/emulation, and SPARK FPS remain device/runtime checks; they are not marked complete by this source-level gate.
+
+
+## 2026-10-16 GAME catalog integration
+
+- Added a searchable, category-filtered GAME catalog with 142 browser-game entries and 10 additional open-game projects/collections.
+- Preserved SPARK / Ichiraku Ramen: Shinobi Ops as a featured in-portal game; external individual games can be launched in an iframe with an external-open fallback and source links.
+- Added responsive mobile-first styling and RU/DE/EN catalog labels.
+- **Verification status:** source commits are pushed to `main`; the latest GitHub Actions workflow must be checked for typecheck, lint, build, release smoke, Pages deployment, and published-build verification. External URLs, iframe restrictions, mobile touch, and per-game licensing/assets have not all been individually verified.

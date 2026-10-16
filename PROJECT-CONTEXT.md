@@ -120,7 +120,7 @@ Rules:
 At the latest repository inspection on 2026-10-10:
 - repository exists and is accessible;
 - default branch is `main);
-- the current GAME route is SPARK / Ichiraku Ramen: Shinobi Ops; CARGO DECK is not the active runtime;
+- the GAME route is the open-games catalog with SPARK / Ichiraku Ramen: Shinobi Ops retained as a featured in-portal game; CARGO DECK is not the active runtime;
 - `README.md`, `IMPLEMENTATION-STATUS.md`, and `LAW-2.0.md` are present;
 - `IMPLEMENTATION-STATUS.md` remains the implementation status source;
 - deployment success must be re-verified from GitHub Actions and the published build before being described as currently green.
@@ -151,3 +151,13 @@ This document is project context, not a replacement for the actual implementatio
 - CI now runs portal architecture smoke tests before the production build.
 - The current EmulatorJS system registry includes NES/Game Boy/Master System/Mega Drive/SNES/GBA/PlayStation/Nintendo DS. Nintendo 3DS is not currently a supported core in this registry and must not be represented as implemented without adding and validating a compatible core.
 - Device-level Telegram runtime validation remains separate from source/build tests.
+
+
+## 14. 2026-10-16 GAME open-source catalog integration
+
+- Added `src/open-games-catalog.ts`: 142 individual browser-game candidates plus 10 external open-game projects/collections, with category filters, search, source links, and in-portal iframe launch for individual games.
+- Replaced the single-game GAME route with the catalog while preserving SPARK as the featured original FREEzzz game and retaining the existing independent GAME route/lifecycle.
+- Added responsive mobile-first catalog styles in `src/styles.css`; localization is included for RU/DE/EN.
+- External games remain hosted at their source URLs; the portal does not copy their code or assets. Iframe restrictions and rights to names/assets vary by project. Individual mobile runtime and license audits are still required.
+- Source implementation commits: `5ff52bb58b00a45b5cd0d086b34836e428702742`, `753dcdaf11a581a3fed05b64100f85c50f275c98`, `ed199638e8b262c3cf6b4493b26a4580784dad6f`, `5f97f4a89a33f8fa7e7e8130fa7ded7199d1b445`, `8b206c59b30022a852819f7b18bd4e511c735fc0`.
+- CI and published-build verification must pass before marking this feature released; Telegram Android touch behavior and iframe compatibility remain device/runtime checks.
