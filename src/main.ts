@@ -17,6 +17,7 @@ import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
 import { renderLibrary, bindLibraryView, getLastPlayedGameSummary, resumeLastPlayedGame } from "./library-emulator";
+import { renderOpenGamesCatalog, bindOpenGamesCatalog } from "./open-games-catalog";
 
 initTelegramBridge();
 initVisualComfort();
@@ -505,15 +506,7 @@ function render(){
   }
 
   if(view==="game"){
-    body=`
-      <div class="content portal-layout game-portal" data-portal-layout="game">
-        <div class="section-head portal-block game-section-head" data-portal-block="header">
-          <div><h2>GAME</h2><p>SPARK · ICHIRAKU OPERATIONS</p></div>
-        </div>
-        <section class="portal-block spark-game-host" data-portal-block="game" aria-label="SPARK game">
-          <iframe class="spark-game-frame" src="./spark-console.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="FREEzzz GAMES — ICHIRAKU RAMEN: SHINOBI OPS" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
-        </section>
-      </div>`;
+    body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang,PORTAL_BUILD_ID));
   }
   if(view==="radio"){
     const selectedStation=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
@@ -777,6 +770,7 @@ function bind(){
     if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
   }
   bindUniversalPortalPress();
+  if(view==="game")bindOpenGamesCatalog(lang,()=>render());
   document.querySelector<HTMLButtonElement>("[data-hud-toggle]")?.addEventListener("click",e=>{
     e.preventDefault();
     e.stopPropagation();
