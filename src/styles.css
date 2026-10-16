@@ -9322,3 +9322,66 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   .open-games-portal .open-game-count{justify-self:end!important}
   .open-games-portal .open-games-grid{gap:5px!important}
 }
+
+
+/* HUD swipe-only control: remove the floating collapse/reveal button entirely. */
+.portal-workspace > .portal-hud-toggle{display:none!important}
+
+/* HOME hero guard: keep title, clock and resume action inside their own panel. */
+.portal-home-workspace .home-portal > .home-hero{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  align-content:center!important;
+  align-items:center!important;
+  gap:4px 10px!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.portal-home-workspace .home-portal > .home-hero h1.home-hero-profile-trigger{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  font-size:clamp(30px,15vw,76px)!important;
+  line-height:.92!important;
+  letter-spacing:-.055em!important;
+  overflow-wrap:anywhere!important;
+}
+.portal-home-workspace .home-portal > .home-hero [data-home-clock]{
+  grid-column:2!important;
+  grid-row:1!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  font-size:clamp(25px,10vw,58px)!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.portal-home-workspace .home-portal > .home-hero .home-continue-game{
+  grid-column:1 / -1!important;
+  grid-row:2!important;
+  position:relative!important;
+  z-index:2!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:2px 0 0!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:420px){
+  .portal-home-workspace .home-portal > .home-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto!important;
+  }
+  .portal-home-workspace .home-portal > .home-hero h1.home-hero-profile-trigger,
+  .portal-home-workspace .home-portal > .home-hero [data-home-clock]{
+    grid-column:1!important;
+  }
+  .portal-home-workspace .home-portal > .home-hero h1.home-hero-profile-trigger{grid-row:1!important}
+  .portal-home-workspace .home-portal > .home-hero [data-home-clock]{grid-row:2!important;justify-self:end!important}
+  .portal-home-workspace .home-portal > .home-hero .home-continue-game{grid-row:3!important}
+}
