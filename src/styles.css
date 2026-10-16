@@ -9035,7 +9035,7 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .open-game-featured p{margin:0;font-size:10px;line-height:1.4;opacity:.7}
 .open-game-primary,.open-game-secondary,.open-game-back{
   min-height:34px;border:1px solid rgba(102,252,241,.38);border-radius:7px;
-  padding:0 10px;font:700 10px/1.2 inherit;letter-spacing:.02em;cursor:pointer;
+  padding:0 10px;font:700 10px/1.2 system-ui,sans-serif;letter-spacing:.02em;cursor:pointer;
   color:#e9ffff;background:rgba(102,252,241,.12);touch-action:manipulation
 }
 .open-game-primary{background:#66fcf1;color:#061014;border-color:#66fcf1;white-space:nowrap}
@@ -9053,7 +9053,7 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .open-game-categories::-webkit-scrollbar{display:none}
 .open-game-categories button{
   flex:0 0 auto;min-height:30px;padding:0 9px;border:1px solid rgba(255,255,255,.15);
-  border-radius:7px;background:#10151d;color:#e7edf3;font:600 9px/1 inherit;white-space:nowrap
+  border-radius:7px;background:#10151d;color:#e7edf3;font:600 9px/1 system-ui,sans-serif;white-space:nowrap
 }
 .open-game-categories button.active{color:#041012;background:#66fcf1;border-color:#66fcf1}
 .open-game-disclaimer{margin:0;font-size:9px;line-height:1.4;opacity:.62}
