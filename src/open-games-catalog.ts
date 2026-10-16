@@ -126,13 +126,17 @@ function copy(lang: CatalogLanguage, key: string): string {
   return COPY[lang]?.[key] || COPY.EN[key] || key;
 }
 
-function renderCards(lang: CatalogLanguage): string {
+function filteredEntries(): CatalogEntry[] {
   const query = searchQuery.trim().toLocaleLowerCase();
-  const filtered = ENTRIES.filter(entry => {
+  return ENTRIES.filter(entry => {
     const categoryMatches = activeCategory === "all" || entry.category === activeCategory;
     const haystack = [entry.name, entry.category, entry.tech, entry.description, entry.tags].join(" ").toLocaleLowerCase();
     return categoryMatches && (!query || haystack.includes(query));
   });
+}
+
+function renderCards(lang: CatalogLanguage): string {
+  const filtered = filteredEntries();
   const cards = filtered.map(entry => `
     <article class="open-game-card" data-open-game-card>
       <div class="open-game-card-top"><span class="open-game-category">${esc(copy(lang, entry.category)) === entry.category ? esc(entry.category) : esc(copy(lang, entry.category))}</span><span class="open-game-tech">${esc(entry.tech)}</span></div>
@@ -192,7 +196,7 @@ export function renderOpenGamesCatalog(language: CatalogLanguage, buildId: strin
         <button type="button" class="open-game-primary" data-open-game-play="spark">${t("play")}</button>
       </section>
       <section class="open-game-catalog">
-        <div class="open-game-tools"><input type="search" data-open-game-search maxlength="80" value="${esc(searchQuery)}" placeholder="${t("search")}" aria-label="${t("search")}"><span class="open-game-count"><b data-open-game-count>152</b> ${t("count")}</span></div>
+        <div class="open-game-tools"><input type="search" data-open-game-search maxlength="80" value="${esc(searchQuery)}" placeholder="${t("search")}" aria-label="${t("search")}"><span class="open-game-count"><b data-open-game-count>${filteredEntries().length}</b> ${t("count")}</span></div>
         <div class="open-game-categories" role="group" aria-label="Game categories">
           <button type="button" data-open-game-category="all" class="${activeCategory === "all" ? "active" : ""}">${t("all")}</button>
           ${CATEGORY_KEYS.map(key => `<button type="button" data-open-game-category="${key}" class="${activeCategory === key ? "active" : ""}">${t(key)}</button>`).join("")}
