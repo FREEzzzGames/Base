@@ -9385,3 +9385,25 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   .portal-home-workspace .home-portal > .home-hero [data-home-clock]{grid-row:2!important;justify-self:end!important}
   .portal-home-workspace .home-portal > .home-hero .home-continue-game{grid-row:3!important}
 }
+
+
+/* HUD SWIPE FIX — allow vertical drag on the bar and provide an invisible
+   bottom-edge gesture zone to reveal it after it has moved off-screen. */
+.portal-workspace > .portal-toolbar{
+  touch-action:none!important;
+  transition:transform .22s ease-out!important;
+  will-change:transform;
+}
+.portal-workspace.portal-hud-hidden::after{
+  content:"";
+  position:absolute;
+  z-index:1099;
+  left:0;right:0;bottom:0;
+  height:112px;
+  background:transparent;
+  touch-action:none;
+  pointer-events:auto;
+}
+.portal-workspace.portal-hud-hidden > .portal-toolbar{
+  transition:transform .22s ease-out!important;
+}
