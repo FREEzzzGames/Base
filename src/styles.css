@@ -9209,7 +9209,10 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   border-radius:0!important;
   background:#000!important;
   color:#fff!important;
-  font:600 10px/1.2 inherit!important;
+  font-family:inherit!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  line-height:1.2!important;
   text-align:center!important;
   text-decoration:none!important;
   white-space:normal!important;
