@@ -718,29 +718,43 @@ function bindHudTouchGesture(){
   if(hudGestureBound)return;
   hudGestureBound=true;
   let startX=0,startY=0,tracking=false,triggered=false,startedInHudZone=false;
-  const begin=(x:number,y:number,target:EventTarget|null,button:number,pointerType?:string)=>{
-    if(pointerType==="mouse"&&button!==0)return;
+  const begin=(x:number,y:number,target:EventTarget|null)=>{
     startX=x;startY=y;tracking=true;triggered=false;
-    const onToolbar=Boolean((target as HTMLElement|null)?.closest?.(".portal-toolbar"));
-    const bottomZone=y>=window.innerHeight-120;
-    startedInHudZone=onToolbar||bottomZone;
+    const element=target as HTMLElement|null;
+    startedInHudZone=Boolean(element?.closest?.(".portal-toolbar"))||y>=window.innerHeight-160;
   };
-  document.addEventListener("pointerdown",e=>begin(e.clientX,e.clientY,e.target,e.button,e.pointerType),{passive:true});
-  document.addEventListener("pointermove",e=>{
-    if(!tracking||triggered||!startedInHudZone)return;
-    const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.abs(dy)<44||Math.abs(dx)>Math.abs(dy)*0.8)return;
-    if(!hudHidden&&dy>0){
+  const move=(x:number,y:number)=>{
+    if(!tracking||triggered)return;
+    const dx=x-startX,dy=y-startY;
+    if(Math.abs(dy)<36||Math.abs(dx)>Math.abs(dy)*0.85)return;
+    if(!hudHidden&&startedInHudZone&&dy>0){
       triggered=true;
       setHudHidden(true);
-    }else if(hudHidden&&dy<0&&startY>=window.innerHeight-120){
+    }else if(hudHidden&&dy<0&&startY>=window.innerHeight-180){
       triggered=true;
       setHudHidden(false);
     }
-  },{passive:true});
+  };
   const end=()=>{tracking=false;startedInHudZone=false;};
+  document.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    begin(e.clientX,e.clientY,e.target);
+  },{passive:true});
+  document.addEventListener("pointermove",e=>move(e.clientX,e.clientY),{passive:true});
   document.addEventListener("pointerup",end,{passive:true});
   document.addEventListener("pointercancel",end,{passive:true});
+  // Android Telegram WebView fallback: some versions do not deliver pointermove
+  // consistently when the fixed toolbar is translated off-screen.
+  document.addEventListener("touchstart",e=>{
+    const t=e.changedTouches[0];
+    if(t)begin(t.clientX,t.clientY,e.target);
+  },{passive:true});
+  document.addEventListener("touchmove",e=>{
+    const t=e.changedTouches[0];
+    if(t)move(t.clientX,t.clientY);
+  },{passive:true});
+  document.addEventListener("touchend",end,{passive:true});
+  document.addEventListener("touchcancel",end,{passive:true});
 }
 function updateHomeClock(){
   if(view!=="home")return;
