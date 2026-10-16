@@ -717,19 +717,19 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 function bindHudTouchGesture(){
   if(hudGestureBound)return;
   hudGestureBound=true;
-  let startX=0,startY=0,tracking=false,triggered=false;
+  let startX=0,startY=0,tracking=false,triggered=false,startedOnToolbar=false;
   document.addEventListener("pointerdown",e=>{
     if(e.pointerType==="mouse"&&e.button!==0)return;
-    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;
+    startX=e.clientX;startY=e.clientY;tracking=true;triggered=false;startedOnToolbar=Boolean((e.target as HTMLElement|null)?.closest(".portal-toolbar"));
   },{passive:true});
   document.addEventListener("pointermove",e=>{
     if(!tracking||triggered)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
     if(Math.abs(dx)>Math.abs(dy)+8)return;
-    if(!hudHidden&&startY>=window.innerHeight-72&&dy>44){
+    if(!hudHidden&&startedOnToolbar&&dy>44){
       triggered=true;
       setHudHidden(true);
-    }else if(hudHidden&&startY>=window.innerHeight-28&&dy<-44){
+    }else if(hudHidden&&startY<=window.innerHeight-20&&dy<-44){
       triggered=true;
       setHudHidden(false);
     }
@@ -786,11 +786,6 @@ function bind(){
   }
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
-  document.querySelector<HTMLButtonElement>("[data-hud-toggle]")?.addEventListener("click",e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    toggleHud();
-  });
 
   document.querySelectorAll<HTMLElement>("[data-echo9-launch]").forEach(function(x){
     x.onclick=function(e){
