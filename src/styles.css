@@ -9407,3 +9407,83 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
 .portal-workspace.portal-hud-hidden > .portal-toolbar{
   transition:transform .22s ease-out!important;
 }
+
+
+/* HOME HERO OVERLAP FIX — keep ECHO, nickname, clock and subtitle in separate rows. */
+.home-portal > .home-hero .home-hero-content{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  align-content:stretch!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  gap:4px!important;
+  padding:12px!important;
+}
+.home-portal > .home-hero .home-hero-top{
+  position:relative!important;
+  inset:auto!important;
+  grid-row:1!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+}
+.home-portal > .home-hero .home-hero-brand{
+  position:relative!important;
+  width:100%!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+}
+.home-portal > .home-hero .home-hero-kicker{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  font-size:clamp(24px,8vw,42px)!important;
+  line-height:1!important;
+  letter-spacing:.04em!important;
+  white-space:nowrap!important;
+}
+.home-portal > .home-hero .home-hero-clock{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:55%!important;
+  overflow:visible!important;
+  font-size:clamp(14px,4.8vw,24px)!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.home-portal > .home-hero h1.home-hero-profile-trigger{
+  position:relative!important;
+  inset:auto!important;
+  grid-row:2!important;
+  align-self:center!important;
+  transform:none!important;
+  width:100%!important;
+  margin:0!important;
+  font-size:clamp(36px,13vw,68px)!important;
+  line-height:.95!important;
+  letter-spacing:-.035em!important;
+  white-space:nowrap!important;
+}
+.home-portal > .home-hero p{
+  position:relative!important;
+  inset:auto!important;
+  grid-row:3!important;
+  width:100%!important;
+  margin:0!important;
+  font-size:clamp(11px,3.4vw,15px)!important;
+  line-height:1.25!important;
+}
+.home-portal > .home-hero .home-continue-game{
+  position:relative!important;
+  grid-row:4!important;
+  width:100%!important;
+  margin:2px 0 0!important;
+}
