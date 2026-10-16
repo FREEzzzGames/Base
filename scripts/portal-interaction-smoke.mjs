@@ -57,11 +57,14 @@ console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catal
 
 const styles = readFileSync("src/styles.css", "utf8");
 function ruleContains(selector, fragment) {
-  const start = styles.lastIndexOf(selector);
-  if (start < 0) return false;
-  const open = styles.indexOf("{", start);
-  const close = styles.indexOf("}", open + 1);
-  return open >= 0 && close > open && styles.slice(open + 1, close).includes(fragment);
+  let start = 0;
+  while ((start = styles.indexOf(selector, start)) >= 0) {
+    const open = styles.indexOf("{", start);
+    const close = styles.indexOf("}", open + 1);
+    if (open >= 0 && close > open && styles.slice(open + 1, close).includes(fragment)) return true;
+    start += selector.length;
+  }
+  return false;
 }
 assert.ok(styles.includes('.portal-route-workspace > main > .portal-layout[data-portal-layout="game"]'),
   "GAME route must fit the shared portal viewport");
