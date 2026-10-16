@@ -50,6 +50,9 @@ for (const selector of [
 }
 assert.ok(catalog.includes('addEventListener("input"'), "GAME catalog search must react to input");
 assert.ok(catalog.includes('addEventListener("click"'), "GAME catalog buttons must have click handlers");
+assert.ok(catalog.includes('grid?.addEventListener("click"'), "GAME card actions must use delegation so search results remain interactive");
+assert.ok(catalog.includes('closest<HTMLButtonElement>("[data-open-game-play], [data-open-game-source]")'),
+  "GAME Play and Source actions must work for dynamically filtered cards");
 
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);

@@ -214,28 +214,29 @@ export function bindOpenGamesCatalog(language: CatalogLanguage, rerender: () => 
       rerender();
     });
   });
+  const grid = document.querySelector<HTMLElement>("[data-open-games-grid]");
+  // Delegate card actions so Play/Source keep working after live search replaces the cards.
+  grid?.addEventListener("click", event => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-open-game-play], [data-open-game-source]");
+    if (!button) return;
+    if (button.dataset.openGamePlay) {
+      selectedId = button.dataset.openGamePlay;
+      rerender();
+      return;
+    }
+    const entry = ENTRIES.find(item => item.id === button.dataset.openGameSource);
+    if (entry) openExternalUrl(entry.source);
+  });
   const search = document.querySelector<HTMLInputElement>("[data-open-game-search]");
   search?.addEventListener("input", () => {
     searchQuery = search.value;
     const grid = document.querySelector<HTMLElement>("[data-open-games-grid]");
     if (grid) grid.innerHTML = renderCards(language);
   });
-  document.querySelectorAll<HTMLButtonElement>("[data-open-game-play]").forEach(button => {
-    button.addEventListener("click", () => {
-      selectedId = button.dataset.openGamePlay || "";
-      rerender();
-    });
-  });
   document.querySelectorAll<HTMLButtonElement>("[data-open-game-back]").forEach(button => {
     button.addEventListener("click", () => {
       selectedId = "";
       rerender();
-    });
-  });
-  document.querySelectorAll<HTMLButtonElement>("[data-open-game-source]").forEach(button => {
-    button.addEventListener("click", () => {
-      const entry = ENTRIES.find(item => item.id === button.dataset.openGameSource);
-      if (entry) openExternalUrl(entry.source);
     });
   });
   document.querySelectorAll<HTMLButtonElement>("[data-open-game-url]").forEach(button => {
