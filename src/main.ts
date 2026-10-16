@@ -651,6 +651,21 @@ function playRadioStation(id:string){
   radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");radioError=T("playError");render();},{once:true});
   void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");radioError=T("autoplayError");}).finally(()=>render());
 }
+  window.addEventListener("freezzz:chat-send",async event=>{
+    const detail=(event as CustomEvent<{chatId?:string;text?:string}>).detail;
+    const chatId=String(detail?.chatId||"");
+    const message=String(detail?.text||"").trim();
+    if(!chatId||!message)return;
+    try{
+      await telegramChatClient.sendMessage(chatId,message);
+      recordChatMessage(portalProfile);
+      await loadTelegramMessages(chatId);
+      await loadTelegramChats();
+    }catch(error){
+      telegramChatError=error instanceof Error?error.message:"TELEGRAM_SEND_FAILED";
+      render();
+    }
+  });
 window.addEventListener("freezzz:telegram-chat-request",async event=>{
   const requestedId=String((event as CustomEvent<{chatId?:string}>).detail?.chatId||"");
   if(telegramChatStatus==="idle"||telegramChatStatus==="error"){
@@ -954,21 +969,6 @@ function bind(){
     telegramMessageInput?.addEventListener("click",e=>{e.stopPropagation();window.setTimeout(()=>telegramMessageInput.focus(),0);});
     document.querySelector("#telegram-message-form")?.addEventListener("submit",async e=>{e.preventDefault();const input=document.querySelector<HTMLInputElement>("#telegram-message-input");const message=input?.value.trim()||"";if(!message||!telegramSelectedChatId)return;try{await telegramChatClient.sendMessage(telegramSelectedChatId,message);recordChatMessage(portalProfile);if(input)input.value="";await loadTelegramMessages(telegramSelectedChatId);await loadTelegramChats();}catch(error){telegramChatError=error instanceof Error?error.message:"TELEGRAM_SEND_FAILED";render();}});
   }
-  window.addEventListener("freezzz:chat-send",async event=>{
-    const detail=(event as CustomEvent<{chatId?:string;text?:string}>).detail;
-    const chatId=String(detail?.chatId||"");
-    const message=String(detail?.text||"").trim();
-    if(!chatId||!message)return;
-    try{
-      await telegramChatClient.sendMessage(chatId,message);
-      recordChatMessage(portalProfile);
-      await loadTelegramMessages(chatId);
-      await loadTelegramChats();
-    }catch(error){
-      telegramChatError=error instanceof Error?error.message:"TELEGRAM_SEND_FAILED";
-      render();
-    }
-  });
   if(view==="library"){
     bindLibraryView();
     try{

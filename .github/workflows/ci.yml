@@ -190,6 +190,8 @@ jobs:
 
       - name: Portal architecture smoke tests
         run: npm run test:core
+      - name: Portal interaction regression smoke
+        run: node scripts/portal-interaction-smoke.mjs
 
       - name: Build
         env:
