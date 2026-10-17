@@ -57,7 +57,16 @@ export function bindHomeGridShift(root: HTMLElement) {
     tile.style.order = String(saved.order.includes(key) ? saved.order.indexOf(key) : (originalOrder.get(key) ?? 0));
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
-  const updateGridMetrics = () => root.style.setProperty("--zenith-grid-rows", String(tiles.reduce((rows, tile) => rows + (tile.dataset.gridSize === "l" ? 2 : 1), 0)));
+  const updateGridMetrics = () => {
+    const area = () => tiles.reduce((total, tile) => total + (tile.dataset.gridSize === "l" ? 4 : tile.dataset.gridSize === "m" ? 2 : 1), 0);
+    tiles.forEach(tile => tile.removeAttribute("data-grid-autofill-wide"));
+    let totalArea = area();
+    if (totalArea % 2 === 1) {
+      const fillTile = tiles.find(tile => tile.dataset.gridSize === "s");
+      if (fillTile) { fillTile.dataset.gridAutofillWide = "true"; totalArea += 1; }
+    }
+    root.style.setProperty("--zenith-grid-rows", String(Math.max(1, totalArea / 2)));
+  };
   updateGridMetrics();
   const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
   const launcher = document.createElement("button");
