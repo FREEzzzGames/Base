@@ -12,6 +12,31 @@ const windows:Record<MiniId,MiniWindow> = {
 };
 let nextZ=60;
 let focusedWindow:MiniId|null=null;
+const WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1";
+function restoreWindowLayout(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(WINDOW_LAYOUT_KEY)||"{}") as Partial<Record<MiniId,Partial<MiniWindow>>>;
+    (Object.keys(windows) as MiniId[]).forEach(id=>{
+      const value=saved[id];
+      if(!value)return;
+      const w=windows[id];
+      if(Number.isFinite(value.x))w.x=Number(value.x);
+      if(Number.isFinite(value.y))w.y=Number(value.y);
+      if(Number.isFinite(value.width))w.width=Number(value.width);
+      if(Number.isFinite(value.height))w.height=Number(value.height);
+      if(Number.isFinite(value.z))w.z=Number(value.z);
+    });
+  }catch{}
+}
+function saveWindowLayout(){
+  try{
+    const layout=Object.fromEntries((Object.keys(windows) as MiniId[]).map(id=>{
+      const {x,y,width,height,z}=windows[id];
+      return [id,{x,y,width,height,z}];
+    }));
+    localStorage.setItem(WINDOW_LAYOUT_KEY,JSON.stringify(layout));
+  }catch{}
+}
 let liveName=getLiveStreams()[0]?.name||streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
 let liveReplay=false;
@@ -48,7 +73,7 @@ let layer:HTMLDivElement|null=null;
 
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
 function focus(id:MiniId){windows[id].z=nextZ++;}
-function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);render();}
+function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);saveWindowLayout();render();}
 function fitWindow(id:MiniId){
   const w=windows[id];
   const maxWidth=Math.max(w.minWidth,window.innerWidth-8);
@@ -62,10 +87,11 @@ function open(id:MiniId){
   fitWindow(id);
   windows[id].open=true;
   focus(id);
+  saveWindowLayout();
   if(id==="chat")window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));
   render();
 }
-function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;if(focusedWindow===id)focusedWindow=null;render();}
+function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandle(id:MiniId){
   return '<span class="portal-mw-resize portal-mw-resize-se" data-mw-resize="'+id+'" aria-hidden="true"></span>';
@@ -155,6 +181,7 @@ function bind(){
       h.removeEventListener("pointerup",end);
       h.removeEventListener("pointercancel",end);
       try{h.releasePointerCapture(pointer.pointerId);}catch{}
+      saveWindowLayout();
     };
     h.addEventListener("pointermove",move);
     h.addEventListener("pointerup",end);
@@ -167,7 +194,7 @@ function bind(){
     const sx=pointer.clientX,sy=pointer.clientY,sw=w.width,sh=w.height;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
     const move=(ev:PointerEvent)=>resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);
-    const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}};
+    const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}saveWindowLayout();};
     h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.addEventListener("click",e=>{
@@ -253,6 +280,7 @@ function intercept(){
 
 export function initMultiWindowPortal(){
   if(layer)return;
+  restoreWindowLayout();
   layer=document.createElement("div");
   layer.className="portal-mw-layer";
   document.body.append(layer);
