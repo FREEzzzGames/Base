@@ -1,5 +1,5 @@
 type Tile = HTMLElement;
-const STORAGE_KEY = "freezzz:home-grid-shift:v2";
+const STORAGE_KEY = "freezzz:home-grid-shift:v3";
 const SIZES = ["s", "m", "l"] as const;
 type Size = typeof SIZES[number];
 type Layout = { order: string[]; sizes: Record<string, Size> };
@@ -49,7 +49,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   if (tiles.length < 2) return;
   root.dataset.gridShiftBound = "true";
   const originalOrder = new Map(tiles.map((tile, index) => [keyOf(tile), index]));
-  const defaults: Record<string, Size> = { hero: "l", game: "l", live: "m", chat: "m", radio: "m", library: "m" };
+  const defaults: Record<string, Size> = { hero: "l", continue: "m", game: "l", live: "m", chat: "m", radio: "m", library: "m" };
   const saved = readLayout();
   tiles.forEach(tile => {
     const key = keyOf(tile);
