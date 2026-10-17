@@ -12,7 +12,7 @@ import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExte
 import { type LivePopupState, type LiveSource } from "./live-runtime";
 import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
 
-import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
+import { PortalModuleManager, PortalEventBus, ZenithOSKernel, createPlatformState, type PortalView } from "./core/portal-core";
 import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
@@ -53,6 +53,7 @@ const app=document.querySelector<HTMLDivElement>("#app")!;
 const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 const moduleManager=new PortalModuleManager();
+const zenithKernel=new ZenithOSKernel({modules:moduleManager,initial:{view:"home",language:"RU",telegram:Boolean(getTelegramWebApp()),online:portalState.online}});
 moduleManager.setErrorHandler((moduleView,phase,error)=>{
   console.error("[FREEzzz module lifecycle]",moduleView,phase,error);
 });
@@ -729,10 +730,11 @@ portalEvents.on("navigation:changed",payload=>{
     if(view==="library")stopLibraryEmulator();
     if(view==="game")stopOpenGamesSession();
   }
-  if(!moduleManager.transition(payload.view))return;
+  const navigation=zenithKernel.navigate(payload.view,"user");
+  if(!navigation.accepted)return;
   flushActivityTracking();
-  view=payload.view;
-  portalState.view=payload.view;
+  view=zenithKernel.snapshot.view;
+  portalState.view=view;
   render();
 });
 window.addEventListener("resize",()=>{ if(view==="home")render(); });
