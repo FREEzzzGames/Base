@@ -175,11 +175,8 @@ export function renderVFX(ctx:CanvasRenderingContext2D,camera:VFXCamera){
       ctx.fillStyle=COLORS[ci];
       ctx.fillRect(sx-s*.5,sy-s*.5,s,s);
     }else if(t===PType.Flash){
-      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(1,s));
-      g.addColorStop(0,"#ffffff");
-      g.addColorStop(.35,COLORS[ci]);
-      g.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=g;
+      // Avoid allocating a CanvasGradient for every flash on every frame.
+      ctx.fillStyle=COLORS[ci];
       ctx.beginPath();ctx.arc(sx,sy,s,0,TAU);ctx.fill();
     }else if(t===PType.Ring){
       ctx.strokeStyle=COLORS[ci];
