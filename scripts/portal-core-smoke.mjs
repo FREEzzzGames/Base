@@ -10,6 +10,14 @@ assert.ok(mainSource.includes('safeModuleContent("live",()=>renderLiveCatalog(la
 assert.ok(mainSource.includes('safeModuleContent("chat",()=>renderTelegramChat())'), "CHAT must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("library",()=>renderLibrary())'), "LIBRARY must have an error boundary");
 assert.ok(mainSource.includes('"freezzz:live-window-open"') && multiWindowSource.includes('"freezzz:live-window-open"'), "LIVE overlays must use the shared floating window");
+assert.ok(multiWindowSource.includes("data-mw-focus"), "floating windows must expose focus-mode controls");
+assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be reflected in the window state");
+assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1"'), "floating window geometry must have a versioned persistence key");
+assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSource.includes("saveWindowLayout();"), "floating window geometry must be restored and saved");
+const gridSource = await readFile(new URL("../src/home-grid-shift.ts", import.meta.url), "utf8");
+assert.ok(gridSource.includes("grid-shift-launch"), "HOME grid editing must have a discoverable launcher");
+assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid editing must be togglable without a long press");
+
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
     target: ts.ScriptTarget.ES2022,
