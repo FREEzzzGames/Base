@@ -41,9 +41,6 @@ const COPY: Record<CatalogLanguage, Record<string, string>> = {
     tech: "Технологии",
     license: "Лицензия и права на отдельные ресурсы требуют проверки.",
     disclaimer: "Каталог объединяет внешние проекты. Открытый код не всегда означает разрешение на использование всех названий, изображений, музыки и других материалов.",
-    featured: "ИГРА ПОРТАЛА",
-    spark: "SPARK · Ichiraku Ramen: Shinobi Ops",
-    sparkDesc: "Оригинальная игра FREEzzz. Запускается внутри портала.",
     empty: "Ничего не найдено. Измени поиск или категорию.",
     externalOnly: "Для этого проекта доступна страница автора или репозиторий."
   },
@@ -72,9 +69,6 @@ const COPY: Record<CatalogLanguage, Record<string, string>> = {
     tech: "Technologie",
     license: "Lizenzen und Rechte an einzelnen Ressourcen müssen geprüft werden.",
     disclaimer: "Der Katalog bündelt externe Projekte. Open Source bedeutet nicht automatisch, dass alle Namen, Bilder, Musik und weiteren Materialien frei verwendbar sind.",
-    featured: "PORTAL-SPIEL",
-    spark: "SPARK · Ichiraku Ramen: Shinobi Ops",
-    sparkDesc: "Das eigene FREEzzz-Spiel. Startet direkt im Portal.",
     empty: "Keine Treffer. Suche oder Kategorie ändern.",
     externalOnly: "Für dieses Projekt steht die Seite des Autors oder das Repository zur Verfügung."
   },
@@ -103,9 +97,6 @@ const COPY: Record<CatalogLanguage, Record<string, string>> = {
     tech: "Technology",
     license: "Licenses and rights for individual assets still need review.",
     disclaimer: "This catalog links to external projects. Open source does not automatically grant rights to every name, image, soundtrack or other asset.",
-    featured: "PORTAL GAME",
-    spark: "SPARK · Ichiraku Ramen: Shinobi Ops",
-    sparkDesc: "Original FREEzzz game. Runs inside the portal.",
     empty: "No results. Change the search or category.",
     externalOnly: "The author's page or repository is available for this project."
   }
@@ -156,15 +147,6 @@ function renderCards(lang: CatalogLanguage): string {
 export function renderOpenGamesCatalog(language: CatalogLanguage, buildId: string): string {
   const t = (key: string) => esc(copy(language, key));
   if (selectedId) {
-    if (selectedId === "spark") {
-      return `
-        <div class="content portal-layout game-portal open-games-portal" data-portal-layout="game">
-          <div class="section-head portal-block game-section-head"><div><h2>GAME</h2><p>${t("spark")}</p></div><button class="open-game-back" data-open-game-back type="button">${t("back")}</button></div>
-          <section class="open-game-player">
-            <iframe class="spark-game-frame open-game-frame" src="./spark-console.html?build=${encodeURIComponent(buildId)}" title="FREEzzz GAMES — ICHIRAKU RAMEN: SHINOBI OPS" allow="autoplay; fullscreen; gamepad" loading="eager"></iframe>
-          </section>
-        </div>`;
-    }
     const entry = ENTRIES.find(item => item.id === selectedId);
     if (!entry) selectedId = "";
     else if (entry.kind === "resource") {
@@ -191,10 +173,6 @@ export function renderOpenGamesCatalog(language: CatalogLanguage, buildId: strin
   return `
     <div class="content portal-layout game-portal open-games-portal" data-portal-layout="game">
       <div class="section-head portal-block game-section-head"><div><h2>GAME</h2><p>${t("subtitle")}</p></div></div>
-      <section class="open-game-featured">
-        <div><span class="open-game-kicker">${t("featured")}</span><h3>${t("spark")}</h3><p>${t("sparkDesc")}</p></div>
-        <button type="button" class="open-game-primary" data-open-game-play="spark">${t("play")}</button>
-      </section>
       <section class="open-game-catalog">
         <div class="open-game-tools"><input type="search" data-open-game-search maxlength="80" value="${esc(searchQuery)}" placeholder="${t("search")}" aria-label="${t("search")}"><span class="open-game-count"><b data-open-game-count>${filteredEntries().length}</b> ${t("count")}</span></div>
         <div class="open-game-categories" role="group" aria-label="Game categories">
