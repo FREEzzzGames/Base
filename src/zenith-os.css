@@ -197,3 +197,26 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 .home-portal:after{content:"";position:fixed;inset:0;z-index:20;pointer-events:none;opacity:.045;background-image:repeating-linear-gradient(0deg,transparent 0,transparent 2px,#aaa 3px,transparent 4px);mix-blend-mode:screen}
 @media(max-width:520px){.zenith-home-filters button{min-height:38px;font-size:9px}.zenith-home-widgets{grid-template-columns:1fr}.zenith-home-widgets .zenith-signal-feed{grid-column:1}.zenith-signal-row{min-height:32px}}
 @media(prefers-reduced-motion:reduce){.home-portal:after{display:none}}
+
+/* Mobile window containment and predictable stacking: each popup stays inside its own frame. */
+.portal-mw-layer{position:fixed!important;inset:0!important;z-index:3000!important;pointer-events:none!important;isolation:isolate!important}
+.portal-mw-layer .portal-mw{pointer-events:auto!important;box-sizing:border-box!important;max-width:calc(100vw - 8px)!important;max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)!important;min-width:0!important;overflow:hidden!important}
+.portal-mw-layer .portal-mw-live{display:grid!important;grid-template-rows:auto minmax(0,1fr)!important}
+.portal-mw-live-body{position:relative!important;min-width:0!important;min-height:0!important;width:100%!important;height:100%!important;overflow:hidden!important;background:#080808!important}
+.portal-mw-live-body iframe{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;border:0!important}
+.portal-mw-chat{display:grid!important;grid-template-rows:auto minmax(0,1fr)!important}
+.portal-mw-chat-list{min-width:0!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain!important}
+.portal-mw.portal-mw-focused{z-index:9999!important;max-width:none!important;max-height:none!important}
+.portal-mw-layer .portal-mw-settings{pointer-events:auto!important}
+.grid-shift-editing>[data-portal-block]{position:relative!important;min-height:64px!important;background-color:#111!important;outline:1px dashed #aaa!important;outline-offset:2px!important}
+.grid-shift-editing>[data-portal-block]::before{content:attr(data-portal-block);position:absolute;top:5px;left:6px;z-index:7;padding:3px 5px;background:#050505;color:#f3f3f3;border:1px solid #555;font:8px 'Space Mono',monospace;letter-spacing:.08em;pointer-events:none}
+.grid-shift-editing .home-card,.grid-shift-editing .zenith-home-widget{min-height:90px!important;opacity:1!important;filter:none!important}
+@media(max-width:520px){
+ .portal-mw-layer .portal-mw{max-width:calc(100vw - 12px)!important}
+ .portal-mw-layer .portal-mw-live{min-width:0!important}
+ .portal-mw-layer .portal-mw-live .portal-mw-head{min-height:42px!important;gap:4px!important;padding:4px 6px!important}
+ .portal-mw-layer .portal-mw-live .portal-mw-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:35vw}
+ .portal-mw-layer .portal-mw-live .portal-mw-head button{min-width:28px!important;min-height:30px!important;padding:0 4px!important}
+ .portal-mw.portal-mw-focused{inset:max(6px,env(safe-area-inset-top)) 6px max(6px,env(safe-area-inset-bottom))!important}
+ .grid-shift-editing>[data-portal-block]{min-height:76px!important}
+}
