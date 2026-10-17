@@ -456,7 +456,7 @@ function renderPortalToolbar(){
   <nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
-        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
+        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target||(target==="home"&&view==="echo9")}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
       </div>
     </div>
   </nav>`;
