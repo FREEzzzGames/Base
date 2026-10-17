@@ -75,7 +75,7 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
   }).join("");
   const opts=(values:readonly string[],selected:string,label:(x:string)=>string)=>values.map(x=>'<option value="'+esc(x)+'" '+(x===selected?"selected":"")+'>'+esc(label(x))+'</option>').join("");
   return '<div class="live-catalog">'+
-    '<section class="live-official-top" aria-live="polite"><h3>OFFICIAL RANKINGS</h3><p data-live-official-status>Проверяем доступность официальной статистики…</p><div data-live-official-list></div></section>'+
+    '<section class="live-official-top" aria-live="polite"><h3>MONTHLY TOP · OFFICIAL API METRICS</h3><p data-live-official-status>Проверяем доступность официальной статистики…</p><div data-live-official-list></div></section>'+
     '<div class="live-catalog-tools"><input id="live-catalog-search" type="search" placeholder="'+L.search+'" autocomplete="off" aria-label="'+L.search+'"><button class="tg-button" type="button" data-live-add-toggle>'+L.add+'</button></div>'+
     '<div class="live-catalog-categories" role="tablist">'+CATEGORIES.map(c=>'<button type="button" class="'+(c==="all"?"active":"")+'" data-live-category="'+c+'" role="tab" aria-selected="'+(c==="all")+'">'+categoryLabel(c,lang)+'</button>').join("")+'</div>'+
     '<div class="live-catalog-filters"><label>'+L.subcat+'<select id="live-catalog-subcategory"><option value="">'+L.any+'</option>'+opts(subcategories,"",x=>x)+'</select></label><label>Language<select id="live-catalog-language">'+opts(LANGUAGES,"all",x=>languageLabel(x,lang))+'</select></label><button class="tg-button secondary" type="button" data-live-favorites>'+L.favorites+'</button></div>'+
