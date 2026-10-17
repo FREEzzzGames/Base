@@ -270,7 +270,7 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 }
 .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block]{
  display:block!important;position:relative!important;inset:auto!important;float:none!important;
- grid-area:auto!important;grid-row:auto!important;grid-column:auto!important;order:initial!important;
+ grid-area:auto!important;grid-row:auto!important;grid-column:auto!important;
  translate:none!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
  max-width:100%!important;max-height:none!important;margin:0!important;box-sizing:border-box!important;
  align-self:stretch!important;justify-self:stretch!important;transform:none!important;
@@ -352,3 +352,15 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  padding:10px!important;box-sizing:border-box!important;text-align:left!important;
 }
 .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>.home-card[data-portal-block="library"]{min-height:190px!important}
+
+/* Grid editor contract: persisted order and size must be allowed to control the actual grid. */
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"].grid-shift-editing{
+ grid-auto-flow:row!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="s"]{grid-column:span 1!important;min-height:92px!important}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="m"]{grid-column:span 1!important;min-height:128px!important}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-grid-size="l"]{grid-column:1/-1!important;min-height:180px!important}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"]{grid-column:1/-1!important;min-height:180px!important}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="filters"],
+.portal-workspace.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"]{grid-column:1/-1!important}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"].grid-shift-editing>[data-portal-block]{transition:none!important}
