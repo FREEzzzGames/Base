@@ -72,6 +72,7 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
   }).join("");
   const opts=(values:readonly string[],selected:string,label:(x:string)=>string)=>values.map(x=>'<option value="'+esc(x)+'" '+(x===selected?"selected":"")+'>'+esc(label(x))+'</option>').join("");
   return '<div class="live-catalog">'+
+    '<section class="live-official-top" aria-live="polite"><h3>OFFICIAL RANKINGS</h3><p data-live-official-status>Проверяем доступность официальной статистики…</p><div data-live-official-list></div></section>'+
     '<div class="live-catalog-tools"><input id="live-catalog-search" type="search" placeholder="'+L.search+'" autocomplete="off" aria-label="'+L.search+'"><button class="tg-button" type="button" data-live-add-toggle>'+L.add+'</button></div>'+
     '<div class="live-catalog-categories" role="tablist">'+CATEGORIES.map(c=>'<button type="button" class="'+(c==="all"?"active":"")+'" data-live-category="'+c+'" role="tab" aria-selected="'+(c==="all")+'">'+categoryLabel(c,lang)+'</button>').join("")+'</div>'+
     '<div class="live-catalog-filters"><label>'+L.subcat+'<select id="live-catalog-subcategory"><option value="">'+L.any+'</option>'+opts(subcategories,"",x=>x)+'</select></label><label>Language<select id="live-catalog-language">'+opts(LANGUAGES,"all",x=>languageLabel(x,lang))+'</select></label><button class="tg-button secondary" type="button" data-live-favorites>'+L.favorites+'</button></div>'+
@@ -96,6 +97,27 @@ export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string
 export function removeLiveStreamer(name:string){saveCustom(readCustom().filter(x=>x.name!==name));}
 export function bindLiveCatalog():void{
   const root=document.querySelector<HTMLElement>(".live-catalog");if(!root)return;
+  const officialStatus=root.querySelector<HTMLElement>("[data-live-official-status]");
+  const officialList=root.querySelector<HTMLElement>("[data-live-official-list]");
+  const apiBase=(import.meta.env.VITE_TELEGRAM_AUTH_URL||"").replace(/\/$/,"");
+  const escText=(value:string)=>value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
+  if(apiBase&&officialStatus&&officialList){
+    void fetch(apiBase+"/api/live/rankings",{headers:{Accept:"application/json"},cache:"no-store",credentials:"omit",signal:AbortSignal.timeout(8000)})
+      .then(async response=>{if(!response.ok)throw new Error("API_UNAVAILABLE");return response.json();})
+      .then(payload=>{
+        const rankings=Array.isArray(payload.rankings)?payload.rankings:[];
+        if(!rankings.length){officialStatus.textContent="Официальный топ пока не сформирован. Нужны API-ключи и успешная синхронизация.";return;}
+        const grouped=new Map<string,any[]>();
+        for(const item of rankings){const key=[item.platform,item.language,item.category,item.subcategory].join("|");if(!grouped.has(key))grouped.set(key,[]);grouped.get(key)!.push(item);}
+        officialStatus.textContent="Данные API · обновлено: "+(payload.lastUpdated||"нет снимка");
+        officialList.innerHTML=[...grouped.entries()].map(([key,items])=>{
+          const [platform,language,category,subcategory]=key.split("|");
+          return '<section class="live-official-group"><h4>'+escText(platform.toUpperCase())+' · '+escText(language.toUpperCase())+' · '+escText(category)+' / '+escText(subcategory)+'</h4><ol>'+items.sort((a,b)=>a.rank-b.rank).map(item=>'<li><span>'+escText(String(item.rank)+". "+item.name)+'</span><small>'+escText(item.metrics?.subscribers!=null?"Подписчики: "+Number(item.metrics.subscribers).toLocaleString():item.metrics?.live?"В эфире · зрители: "+Number(item.metrics.viewers||0).toLocaleString():"Статистика доступна")+'</small></li>').join("")+'</ol></section>';
+        }).join("");
+      }).catch(()=>{officialStatus.textContent="Сервер статистики недоступен. Каталог и сохранённые ссылки продолжают работать.";});
+  }else if(officialStatus){
+    officialStatus.textContent="Сервер официальной статистики ещё не подключён к сборке портала.";
+  }
   const search=root.querySelector<HTMLInputElement>("#live-catalog-search");
   const language=root.querySelector<HTMLSelectElement>("#live-catalog-language");
   const subcategory=root.querySelector<HTMLSelectElement>("#live-catalog-subcategory");
