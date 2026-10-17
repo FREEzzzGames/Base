@@ -30,7 +30,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   const originalOrder = new Map(tiles.map((tile, index) => [tile.dataset.portalBlock || "", index]));
   tiles.forEach(tile => {
     const key = tile.dataset.portalBlock || "";
-    tile.dataset.gridSize = saved.sizes[key] && SIZES.includes(saved.sizes[key]) ? saved.sizes[key] : (key === "hero" ? "l" : "m");
+    tile.dataset.gridSize = saved.sizes[key] && SIZES.includes(saved.sizes[key]) ? saved.sizes[key] : ((key === "hero" || key === "game") ? "l" : "m");
     tile.style.order = String(saved.order.indexOf(key) >= 0 ? saved.order.indexOf(key) : (originalOrder.get(key) ?? 0));
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
@@ -100,7 +100,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   panel.querySelector("[data-grid-shift-done]")?.addEventListener("click", () => setEditing(false));
   panel.querySelector("[data-grid-shift-reset]")?.addEventListener("click", () => {
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore unavailable storage */ }
-    tiles.forEach((tile, index) => { tile.style.order = String(originalOrder.get(tile.dataset.portalBlock || "") ?? index); tile.dataset.gridSize = tile.dataset.portalBlock === "hero" ? "l" : "m"; });
+    tiles.forEach((tile, index) => { tile.style.order = String(originalOrder.get(tile.dataset.portalBlock || "") ?? index); tile.dataset.gridSize = (tile.dataset.portalBlock === "hero" || tile.dataset.portalBlock === "game") ? "l" : "m"; });
     setEditing(false);
   });
 }
