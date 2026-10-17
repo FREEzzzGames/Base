@@ -384,7 +384,7 @@ function mountPersistentBackgroundVideos(){
       video.muted=true;
       video.loop=true;
       video.playsInline=true;
-      video.preload="auto";
+      video.preload="metadata";
       video.setAttribute("aria-hidden","true");
       video.src=src;
       video.dataset.persistentVideo=key;
