@@ -15,8 +15,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fromRoot("./src/index.html"),
-        cargoDeck: fromRoot("./src/cargo-deck.html"),
-        sparkConsole: fromRoot("./src/spark-console.html")
+        cargoDeck: fromRoot("./src/cargo-deck.html")
       }
     }
   }
