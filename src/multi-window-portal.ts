@@ -273,16 +273,14 @@ function intercept(){
     const id=el.dataset.view as "live"|"chat"|"radio"|"game"|"library"|"home";
     if(!["live","chat","radio","game","library","home"].includes(id))return;
 
-    // HOME is the clean workspace: returning to it dismisses all floating windows.
+    // Every top-level route owns its screen; floating mini windows must never
+    // leak across HOME, GAME, LIVE, CHAT, RADIO or LIBRARY.
     if(el.closest(".portal-toolbar")){
-      if(id==="home"){
-        (Object.keys(windows) as MiniId[]).forEach(windowId=>{windows[windowId].open=false;});
-        focusedWindow=null;
-        settingsOpen=false;
-        saveWindowLayout();
-        render();
-      }else if(id==="live")close("live");
-      else if(id==="chat"||id==="radio"){windows[id].open=false;render();}
+      (Object.keys(windows) as MiniId[]).forEach(windowId=>{windows[windowId].open=false;});
+      focusedWindow=null;
+      settingsOpen=false;
+      saveWindowLayout();
+      render();
       return;
     }
 
