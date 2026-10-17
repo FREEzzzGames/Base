@@ -79,7 +79,7 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
     '<p class="live-catalog-hint">'+L.hint+'</p><p class="live-catalog-hint">'+L.top+'</p>'+
     '<div class="live-catalog-list" id="live-catalog-list">'+(cards||'<p class="live-catalog-empty">'+L.empty+'</p>')+'</div>'+
     '<p class="live-catalog-empty" data-live-empty hidden>'+L.empty+'</p>'+
-    '<form class="live-add-form" id="live-add-form" hidden><input name="name" required maxlength="60" placeholder="'+L.name+'"><input name="youtube" type="url" placeholder="'+L.youtube+'"><input name="twitch" type="url" placeholder="'+L.twitch+'"><input name="replay" type="url" placeholder="'+L.replay+'"><button class="tg-button" type="submit">'+L.add+'</button><p data-live-form-error role="alert" hidden></p></form>'+
+    '<form class="live-add-form" id="live-add-form" hidden><input name="name" required maxlength="60" placeholder="'+L.name+'"><input name="youtube" type="url" placeholder="'+L.youtube+'"><input name="twitch" type="url" placeholder="'+L.twitch+'"><input name="replay" type="url" placeholder="'+L.replay+'"><select name="language" aria-label="Language"><option value="unknown">Language / Язык</option><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="de">Deutsch</option></select><select name="rankCategory" aria-label="Ranking category"><option value="gaming">Gaming</option><option value="entertainment">Entertainment</option><option value="music">Music</option><option value="education">Education</option><option value="technology">Technology</option><option value="lifestyle">Lifestyle</option><option value="sports">Sports</option><option value="creativity">Creativity</option></select><input name="subcategory" maxlength="80" placeholder="Subcategory"><button class="tg-button" type="submit">'+L.add+'</button><p data-live-form-error role="alert" hidden></p></form>'+
     '</div>';
 }
 export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string;replay?:string}):boolean{
@@ -91,7 +91,7 @@ export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string
   const channelIndex=ytPath.findIndex(x=>x==="channel");
   const youtubeChannel=handle?handle.slice(1):channelIndex>=0?ytPath[channelIndex+1]||undefined:undefined;
   const custom=readCustom().filter(x=>x.name.toLowerCase()!==name.toLowerCase()&&x.twitch!==twitch&&x.youtube!==youtube);
-  custom.push({icon:"video",name,youtube,twitch,twitchChannel,youtubeChannel,category:"custom",language:"unknown",lastRecordingUrl:replay,custom:true} as CatalogItem);
+  custom.push({icon:"video",name,youtube,twitch,twitchChannel,youtubeChannel,category:"custom",language:"unknown",subcategory:"",lastRecordingUrl:replay,custom:true} as CatalogItem);
   saveCustom(custom);return true;
 }
 export function removeLiveStreamer(name:string){saveCustom(readCustom().filter(x=>x.name!==name));}
@@ -149,6 +149,14 @@ export function bindLiveCatalog():void{
     const ok=addLiveStreamer({name:String(data.get("name")||""),youtube:String(data.get("youtube")||""),twitch:String(data.get("twitch")||""),replay:String(data.get("replay")||"")});
     const error=form.querySelector<HTMLElement>("[data-live-form-error]");
     if(!ok){if(error){error.textContent=({RU:"Добавьте корректную ссылку YouTube или Twitch.",DE:"Fügen Sie einen gültigen YouTube- oder Twitch-Link hinzu.",EN:"Add a valid YouTube or Twitch URL."} as Record<string,string>)[document.documentElement.lang.toUpperCase()]||"Invalid URL";error.hidden=false;}return;}
+    const apiBase=(import.meta.env.VITE_TELEGRAM_AUTH_URL||"").replace(/\/$/,"");
+    if(apiBase){
+      const body={name:String(data.get("name")||""),youtubeUrl:String(data.get("youtube")||""),twitchUrl:String(data.get("twitch")||""),language:String(data.get("language")||"unknown"),category:String(data.get("rankCategory")||"gaming"),subcategory:String(data.get("subcategory")||"Other")};
+      void fetch(apiBase+"/api/live/suggestions",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body),credentials:"omit",cache:"no-store"})
+        .then(async response=>{if(!response.ok)throw new Error("SERVER_SAVE_FAILED");return response.json();})
+        .then(()=>{if(error){error.textContent="Ссылка сохранена в серверном каталоге.";error.hidden=false;error.style.color="var(--fz-cyan,#66fcf1)";}})
+        .catch(()=>{if(error){error.textContent="Ссылка сохранена только на этом устройстве: серверный каталог недоступен.";error.hidden=false;}});
+    }else if(error){error.textContent="Ссылка сохранена только на этом устройстве: сервер не подключён.";error.hidden=false;}
     window.dispatchEvent(new CustomEvent("freezzz:live-catalog-changed"));
   });
 }
