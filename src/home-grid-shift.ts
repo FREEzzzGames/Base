@@ -27,12 +27,27 @@ function shuffle<T>(items: T[]): T[] {
   }
   return result;
 }
+function animateReflow(tiles: Tile[], change: () => void) {
+  const before = new Map(tiles.map(tile => [tile, tile.getBoundingClientRect()]));
+  change();
+  for (const tile of tiles) {
+    const old = before.get(tile);
+    if (!old) continue;
+    const next = tile.getBoundingClientRect();
+    const dx = old.left - next.left, dy = old.top - next.top;
+    if (Math.abs(dx) + Math.abs(dy) < 1) continue;
+    tile.animate([
+      { transform: `translate3d(${dx}px,${dy}px,0)` },
+      { transform: "translate3d(0,0,0)" }
+    ], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
+  }
+}
 
 export function bindHomeGridShift(root: HTMLElement) {
   if (root.dataset.gridShiftBound === "true") return;
-  root.dataset.gridShiftBound = "true";
   const tiles = [...root.querySelectorAll<Tile>(":scope > [data-portal-block]")];
   if (tiles.length < 2) return;
+  root.dataset.gridShiftBound = "true";
   const originalOrder = new Map(tiles.map((tile, index) => [keyOf(tile), index]));
   const defaults: Record<string, Size> = { hero: "l", game: "l", live: "m", chat: "m", radio: "m", library: "m" };
   const saved = readLayout();
@@ -49,25 +64,26 @@ export function bindHomeGridShift(root: HTMLElement) {
   panel.innerHTML = '<span data-grid-shift-hint>Перетаскивай блоки · тяни за угол для размера</span><button type="button" data-grid-shift-undo aria-label="Отменить последнее действие" title="Отменить">↶</button><button type="button" data-grid-shift-random>🎲 Случайно</button><button type="button" data-grid-shift-reset>Сброс</button><button type="button" data-grid-shift-done>✓</button>';
   root.append(panel);
 
-  let editing = false;
-  let suppressClick = false;
-  let holdTimer = 0;
+  let editing = false, suppressClick = false, holdTimer = 0;
   let active: Tile | null = null;
   let startX = 0, startY = 0, lastX = 0, lastY = 0;
-  let dragging = false;
-  let resizing = false;
+  let dragging = false, resizing = false;
   let resizeStartSize: Size = "m";
   let lastSnapshot: Layout | null = null;
+  let lastTarget: Tile | null = null;
 
   const snapshot = (): Layout => ({
     order: ordered().map(keyOf),
     sizes: Object.fromEntries(tiles.map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size]))
   });
+  const commit = () => saveLayout(root, tiles);
   const restore = (state: Layout) => {
     const lookup = new Map(tiles.map(tile => [keyOf(tile), tile]));
-    applyOrder(state.order.map(key => lookup.get(key)).filter((tile): tile is Tile => Boolean(tile)).concat(tiles.filter(tile => !state.order.includes(keyOf(tile)))));
-    tiles.forEach(tile => { tile.dataset.gridSize = state.sizes[keyOf(tile)] || defaults[keyOf(tile)] || "m"; });
-    saveLayout(root, tiles);
+    animateReflow(tiles, () => {
+      applyOrder(state.order.map(key => lookup.get(key)).filter((tile): tile is Tile => Boolean(tile)).concat(tiles.filter(tile => !state.order.includes(keyOf(tile)))));
+      tiles.forEach(tile => { tile.dataset.gridSize = state.sizes[keyOf(tile)] || defaults[keyOf(tile)] || "m"; });
+    });
+    commit();
   };
   const setEditing = (enabled: boolean) => {
     editing = enabled;
@@ -79,7 +95,7 @@ export function bindHomeGridShift(root: HTMLElement) {
       if (editing) {
         const handle = document.createElement("span");
         handle.className = "grid-shift-resize-handle";
-        handle.setAttribute("aria-hidden", "true");
+        handle.setAttribute("role", "presentation");
         handle.textContent = "⤢";
         tile.append(handle);
       }
@@ -89,42 +105,37 @@ export function bindHomeGridShift(root: HTMLElement) {
       active = null;
     }
   };
-  const commit = () => saveLayout(root, tiles);
   const randomize = () => {
     lastSnapshot = snapshot();
-    const shuffled = shuffle(tiles);
-    shuffled.forEach((tile, index) => {
-      tile.style.order = String(index);
-      tile.dataset.gridSize = keyOf(tile) === "hero" ? "l" : (["s", "m", "l"] as Size[])[Math.floor(Math.random() * 3)];
+    animateReflow(tiles, () => {
+      const shuffled = shuffle(tiles);
+      applyOrder(shuffled);
+      shuffled.forEach(tile => { tile.dataset.gridSize = keyOf(tile) === "hero" ? "l" : (["s", "m", "l"] as Size[])[Math.floor(Math.random() * 3)]; });
     });
     commit();
   };
   const chooseSizeFromDelta = (tile: Tile, dx: number, dy: number) => {
-    const scale = Math.max(dx, dy);
+    const scale = (dx + dy) / 2;
     const current = SIZES.indexOf(resizeStartSize);
-    const step = scale > 54 ? 2 : scale > 22 ? 1 : scale < -54 ? -2 : scale < -22 ? -1 : 0;
+    const step = scale > 64 ? 2 : scale > 24 ? 1 : scale < -64 ? -2 : scale < -24 ? -1 : 0;
     tile.dataset.gridSize = SIZES[Math.max(0, Math.min(2, current + step))];
   };
-  const hitTestTile = (x: number, y: number, except: Tile) => {
-    let nearest: Tile | null = null, best = Number.POSITIVE_INFINITY;
+  const targetAt = (x: number, y: number, except: Tile) => {
     for (const tile of tiles) {
       if (tile === except) continue;
-      const rect = tile.getBoundingClientRect();
-      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return tile;
-      const cx = (rect.left + rect.right) / 2, cy = (rect.top + rect.bottom) / 2;
-      const distance = (cx - x) ** 2 + (cy - y) ** 2;
-      if (distance < best) { best = distance; nearest = tile; }
+      const r = tile.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return tile;
     }
-    return nearest;
+    return null;
   };
-  const moveToPosition = (tile: Tile, x: number, y: number) => {
-    const target = hitTestTile(x, y, tile);
-    if (!target) return;
+  const reorderOver = (tile: Tile, target: Tile) => {
     const list = ordered(), from = list.indexOf(tile), to = list.indexOf(target);
-    if (from === to || from < 0 || to < 0) return;
-    list.splice(from, 1);
-    list.splice(to, 0, tile);
-    applyOrder(list);
+    if (from < 0 || to < 0 || from === to) return;
+    animateReflow(tiles, () => {
+      list.splice(from, 1);
+      list.splice(to, 0, tile);
+      applyOrder(list);
+    });
   };
 
   tiles.forEach(tile => {
@@ -133,8 +144,9 @@ export function bindHomeGridShift(root: HTMLElement) {
       const target = event.target as HTMLElement;
       if (editing && target.closest(".grid-shift-resize-handle")) {
         resizing = true; dragging = false; active = tile; resizeStartSize = tile.dataset.gridSize as Size;
+        lastSnapshot = snapshot();
       } else if (editing) {
-        resizing = false; dragging = false; active = tile;
+        resizing = false; dragging = false; active = tile; lastSnapshot = snapshot();
       } else {
         active = tile;
         window.clearTimeout(holdTimer);
@@ -147,6 +159,7 @@ export function bindHomeGridShift(root: HTMLElement) {
         }, 480);
       }
       startX = lastX = event.clientX; startY = lastY = event.clientY;
+      lastTarget = null;
       try { tile.setPointerCapture(event.pointerId); } catch { /* pointer capture is optional */ }
     });
     tile.addEventListener("pointermove", event => {
@@ -158,31 +171,29 @@ export function bindHomeGridShift(root: HTMLElement) {
       }
       if (!dragging && !resizing && Math.abs(lastX - startX) + Math.abs(lastY - startY) > 8) {
         dragging = true;
-        lastSnapshot = snapshot();
         tile.classList.add("grid-shift-dragging");
       }
       if (resizing) {
-        if (!lastSnapshot) lastSnapshot = snapshot();
         tile.classList.add("grid-shift-resizing");
         chooseSizeFromDelta(tile, lastX - startX, lastY - startY);
       } else if (dragging) {
-        const rect = tile.getBoundingClientRect();
         tile.style.setProperty("--grid-drag-x", `${lastX - startX}px`);
         tile.style.setProperty("--grid-drag-y", `${lastY - startY}px`);
-        moveToPosition(tile, lastX, lastY);
-        void rect;
+        const target = targetAt(lastX, lastY, tile);
+        if (target && target !== lastTarget) { reorderOver(tile, target); lastTarget = target; }
       }
     });
     const finish = () => {
       window.clearTimeout(holdTimer);
       if (editing && active === tile && (dragging || resizing)) {
+        if (resizing) animateReflow(tiles, () => {});
         tile.classList.remove("grid-shift-dragging", "grid-shift-resizing");
         tile.style.removeProperty("--grid-drag-x");
         tile.style.removeProperty("--grid-drag-y");
         commit();
         suppressClick = true;
       }
-      active = null; dragging = false; resizing = false;
+      active = null; dragging = false; resizing = false; lastTarget = null;
     };
     tile.addEventListener("pointerup", finish);
     tile.addEventListener("pointercancel", finish);
@@ -201,7 +212,10 @@ export function bindHomeGridShift(root: HTMLElement) {
   });
   panel.querySelector("[data-grid-shift-reset]")?.addEventListener("click", () => {
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore unavailable storage */ }
-    tiles.forEach(tile => { tile.style.order = String(originalOrder.get(keyOf(tile)) ?? 0); tile.dataset.gridSize = defaults[keyOf(tile)] || "m"; });
-    lastSnapshot = null; setEditing(false);
+    lastSnapshot = null;
+    animateReflow(tiles, () => {
+      tiles.forEach(tile => { tile.style.order = String(originalOrder.get(keyOf(tile)) ?? 0); tile.dataset.gridSize = defaults[keyOf(tile)] || "m"; });
+    });
+    setEditing(false);
   });
 }
