@@ -3,6 +3,7 @@ import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
+import { bindHomeGridShift } from "./home-grid-shift";
 import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
@@ -582,6 +583,10 @@ function render(){
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   mountPersistentBackgroundVideos();
   bind();
+  if(view==="home"){
+    const homeGrid=document.querySelector<HTMLElement>(".home-portal");
+    if(homeGrid)bindHomeGridShift(homeGrid);
+  }
   bindHudTouchGesture();
   updateHomeClock();
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
