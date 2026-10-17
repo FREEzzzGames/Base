@@ -48,6 +48,16 @@ const OPACITY_KEY = "freezzz:library:gamepad-opacity";
 const EJS_DATA = "https://cdn.emulatorjs.org/4.2.3/data/";
 const EJS_LOADER = EJS_DATA + "loader.js";
 
+let emulatorLaunchStartedAt = 0;
+let emulatorRomReadMs = 0;
+let emulatorLoaderMs = 0;
+let emulatorInitializedAt = 0;
+function emulatorMetric(stage: "rom-read" | "core-loader" | "initialized" | "exit", durationMs: number): void {
+  const root = document.querySelector<HTMLElement>("#library-emulator-root");
+  if (root) root.dataset["timing" + stage.split("-").map(part => part[0].toUpperCase()+part.slice(1)).join("")] = String(Math.round(durationMs));
+  window.dispatchEvent(new CustomEvent("freezzz:emulator-timing", { detail: { stage, durationMs: Math.round(durationMs), gameId: activeGame?.id ?? null } }));
+}
+
 const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string; exts: string[] }> = {
   nes:  { label: "NES", bits: 8,  core: "nes",     exts: ["nes", "fds", "unif", "unf"] },
   gb:   { label: "Game Boy", bits: 8, core: "gb",  exts: ["gb", "gbc"] },
@@ -1225,7 +1235,14 @@ async function startGame(game: LibraryGame): Promise<void> {
   try {
     const diagnostics = getGameLaunchDiagnostics(game);
     if (diagnostics.length) throw new Error("LAUNCH_PRECHECK_FAILED: " + diagnostics.join(", "));
+    emulatorLaunchStartedAt = performance.now();
+    emulatorRomReadMs = 0;
+    emulatorLoaderMs = 0;
+    emulatorInitializedAt = 0;
+    const romReadStartedAt = performance.now();
     const blob = await getRom(game.id);
+    emulatorRomReadMs = performance.now() - romReadStartedAt;
+    emulatorMetric("rom-read", emulatorRomReadMs);
     if (token !== emulatorToken) return;
     activeGame = game;
     // EmulatorJS 4.1+ accepts File objects directly; keep the original ROM filename/extension.
@@ -1302,6 +1319,7 @@ async function startGame(game: LibraryGame): Promise<void> {
     installDefaultControls(game.system);
     w.EJS_onExit = () => {
       if (token !== emulatorToken) return;
+      if (emulatorInitializedAt) emulatorMetric("exit", performance.now() - emulatorInitializedAt);
       cleanupEmulatorDom();
       document.querySelector<HTMLElement>(".freezzz-emulator-host")?.remove();
       document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
@@ -1313,14 +1331,17 @@ async function startGame(game: LibraryGame): Promise<void> {
       bindCustomGamepad();
       if (game.system === "nds") bindNdsTouch();
     };
-    w.EJS_ready = bindInputSurface;
-    w.EJS_onGameStart = bindInputSurface;
+    w.EJS_ready = () => { bindInputSurface(); if (!emulatorInitializedAt) { emulatorInitializedAt = performance.now(); emulatorMetric("initialized", emulatorInitializedAt - emulatorLaunchStartedAt); } };
+    w.EJS_onGameStart = () => { bindInputSurface(); if (!emulatorInitializedAt) { emulatorInitializedAt = performance.now(); emulatorMetric("initialized", emulatorInitializedAt - emulatorLaunchStartedAt); } };
     bindEmulatorControls();
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
     writeMeta(games);
 
+    const loaderStartedAt = performance.now();
     await loadEmulatorScript();
+    emulatorLoaderMs = performance.now() - loaderStartedAt;
+    emulatorMetric("core-loader", emulatorLoaderMs);
     if (token !== emulatorToken) return;
     bindInputSurface();
   } catch (error) {
@@ -1427,7 +1448,9 @@ export function bindLibraryView(): void {
 
 /** Fully stop the current emulator when leaving the Library route. */
 export function stopLibraryEmulator(): void {
+  if (emulatorInitializedAt) emulatorMetric("exit", performance.now() - emulatorInitializedAt);
   emulatorToken++;
   removeExistingEmulator();
   libraryTab = "catalog";
+  emulatorInitializedAt = 0;
 }
