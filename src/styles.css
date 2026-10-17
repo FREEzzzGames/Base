@@ -3653,6 +3653,20 @@ main{
 .portal-mw-resize-ne::after{right:3px!important;top:3px!important;border-right:2px solid rgba(255,255,255,.55)!important;border-top:2px solid rgba(255,255,255,.55)!important;}
 .portal-mw-resize-nw::after{left:3px!important;top:3px!important;border-left:2px solid rgba(255,255,255,.55)!important;border-top:2px solid rgba(255,255,255,.55)!important;}
 
+.portal-mw-live{
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:rgba(0,0,0,var(--live-panel-alpha,.92))!important;
+}
+.portal-mw-live .portal-mw-head{
+  background:rgba(8,10,14,var(--live-panel-alpha,.92))!important;
+  border:0!important;
+}
+.portal-mw-live .portal-mw-head>div{display:flex!important;align-items:center!important;gap:3px!important}
+.portal-mw-live .portal-mw-head button{flex:0 0 auto!important}
+.portal-mw-opacity{display:flex!important;align-items:center!important;gap:3px!important;font-size:13px!important;color:#fff!important}
+.portal-mw-opacity input{width:58px!important;height:18px!important;margin:0!important;padding:0!important;accent-color:#ff2020!important}
+.portal-mw-live-body{border:0!important}
+.portal-mw-live .portal-mw-resize{border:0!important;background:transparent!important}
 .portal-mw-live-body{
   width:100%!important;
   height:calc(100% - 36px)!important;
