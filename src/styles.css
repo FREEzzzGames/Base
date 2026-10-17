@@ -10095,3 +10095,111 @@ button:disabled,[aria-disabled="true"]{
 @media(prefers-reduced-motion:reduce){
   .portal-toolbar-item.active::after{animation:none!important}
 }
+
+
+/* CHAT layout correction: keep conversation and composer inside the actual mobile viewport. */
+.chat-portal .chat.portal-block,
+.chat-portal .chat-telegram-shell{
+  box-sizing:border-box!important;
+  min-height:0!important;
+}
+.chat-portal .chat.portal-block{
+  height:clamp(320px,calc(100dvh - 285px),760px)!important;
+  max-height:calc(100dvh - 250px)!important;
+}
+@media(max-width:520px){
+  .chat-portal .chat.portal-block{
+    height:clamp(320px,calc(100dvh - 285px),640px)!important;
+    max-height:calc(100dvh - 250px)!important;
+  }
+}
+.chat-telegram-shell,.chat-conversation,.chat-history,.chat-message-form{
+  min-width:0!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+.chat-conversation{
+  grid-template-rows:44px minmax(0,1fr) 58px!important;
+  overflow:hidden!important;
+}
+.chat-message-form{
+  position:relative!important;
+  z-index:2!important;
+  width:100%!important;
+  padding:7px!important;
+  background:#0b1015!important;
+}
+.chat-message-form input{
+  min-width:0!important;
+  width:100%!important;
+  min-height:44px!important;
+  height:44px!important;
+  font-size:16px!important;
+}
+.chat-message-form button{
+  flex:0 0 44px!important;
+  width:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  height:44px!important;
+}
+.chat-history{
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.portal-mw.portal-mw-chat{
+  box-sizing:border-box!important;
+  grid-template-rows:48px minmax(0,1fr) 62px!important;
+  min-height:220px!important;
+  max-height:calc(100dvh - 150px)!important;
+  overflow:hidden!important;
+}
+.portal-mw.portal-mw-chat .portal-mw-chat-list{
+  min-height:0!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.portal-mw.portal-mw-chat form{
+  box-sizing:border-box!important;
+  min-height:62px!important;
+  align-items:center!important;
+  padding:7px!important;
+}
+.portal-mw.portal-mw-chat input,
+.portal-mw.portal-mw-chat form button{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+}
+.portal-mw.portal-mw-chat form button{width:44px!important;min-width:44px!important}
+.portal-mw.portal-mw-chat .portal-mw-head button{min-width:36px!important;min-height:36px!important;width:36px!important;height:36px!important}
+.portal-mw.portal-mw-chat .portal-mw-chat-list b{font-size:12px!important;line-height:1.35!important}
+.portal-mw.portal-mw-chat .portal-mw-chat-list span{font-size:14px!important;line-height:1.4!important;overflow-wrap:anywhere!important}
+.portal-mw.portal-mw-chat .portal-mw-chat-list time{font-size:10px!important;color:#9ba8b2!important}
+@media(max-width:520px){
+  .portal-mw.portal-mw-chat{
+    left:8px!important;
+    right:8px!important;
+    top: max(8px, env(safe-area-inset-top))!important;
+    width:auto!important;
+    height:min( min(68dvh,560px), calc(100dvh - 180px) )!important;
+    max-height:calc(100dvh - 180px)!important;
+  }
+}
+/* One active destination only; remove legacy red HOME highlight in every state. */
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4),
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4).active,
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4):active,
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4) .portal-toolbar-icon{
+  box-shadow:none!important;
+  text-shadow:none!important;
+  filter:none!important;
+}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4).active{
+  color:var(--fz-cyan)!important;
+  background:rgba(102,252,241,.07)!important;
+}
+.portal-toolbar-nav > .portal-toolbar-item:nth-child(4).active::after{
+  background:var(--fz-cyan)!important;
+}
