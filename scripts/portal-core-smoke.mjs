@@ -4,11 +4,12 @@ import ts from "typescript";
 
 const source = await readFile(new URL("../src/core/portal-core.ts", import.meta.url), "utf8");
 const mainSource = await readFile(new URL("../src/main.ts", import.meta.url), "utf8");
+const multiWindowSource = await readFile(new URL("../src/multi-window-portal.ts", import.meta.url), "utf8");
 assert.ok(mainSource.includes('createPlatformState({view:"home"'), "HOME must be the default entry route");
 assert.ok(mainSource.includes('safeModuleContent("live",()=>renderLiveCatalog(lang))'), "LIVE catalog must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("chat",()=>renderTelegramChat())'), "CHAT must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("library",()=>renderLibrary())'), "LIBRARY must have an error boundary");
-assert.ok(mainSource.includes('safeModuleContent("live",()=>renderLivePopups'), "LIVE overlays must not break the portal shell");
+assert.ok(mainSource.includes('"freezzz:live-window-open"') && multiWindowSource.includes('"freezzz:live-window-open"'), "LIVE overlays must use the shared floating window");
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
     target: ts.ScriptTarget.ES2022,
