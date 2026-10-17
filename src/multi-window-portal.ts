@@ -13,6 +13,7 @@ const windows:Record<MiniId,MiniWindow> = {
 let nextZ=60;
 let liveName=getLiveStreams()[0]?.name||streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
+let liveReplay=false;
 let liveOpacity=0.92;
 type TelegramPopupChat={id:string;title:string;kind:string;username?:string;lastMessage?:{text:string;date:string;outgoing:boolean}};
 type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
@@ -93,12 +94,12 @@ function render(){
     const candidates=getLiveStreams();
     const s=candidates.find(x=>x.name===liveName)||candidates[0]||streams[0];
     if(s){
-      const src=liveEmbedUrl(s,liveSource,window.location.hostname);
+      const src=liveEmbedUrl(s,liveReplay?"replay":liveSource,window.location.hostname);
       out.push('<section class="portal-mw portal-mw-live" data-mw="live" style="left:'+windows.live.x+'px;top:'+windows.live.y+'px;width:'+windows.live.width+'px;height:'+windows.live.height+'px;z-index:'+Math.max(3001,windows.live.z)+';--live-panel-alpha:'+liveOpacity+'">'+
         '<header class="portal-mw-head" data-mw-drag="live"><strong>📺 '+esc(s.name)+'</strong><div>'+
-        '<button data-mw-source="twitch" class="'+(liveSource==="twitch"?"active":"")+'">T</button>'+
-        '<button data-mw-source="youtube" class="'+(liveSource==="youtube"?"active":"")+'">Y</button>'+
-        '<label class="portal-mw-opacity" title="Прозрачность окна">◐<input data-mw-opacity type="range" min="20" max="100" step="5" value="'+Math.round(liveOpacity*100)+'" aria-label="Прозрачность окна"></label><button data-mw-close="live" type="button">×</button></div></header>'+
+        '<button data-mw-source="twitch" class="'+(!liveReplay&&liveSource==="twitch"?"active":"")+'">T</button>'+
+        '<button data-mw-source="youtube" class="'+(!liveReplay&&liveSource==="youtube"?"active":"")+'">Y</button>'+
+        '<button data-mw-replay type="button" class="'+(liveReplay?"active":"")+'" '+(!s.lastRecordingUrl?"disabled":"")+' title="Последняя запись">↻</button><label class="portal-mw-opacity" title="Прозрачность окна">◐<input data-mw-opacity type="range" min="20" max="100" step="5" value="'+Math.round(liveOpacity*100)+'" aria-label="Прозрачность окна"></label><button data-mw-close="live" type="button">×</button></div></header>'+
         '<div class="portal-mw-live-body">'+(src?'<iframe src="'+esc(src)+'" title="'+esc(s.name)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>':'LIVE unavailable')+'</div>'+resizeHandle("live")+'</section>');
     }
   }
@@ -122,8 +123,9 @@ function render(){
 function bind(){
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
-    liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";render();
+    liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();
   });
+  layer?.querySelector<HTMLElement>("[data-mw-replay]")?.addEventListener("click",()=>{liveReplay=!liveReplay;render();});
   layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("input",event=>{
     liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
     const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
@@ -236,6 +238,7 @@ function intercept(){
       const selected=candidates.find(s=>s.name===saved)||candidates.find(s=>s.twitchChannel)||candidates.find(s=>s.youtubeChannel)||candidates[0];
       if(selected){
         liveName=selected.name;
+        liveReplay=false;
         liveSource=selected.twitchChannel?"twitch":"youtube";
         windows.live.open=true;fitWindow("live");focus("live");render();
         try{localStorage.setItem("freezzz:live:last-stream",liveName);}catch{}
@@ -259,6 +262,7 @@ export function initMultiWindowPortal(){
     const item=getLiveStreams().find(s=>s.name===detail.name);
     if(!item)return;
     liveName=item.name;
+    liveReplay=detail.source==="replay";
     if(detail.source==="twitch"||detail.source==="youtube")liveSource=detail.source;
     else liveSource=item.twitchChannel?"twitch":"youtube";
     try{localStorage.setItem("freezzz:live:last-stream",item.name);}catch{}
