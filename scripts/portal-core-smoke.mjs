@@ -21,6 +21,9 @@ assert.ok(mainSource.includes("HOME_BOOKMARK_KEY"), "HOME bookmarks must persist
 assert.ok(mainSource.includes("data-bookmark-open"), "HOME bookmarks must navigate to real portal modules");
 assert.ok(mainSource.includes("renderHomeSystem()"), "HOME must expose live system status");
 assert.ok(mainSource.includes("data-system-clock"), "system widget must display the current local clock");
+assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
+assert.ok(multiWindowSource.includes("portal-mw-wave"), "floating radio must expose an audio visualization");
+assert.ok(multiWindowSource.includes('"freezzz:radio-status"'), "floating radio must react to real playback state");
 
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
