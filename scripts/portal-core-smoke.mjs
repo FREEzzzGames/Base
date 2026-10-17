@@ -17,7 +17,7 @@ const compiled = ts.transpileModule(source, {
   }
 }).outputText;
 const moduleUrl = "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
-const { PortalEventBus, PortalModuleManager, createPlatformState } = await import(moduleUrl);
+const { PortalEventBus, PortalModuleManager, ZenithOSKernel, createPlatformState } = await import(moduleUrl);
 
 const bus = new PortalEventBus();
 let calls = 0;
@@ -60,6 +60,17 @@ assert.equal(manager.transition("not-a-view"), false, "unknown routes must be re
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
 assert.equal(lifecycle.at(-1), "error:game:render");
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
+const osKernel = new ZenithOSKernel({ initial: { view: "home", language: "RU" } });
+assert.equal(osKernel.snapshot.view, "home", "ZENITH OS must boot into HOME");
+assert.equal(osKernel.navigate("game").accepted, true);
+assert.equal(osKernel.snapshot.view, "game");
+assert.equal(osKernel.navigate("radio").accepted, true);
+assert.equal(osKernel.snapshot.view, "radio");
+assert.equal(osKernel.back().current, "game", "system back must restore the previous app");
+assert.equal(osKernel.back().current, "home", "system back must return to HOME");
+assert.equal(osKernel.navigate("not-a-view").accepted, false, "kernel must reject unknown apps");
+osKernel.setLanguage("DE");
+assert.equal(osKernel.snapshot.language, "DE", "language is shared OS state");
 // Exercise the emulator launch preflight without booting a browser emulator.
 if (typeof globalThis.indexedDB === "undefined") {
   Object.defineProperty(globalThis, "indexedDB", { value: {}, configurable: true, writable: true });
