@@ -71,6 +71,8 @@ for (const stage of ['"rom-read"', '"core-loader"', '"core-ready"', '"initialize
 }
 assert.ok(emulator.includes('emulatorMetric("rom-read"') && emulator.includes('emulatorMetric("core-loader"'), "ROM storage read and emulator loader timings must remain separate");
 assert.ok(emulator.includes("URL.revokeObjectURL(activeRomUrl)") && emulator.includes("activeRomUrl = null"), "Emulator ROM object URLs must be released on exit and shutdown");
+assert.ok(emulator.includes("async function isMegaDriveRom(blob: Blob)") && emulator.includes('return { system: "md", blob: file, fileName: file.name }'), "Genesis .bin ROMs must be detected by cartridge header instead of being misrouted to the PlayStation core");
+assert.ok(emulator.includes('if (ext === "bin" && await isMegaDriveRom(blob))') && emulator.includes('game.system = "md";'), "Legacy Genesis .bin entries must be repaired in the existing library");
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
 
