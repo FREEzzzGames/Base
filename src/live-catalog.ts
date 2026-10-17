@@ -63,7 +63,7 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
     const verified=Boolean(s.rankingVerified&&s.officialStatsAt);
     const category=metadata.category;
     const language=metadata.language;
-    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory="");'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
+    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory="'+esc(metadata.subcategory)+'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
       '<div class="live-catalog-avatar-wrap">'+avatar(s)+'</div>'+
       '<div class="live-catalog-info"><strong>'+esc(s.name)+'</strong><small>'+categoryLabel(category,lang)+' · '+languageLabel(language,lang)+(s.custom?" · CUSTOM":"")+'</small><small class="live-ranking-status">'+(verified?"✓ "+esc(s.officialStatsAt||""):"Статистика не подтверждена")+'</small></div>'+
       '<div class="live-catalog-actions"><button class="tg-button" data-live-open="'+esc(s.name)+'" data-live-source="twitch" type="button" '+(!s.twitch?"disabled":"")+'>'+L.watch+' Twitch</button>'+
