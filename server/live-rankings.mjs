@@ -19,6 +19,7 @@ const REFRESH_SECRET = process.env.LIVE_REFRESH_SECRET || "";
 const DAILY_HOUR_UTC = Number.isInteger(Number(process.env.LIVE_REFRESH_HOUR_UTC)) ? Math.min(23,Math.max(0,Number(process.env.LIVE_REFRESH_HOUR_UTC||4))) : 4;
 const CATEGORIES = ["gaming","entertainment","music","education","technology","lifestyle","sports","creativity"];
 const LANGUAGES = ["uk","ru","en","de","unknown"];
+const REGIONS = ["RU","UA","DE","US","GB"];
 const SEED = [
   ["leb1ga","Leb1ga","uk","gaming","Mobile Legends","https://www.youtube.com/@leb1ga"],
   ["dendi","Dendi","en","gaming","MOBA","https://www.youtube.com/@Dendi"],
@@ -54,6 +55,7 @@ function normalizeCreator(input){
   if(!input||typeof input!=="object")throw new Error("INVALID_CREATOR");
   const name=String(input.name||"").trim().slice(0,100);
   const language=LANGUAGES.includes(input.language)?input.language:"unknown";
+  const region=REGIONS.includes(String(input.region||"").toUpperCase())?String(input.region).toUpperCase():null;
   const category=CATEGORIES.includes(input.category)?input.category:"gaming";
   const subcategory=String(input.subcategory||"Other").trim().slice(0,80)||"Other";
   const yt=String(input.youtubeUrl||"").trim(),tw=String(input.twitchUrl||"").trim();
@@ -61,7 +63,7 @@ function normalizeCreator(input){
   const twitch=tw?validateUrl(tw,"twitch"):null;
   if(!name||(!youtube&&!twitch))throw new Error("NAME_AND_VALID_PLATFORM_URL_REQUIRED");
   const key=twitch?new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase():youtubeKey(youtube);
-  return {id:(twitch?"twitch:":"youtube:")+key,name,language,category,subcategory,platforms:{youtube:youtube?{url:youtube}:null,twitch:twitch?{url:twitch,login:new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase()}:null},source:"user",verified:false,addedAt:new Date().toISOString()};
+  return {id:(twitch?"twitch:":"youtube:")+key,name,language,region,category,subcategory,platforms:{youtube:youtube?{url:youtube}:null,twitch:twitch?{url:twitch,login:new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase()}:null},source:"user",verified:false,addedAt:new Date().toISOString()};
 }
 function validateUrl(raw,provider){
   let u;try{u=new URL(raw)}catch{throw new Error("INVALID_URL")}
@@ -87,9 +89,9 @@ async function load(){
     const result=await pool.query("SELECT payload FROM freezzz_live_state WHERE id=1");
     if(result.rows[0]?.payload){
       const parsed=result.rows[0].payload;
-      store={schemaVersion:1,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
+      store={schemaVersion:2,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],publishedRankings:Array.isArray(parsed.publishedRankings)?parsed.publishedRankings:[],publishedMonth:parsed.publishedMonth||null,publishedAt:parsed.publishedAt||null,lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
     }else{
-      store={schemaVersion:1,creators:SEED,snapshots:[],rankings:[],lastDailyRefresh:null,lastMonthlyReview:null};
+      store={schemaVersion:2,creators:SEED,snapshots:[],rankings:[],publishedRankings:[],publishedMonth:null,publishedAt:null,lastDailyRefresh:null,lastMonthlyReview:null};
       await persist();
     }
     return store;
@@ -206,6 +208,7 @@ async function syncAll(){
         try{
           const metrics=platform==="youtube"?await resolveYoutube(creator):await resolveTwitch(creator);
           if(metrics?.available===false)throw new Error(metrics.reason);
+          if(platform==="youtube"&&!creator.region&&REGIONS.includes(String(metrics?.country||"").toUpperCase()))creator.region=String(metrics.country).toUpperCase();
           s.snapshots.push({creatorId:creator.id,platform,observedAt:now,metrics});
           successes++;
         }catch(e){
@@ -224,12 +227,72 @@ async function syncAll(){
   })().finally(()=>{syncInFlight=null;});
   return syncInFlight;
 }
+export function buildMonthlyRankings(s,targetMonth){
+  if(!/^\\d{4}-\\d{2}$/.test(targetMonth||""))throw new Error("INVALID_TARGET_MONTH");
+  const [year,monthNumber]=targetMonth.split("-").map(Number);
+  const start=Date.UTC(year,monthNumber-1,1);
+  const end=Date.UTC(year,monthNumber,1);
+  const groups=new Map();
+  for(const creator of s.creators){
+    const region=String(creator.region||"").toUpperCase();
+    if(!REGIONS.includes(region)||!LANGUAGES.includes(creator.language)||creator.language==="unknown")continue;
+    for(const platform of ["youtube","twitch"]){
+      if(!creator.platforms?.[platform])continue;
+      const points=s.snapshots.filter(x=>x.creatorId===creator.id&&x.platform===platform&&!x.error&&x.metrics&&Date.parse(x.observedAt)>=start&&Date.parse(x.observedAt)<end).sort((a,b)=>Date.parse(a.observedAt)-Date.parse(b.observedAt));
+      if(points.length<2)continue;
+      let score=0,metrics=null;
+      if(platform==="youtube"){
+        const first=points[0],last=points[points.length-1];
+        const span=Date.parse(last.observedAt)-Date.parse(first.observedAt);
+        if(span<20*24*60*60*1000)continue;
+        const firstSubs=first.metrics.subscribers, lastSubs=last.metrics.subscribers;
+        const firstViews=Number(first.metrics.views||0),lastViews=Number(last.metrics.views||0);
+        const subscribersGrowth=firstSubs==null||lastSubs==null?null:Math.max(0,Number(lastSubs)-Number(firstSubs));
+        const viewsGrowth=Math.max(0,lastViews-firstViews);
+        if(subscribersGrowth===null&&viewsGrowth===0)continue;
+        score=Math.log1p(subscribersGrowth||0)*0.7+Math.log1p(viewsGrowth)*0.3;
+        metrics={subscribersGrowth,viewsGrowth,samples:points.length,periodStart:first.observedAt,periodEnd:last.observedAt};
+      }else{
+        const livePoints=points.filter(x=>x.metrics.live);
+        const liveDays=new Set(livePoints.map(x=>String(x.observedAt).slice(0,10)));
+        if(liveDays.size<3)continue;
+        const averageViewers=livePoints.reduce((sum,x)=>sum+Number(x.metrics.viewers||0),0)/livePoints.length;
+        score=Math.log1p(averageViewers)+Math.log1p(liveDays.size)*0.15;
+        metrics={live:true,viewers:Math.round(averageViewers),avgViewers:Math.round(averageViewers),liveDays:liveDays.size,samples:points.length,periodStart:points[0].observedAt,periodEnd:points.at(-1).observedAt};
+      }
+      const subcategory=creator.subcategory||"Other";
+      const key=[region,platform,creator.language,creator.category,subcategory].join("|");
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push({creatorId:creator.id,name:creator.name,region,language:creator.language,category:creator.category,subcategory,platform,month:targetMonth,score,metrics,observedAt:metrics.periodEnd});
+    }
+  }
+  const published=[];
+  for(const items of groups.values()){
+    items.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
+    items.slice(0,5).forEach((item,index)=>published.push({...item,rank:index+1,isTopFive:true,score:undefined}));
+  }
+  return published.sort((a,b)=>a.region.localeCompare(b.region)||a.platform.localeCompare(b.platform)||a.language.localeCompare(b.language)||a.category.localeCompare(b.category)||a.subcategory.localeCompare(b.subcategory)||a.rank-b.rank);
+}
+function previousCompletedMonth(now=new Date()){
+  const first=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1));
+  first.setUTCMonth(first.getUTCMonth()-1);
+  return first.toISOString().slice(0,7);
+}
+function publishMonthlyRankings(s,targetMonth=previousCompletedMonth()){
+  const next=buildMonthlyRankings(s,targetMonth);
+  if(!next.length)return {ok:false,published:false,reason:"INSUFFICIENT_MONTHLY_DATA",targetMonth,availableSnapshots:s.snapshots.length};
+  s.publishedRankings=next;
+  s.publishedMonth=targetMonth;
+  s.publishedAt=new Date().toISOString();
+  return {ok:true,published:true,publishedMonth:targetMonth,publishedAt:s.publishedAt,rankedEntries:next.length,groups:new Set(next.map(x=>[x.region,x.platform,x.language,x.category,x.subcategory].join("|"))).size};
+}
 function monthlyReview(s){
   const seen=new Set(),reviewed=[];
   s.creators=s.creators.filter(c=>{
     const platformKey= c.platforms?.twitch?.login ? "twitch:"+c.platforms.twitch.login.toLowerCase() : c.platforms?.youtube?.url ? "youtube:"+youtubeKey(c.platforms.youtube.url) : c.id;
     if(seen.has(platformKey))return false;seen.add(platformKey);
     if(!LANGUAGES.includes(c.language))c.language="unknown";
+    if(!REGIONS.includes(String(c.region||"").toUpperCase()))delete c.region;else c.region=String(c.region).toUpperCase();
     if(!CATEGORIES.includes(c.category))c.category="gaming";
     c.name=String(c.name||"Unknown").slice(0,100);reviewed.push(c.id);return true;
   });
@@ -239,11 +302,11 @@ function monthlyReview(s){
 export async function handleLiveRoute(req,res,url,origin){
   const pathname=url.pathname;
   if(req.method==="GET"&&pathname==="/api/live/health"){
-    const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),storage:DATABASE_URL?"postgres":"local-file",persistentPath:DATABASE_URL?undefined:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,lastError:lastSyncError},origin);
+    const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),storage:DATABASE_URL?"postgres":"local-file",persistentPath:DATABASE_URL?undefined:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,publishedMonth:s.publishedMonth,publishedAt:s.publishedAt,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,publishedRankings:(s.publishedRankings||[]).length,lastError:lastSyncError},origin);
   }
   if(req.method==="GET"&&pathname==="/api/live/catalog"){
     const s=await load();const total=s.creators.length;const limit=Math.min(100,Math.max(1,Number(url.searchParams.get("limit")||50)));const offset=Math.max(0,Number(url.searchParams.get("offset")||0));
-    const creators=s.creators.slice(offset,offset+limit).map(({id,name,language,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,category,subcategory,platforms,source,verified,addedAt}));
+    const creators=s.creators.slice(offset,offset+limit).map(({id,name,language,region,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,region,category,subcategory,platforms,source,verified,addedAt}));
     return json(res,200,{ok:true,creators,total,limit,offset,nextOffset:offset+creators.length<total?offset+creators.length:null,generatedAt:new Date().toISOString()},origin);
   }
   if(req.method==="POST"&&pathname==="/api/live/suggestions"){
@@ -254,10 +317,10 @@ export async function handleLiveRoute(req,res,url,origin){
     try{const creator=normalizeCreator(body);const s=await load();const existing=s.creators.findIndex(item=>item.id===creator.id);if(existing>=0)return json(res,200,{ok:true,duplicate:true,creator:s.creators[existing],total:s.creators.length},origin);s.creators.push(creator);await persist();return json(res,201,{ok:true,creator,total:s.creators.length},origin);}catch(e){return json(res,400,{ok:false,error:String(e?.message||"INVALID_CREATOR")},origin);}
   }
   if(req.method==="GET"&&pathname==="/api/live/rankings"){
-    const s=await load();const platform=url.searchParams.get("platform"),language=url.searchParams.get("language"),category=url.searchParams.get("category"),subcategory=url.searchParams.get("subcategory");
-    const filtered=s.rankings.filter(x=>(!platform||x.platform===platform)&&(!language||x.language===language)&&(!category||x.category===category)&&(!subcategory||x.subcategory===subcategory));
-    const top=filtered.filter(x=>x.isTopFive).sort((a,b)=>a.platform.localeCompare(b.platform)||a.language.localeCompare(b.language)||a.category.localeCompare(b.category)||a.subcategory.localeCompare(b.subcategory)||a.rank-b.rank);
-    return json(res,200,{ok:true,rankings:top,total:top.length,lastUpdated:s.lastDailyRefresh,officialOnly:true},origin);
+    const s=await load();const platform=url.searchParams.get("platform"),region=url.searchParams.get("region"),language=url.searchParams.get("language"),category=url.searchParams.get("category"),subcategory=url.searchParams.get("subcategory");
+    const filtered=(s.publishedRankings||[]).filter(x=>(!platform||x.platform===platform)&&(!region||x.region===region.toUpperCase())&&(!language||x.language===language)&&(!category||x.category===category)&&(!subcategory||x.subcategory===subcategory));
+    const top=filtered.sort((a,b)=>a.region.localeCompare(b.region)||a.platform.localeCompare(b.platform)||a.language.localeCompare(b.language)||a.category.localeCompare(b.category)||a.subcategory.localeCompare(b.subcategory)||a.rank-b.rank);
+    return json(res,200,{ok:true,rankings:top,total:top.length,lastUpdated:s.publishedAt,publishedMonth:s.publishedMonth,methodology:"YouTube monthly channel-statistic growth; Twitch average live viewers sampled during the month. Region requires verified channel country or an admin-verified region.",officialOnly:false},origin);
   }
   if(req.method==="POST"&&pathname==="/api/live/creators"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
@@ -271,6 +334,16 @@ export async function handleLiveRoute(req,res,url,origin){
   if(req.method==="POST"&&pathname==="/api/live/review"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
     try{const s=await load();monthlyReview(s);await persist();return json(res,200,{ok:true,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length},origin);}catch(e){return json(res,502,{ok:false,error:String(e?.message||"LIVE_REVIEW_FAILED")},origin);}
+  }
+  if(req.method==="POST"&&pathname==="/api/live/monthly-publish"){
+    if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
+    try{
+      const s=await load();
+      const targetMonth=url.searchParams.get("month")||previousCompletedMonth();
+      const result=publishMonthlyRankings(s,targetMonth);
+      if(result.published)await persist();
+      return json(res,result.published?200:409,{...result,methodology:"Monthly YouTube subscriber/view growth and Twitch average live viewers. Only verified regions are ranked."},origin);
+    }catch(e){return json(res,502,{ok:false,error:String(e?.message||"LIVE_MONTHLY_PUBLISH_FAILED")},origin);}
   }
   if(req.method==="POST"&&pathname==="/api/live/refresh"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
