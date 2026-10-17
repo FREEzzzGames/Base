@@ -4,7 +4,14 @@ import crypto from "node:crypto";
 import pg from "pg";
 
 const DATA_PATH = process.env.LIVE_DATA_PATH || "/tmp/freezzz-live-data.json";
-const DATABASE_URL = process.env.DATABASE_URL || "";\nconst { Pool } = pg;\nlet databasePool = null;\nasync function getDatabasePool(){\n  if(!DATABASE_URL)return null;\n  if(!databasePool){databasePool=new Pool({connectionString:DATABASE_URL,ssl:DATABASE_URL.includes("render.com")?{rejectUnauthorized:false}:undefined,max:3,idleTimeoutMillis:30000,connectionTimeoutMillis:8000});}\n  return databasePool;\n}
+const DATABASE_URL = process.env.DATABASE_URL || "";
+const { Pool } = pg;
+let databasePool = null;
+async function getDatabasePool(){
+  if(!DATABASE_URL)return null;
+  if(!databasePool){databasePool=new Pool({connectionString:DATABASE_URL,ssl:DATABASE_URL.includes("render.com")?{rejectUnauthorized:false}:undefined,max:3,idleTimeoutMillis:30000,connectionTimeoutMillis:8000});}
+  return databasePool;
+}
 const YOUTUBE_KEY = process.env.YOUTUBE_DATA_API_KEY || "";
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
