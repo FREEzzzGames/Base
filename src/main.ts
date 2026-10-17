@@ -16,13 +16,11 @@ import { PortalModuleManager, PortalEventBus, ZenithOSKernel, createPlatformStat
 import { pt } from "./portal-i18n";
 import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVisit, addLiveWatchTime, recordGameLaunch, addGameTime, recordRadioVisit, addRadioListenTime, recordChatMessage, formatDuration, type PortalProfile } from "./profile-store";
 import { bindUniversalPortalPress } from "./portal-interactions";
-import { initVisualComfort } from "./visual-comfort";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
 import { renderLibrary, bindLibraryView, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
 import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
 
 initTelegramBridge();
-initVisualComfort();
 initPerformanceLayer();
 
 async function checkForPortalUpdate(){
