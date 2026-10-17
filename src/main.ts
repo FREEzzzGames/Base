@@ -92,6 +92,20 @@ let livePopups:LivePopupState[]=[];
 let liveAudioPriority=false;
 const PORTAL_NICKNAME="d3tr01t";
 const HOME_BOOKMARK_KEY="freezzz:zenith:home-bookmarks:v1";
+const HOME_FILTER_KEY="freezzz:zenith:home-filter:v1";
+type HomeFilter="discover"|"audio"|"video"|"feeds";
+let homeFilter:HomeFilter=(()=>{try{const value=localStorage.getItem(HOME_FILTER_KEY);return value==="audio"||value==="video"||value==="feeds"?value:"discover";}catch{return "discover";}})();
+function renderHomeFilterBar():string{const items:[HomeFilter,string][]=[["discover","DISCOVER"],["audio","AUDIO"],["video","VIDEO"],["feeds","FEEDS"]];return '<nav class="zenith-home-filters" aria-label="Workspace filters" role="tablist">'+items.map(([id,label])=>'<button type="button" role="tab" data-home-filter="'+id+'" aria-selected="'+(homeFilter===id)+'" class="'+(homeFilter===id?"active":"")+'">'+label+'</button>').join("")+'</nav>';}
+function applyHomeFilter(){
+  if(view!=="home")return;
+  const cards=[...document.querySelectorAll<HTMLElement>("[data-portal-card]")];
+  cards.forEach(card=>{const id=card.dataset.portalCard||"";card.hidden=homeFilter==="audio"?id!=="radio":homeFilter==="video"?id!=="live":homeFilter==="feeds"?true:false;});
+  const bookmarks=document.querySelector<HTMLElement>('[data-portal-block="bookmarks"]');if(bookmarks)bookmarks.hidden=homeFilter==="video"||homeFilter==="feeds";
+  const system=document.querySelector<HTMLElement>('[data-portal-block="system"]');if(system)system.hidden=false;
+  const signal=document.querySelector<HTMLElement>('[data-portal-block="signal-feed"]');if(signal)signal.hidden=homeFilter!=="feeds";
+  document.querySelectorAll<HTMLButtonElement>("[data-home-filter]").forEach(button=>{const active=button.dataset.homeFilter===homeFilter;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active));});
+}
+function renderSignalFeed():string{const online=navigator.onLine;const radio=radioPlaybackStatus.toUpperCase();const platform=getTelegramWebApp()?"TELEGRAM MINI APP":"WEB";return '<section class="zenith-home-widget zenith-signal-feed" data-portal-block="signal-feed"><header><div><span class="zenith-widget-kicker">LIVE TELEMETRY</span><h2>SIGNAL FEED</h2></div><span class="zenith-widget-count">REALTIME</span></header><div class="zenith-signal-row"><i class="'+(online?"is-on":"")+'"></i><span>NETWORK</span><b>'+(online?"ONLINE":"OFFLINE")+'</b></div><div class="zenith-signal-row"><i class="'+(radio==="PLAYING"?"is-on":"")+'"></i><span>AUDIO</span><b>'+escapeHtml(radio)+'</b></div><div class="zenith-signal-row"><i class="is-on"></i><span>PLATFORM</span><b>'+platform+'</b></div><div class="zenith-signal-clock"><span>UTC</span><b data-system-utc>--:--:--</b></div></section>';}
 const HOME_BOOKMARKS:ReadonlyArray<{view:Exclude<View,"home">;label:string;symbol:string}>=[
 {view:"game",label:"GAME",symbol:"▣"},{view:"live",label:"LIVE",symbol:"◉"},{view:"chat",label:"CHAT",symbol:"◌"},{view:"radio",label:"RADIO",symbol:"♫"},{view:"library",label:"LIBRARY",symbol:"▤"},{view:"echo9",label:"ECHO-9",symbol:"⌁"}];
 function readHomeBookmarks():Set<string>{try{const stored=JSON.parse(localStorage.getItem(HOME_BOOKMARK_KEY)||'["game","live","radio","library"]');const valid=new Set(HOME_BOOKMARKS.map(item=>item.view));return new Set(Array.isArray(stored)?stored.map(String).filter(value=>valid.has(value as Exclude<View,"home">)):[]);}catch{return new Set(["game","live","radio","library"]);}}
@@ -497,6 +511,7 @@ function render(){
           </div>
         </section>
         ${(()=>{const last=getLastPlayedGameSummary();return last?'<section class="portal-block home-card home-continue-tile" data-portal-block="continue" aria-label="'+escapeHtml(T("continueGame"))+'"><button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button></section>':"";})()}
+        ${renderHomeFilterBar()}
         <div class="zenith-home-widgets" data-portal-block="workspace-widgets">${renderHomeBookmarks()}${renderHomeSystem()}</div>
         ${homeCard("live")}
         ${homeCard("chat")}
@@ -891,6 +906,8 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-module-retry]").forEach(button=>{
     button.addEventListener("click",()=>render());
   });
+  document.querySelectorAll<HTMLButtonElement>("[data-home-filter]").forEach(button=>button.addEventListener("click",()=>{const value=button.dataset.homeFilter as HomeFilter;if(value!=="discover"&&value!=="audio"&&value!=="video"&&value!=="feeds")return;homeFilter=value;try{localStorage.setItem(HOME_FILTER_KEY,homeFilter);}catch{}applyHomeFilter();}));
+  applyHomeFilter();
   document.querySelectorAll<HTMLElement>("[data-bookmark-open]").forEach(button=>button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();const next=button.dataset.bookmarkOpen as View;if(!next||!moduleManager.has(next))return;portalEvents.emit("navigation:changed",{view:next});}));
   document.querySelectorAll<HTMLInputElement>("[data-bookmark-toggle]").forEach(input=>input.addEventListener("change",()=>{const key=input.dataset.bookmarkToggle||"";if(!HOME_BOOKMARKS.some(item=>item.view===key))return;if(input.checked)homeBookmarks.add(key);else homeBookmarks.delete(key);saveHomeBookmarks();render();}));
   document.querySelectorAll<HTMLElement>(".home-card[data-view]").forEach(function(x){
