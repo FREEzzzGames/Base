@@ -224,3 +224,12 @@ export function bindOpenGamesCatalog(language: CatalogLanguage, rerender: () => 
     });
   });
 }
+
+/** Unload active web games and return the GAME module to its catalog state. */
+export function stopOpenGamesSession(): void {
+  document.querySelectorAll<HTMLIFrameElement>(".open-game-frame").forEach(frame => {
+    try { frame.src = "about:blank"; } catch {}
+    frame.remove();
+  });
+  selectedId = "";
+}
