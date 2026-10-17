@@ -1,0 +1,60 @@
+name: LIVE official statistics refresh
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-official-statistics-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh official LIVE statistics
+        env:
+          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE }}
+          LIVE_REFRESH_SECRET: ${{ secrets.LIVE_REFRESH_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${LIVE_API_BASE}" ] || [ -z "${LIVE_REFRESH_SECRET}" ]; then
+            echo "::notice::Set repository secrets LIVE_API_BASE and LIVE_REFRESH_SECRET to enable scheduled refresh."
+            exit 0
+          fi
+          response="$(curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 180 \
+            -X POST "${LIVE_API_BASE%/}/api/live/refresh" \
+            -H "X-Live-Admin-Key: ${LIVE_REFRESH_SECRET}" \
+            -H "Accept: application/json")"
+          echo "$response" | node -e '
+            let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{
+              const r=JSON.parse(s);
+              console.log(JSON.stringify({ok:r.ok,updatedAt:r.updatedAt,creators:r.creators,successes:r.successes,failures:r.failures,rankedEntries:r.rankedEntries,credentials:r.credentials,error:r.error}));
+              if(!r.ok) process.exitCode=1;
+            });
+          '
+
+  monthly-review:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 5 1 * *')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Review LIVE catalog
+        env:
+          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE }}
+          LIVE_REFRESH_SECRET: ${{ secrets.LIVE_REFRESH_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${LIVE_API_BASE}" ] || [ -z "${LIVE_REFRESH_SECRET}" ]; then
+            echo "::notice::Set repository secrets LIVE_API_BASE and LIVE_REFRESH_SECRET to enable monthly review."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 60 \
+            -X POST "${LIVE_API_BASE%/}/api/live/review" \
+            -H "X-Live-Admin-Key: ${LIVE_REFRESH_SECRET}" \
+            -H "Accept: application/json"
