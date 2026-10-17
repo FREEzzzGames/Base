@@ -105,7 +105,7 @@ export function bindLiveCatalog():void{
   if(apiBase&&officialStatus&&officialList){
     void fetch(apiBase+"/api/live/rankings",{headers:{Accept:"application/json"},cache:"no-store",credentials:"omit",signal:AbortSignal.timeout(8000)})
       .then(async response=>{if(!response.ok)throw new Error("API_UNAVAILABLE");return response.json();})
-      .then(payload=>{
+      .then((payload:{rankings?:OfficialRankEntry[];lastUpdated?:string})=>{
         const rankings=Array.isArray(payload.rankings)?payload.rankings:[];
         if(!rankings.length){officialStatus.textContent="Официальный топ пока не сформирован. Нужны API-ключи и успешная синхронизация.";return;}
         const grouped=new Map<string,OfficialRankEntry[]>();
