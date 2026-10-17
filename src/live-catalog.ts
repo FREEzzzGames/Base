@@ -57,12 +57,13 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
   const favorites=readFavorites();
   const subcategories=[...new Set(all.map(s=>CREATOR_METADATA[s.name.toLowerCase()]?.subcategory||(s as CatalogItem).subcategory).filter((x):x is string=>Boolean(x)))].sort();
   const cards=all.map(s=>{
+    const metadata=CREATOR_METADATA[s.name.toLowerCase()]||{language:(s as CatalogItem).language||"unknown" as LanguageCode,category:s.category||"entertainment",subcategory:(s as CatalogItem).subcategory||""};
     const key=(s.twitchChannel||s.youtubeChannel||s.name).toLowerCase();
     const favorite=favorites.includes(key);
     const verified=Boolean(s.rankingVerified&&s.officialStatsAt);
-    const category=s.category||"entertainment";
-    const language=s.language||"unknown";
-    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory=""+esc(metadata.subcategory)+"")+'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
+    const category=metadata.category;
+    const language=metadata.language;
+    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory="");'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
       '<div class="live-catalog-avatar-wrap">'+avatar(s)+'</div>'+
       '<div class="live-catalog-info"><strong>'+esc(s.name)+'</strong><small>'+categoryLabel(category,lang)+' · '+languageLabel(language,lang)+(s.custom?" · CUSTOM":"")+'</small><small class="live-ranking-status">'+(verified?"✓ "+esc(s.officialStatsAt||""):"Статистика не подтверждена")+'</small></div>'+
       '<div class="live-catalog-actions"><button class="tg-button" data-live-open="'+esc(s.name)+'" data-live-source="twitch" type="button" '+(!s.twitch?"disabled":"")+'>'+L.watch+' Twitch</button>'+
