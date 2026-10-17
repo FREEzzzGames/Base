@@ -738,8 +738,12 @@ portalEvents.on("navigation:changed",payload=>{
   if(payload.view!==view){
     if(view==="game")stopOpenGamesSession();
   }
-  const navigation=zenithKernel.navigate(payload.view,"user");
-  if(!navigation.accepted)return;
+  // Back/system navigation may already have committed the route in the kernel.
+  // Do not push the same route into history a second time.
+  if(zenithKernel.snapshot.view!==payload.view){
+    const navigation=zenithKernel.navigate(payload.view,"user");
+    if(!navigation.accepted)return;
+  }
   flushActivityTracking();
   view=zenithKernel.snapshot.view;
   portalState.view=view;
