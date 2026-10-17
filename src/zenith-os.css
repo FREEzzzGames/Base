@@ -434,3 +434,34 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-video,
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-overlay { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; }
 }
+
+
+/* HOME geometry correction: the toolbar belongs to .portal-workspace, not .app-shell. */
+@media (max-width: 700px) {
+  .app-shell { display:block!important; height:100dvh!important; overflow:hidden!important; }
+  .portal-workspace.portal-home-workspace {
+    display:flex!important; flex-direction:column!important; height:100%!important; min-height:0!important;
+    max-height:100%!important; overflow:hidden!important; position:relative!important;
+  }
+  .portal-workspace.portal-home-workspace>.portal-toolbar { flex:0 0 auto!important; order:0!important; }
+  .portal-workspace.portal-home-workspace>main { flex:1 1 auto!important; height:auto!important; min-height:0!important; max-height:none!important; overflow:hidden!important; order:1!important; }
+  .portal-workspace.portal-home-workspace>.portal-hud-toggle { display:none!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] {
+    height:100%!important; max-height:100%!important; min-height:0!important; overflow:hidden!important;
+    grid-template-rows:minmax(78px,.72fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;
+    padding:5px!important; gap:5px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>.grid-shift-launch {
+    position:absolute!important; top:5px!important; right:5px!important; z-index:20!important;
+    display:block!important; grid-column:auto!important; order:initial!important;
+    width:auto!important; height:30px!important; min-height:30px!important; max-height:30px!important;
+    padding:0 8px!important; font-size:8px!important; justify-self:auto!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>.grid-shift-panel {
+    position:absolute!important; top:40px!important; left:5px!important; right:5px!important;
+    z-index:30!important; width:auto!important; max-height:110px!important; overflow:auto!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal.grid-shift-editing {
+    grid-template-rows:minmax(68px,.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;
+  }
+}
