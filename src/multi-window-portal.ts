@@ -13,6 +13,25 @@ const windows:Record<MiniId,MiniWindow> = {
 let nextZ=60;
 let focusedWindow:MiniId|null=null;
 const WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1";
+const WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1";
+type WorkspaceSettings={reduceMotion:boolean;windowOpacity:number};
+function loadWorkspaceSettings():WorkspaceSettings{
+  try{
+    const raw=JSON.parse(localStorage.getItem(WORKSPACE_SETTINGS_KEY)||"{}");
+    const opacity=Number(raw.windowOpacity);
+    return {reduceMotion:raw.reduceMotion===true,windowOpacity:Number.isFinite(opacity)?Math.max(.55,Math.min(1,opacity)):.92};
+  }catch{return {reduceMotion:false,windowOpacity:.92};}
+}
+let workspaceSettings=loadWorkspaceSettings();
+let settingsOpen=false;
+function applyWorkspaceSettings(){
+  document.documentElement.classList.toggle("zenith-reduce-motion",workspaceSettings.reduceMotion);
+  document.documentElement.style.setProperty("--zenith-window-opacity",String(workspaceSettings.windowOpacity));
+}
+function saveWorkspaceSettings(){
+  try{localStorage.setItem(WORKSPACE_SETTINGS_KEY,JSON.stringify(workspaceSettings));}catch{}
+  applyWorkspaceSettings();
+}
 function restoreWindowLayout(){
   try{
     const saved=JSON.parse(localStorage.getItem(WINDOW_LAYOUT_KEY)||"{}") as Partial<Record<MiniId,Partial<MiniWindow>>>;
@@ -143,7 +162,7 @@ function render(){
   }
   if(windows.radio.open){
     out.push('<section class="portal-mw portal-mw-radio '+(focusedWindow==="radio"?"portal-mw-focused":"") + '" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
-      '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-focus="radio" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
+      '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-settings-open type="button" aria-label="Настройки рабочего пространства" title="Настройки">⚙</button><button data-mw-focus="radio" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
       '<div class="portal-mw-radio-body"><div class="portal-mw-radio-now"><span class="portal-mw-radio-title">'+esc(radioStationName||"INTERNET RADIO")+'</span><span class="portal-mw-radio-state">'+esc(radioStatus.toUpperCase())+'</span></div><div class="portal-mw-wave" data-playing="'+(radioStatus==="playing"?"true":"false")+'" aria-label="Audio playback visualization">'+Array.from({length:18},(_,i)=>'<i style="--bar:'+(i%5+2)+'"></i>').join("")+'</div><div class="portal-mw-radio-controls"><button data-mw-radio="play" aria-label="Play">▶</button><button data-mw-radio="pause" aria-label="Pause">Ⅱ</button><button data-mw-radio="stop" aria-label="Stop">■</button></div></div></section>');
   }
   layer.innerHTML=out.join("");
@@ -151,6 +170,11 @@ function render(){
 }
 
 function bind(){
+  layer?.querySelectorAll<HTMLElement>("[data-mw-settings-open]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();settingsOpen=true;layer?.classList.add("portal-mw-settings-open");});
+  layer?.querySelectorAll<HTMLElement>("[data-mw-settings-close]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();settingsOpen=false;layer?.classList.remove("portal-mw-settings-open");});
+  layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-motion]").forEach(input=>input.onchange=()=>{workspaceSettings.reduceMotion=input.checked;saveWorkspaceSettings();});
+  layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-opacity]").forEach(input=>input.oninput=()=>{workspaceSettings.windowOpacity=Number(input.value)/100;const label=layer?.querySelector<HTMLElement>("[data-mw-opacity-value]");if(label)label.textContent=input.value+"%";saveWorkspaceSettings();});
+  layer?.querySelectorAll<HTMLElement>("[data-mw-settings-reset]").forEach(b=>b.onclick=e=>{e.preventDefault();workspaceSettings={reduceMotion:false,windowOpacity:.92};saveWorkspaceSettings();render();});
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-focus]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFocus(b.dataset.mwFocus as MiniId);});
   layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.addEventListener("pointerdown",()=>{const id=el.dataset.mw as MiniId;if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}}));
@@ -284,6 +308,7 @@ function intercept(){
 export function initMultiWindowPortal(){
   if(layer)return;
   restoreWindowLayout();
+  applyWorkspaceSettings();
   window.addEventListener("resize",()=>{
     (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
     saveWindowLayout();
