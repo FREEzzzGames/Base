@@ -3564,7 +3564,7 @@ main{
 .portal-mw-layer{
   position:fixed!important;
   inset:0!important;
-  z-index:3000!important;
+  z-index:10002!important;
   pointer-events:none!important;
   overflow:hidden!important;
 }
