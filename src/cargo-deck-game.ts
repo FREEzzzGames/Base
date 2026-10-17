@@ -41,6 +41,15 @@ function addEffect(x:number,y:number,text:string,color:string,life:number,vy:num
   e.x=x;e.y=y;e.text=text;e.color=color;e.life=life;e.vy=vy;
   effects.push(e);
 }
+const bulletPool:Bullet[]=[];
+const MAX_BULLETS=256;
+function addBullet(source:Bullet){
+  if(bullets.length>=MAX_BULLETS)return;
+  const b=bulletPool.pop()||{x:0,y:0,vx:0,vy:0,life:0,damage:0,from:"player" as Team,penetration:0,weaponId:"",shotId:0,hitIds:new Set<number>()};
+  b.x=source.x;b.y=source.y;b.vx=source.vx;b.vy=source.vy;b.life=source.life;b.damage=source.damage;b.from=source.from;b.penetration=source.penetration;b.weaponId=source.weaponId;b.shotId=source.shotId;b.hitIds.clear();
+  for(const id of source.hitIds)b.hitIds.add(id);
+  bullets.push(b);
+}
 const obsCache:HsObstacle[]=[...OBS,...Array.from({length:6},()=>({x:-10000,y:-10000,w:0,h:0}))];
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
@@ -206,7 +215,7 @@ function updateMob(m:Mob,dt:number){
           const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
           const w=HS_WEAPONS[5];
           for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-            bullets.push({...sh});
+            addBullet(sh);
             VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.075,VFX.VFX_COLORS.PURPLE,1.5,.55);
           }
           m.cool=78;
@@ -226,7 +235,7 @@ function updateMob(m:Mob,dt:number){
         const w=HS_WEAPONS[1];
         const aa=Math.atan2(playerAttack.y-m.y,playerAttack.x-m.x);
         for(const sh of spawnShots(m.x,m.y,aa,w,"enemy",frame+Math.floor(m.x))){
-        bullets.push({...sh});
+        addBullet(sh);
         VFX.emitTracer(m.x,m.y,sh.vx,sh.vy,.07,VFX.VFX_COLORS.CYAN,1.25,.5);
       }
       }
@@ -289,7 +298,7 @@ function resolve(){
   }
 }
 function fire(manual=false){if(mode!=="play")return;const w=weapon();if(player.combat.reloadTimer>0)return;let a=aim;if(auto&&!manual){const t=enemyTarget(player.x,player.y,w.range);if(!t)return;a=Math.atan2(t.y-player.y,t.x-player.x)}if(!consumeShot(player.combat,w))return;const hx=player.x+player.facing*25,hy=player.y-22;a=recoilAngle(a,player.combat);for(const s of spawnShots(hx,hy,a,w,"player",player.combat.shotCounter*100)){
-  bullets.push({...s});
+  addBullet(s);
   VFX.emitTracer(hx,hy,s.vx,s.vy,.06,VFX.VFX_COLORS.CYAN,1.5,.65);
 }
 VFX.emitMuzzleFlash(hx,hy,a,Math.min(1.25,Math.max(.7,w.damage/32)));
@@ -410,7 +419,7 @@ function update(dt:number){
     }
   }
 
-  let write=0;for(let i=0;i<bullets.length;i++){const b=bullets[i];if(b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80)bullets[write++]=b;}bullets.length=write;
+  let write=0;for(let i=0;i<bullets.length;i++){const b=bullets[i];if(b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80)bullets[write++]=b;else if(bulletPool.length<MAX_BULLETS){b.hitIds.clear();bulletPool.push(b);}}bullets.length=write;
 }function updateGrenades(dt:number){for(const g of grenades){
   g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;
   if(g.life<=0){
