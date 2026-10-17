@@ -14,8 +14,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: fromRoot("./src/index.html"),
-        cargoDeck: fromRoot("./src/cargo-deck.html")
+        main: fromRoot("./src/index.html")
       }
     }
   }
