@@ -17,8 +17,8 @@ import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVi
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
-import { renderLibrary, bindLibraryView, getLastPlayedGameSummary, resumeLastPlayedGame } from "./library-emulator";
-import { renderOpenGamesCatalog, bindOpenGamesCatalog } from "./open-games-catalog";
+import { renderLibrary, bindLibraryView, getLastPlayedGameSummary, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
+import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
 
 initTelegramBridge();
 initVisualComfort();
@@ -707,6 +707,10 @@ moduleManager.registerAdapter("live",{
   }
 });
 portalEvents.on("navigation:changed",payload=>{
+  if(payload.view!==view){
+    if(view==="library")stopLibraryEmulator();
+    if(view==="game")stopOpenGamesSession();
+  }
   if(!moduleManager.transition(payload.view))return;
   flushActivityTracking();
   view=payload.view;
