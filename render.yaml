@@ -16,3 +16,17 @@ services:
         sync: false
       - key: TELEGRAM_REQUIRE_MEMBERSHIP
         value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: YOUTUBE_DATA_API_KEY
+        sync: false
+      - key: TWITCH_CLIENT_ID
+        sync: false
+      - key: TWITCH_CLIENT_SECRET
+        sync: false
+      - key: LIVE_REFRESH_SECRET
+        sync: false
+      - key: LIVE_REFRESH_HOUR_UTC
+        value: "4"
+      - key: LIVE_DATA_PATH
+        value: /tmp/freezzz-live-data.json
