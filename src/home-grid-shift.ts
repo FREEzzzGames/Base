@@ -1,5 +1,5 @@
 type Tile = HTMLElement;
-const STORAGE_KEY = "freezzz:home-grid-shift:v4";
+const STORAGE_KEY = "freezzz:home-grid-shift:v5";
 const SIZES = ["s", "m", "l"] as const;
 type Size = typeof SIZES[number];
 type Layout = { order: string[]; sizes: Record<string, Size> };
