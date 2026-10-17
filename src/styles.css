@@ -10203,3 +10203,57 @@ button:disabled,[aria-disabled="true"]{
 .portal-toolbar-nav > .portal-toolbar-item:nth-child(4).active::after{
   background:var(--fz-cyan)!important;
 }
+
+
+/* LIVE creator catalog: compact touch targets, accessible filters and favorites. */
+.live-catalog-filters{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;
+  gap:8px;
+  align-items:end;
+  margin:10px 0;
+}
+.live-catalog-filters label{
+  display:grid;
+  gap:5px;
+  min-width:0;
+  color:var(--fz-muted,#9ba8b2);
+  font-size:11px;
+}
+.live-catalog-filters select{
+  width:100%;
+  min-width:0;
+  min-height:42px;
+  padding:8px;
+  border:1px solid rgba(102,252,241,.18);
+  border-radius:10px;
+  color:var(--fz-text,#eaf0f4);
+  background:#101820;
+}
+.live-catalog-favorite{
+  min-width:40px;
+  min-height:40px;
+  border:1px solid rgba(102,252,241,.2);
+  border-radius:10px;
+  color:var(--fz-cyan,#66fcf1);
+  background:#101820;
+  font-size:22px;
+  touch-action:manipulation;
+}
+.live-catalog-favorite[aria-pressed="true"],
+.live-catalog-filters [data-live-favorites].active{
+  color:#101820;
+  background:var(--fz-cyan,#66fcf1);
+}
+.live-catalog-card[hidden],
+[data-live-empty][hidden],
+.live-add-form[hidden]{display:none!important}
+.live-ranking-status{color:var(--fz-muted,#9ba8b2);font-size:10px!important}
+.live-add-form [data-live-form-error]{color:#ff8f8f;font-size:12px}
+.live-catalog-card button:disabled{opacity:.35;pointer-events:none}
+@media(max-width:520px){
+  .live-catalog-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px}
+  .live-catalog-filters [data-live-favorites]{grid-column:1/-1;min-height:42px}
+  .live-catalog-actions{flex-wrap:wrap}
+  .live-catalog-actions button{min-height:40px}
+}
