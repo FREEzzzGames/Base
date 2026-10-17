@@ -10,6 +10,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "telegram": "^2.26.21"
+    "telegram": "^2.26.21",
+    "pg": "^8.16.3"
   }
 }
