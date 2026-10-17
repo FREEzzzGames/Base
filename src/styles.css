@@ -9692,3 +9692,49 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
  .home-portal[data-portal-layout="home"] > .home-hero,
  .home-portal[data-portal-layout="home"] > .home-card{transition:none!important}
 }
+
+
+/* Continue-game is an independent HOME tile, never nested inside ECHO. */
+.home-portal[data-portal-layout="home"] > .home-continue-tile{
+  grid-column:span 4!important;
+  grid-row:span 1!important;
+  display:flex!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  padding:0!important;
+  border-radius:14px!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:rgba(0,0,0,.94)!important;
+  border:1px solid rgba(255,255,255,.88)!important;
+}
+.home-portal[data-portal-layout="home"] > .home-continue-tile .home-continue-game{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) minmax(0,2.8fr)!important;
+  align-items:center!important;
+  gap:clamp(6px,1.8vw,14px)!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  margin:0!important;
+  padding:clamp(7px,2vw,16px)!important;
+  border:0!important;
+  border-radius:inherit!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:clamp(12px,3vw,24px)!important;
+}
+.home-portal[data-portal-layout="home"] > .home-continue-tile .home-continue-game .home-continue-icon{
+  width:clamp(20px,4vw,34px)!important;
+  height:clamp(20px,4vw,34px)!important;
+}
+.home-portal[data-portal-layout="home"] > .home-continue-tile .home-continue-game span{
+  font-size:clamp(12px,3.2vw,24px)!important;
+  line-height:1.15!important;
+}
+.home-portal[data-portal-layout="home"] > .home-continue-tile .home-continue-game strong{
+  font-size:clamp(14px,3.6vw,28px)!important;
+  min-width:0!important;
+}
