@@ -38,7 +38,8 @@ const SEED = [
   source:"seed",verified:false,addedAt:new Date().toISOString()
 }));
 
-let store = null;\nconst liveSuggestionBuckets = new Map();
+let store = null;
+const liveSuggestionBuckets = new Map();\nconst liveSuggestionBuckets = new Map();
 let syncInFlight = null;
 let lastSyncError = null;
 let twitchToken = "";
@@ -241,7 +242,16 @@ export async function handleLiveRoute(req,res,url,origin){
     const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),storage:DATABASE_URL?"postgres":"local-file",persistentPath:DATABASE_URL?undefined:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,lastError:lastSyncError},origin);
   }
   if(req.method==="GET"&&pathname==="/api/live/catalog"){
-    const s=await load();return json(res,200,{ok:true,creators:s.creators.map(({id,name,language,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,category,subcategory,platforms,source,verified,addedAt})),total:s.creators.length,generatedAt:new Date().toISOString()},origin);
+    const s=await load();const total=s.creators.length;const limit=Math.min(100,Math.max(1,Number(url.searchParams.get("limit")||50)));const offset=Math.max(0,Number(url.searchParams.get("offset")||0));
+    const creators=s.creators.slice(offset,offset+limit).map(({id,name,language,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,category,subcategory,platforms,source,verified,addedAt}));
+    return json(res,200,{ok:true,creators,total,limit,offset,nextOffset:offset+creators.length<total?offset+creators.length:null,generatedAt:new Date().toISOString()},origin);
+  }
+  if(req.method==="POST"&&pathname==="/api/live/suggestions"){
+    const ip=String(req.headers["x-forwarded-for"]||req.socket.remoteAddress||"unknown").split(",")[0].trim();const now=Date.now();const bucket=liveSuggestionBuckets.get(ip)||{at:now,count:0};
+    if(now-bucket.at>60*60*1000){bucket.at=now;bucket.count=0;}if(bucket.count>=5)return json(res,429,{ok:false,error:"SUGGESTION_RATE_LIMIT"},origin);
+    bucket.count++;liveSuggestionBuckets.set(ip,bucket);
+    let body;try{body=JSON.parse(await new Promise((resolve,reject)=>{let raw="";req.on("data",chunk=>{raw+=chunk;if(raw.length>32768)reject(new Error("PAYLOAD_TOO_LARGE"));});req.on("end",()=>resolve(raw||"{}"));req.on("error",reject);}));}catch{return json(res,400,{ok:false,error:"INVALID_JSON"},origin);}
+    try{const creator=normalizeCreator(body);const s=await load();const existing=s.creators.findIndex(item=>item.id===creator.id);if(existing>=0)return json(res,200,{ok:true,duplicate:true,creator:s.creators[existing],total:s.creators.length},origin);s.creators.push(creator);await persist();return json(res,201,{ok:true,creator,total:s.creators.length},origin);}catch(e){return json(res,400,{ok:false,error:String(e?.message||"INVALID_CREATOR")},origin);}
   }
   if(req.method==="GET"&&pathname==="/api/live/rankings"){
     const s=await load();const platform=url.searchParams.get("platform"),language=url.searchParams.get("language"),category=url.searchParams.get("category"),subcategory=url.searchParams.get("subcategory");
