@@ -144,7 +144,7 @@ function render(){
     const s=candidates.find(x=>x.name===liveName)||candidates[0]||streams[0];
     if(s){
       const src=liveEmbedUrl(s,liveReplay?"replay":liveSource,window.location.hostname);
-      out.push('<section class="portal-mw portal-mw-live '+(focusedWindow==="live"?"portal-mw-focused":"") + '" data-mw="live" style="left:'+windows.live.x+'px;top:'+windows.live.y+'px;width:'+windows.live.width+'px;height:'+windows.live.height+'px;z-index:'+Math.max(3001,windows.live.z)+';--live-panel-alpha:'+liveOpacity+'">'+
+      out.push('<section class="portal-mw portal-mw-live '+(focusedWindow==="live"?"portal-mw-focused":"") + '" data-mw="live" style="left:'+windows.live.x+'px;top:'+windows.live.y+'px;width:'+windows.live.width+'px;height:'+windows.live.height+'px;z-index:'+windows.live.z+';--live-panel-alpha:'+liveOpacity+'">'+
         '<header class="portal-mw-head" data-mw-drag="live"><strong>📺 '+esc(s.name)+'</strong><div>'+
         '<button data-mw-source="twitch" class="'+(!liveReplay&&liveSource==="twitch"?"active":"")+'">T</button>'+
         '<button data-mw-source="youtube" class="'+(!liveReplay&&liveSource==="youtube"?"active":"")+'">Y</button>'+
