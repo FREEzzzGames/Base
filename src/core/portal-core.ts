@@ -180,7 +180,10 @@ export class ZenithOSKernel {
     if (next === previous) {
       return { accepted: true, previous, current: previous, reason };
     }
-    if (reason === "user" && previous !== "home") {
+    if (reason === "user" && next === "home") {
+      // HOME is the root workspace; explicit HOME navigation resets app history.
+      this.history.length = 0;
+    } else if (reason === "user" && previous !== "home") {
       this.history.push(previous);
       if (this.history.length > this.maxHistory) this.history.splice(0, this.history.length - this.maxHistory);
     }
