@@ -52,6 +52,8 @@ let emulatorLaunchStartedAt = 0;
 let emulatorRomReadMs = 0;
 let emulatorLoaderMs = 0;
 let emulatorInitializedAt = 0;
+let emulatorCoreReadyAt = 0;
+let emulatorLoaderStartedAt = 0;
 function emulatorMetric(stage: "rom-read" | "core-loader" | "initialized" | "exit", durationMs: number): void {
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
   if (root) root.dataset["timing" + stage.split("-").map(part => part[0].toUpperCase()+part.slice(1)).join("")] = String(Math.round(durationMs));
@@ -1239,6 +1241,8 @@ async function startGame(game: LibraryGame): Promise<void> {
     emulatorRomReadMs = 0;
     emulatorLoaderMs = 0;
     emulatorInitializedAt = 0;
+    emulatorCoreReadyAt = 0;
+    emulatorLoaderStartedAt = 0;
     const romReadStartedAt = performance.now();
     const blob = await getRom(game.id);
     emulatorRomReadMs = performance.now() - romReadStartedAt;
@@ -1331,14 +1335,27 @@ async function startGame(game: LibraryGame): Promise<void> {
       bindCustomGamepad();
       if (game.system === "nds") bindNdsTouch();
     };
-    w.EJS_ready = () => { bindInputSurface(); if (!emulatorInitializedAt) { emulatorInitializedAt = performance.now(); emulatorMetric("initialized", emulatorInitializedAt - emulatorLaunchStartedAt); } };
-    w.EJS_onGameStart = () => { bindInputSurface(); if (!emulatorInitializedAt) { emulatorInitializedAt = performance.now(); emulatorMetric("initialized", emulatorInitializedAt - emulatorLaunchStartedAt); } };
+    w.EJS_ready = () => {
+      bindInputSurface();
+      if (!emulatorCoreReadyAt) {
+        emulatorCoreReadyAt = performance.now();
+        emulatorMetric("core-ready", emulatorCoreReadyAt - emulatorLoaderStartedAt);
+      }
+    };
+    w.EJS_onGameStart = () => {
+      bindInputSurface();
+      if (!emulatorInitializedAt) {
+        emulatorInitializedAt = performance.now();
+        emulatorMetric("initialized", emulatorCoreReadyAt ? emulatorInitializedAt - emulatorCoreReadyAt : emulatorInitializedAt - emulatorLoaderStartedAt);
+      }
+    };
     bindEmulatorControls();
 
     const games = readMeta().map(x => x.id === game.id ? { ...x, lastPlayedAt: new Date().toISOString() } : x);
     writeMeta(games);
 
     const loaderStartedAt = performance.now();
+    emulatorLoaderStartedAt = loaderStartedAt;
     await loadEmulatorScript();
     emulatorLoaderMs = performance.now() - loaderStartedAt;
     emulatorMetric("core-loader", emulatorLoaderMs);
@@ -1453,4 +1470,6 @@ export function stopLibraryEmulator(): void {
   removeExistingEmulator();
   libraryTab = "catalog";
   emulatorInitializedAt = 0;
+  emulatorCoreReadyAt = 0;
+  emulatorLoaderStartedAt = 0;
 }
