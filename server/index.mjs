@@ -5,6 +5,7 @@ import path from "node:path";
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
+import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -366,7 +367,7 @@ const server = http.createServer(async (req, res) => {
     res.statusCode = 204;
     res.setHeader("Access-Control-Allow-Origin", responseOrigin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Telegram-Init-Data");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Telegram-Init-Data, X-Live-Admin-Key");
     res.setHeader("Access-Control-Max-Age", "600");
     res.end();
     return;
@@ -389,6 +390,11 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", "http://localhost");
     const pathName = url.pathname;
+
+    if (pathName.startsWith("/api/live/")) {
+      const liveResponse = await handleLiveRoute(req, res, url, responseOrigin);
+      if (liveResponse !== null) return liveResponse;
+    }
 
     if (pathName === "/api/auth/telegram" && req.method === "POST") {
       if (!botToken) return sendJson(res, 503, { ok: false, error: "AUTH_SERVICE_NOT_CONFIGURED" }, responseOrigin);
