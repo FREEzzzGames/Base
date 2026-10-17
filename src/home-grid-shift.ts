@@ -58,6 +58,14 @@ export function bindHomeGridShift(root: HTMLElement) {
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
   const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
+  const launcher = document.createElement("button");
+  launcher.className = "grid-shift-launch";
+  launcher.type = "button";
+  launcher.dataset.gridShiftLaunch = "true";
+  launcher.setAttribute("aria-pressed", "false");
+  launcher.textContent = "EDIT GRID";
+  root.append(launcher);
+
   const panel = document.createElement("div");
   panel.className = "grid-shift-panel";
   panel.hidden = true;
@@ -87,6 +95,8 @@ export function bindHomeGridShift(root: HTMLElement) {
   };
   const setEditing = (enabled: boolean) => {
     editing = enabled;
+    launcher.setAttribute("aria-pressed", String(editing));
+    launcher.textContent = editing ? "GRID EDITING" : "EDIT GRID";
     root.classList.toggle("grid-shift-editing", editing);
     panel.hidden = !editing;
     tiles.forEach(tile => {
@@ -204,6 +214,7 @@ export function bindHomeGridShift(root: HTMLElement) {
     tile.addEventListener("contextmenu", event => { if (editing) event.preventDefault(); });
   });
 
+  launcher.addEventListener("click", () => setEditing(!editing));
   panel.querySelector("[data-grid-shift-done]")?.addEventListener("click", () => setEditing(false));
   panel.querySelector("[data-grid-shift-random]")?.addEventListener("click", randomize);
   panel.querySelector("[data-grid-shift-undo]")?.addEventListener("click", () => {
