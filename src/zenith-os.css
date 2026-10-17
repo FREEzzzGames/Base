@@ -80,3 +80,37 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  .home-card{padding:9px!important}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+
+/* ZENITH workspace interactions: grid editing is discoverable, not hidden behind a long press. */
+.home-portal{position:relative}
+.grid-shift-launch{
+  grid-column:1/-1;justify-self:end;position:relative;z-index:3;
+  min-height:34px;padding:0 11px;border:1px solid #3b3b3b;border-radius:5px;
+  background:#0b0b0b;color:#bdbdbd;font:10px 'Space Mono',monospace;
+  letter-spacing:.08em;touch-action:manipulation
+}
+.grid-shift-launch[aria-pressed="true"]{color:#fff;border-color:#aaa;background:#191919}
+.grid-shift-panel{
+  grid-column:1/-1;position:sticky;top:4px;z-index:8;display:flex;flex-wrap:wrap;
+  align-items:center;gap:6px;padding:8px;border:1px solid #4a4a4a;border-radius:7px;
+  background:rgba(5,5,5,.97);color:#ddd;font:10px 'Space Mono',monospace
+}
+.grid-shift-panel[hidden]{display:none!important}
+.grid-shift-panel button{
+  min-height:34px;padding:0 9px;border:1px solid #383838;border-radius:4px;
+  background:#111;color:#eee;font:inherit;touch-action:manipulation
+}
+.grid-shift-panel [data-grid-shift-hint]{flex:1 1 100%;color:#929292;line-height:1.5}
+.grid-shift-editing>[data-portal-block]{outline:1px dashed #666;outline-offset:2px}
+.grid-shift-editing .grid-shift-resize-handle{
+  position:absolute;right:5px;bottom:5px;z-index:6;display:grid;place-items:center;
+  width:30px;height:30px;border:1px solid #aaa;border-radius:4px;
+  background:#080808;color:#fff;touch-action:none
+}
+.grid-shift-dragging{opacity:.78;z-index:5}
+.grid-shift-resizing{outline:1px solid #fff}
+@media(max-width:520px){
+ .grid-shift-launch{min-height:38px;font-size:10px}
+ .grid-shift-panel{top:0}
+}
