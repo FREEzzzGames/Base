@@ -400,7 +400,7 @@ function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
   portalEvents.emit("radio:playback",{status});
 }
 
-function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;const key=name+"::"+source;if(livePopups.some(p=>p.name===name&&p.source===source))return;if(livePopups.length>=4)livePopups=livePopups.slice(1);livePopups=[...livePopups,{key,name,source}];beginLiveActivity(name);portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});render();}
+function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;livePopups=[{key:name+"::"+source,name,source}];beginLiveActivity(name);if(radioAudio){radioAudio.pause();endRadioActivity();}window.dispatchEvent(new CustomEvent("freezzz:live-window-open",{detail:{name,source}}));portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});}
 function closeLivePopup(key?:string):void{const popup=key?livePopups.find(p=>p.key===key):livePopups[livePopups.length-1];if(!popup)return;livePopups=livePopups.filter(p=>p.key!==popup.key);if(!livePopups.some(p=>p.name===popup.name))endLiveActivity(popup.name);portalEvents.emit("live:popup",{open:Boolean(livePopups.length),source:popup.source==="replay"?"youtube":popup.source});render();}
 function flushActivityTracking(){
   const now=Date.now();
@@ -580,7 +580,7 @@ function render(){
         ${renderPortalToolbar()}
         <main>${body}</main>\n        <button class="portal-hud-toggle" data-hud-toggle type="button" aria-label="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" title="${hudHidden?"Показать нижний бар":"Скрыть нижний бар"}" aria-pressed="${hudHidden}">${icon(hudHidden?"hudUp":"hudDown","portal-hud-toggle-icon")}</button>
       </div>
-      ${safeModuleContent("live",()=>renderLivePopups({popups:livePopups,streams:getLiveStreams(),escapeHtml,lang}),"")}
+      
       ${profileOpen?renderProfileCard():""}
     </div>`;
 
