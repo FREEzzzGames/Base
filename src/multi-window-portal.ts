@@ -153,6 +153,7 @@ function render(){
 function bind(){
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-focus]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFocus(b.dataset.mwFocus as MiniId);});
+  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.addEventListener("pointerdown",()=>{const id=el.dataset.mw as MiniId;if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}}));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();
   });
@@ -283,6 +284,17 @@ function intercept(){
 export function initMultiWindowPortal(){
   if(layer)return;
   restoreWindowLayout();
+  window.addEventListener("resize",()=>{
+    (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
+    saveWindowLayout();
+    if(layer)render();
+  });
+  window.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&focusedWindow){
+      focusedWindow=null;
+      render();
+    }
+  });
   layer=document.createElement("div");
   layer.className="portal-mw-layer";
   document.body.append(layer);
