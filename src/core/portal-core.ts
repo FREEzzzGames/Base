@@ -115,3 +115,105 @@ export class PortalModuleManager{
     try{callback();}catch(error){this.errorHandler(view,phase,error);}
   }
 }
+
+
+/**
+ * ZENITH OS kernel state. The kernel owns navigation history and shared
+ * system settings; app modules keep their existing domain state and behavior.
+ */
+export type ZenithSystemState = {
+  view: PortalView;
+  language: "RU" | "DE" | "EN";
+  profileOpen: boolean;
+  hudHidden: boolean;
+  online: boolean;
+  telegram: boolean;
+};
+
+export type ZenithNavigationReason = "user" | "back" | "system";
+export type ZenithNavigationResult = {
+  accepted: boolean;
+  previous: PortalView;
+  current: PortalView;
+  reason: ZenithNavigationReason;
+};
+
+export class ZenithOSKernel {
+  private readonly modules: PortalModuleManager;
+  private readonly bus: PortalEventBus;
+  private readonly history: PortalView[] = [];
+  private readonly maxHistory: number;
+  private state: ZenithSystemState;
+
+  constructor(options: {
+    modules?: PortalModuleManager;
+    bus?: PortalEventBus;
+    initial?: Partial<ZenithSystemState>;
+    maxHistory?: number;
+  } = {}) {
+    this.modules = options.modules ?? new PortalModuleManager();
+    this.bus = options.bus ?? new PortalEventBus();
+    this.maxHistory = Math.max(1, Math.floor(options.maxHistory ?? 24));
+    this.state = {
+      view: "home",
+      language: "RU",
+      profileOpen: false,
+      hudHidden: false,
+      online: typeof navigator === "undefined" ? true : navigator.onLine,
+      telegram: false,
+      ...options.initial
+    };
+    if (!this.modules.has(this.state.view)) this.state.view = "home";
+    this.modules.transition(this.state.view);
+  }
+
+  get snapshot(): Readonly<ZenithSystemState> {
+    return { ...this.state };
+  }
+
+  get navigationHistory(): readonly PortalView[] {
+    return this.history.slice();
+  }
+
+  navigate(next: PortalView, reason: ZenithNavigationReason = "user"): ZenithNavigationResult {
+    const previous = this.state.view;
+    if (!this.modules.has(next)) {
+      return { accepted: false, previous, current: previous, reason };
+    }
+    if (next === previous) {
+      return { accepted: true, previous, current: previous, reason };
+    }
+    if (reason === "back") {
+      const index = this.history.lastIndexOf(next);
+      if (index >= 0) this.history.splice(index);
+      else this.history.length = 0;
+    } else if (reason === "user" && previous !== "home") {
+      this.history.push(previous);
+      if (this.history.length > this.maxHistory) this.history.splice(0, this.history.length - this.maxHistory);
+    }
+    if (!this.modules.transition(next)) {
+      return { accepted: false, previous, current: previous, reason };
+    }
+    this.state.view = next;
+    this.bus.emit("navigation:changed", { view: next });
+    return { accepted: true, previous, current: next, reason };
+  }
+
+  back(): ZenithNavigationResult {
+    const previous = this.state.view;
+    const target = this.history.pop() ?? "home";
+    return this.navigate(target, "back");
+  }
+
+  setLanguage(language: ZenithSystemState["language"]): void {
+    this.state.language = language;
+  }
+
+  patchSystemState(patch: Partial<Pick<ZenithSystemState, "profileOpen" | "hudHidden" | "online" | "telegram">>): void {
+    this.state = { ...this.state, ...patch };
+  }
+
+  clearHistory(): void {
+    this.history.length = 0;
+  }
+}
