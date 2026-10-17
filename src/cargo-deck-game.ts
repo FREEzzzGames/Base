@@ -30,8 +30,17 @@ const LANE_ROUTES:ReadonlyArray<ReadonlyArray<{x:number;y:number}>>=[
 ];
 let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRenderingContext2D|null=null,ui:HTMLElement|null=null;
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
-let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
+let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:FloatEffect[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,worldScale=1,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
+type FloatEffect={x:number;y:number;text:string;color:string;life:number;vy:number};
+const effectPool:FloatEffect[]=[];
+const MAX_FLOAT_EFFECTS=64;
+function addEffect(x:number,y:number,text:string,color:string,life:number,vy:number){
+  if(effects.length>=MAX_FLOAT_EFFECTS)return;
+  const e=effectPool.pop()||{x:0,y:0,text:"",color:"#fff",life:0,vy:0};
+  e.x=x;e.y=y;e.text=text;e.color=color;e.life=life;e.vy=vy;
+  effects.push(e);
+}
 const obsCache:HsObstacle[]=[...OBS,...Array.from({length:6},()=>({x:-10000,y:-10000,w:0,h:0}))];
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
@@ -94,7 +103,7 @@ function spawnWave(){
 
   msg="WAVE "+String(wave).padStart(2,"0")+" · "+total+" HOSTILES";
   msgT=110;
-  effects.push({x:500,y:2035,text:"INBOUND",color:"#ff557d",life:70,vy:-.25});
+  addEffect(500,2035,"INBOUND","#ff557d",70,-.25);
 }function hurt(a:number){
   const block=Math.min(player.armor,a*.5);
   player.armor-=block;
@@ -105,7 +114,7 @@ function spawnWave(){
   if(player.hp<=0)finish(false,"ОПЕРАТОР ПОГИБ · CARGO CORE НЕ ПОВРЕЖДЁН");
 }
 function floatText(x:number,y:number,text:string,color:string){
-  effects.push({x,y,text,color,life:42,vy:-.45});
+  addEffect(x,y,text,color,42,-.45);
 }
 function damage(m:Mob,a:number){
   if(m.hp<=0)return;
@@ -303,7 +312,7 @@ function update(dt:number){
     e.y+=e.vy*dt;
     e.life-=dt;
   }
-  let write=0;for(let i=0;i<effects.length;i++){const e=effects[i];if(e.life>0)effects[write++]=e;}effects.length=write;
+  let write=0;for(let i=0;i<effects.length;i++){const e=effects[i];if(e.life>0)effects[write++]=e;else if(effectPool.length<MAX_FLOAT_EFFECTS)effectPool.push(e);}effects.length=write;
 
   const w=weapon(),l=L();
   stepWeapon(player.combat,w,dt);
