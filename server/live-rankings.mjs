@@ -268,6 +268,10 @@ export async function handleLiveRoute(req,res,url,origin){
       await persist();return json(res,200,{ok:true,creator,total:s.creators.length},origin);
     }catch(e){return json(res,400,{ok:false,error:String(e?.message||"INVALID_CREATOR")},origin);}
   }
+  if(req.method==="POST"&&pathname==="/api/live/review"){
+    if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
+    try{const s=await load();monthlyReview(s);await persist();return json(res,200,{ok:true,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length},origin);}catch(e){return json(res,502,{ok:false,error:String(e?.message||"LIVE_REVIEW_FAILED")},origin);}
+  }
   if(req.method==="POST"&&pathname==="/api/live/refresh"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
     try{return json(res,200,await syncAll(),origin);}catch(e){return json(res,502,{ok:false,error:String(e?.message||"LIVE_SYNC_FAILED")},origin);}
