@@ -7,6 +7,7 @@ const LANGUAGES=["all","uk","ru","en","de","unknown"] as const;
 type LanguageCode=typeof LANGUAGES[number];
 type Category=typeof CATEGORIES[number];
 type CatalogItem=LiveStream & {language?:LanguageCode;subcategory?:string;officialStatsAt?:string;rankingVerified?:boolean};
+type OfficialRankEntry={platform:string;language:string;category:string;subcategory:string;rank:number;name:string;metrics?:{subscribers?:number|null;live?:boolean;viewers?:number}};
 
 function readJson<T>(key:string,fallback:T):T{
   try{const value=localStorage.getItem(key);return value?JSON.parse(value) as T:fallback;}catch{return fallback;}
@@ -107,7 +108,7 @@ export function bindLiveCatalog():void{
       .then(payload=>{
         const rankings=Array.isArray(payload.rankings)?payload.rankings:[];
         if(!rankings.length){officialStatus.textContent="Официальный топ пока не сформирован. Нужны API-ключи и успешная синхронизация.";return;}
-        const grouped=new Map<string,any[]>();
+        const grouped=new Map<string,OfficialRankEntry[]>();
         for(const item of rankings){const key=[item.platform,item.language,item.category,item.subcategory].join("|");if(!grouped.has(key))grouped.set(key,[]);grouped.get(key)!.push(item);}
         officialStatus.textContent="Данные API · обновлено: "+(payload.lastUpdated||"нет снимка");
         officialList.innerHTML=[...grouped.entries()].map(([key,items])=>{
