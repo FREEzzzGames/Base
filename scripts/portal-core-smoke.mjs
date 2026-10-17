@@ -74,6 +74,11 @@ assert.equal(osKernel.navigate("radio").accepted, true);
 assert.equal(osKernel.back().current, "chat", "back stack must preserve intermediate apps");
 assert.equal(osKernel.back().current, "live", "back stack must continue through older apps");
 assert.equal(osKernel.navigate("not-a-view").accepted, false, "kernel must reject unknown apps");
+assert.equal(osKernel.navigate("chat").accepted, true);
+assert.equal(osKernel.navigate("game").accepted, true);
+assert.equal(osKernel.navigate("home").accepted, true);
+assert.deepEqual(osKernel.navigationHistory, [], "explicit HOME navigation must reset app history");
+assert.equal(osKernel.back().current, "home", "back from HOME must remain at HOME");
 osKernel.setLanguage("DE");
 assert.equal(osKernel.snapshot.language, "DE", "language is shared OS state");
 // Exercise the emulator launch preflight without booting a browser emulator.
