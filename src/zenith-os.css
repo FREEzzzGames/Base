@@ -435,33 +435,81 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-overlay { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; }
 }
 
-
-/* HOME geometry correction: the toolbar belongs to .portal-workspace, not .app-shell. */
+/* ZENITH OS — single authoritative mobile HOME layout. */
 @media (max-width: 700px) {
-  .app-shell { display:block!important; height:100dvh!important; overflow:hidden!important; }
+  html, body, #app { width:100%; height:100%; min-height:0; overflow:hidden!important; }
+  .app-shell { display:block!important; width:100%; height:100dvh!important; min-height:0!important; max-height:100dvh!important; overflow:hidden!important; }
   .portal-workspace.portal-home-workspace {
-    display:flex!important; flex-direction:column!important; height:100%!important; min-height:0!important;
-    max-height:100%!important; overflow:hidden!important; position:relative!important;
+    display:grid!important; grid-template-rows:minmax(0,1fr)!important; grid-template-columns:minmax(0,1fr)!important;
+    position:relative!important; width:100%!important; height:100%!important; min-height:0!important; max-height:100%!important;
+    overflow:hidden!important;
   }
-  .portal-workspace.portal-home-workspace>.portal-toolbar { flex:0 0 auto!important; order:0!important; }
-  .portal-workspace.portal-home-workspace>main { flex:1 1 auto!important; height:auto!important; min-height:0!important; max-height:none!important; overflow:hidden!important; order:1!important; }
+  .portal-workspace.portal-home-workspace>.portal-topbar { display:none!important; }
+  .portal-workspace.portal-home-workspace>.portal-toolbar {
+    position:absolute!important; z-index:50!important; left:0!important; right:0!important; bottom:0!important;
+    width:100%!important; margin:0!important; flex:none!important;
+  }
+  .portal-workspace.portal-home-workspace>main {
+    grid-row:1!important; grid-column:1!important; width:100%!important; height:100%!important;
+    min-height:0!important; max-height:100%!important; margin:0!important; padding:0 0 64px!important;
+    overflow:hidden!important; overscroll-behavior:none!important;
+  }
   .portal-workspace.portal-home-workspace>.portal-hud-toggle { display:none!important; }
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] {
-    height:100%!important; max-height:100%!important; min-height:0!important; overflow:hidden!important;
-    grid-template-rows:minmax(78px,.72fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;
-    padding:5px!important; gap:5px!important;
+    display:grid!important; position:relative!important; box-sizing:border-box!important;
+    width:100%!important; height:100%!important; min-height:0!important; max-height:100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:minmax(86px,.75fr) repeat(2,minmax(0,1fr)) minmax(0,1fr)!important;
+    grid-auto-rows:minmax(0,1fr)!important; align-content:stretch!important; justify-content:stretch!important;
+    gap:5px!important; padding:5px!important; margin:0!important; overflow:hidden!important;
   }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] {
+    grid-column:1/-1!important; grid-row:1!important; order:0!important; position:relative!important;
+    width:auto!important; height:auto!important; min-width:0!important; min-height:0!important; max-height:none!important;
+    margin:0!important; overflow:hidden!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="live"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="chat"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="game"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="radio"] {
+    display:block!important; position:relative!important; grid-column:auto!important; grid-row:auto!important; order:0!important;
+    width:auto!important; height:auto!important; min-width:0!important; min-height:0!important; max-height:none!important;
+    margin:0!important; padding:0!important; overflow:hidden!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="live"] { grid-column:1!important; grid-row:2!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="chat"] { grid-column:2!important; grid-row:2!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="game"] { grid-column:1!important; grid-row:3!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="radio"] { grid-column:2!important; grid-row:3!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="library"] {
+    display:block!important; position:relative!important; grid-column:1/-1!important; grid-row:4!important; order:0!important;
+    width:auto!important; height:auto!important; min-width:0!important; min-height:0!important; max-height:none!important;
+    margin:0!important; padding:0!important; overflow:hidden!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="continue"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="filters"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="workspace-widgets"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="system"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="signal-feed"] { display:none!important; }
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>.grid-shift-launch {
-    position:absolute!important; top:5px!important; right:5px!important; z-index:20!important;
-    display:block!important; grid-column:auto!important; order:initial!important;
-    width:auto!important; height:30px!important; min-height:30px!important; max-height:30px!important;
-    padding:0 8px!important; font-size:8px!important; justify-self:auto!important;
+    position:absolute!important; top:5px!important; right:5px!important; z-index:25!important; grid-column:auto!important; grid-row:auto!important;
+    order:10!important; width:auto!important; height:30px!important; min-height:30px!important; max-height:30px!important;
+    margin:0!important; padding:0 8px!important; font-size:8px!important;
   }
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>.grid-shift-panel {
-    position:absolute!important; top:40px!important; left:5px!important; right:5px!important;
-    z-index:30!important; width:auto!important; max-height:110px!important; overflow:auto!important;
+    position:absolute!important; top:40px!important; left:5px!important; right:5px!important; z-index:30!important;
+    grid-column:1/-1!important; grid-row:1!important; order:11!important; width:auto!important;
+    max-height:100px!important; overflow:auto!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-video,
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-overlay {
+    position:absolute!important; inset:0!important; width:100%!important; height:100%!important; pointer-events:none!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-title {
+    position:absolute!important; left:8px!important; right:8px!important; bottom:8px!important;
+    max-width:calc(100% - 16px)!important; margin:0!important; padding:0!important; font-size:clamp(13px,4vw,20px)!important;
+    line-height:1.05!important; overflow-wrap:anywhere!important;
   }
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal.grid-shift-editing {
-    grid-template-rows:minmax(68px,.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(86px,.75fr) repeat(2,minmax(0,1fr)) minmax(0,1fr)!important;
   }
 }
