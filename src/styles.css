@@ -9738,3 +9738,42 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   font-size:clamp(14px,3.6vw,28px)!important;
   min-width:0!important;
 }
+
+
+/* Language switcher: fixed, centered, reachable above every portal screen. */
+.portal-toolbar-language-wrap{
+  position:fixed!important;
+  top:max(6px,env(safe-area-inset-top))!important;
+  left:50%!important;
+  right:auto!important;
+  z-index:10000!important;
+  transform:translateX(-50%)!important;
+  margin:0!important;
+  pointer-events:auto!important;
+}
+.portal-toolbar-language-button{
+  width:42px!important;height:36px!important;min-width:42px!important;min-height:36px!important;
+  border:1px solid rgba(255,32,32,.38)!important;
+  border-radius:10px!important;
+  background:rgba(7,10,14,.92)!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.36)!important;
+}
+.portal-toolbar-language-menu{
+  position:absolute!important;
+  top:calc(100% + 5px)!important;
+  left:50%!important;right:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:10001!important;
+  padding:5px!important;
+  border-color:rgba(255,32,32,.45)!important;
+  background:rgba(5,8,12,.97)!important;
+}
+.portal-toolbar-language-menu button{
+  min-width:42px!important;min-height:38px!important;height:38px!important;
+  font-size:12px!important;
+}
+.portal-toolbar-language-menu button.active{
+  color:#fff!important;
+  background:rgba(255,32,32,.28)!important;
+  outline:1px solid rgba(255,32,32,.55)!important;
+}
