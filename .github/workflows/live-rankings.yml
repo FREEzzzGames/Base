@@ -19,13 +19,13 @@ jobs:
     steps:
       - name: Refresh official LIVE statistics
         env:
-          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE }}
+          LIVE_API_BASE: https://freezzz-telegram-auth.onrender.com
           LIVE_REFRESH_SECRET: ${{ secrets.LIVE_REFRESH_SECRET }}
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${LIVE_API_BASE}" ] || [ -z "${LIVE_REFRESH_SECRET}" ]; then
-            echo "::notice::Set repository secrets LIVE_API_BASE and LIVE_REFRESH_SECRET to enable scheduled refresh."
+          if [ -z "${LIVE_REFRESH_SECRET}" ]; then
+            echo "::notice::Set repository secret LIVE_REFRESH_SECRET to enable scheduled refresh."
             exit 0
           fi
           response="$(curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 180 \
@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${LIVE_API_BASE}" ] || [ -z "${LIVE_REFRESH_SECRET}" ]; then
-            echo "::notice::Set repository secrets LIVE_API_BASE and LIVE_REFRESH_SECRET to enable monthly review."
+            echo "::notice::Set repository secret LIVE_REFRESH_SECRET to enable monthly review."
             exit 0
           fi
           curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 60 \
