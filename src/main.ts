@@ -456,12 +456,14 @@ function renderPortalToolbar(){
   <nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
-        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
+        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
       </div>
     </div>
   </nav>`;
 }
+let lastRenderedView:View|null=null;
 function render(){
+  const previousRenderedView=lastRenderedView;
   let body="";
 
   if(view==="home"){
@@ -582,6 +584,16 @@ function render(){
       ${profileOpen?renderProfileCard():""}
     </div>`;
 
+  lastRenderedView=view;
+  if(previousRenderedView!==null&&previousRenderedView!==view&&!document.documentElement.hasAttribute("data-reduced-motion")){
+    const panel=document.querySelector<HTMLElement>(".portal-workspace > main");
+    if(panel&&typeof panel.animate==="function"){
+      panel.animate(
+        [{opacity:.72,transform:"translate3d(0,7px,0)"},{opacity:1,transform:"translate3d(0,0,0)"}],
+        {duration:190,easing:"cubic-bezier(.22,.72,.2,1)",fill:"both"}
+      );
+    }
+  }
   window.dispatchEvent(new CustomEvent("freezzz:portal-render"));
   mountPersistentBackgroundVideos();
   bind();
