@@ -220,3 +220,28 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  .portal-mw.portal-mw-focused{inset:max(6px,env(safe-area-inset-top)) 6px max(6px,env(safe-area-inset-bottom))!important}
  .grid-shift-editing>[data-portal-block]{min-height:76px!important}
 }
+
+/* Final mobile pass: prevent hero text overflow and make the grid editor usable. */
+.home-hero{position:relative!important;min-width:0!important;overflow:hidden!important}
+.home-hero-content{position:relative!important;z-index:2!important;min-width:0!important;width:100%!important}
+.home-hero-top,.home-hero-brand{min-width:0!important;max-width:100%!important}
+.home-hero-brand{gap:8px!important;flex-wrap:wrap!important}
+.home-hero-clock{display:block!important;min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:clip!important;white-space:nowrap!important;font-size:clamp(9px,2.6vw,15px)!important;letter-spacing:.04em!important}
+.home-hero h1{max-width:100%!important;overflow-wrap:anywhere!important}
+.home-continue-tile{min-width:0!important;overflow:hidden!important}
+.home-continue-game{display:grid!important;grid-template-columns:24px minmax(0,1fr)!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;min-height:72px!important;padding:10px!important;text-align:left!important}
+.home-continue-game span,.home-continue-game strong{min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.home-continue-game strong{grid-column:2!important;font-size:clamp(10px,3vw,14px)!important}
+.grid-shift-panel{height:auto!important;max-height:none!important;min-height:0!important;align-self:start!important;overflow:visible!important}
+.grid-shift-editing>[data-portal-block]{display:block!important;visibility:visible!important;opacity:1!important;min-width:0!important;min-height:78px!important;overflow:visible!important;background:rgba(18,18,18,.94)!important;color:#f3f3f3!important}
+.grid-shift-editing>[data-portal-block]>*{visibility:visible!important}
+.grid-shift-editing .home-hero{min-height:150px!important}
+.grid-shift-editing .zenith-home-widget{padding-top:24px!important}
+@media(max-width:520px){
+ .home-hero{min-height:190px!important;padding:10px!important}
+ .home-hero-brand{align-items:flex-start!important}
+ .home-hero-clock{font-size:10px!important;letter-spacing:0!important}
+ .home-hero h1{font-size:clamp(32px,9vw,46px)!important;letter-spacing:-.06em!important}
+ .home-continue-game{grid-template-columns:20px minmax(0,1fr)!important}
+ .grid-shift-panel{position:relative!important;top:auto!important;z-index:8!important}
+}
