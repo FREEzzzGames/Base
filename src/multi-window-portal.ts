@@ -219,10 +219,8 @@ function intercept(){
     // HOME cards: LIVE/CHAT/RADIO open floating mini windows.
     // GAME/LIBRARY enter their full-screen route directly.
     if(el.closest(".portal-toolbar")){
-      if(id==="live"||id==="chat"||id==="radio"){
-        windows[id].open=false;
-        render();
-      }
+      if(id==="live")close("live");
+      else if(id==="chat"||id==="radio"){windows[id].open=false;render();}
       return;
     }
 
