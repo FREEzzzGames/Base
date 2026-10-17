@@ -726,9 +726,20 @@ moduleManager.registerAdapter("live",{
     livePopups=[];
   }
 });
+// Register every existing app with the OS lifecycle. Feature state remains owned by
+// the app's existing runtime; the shell only coordinates activation/deactivation.
+moduleManager.registerAdapter("chat",{});
+moduleManager.registerAdapter("radio",{});
+moduleManager.registerAdapter("library",{
+  onDeactivate:()=>stopLibraryEmulator()
+});
+moduleManager.registerAdapter("game",{
+  onActivate:()=>beginGameActivity(),
+  onDeactivate:()=>endGameActivity()
+});
+moduleManager.registerAdapter("echo9",{});
 portalEvents.on("navigation:changed",payload=>{
   if(payload.view!==view){
-    if(view==="library")stopLibraryEmulator();
     if(view==="game")stopOpenGamesSession();
   }
   const navigation=zenithKernel.navigate(payload.view,"user");
@@ -739,8 +750,8 @@ portalEvents.on("navigation:changed",payload=>{
   render();
 });
 window.addEventListener("resize",()=>{ if(view==="home")render(); });
-window.addEventListener("online",()=>{portalState.online=true;});
-window.addEventListener("offline",()=>{portalState.online=false;});
+window.addEventListener("online",()=>{portalState.online=true;zenithKernel.patchSystemState({online:true});});
+window.addEventListener("offline",()=>{portalState.online=false;zenithKernel.patchSystemState({online:false});});
 window.setInterval(()=>flushActivityTracking(),15000);
 window.setInterval(updateHomeClock,1000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityNames.clear();radioActivityStartedAt=null;radioActivityName="";});
