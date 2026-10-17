@@ -306,7 +306,8 @@ function intercept(){
       }
       return;
     }
-    toggle(id);
+    if(id==="chat"||id==="radio"){toggle(id);return;}
+    // All other routes are handled explicitly above; never pass route IDs to MiniWindow.
   },true);
 }
 
