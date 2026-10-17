@@ -18,16 +18,16 @@ function twitchVideoId(url:string):string{
 }
 export function liveEmbedUrl(stream:LiveStream,source:LiveSource,hostname:string):string{
   if(source==="twitch"&&stream.twitchChannel){
-    return "https://player.twitch.tv/?"+new URLSearchParams({channel:stream.twitchChannel,parent:hostname||"freezzgames.github.io",autoplay:"false",muted:"false"}).toString();
+    return "https://player.twitch.tv/?"+new URLSearchParams({channel:stream.twitchChannel,parent:hostname||"freezzgames.github.io",autoplay:"true",muted:"false"}).toString();
   }
   if(source==="youtube"&&stream.youtubeChannel){
-    return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:stream.youtubeChannel,autoplay:"0",rel:"0",playsinline:"1"}).toString();
+    return "https://www.youtube-nocookie.com/embed/live_stream?"+new URLSearchParams({channel:stream.youtubeChannel,autoplay:"1",mute:"0",rel:"0",playsinline:"1"}).toString();
   }
   if(source==="replay"&&stream.lastRecordingUrl){
     const twitchId=twitchVideoId(stream.lastRecordingUrl);
     if(twitchId)return "https://player.twitch.tv/?"+new URLSearchParams({video:"v"+twitchId,parent:hostname||"freezzgames.github.io",autoplay:"false",muted:"false"}).toString();
     const youtubeId=youtubeVideoId(stream.lastRecordingUrl);
-    if(youtubeId)return "https://www.youtube-nocookie.com/embed/"+encodeURIComponent(youtubeId)+"?autoplay=0&rel=0&playsinline=1";
+    if(youtubeId)return "https://www.youtube-nocookie.com/embed/"+encodeURIComponent(youtubeId)+"?autoplay=1&mute=0&rel=0&playsinline=1";
   }
   return "";
 }
