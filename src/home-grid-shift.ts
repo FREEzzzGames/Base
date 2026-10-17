@@ -1,23 +1,31 @@
-type Tile = HTMLElement & { dataset: DOMStringMap };
-const STORAGE_KEY = "freezzz:home-grid-shift:v1";
+type Tile = HTMLElement;
+const STORAGE_KEY = "freezzz:home-grid-shift:v2";
 const SIZES = ["s", "m", "l"] as const;
 type Size = typeof SIZES[number];
-type SavedLayout = { order: string[]; sizes: Record<string, Size> };
+type Layout = { order: string[]; sizes: Record<string, Size> };
+const keyOf = (tile: Tile) => tile.dataset.portalBlock || "";
 
-function readLayout(): SavedLayout {
+function readLayout(): Layout {
   try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Partial<SavedLayout>;
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Partial<Layout>;
     return { order: Array.isArray(value.order) ? value.order.filter(x => typeof x === "string") : [], sizes: value.sizes && typeof value.sizes === "object" ? value.sizes : {} };
   } catch { return { order: [], sizes: {} }; }
 }
-
 function saveLayout(root: HTMLElement, tiles: Tile[]) {
-  const state: SavedLayout = {
-    order: [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0)).map(tile => tile.dataset.portalBlock || ""),
-    sizes: Object.fromEntries(tiles.map(tile => [tile.dataset.portalBlock || "", (tile.dataset.gridSize || "m") as Size]))
+  const state: Layout = {
+    order: [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0)).map(keyOf),
+    sizes: Object.fromEntries(tiles.map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size]))
   };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* storage can be unavailable in private WebViews */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* WebView storage may be unavailable */ }
   root.dataset.gridShiftSaved = "true";
+}
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
 
 export function bindHomeGridShift(root: HTMLElement) {
@@ -25,82 +33,175 @@ export function bindHomeGridShift(root: HTMLElement) {
   root.dataset.gridShiftBound = "true";
   const tiles = [...root.querySelectorAll<Tile>(":scope > [data-portal-block]")];
   if (tiles.length < 2) return;
-
+  const originalOrder = new Map(tiles.map((tile, index) => [keyOf(tile), index]));
+  const defaults: Record<string, Size> = { hero: "l", game: "l", live: "m", chat: "m", radio: "m", library: "m" };
   const saved = readLayout();
-  const originalOrder = new Map(tiles.map((tile, index) => [tile.dataset.portalBlock || "", index]));
   tiles.forEach(tile => {
-    const key = tile.dataset.portalBlock || "";
-    tile.dataset.gridSize = saved.sizes[key] && SIZES.includes(saved.sizes[key]) ? saved.sizes[key] : ((key === "hero" || key === "game") ? "l" : "m");
-    tile.style.order = String(saved.order.indexOf(key) >= 0 ? saved.order.indexOf(key) : (originalOrder.get(key) ?? 0));
+    const key = keyOf(tile);
+    tile.dataset.gridSize = saved.sizes[key] && SIZES.includes(saved.sizes[key]) ? saved.sizes[key] : (defaults[key] || "m");
+    tile.style.order = String(saved.order.includes(key) ? saved.order.indexOf(key) : (originalOrder.get(key) ?? 0));
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
+  const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
   const panel = document.createElement("div");
   panel.className = "grid-shift-panel";
   panel.hidden = true;
-  panel.innerHTML = '<span data-grid-shift-hint>GRID SHIFT · удерживай блок для режима перестройки</span><button type="button" data-grid-shift-reset>Сброс</button><button type="button" data-grid-shift-done>Готово</button>';
+  panel.innerHTML = '<span data-grid-shift-hint>Перетаскивай блоки · тяни за угол для размера</span><button type="button" data-grid-shift-undo aria-label="Отменить последнее действие" title="Отменить">↶</button><button type="button" data-grid-shift-random>🎲 Случайно</button><button type="button" data-grid-shift-reset>Сброс</button><button type="button" data-grid-shift-done>✓</button>';
   root.append(panel);
-  let editing = false;
-  let holdTimer = 0;
-  let startX = 0, startY = 0;
-  let active: Tile | null = null;
-  let moved = false;
 
+  let editing = false;
+  let suppressClick = false;
+  let holdTimer = 0;
+  let active: Tile | null = null;
+  let startX = 0, startY = 0, lastX = 0, lastY = 0;
+  let dragging = false;
+  let resizing = false;
+  let resizeStartSize: Size = "m";
+  let lastSnapshot: Layout | null = null;
+
+  const snapshot = (): Layout => ({
+    order: ordered().map(keyOf),
+    sizes: Object.fromEntries(tiles.map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size]))
+  });
+  const restore = (state: Layout) => {
+    const lookup = new Map(tiles.map(tile => [keyOf(tile), tile]));
+    applyOrder(state.order.map(key => lookup.get(key)).filter((tile): tile is Tile => Boolean(tile)).concat(tiles.filter(tile => !state.order.includes(keyOf(tile)))));
+    tiles.forEach(tile => { tile.dataset.gridSize = state.sizes[keyOf(tile)] || defaults[keyOf(tile)] || "m"; });
+    saveLayout(root, tiles);
+  };
   const setEditing = (enabled: boolean) => {
     editing = enabled;
     root.classList.toggle("grid-shift-editing", editing);
     panel.hidden = !editing;
-    tiles.forEach(tile => { tile.setAttribute("aria-grabbed", String(editing && tile === active)); });
-    if (!editing) active = null;
+    tiles.forEach(tile => {
+      tile.setAttribute("aria-grabbed", String(editing && tile === active));
+      tile.querySelector(".grid-shift-resize-handle")?.remove();
+      if (editing) {
+        const handle = document.createElement("span");
+        handle.className = "grid-shift-resize-handle";
+        handle.setAttribute("aria-hidden", "true");
+        handle.textContent = "⤢";
+        tile.append(handle);
+      }
+    });
+    if (!editing) {
+      active?.classList.remove("grid-shift-dragging", "grid-shift-resizing");
+      active = null;
+    }
   };
-  const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
-  const shift = (tile: Tile, dx: number, dy: number) => {
-    const list = ordered();
-    const from = list.indexOf(tile);
-    if (from < 0) return;
-    // Directional neighbor selection feels like sliding a tile, without allowing overlap.
-    const target = from + (Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : -1) : (dy > 0 ? 2 : -2));
-    const to = Math.max(0, Math.min(list.length - 1, target));
-    if (to === from) return;
-    const [picked] = list.splice(from, 1);
-    list.splice(to, 0, picked);
+  const commit = () => saveLayout(root, tiles);
+  const randomize = () => {
+    lastSnapshot = snapshot();
+    const shuffled = shuffle(tiles);
+    shuffled.forEach((tile, index) => {
+      tile.style.order = String(index);
+      tile.dataset.gridSize = keyOf(tile) === "hero" ? "l" : (["s", "m", "l"] as Size[])[Math.floor(Math.random() * 3)];
+    });
+    commit();
+  };
+  const chooseSizeFromDelta = (tile: Tile, dx: number, dy: number) => {
+    const scale = Math.max(dx, dy);
+    const current = SIZES.indexOf(resizeStartSize);
+    const step = scale > 54 ? 2 : scale > 22 ? 1 : 0;
+    tile.dataset.gridSize = SIZES[Math.max(0, Math.min(2, current + (step ? 1 : 0)))];
+  };
+  const hitTestTile = (x: number, y: number, except: Tile) => {
+    let nearest: Tile | null = null, best = Number.POSITIVE_INFINITY;
+    for (const tile of tiles) {
+      if (tile === except) continue;
+      const rect = tile.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return tile;
+      const cx = (rect.left + rect.right) / 2, cy = (rect.top + rect.bottom) / 2;
+      const distance = (cx - x) ** 2 + (cy - y) ** 2;
+      if (distance < best) { best = distance; nearest = tile; }
+    }
+    return nearest;
+  };
+  const moveToPosition = (tile: Tile, x: number, y: number) => {
+    const target = hitTestTile(x, y, tile);
+    if (!target) return;
+    const list = ordered(), from = list.indexOf(tile), to = list.indexOf(target);
+    if (from === to || from < 0 || to < 0) return;
+    list.splice(from, 1);
+    list.splice(to, 0, tile);
     applyOrder(list);
-    saveLayout(root, tiles);
-  };
-  const cycleSize = (tile: Tile) => {
-    const current = tile.dataset.gridSize as Size;
-    tile.dataset.gridSize = SIZES[(SIZES.indexOf(current) + 1) % SIZES.length];
-    saveLayout(root, tiles);
   };
 
   tiles.forEach(tile => {
     tile.addEventListener("pointerdown", event => {
       if (event.pointerType === "mouse" && event.button !== 0) return;
-      startX = event.clientX; startY = event.clientY; active = tile; moved = false;
-      window.clearTimeout(holdTimer);
-      holdTimer = window.setTimeout(() => { moved = true; setEditing(!editing); if (editing) active = tile; }, 480);
-    }, { passive: true });
+      const target = event.target as HTMLElement;
+      if (editing && target.closest(".grid-shift-resize-handle")) {
+        resizing = true; dragging = false; active = tile; resizeStartSize = tile.dataset.gridSize as Size;
+      } else if (editing) {
+        resizing = false; dragging = false; active = tile;
+      } else {
+        active = tile;
+        window.clearTimeout(holdTimer);
+        holdTimer = window.setTimeout(() => {
+          suppressClick = true;
+          lastSnapshot = snapshot();
+          setEditing(true);
+          active = tile;
+          tile.classList.add("grid-shift-dragging");
+        }, 480);
+      }
+      startX = lastX = event.clientX; startY = lastY = event.clientY;
+      try { tile.setPointerCapture(event.pointerId); } catch { /* pointer capture is optional */ }
+    });
     tile.addEventListener("pointermove", event => {
       if (!active || active !== tile) return;
-      if (Math.abs(event.clientX - startX) + Math.abs(event.clientY - startY) > 12) window.clearTimeout(holdTimer);
-    }, { passive: true });
-    tile.addEventListener("pointerup", event => {
+      lastX = event.clientX; lastY = event.clientY;
+      if (!editing) {
+        if (Math.abs(lastX - startX) + Math.abs(lastY - startY) > 12) window.clearTimeout(holdTimer);
+        return;
+      }
+      if (!dragging && !resizing && Math.abs(lastX - startX) + Math.abs(lastY - startY) > 8) {
+        dragging = true;
+        lastSnapshot = snapshot();
+        tile.classList.add("grid-shift-dragging");
+      }
+      if (resizing) {
+        if (!lastSnapshot) lastSnapshot = snapshot();
+        tile.classList.add("grid-shift-resizing");
+        chooseSizeFromDelta(tile, lastX - startX, lastY - startY);
+      } else if (dragging) {
+        const rect = tile.getBoundingClientRect();
+        tile.style.setProperty("--grid-drag-x", `${lastX - startX}px`);
+        tile.style.setProperty("--grid-drag-y", `${lastY - startY}px`);
+        moveToPosition(tile, lastX, lastY);
+        void rect;
+      }
+    });
+    const finish = () => {
       window.clearTimeout(holdTimer);
-      if (!editing || !active || active !== tile || moved) return;
-      const dx = event.clientX - startX, dy = event.clientY - startY;
-      if (Math.abs(dx) + Math.abs(dy) > 28) { shift(tile, dx, dy); moved = true; }
-    }, { passive: true });
-    tile.addEventListener("pointercancel", () => window.clearTimeout(holdTimer), { passive: true });
+      if (editing && active === tile && (dragging || resizing)) {
+        tile.classList.remove("grid-shift-dragging", "grid-shift-resizing");
+        tile.style.removeProperty("--grid-drag-x");
+        tile.style.removeProperty("--grid-drag-y");
+        commit();
+        suppressClick = true;
+      }
+      active = null; dragging = false; resizing = false;
+    };
+    tile.addEventListener("pointerup", finish);
+    tile.addEventListener("pointercancel", finish);
     tile.addEventListener("click", event => {
-      if (!editing) return;
-      event.preventDefault(); event.stopImmediatePropagation();
-      if (!moved) cycleSize(tile);
-      moved = false;
+      if (suppressClick) { event.preventDefault(); event.stopImmediatePropagation(); suppressClick = false; return; }
+      if (editing) { event.preventDefault(); event.stopImmediatePropagation(); }
     }, true);
+    tile.addEventListener("contextmenu", event => { if (editing) event.preventDefault(); });
   });
+
   panel.querySelector("[data-grid-shift-done]")?.addEventListener("click", () => setEditing(false));
+  panel.querySelector("[data-grid-shift-random]")?.addEventListener("click", randomize);
+  panel.querySelector("[data-grid-shift-undo]")?.addEventListener("click", () => {
+    if (!lastSnapshot) return;
+    restore(lastSnapshot); lastSnapshot = null;
+  });
   panel.querySelector("[data-grid-shift-reset]")?.addEventListener("click", () => {
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore unavailable storage */ }
-    tiles.forEach((tile, index) => { tile.style.order = String(originalOrder.get(tile.dataset.portalBlock || "") ?? index); tile.dataset.gridSize = (tile.dataset.portalBlock === "hero" || tile.dataset.portalBlock === "game") ? "l" : "m"; });
-    setEditing(false);
+    tiles.forEach(tile => { tile.style.order = String(originalOrder.get(keyOf(tile)) ?? 0); tile.dataset.gridSize = defaults[keyOf(tile)] || "m"; });
+    lastSnapshot = null; setEditing(false);
   });
 }
