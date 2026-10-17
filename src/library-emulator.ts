@@ -54,7 +54,7 @@ let emulatorLoaderMs = 0;
 let emulatorInitializedAt = 0;
 let emulatorCoreReadyAt = 0;
 let emulatorLoaderStartedAt = 0;
-function emulatorMetric(stage: "rom-read" | "core-loader" | "initialized" | "exit", durationMs: number): void {
+function emulatorMetric(stage: "rom-read" | "core-loader" | "core-ready" | "initialized" | "exit", durationMs: number): void {
   const root = document.querySelector<HTMLElement>("#library-emulator-root");
   if (root) root.dataset["timing" + stage.split("-").map(part => part[0].toUpperCase()+part.slice(1)).join("")] = String(Math.round(durationMs));
   window.dispatchEvent(new CustomEvent("freezzz:emulator-timing", { detail: { stage, durationMs: Math.round(durationMs), gameId: activeGame?.id ?? null } }));
