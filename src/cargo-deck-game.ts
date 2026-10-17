@@ -6,6 +6,10 @@ interface Node{x:number;y:number;team:Team;lane:number;hp:number;maxHp:number;co
 interface Save{version:2;loadout:LoadoutId;weapon:number;inventory:number[];bestWave:number;bestKills:number;bestTime:number;medkits:number}
 interface Player{x:number;y:number;hp:number;maxHp:number;armor:number;facing:number;medkits:number;weapon:number;combat:HsCombatState;hit:number;damagePulse:number}
 const W=1000,H=2700,KEY="freezzz:cargo-deck:v2";
+const weakGraphics=(navigator.hardwareConcurrency||8)<=4||((navigator as Navigator&{deviceMemory?:number}).deviceMemory||8)<=4;
+const MAX_FRAME_GLOWS=weakGraphics?3:8;
+let frameGlowCount=0;
+function glowBlur(requested:number){if(frameGlowCount>=MAX_FRAME_GLOWS)return 0;frameGlowCount++;return requested}
 const LOAD:Record<LoadoutId,{name:string;color:string;hp:number;armor:number;speed:number;ability:string;cd:number;dur:number}>={
 ASSAULT:{name:"ASSAULT",color:"#54d6d8",hp:120,armor:35,speed:3.35,ability:"OVERDRIVE",cd:420,dur:180},
 VANGUARD:{name:"VANGUARD",color:"#ffb04f",hp:150,armor:65,speed:2.95,ability:"BULWARK",cd:480,dur:210},
@@ -467,7 +471,7 @@ function updateNodes(dt:number){
 }function finish(ok:boolean,text:string){if(mode==="result")return;won=ok;resultReason=text;msg=text;mode="result";save.bestWave=Math.max(save.bestWave,wave);save.bestKills=Math.max(save.bestKills,kills);save.bestTime=Math.max(save.bestTime,time);persist();render()}
 function choose(id:LoadoutId){sel=id;save.loadout=id;persist();render()}function start(){save.weapon=save.inventory.includes(save.weapon)?save.weapon:save.inventory[0];persist();reset();init();mode="play";resultReason="";render()}function chooseWeapon(n:number){if(!save.inventory.includes(n))return;save.weapon=n;player.weapon=n;player.combat=createCombatState(HS_WEAPONS[n]);persist();mode="play";render()}function exit(){mode="loadout";render();window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:"home"}}))}
 function txt(t:string,x:number,y:number,s:number,c:string,a:CanvasTextAlign="left"){ctx!.save();ctx!.font="700 "+s+"px monospace";ctx!.fillStyle=c;ctx!.textAlign=a;ctx!.textBaseline="middle";ctx!.fillText(t,x,y);ctx!.restore()}function bar(x:number,y:number,w:number,h:number,v:number,m:number,c:string){ctx!.fillStyle="#11181b";ctx!.fillRect(x,y,w,h);ctx!.fillStyle=c;ctx!.fillRect(x,y,w*Math.max(0,Math.min(1,v/m)),h)}function rect(x:number,y:number,w:number,h:number,c:string){ctx!.fillStyle=c;ctx!.fillRect(x,y,w,h)}function sy(y:number){return y-cam}
-function drawLoadout(){rect(0,0,viewW,viewH,"#070b0e");txt("FREEzzyPortal",viewW/2,48,24,"#f0eee7","center");txt("CARGO DECK",viewW/2,82,13,"#54d6d8","center");(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{const y=135+i*145,l=LOAD[id],a=id===sel;rect(26,y,viewW-52,116,"#11191d");ctx!.strokeStyle=a?l.color:"#3b474b";ctx!.lineWidth=a?2:1;ctx!.strokeRect(26,y,viewW-52,116);ctx!.fillStyle=l.color;ctx!.shadowColor=l.color;ctx!.shadowBlur=15;ctx!.beginPath();ctx!.ellipse(72,y+56,22,34,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;txt(l.name,110,y+25,18,l.color);txt(l.ability,110,y+51,11,"#f0eee7");txt("HP "+l.hp+" · ARMOR "+l.armor+" · SPEED "+l.speed.toFixed(2),110,y+75,10,"#8e9b9f");txt(a?"SELECTED":"TAP TO SELECT",viewW-38,y+96,9,a?l.color:"#7b888c","right")});txt("OPEN WEAPONS "+save.inventory.length+"/"+HS_WEAPONS.length,viewW/2,595,11,"#aeb8ba","center");txt("BEST WAVE "+save.bestWave+" · BEST KILLS "+save.bestKills,viewW/2,620,10,"#66757a","center")}
+function drawLoadout(){rect(0,0,viewW,viewH,"#070b0e");txt("FREEzzyPortal",viewW/2,48,24,"#f0eee7","center");txt("CARGO DECK",viewW/2,82,13,"#54d6d8","center");(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).forEach((id,i)=>{const y=135+i*145,l=LOAD[id],a=id===sel;rect(26,y,viewW-52,116,"#11191d");ctx!.strokeStyle=a?l.color:"#3b474b";ctx!.lineWidth=a?2:1;ctx!.strokeRect(26,y,viewW-52,116);ctx!.fillStyle=l.color;ctx!.shadowColor=l.color;ctx!.shadowBlur=glowBlur(15);ctx!.beginPath();ctx!.ellipse(72,y+56,22,34,0,0,Math.PI*2);ctx!.fill();ctx!.shadowBlur=0;txt(l.name,110,y+25,18,l.color);txt(l.ability,110,y+51,11,"#f0eee7");txt("HP "+l.hp+" · ARMOR "+l.armor+" · SPEED "+l.speed.toFixed(2),110,y+75,10,"#8e9b9f");txt(a?"SELECTED":"TAP TO SELECT",viewW-38,y+96,9,a?l.color:"#7b888c","right")});txt("OPEN WEAPONS "+save.inventory.length+"/"+HS_WEAPONS.length,viewW/2,595,11,"#aeb8ba","center");txt("BEST WAVE "+save.bestWave+" · BEST KILLS "+save.bestKills,viewW/2,620,10,"#66757a","center")}
 function drawWeapon(){rect(0,0,viewW,viewH,"#070b0e");txt("ARSENAL",viewW/2,35,22,"#f0eee7","center");txt("РУЧНОЙ ВЫБОР · PICKUP НЕ ПЕРЕКЛЮЧАЕТ ОРУЖИЕ",viewW/2,60,8,"#66757a","center");const h=Math.min(68,(viewH-135)/Math.max(1,save.inventory.length));save.inventory.forEach((id,i)=>{const y=78+i*(h+5),w=HS_WEAPONS[id],a=id===player.weapon;rect(24,y,viewW-48,h,"#11191d");ctx!.strokeStyle=a?L().color:"#344146";ctx!.strokeRect(24,y,viewW-48,h);txt(String(i+1).padStart(2,"0"),38,y+h*.3,9,"#66757a");txt(w.name,72,y+h*.3,14,a?L().color:"#f0eee7");txt("DMG "+w.damage+" · MAG "+w.magazine+" · "+Math.round(3600/w.fireInterval)+" RPM",72,y+h*.65,9,"#8e9b9f")});txt("TAP CARD / NUMBER KEY",viewW/2,viewH-25,10,"#aeb8ba","center")}
 function drawResult(){rect(0,0,viewW,viewH,"#05090b");const c=won?"#54d6d8":"#ff557d";txt("CARGO DECK",viewW/2,90,24,c,"center");txt(won?"CARGO DECK SECURED":(resultReason||"MISSION FAILED"),viewW/2,135,17,"#f0eee7","center");txt("WAVE "+String(wave).padStart(2,"0"),viewW/2,205,15,c,"center");txt("ENEMIES DESTROYED · "+kills,viewW/2,245,12,"#aeb8ba","center");txt("SURVIVAL TIME · "+fmt(time),viewW/2,278,12,"#aeb8ba","center");txt("CORE INTEGRITY · "+Math.round(core.hp/core.maxHp*100)+"%",viewW/2,311,12,"#aeb8ba","center");txt(won?"ARENA SECURED":"RETRY AVAILABLE",viewW/2,390,12,c,"center")}
 function fmt(s:number){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
@@ -477,7 +481,7 @@ function drawPlayer(){
  // Shadow and boots.
  ctx!.globalAlpha=.38;ctx!.fillStyle="#000";ctx!.beginPath();ctx!.ellipse(px,py+18,27,8,0,0,Math.PI*2);ctx!.fill();ctx!.globalAlpha=1;
  // Body silhouette.
- ctx!.shadowColor=c;ctx!.shadowBlur=player.hit>0?28:14;
+ ctx!.shadowColor=c;ctx!.shadowBlur=glowBlur(player.hit>0?28:14);
  ctx!.fillStyle="#172126";ctx!.beginPath();ctx!.ellipse(px,py-18,24,35,0,0,Math.PI*2);ctx!.fill();
  ctx!.shadowBlur=0;
  // Tactical vest.
@@ -506,7 +510,7 @@ function drawPlayer(){
  // Stock and muzzle.
  ctx!.fillStyle="#11181b";ctx!.fillRect(-16,-3,8,7);ctx!.fillRect(gunLen-2,-3,16,5);
  if(muzzleFlash>0){
-   const alpha=Math.min(1,muzzleFlash*1.8);ctx!.globalAlpha=alpha;ctx!.shadowColor="#fff1a6";ctx!.shadowBlur=18;ctx!.fillStyle="#ffe58a";
+   const alpha=Math.min(1,muzzleFlash*1.8);ctx!.globalAlpha=alpha;ctx!.shadowColor="#fff1a6";ctx!.shadowBlur=glowBlur(18);ctx!.fillStyle="#ffe58a";
    ctx!.beginPath();ctx!.moveTo(gunLen+15,0);ctx!.lineTo(gunLen+31,-7);ctx!.lineTo(gunLen+23,0);ctx!.lineTo(gunLen+31,7);ctx!.closePath();ctx!.fill();
  }
  ctx!.restore();
@@ -549,7 +553,7 @@ function drawWorld(){
 
   // Player CARGO CORE.
   ctx!.shadowColor="#54d6d8";
-  ctx!.shadowBlur=24;
+  ctx!.shadowBlur=glowBlur(24);
   ctx!.fillStyle="#54d6d8";
   ctx!.beginPath();
   ctx!.arc(core.x,core.y,31,0,Math.PI*2);
@@ -574,7 +578,7 @@ function drawWorld(){
     const c=p.kind==="medkit"?"#ff5b55":L().color;
     ctx!.fillStyle=c;
     ctx!.shadowColor=c;
-    ctx!.shadowBlur=14;
+    ctx!.shadowBlur=glowBlur(14);
     ctx!.beginPath();
     ctx!.arc(p.x,p.y,10,0,Math.PI*2);
     ctx!.fill();
@@ -601,7 +605,7 @@ function drawWorld(){
 
     ctx!.fillStyle=c;
     ctx!.shadowColor=c;
-    ctx!.shadowBlur=m.hit>0?20:10;
+    ctx!.shadowBlur=glowBlur(m.hit>0?20:10);
     ctx!.beginPath();
     ctx!.ellipse(m.x,m.y-18,25*sc,39*sc,0,0,Math.PI*2);
     ctx!.fill();
@@ -683,7 +687,7 @@ function drawWorld(){
     ctx!.fillStyle="rgba(255,40,50,"+player.damagePulse*.18+")";
     ctx!.fillRect(0,0,viewW,viewH);
   }
-}function renderCanvas(){if(!ctx)return;resize();ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
+}function renderCanvas(){if(!ctx)return;resize();frameGlowCount=0;ctx.clearRect(0,0,viewW,viewH);if(mode==="loadout")drawLoadout();else if(mode==="play")drawWorld();else if(mode==="weapon")drawWeapon();else drawResult()}
 function renderUI(){if(!ui)return;if(mode==="play")ui.innerHTML='<div class="cargo-move"><span></span></div><div class="cargo-actions"><button data-cargo="weapon">ОРУЖИЕ</button><button data-cargo="fire">ОГОНЬ</button><button data-cargo="reload">ПЕРЕЗАРЯДКА</button><button data-cargo="auto">АВТО</button><button data-cargo="medkit">HP · '+player.medkits+'</button><button data-cargo="grenade">G</button><button data-cargo="ability">СПЕЦ</button></div><div class="cargo-aim"><span></span></div><div class="cargo-bottom"><button data-cargo="menu">МЕНЮ</button></div>';else if(mode==="loadout")ui.innerHTML='<div class="cargo-loadouts">'+(["ASSAULT","VANGUARD","RECON"]as LoadoutId[]).map(id=>'<button data-loadout="'+id+'"></button>').join("")+'</div><div class="cargo-loadout-actions"><button data-cargo="start">НАЧАТЬ CARGO DECK</button></div>';else if(mode==="weapon")ui.innerHTML='<div class="cargo-weapon-hit"></div><div class="cargo-bottom"><button data-cargo="menu">НАЗАД</button></div>';else ui.innerHTML='<div class="cargo-result-actions"><button data-cargo="retry">ПОВТОРИТЬ</button><button data-cargo="menu">ВЫХОД</button></div>';bindUI()}
 function render(){if(!root)return;root.innerHTML='<div class="freezzz-mafia-frame cargo-deck-frame"><canvas class="freezzz-mafia-canvas"></canvas><div class="freezzz-mafia-ui cargo-deck-ui"></div></div>';canvas=root.querySelector("canvas");ctx=canvas?.getContext("2d")||null;ui=root.querySelector(".cargo-deck-ui");canvas?.addEventListener("click",handleCanvasClick);resize();renderUI();renderCanvas()}
 let sizedW=0,sizedH=0,sizedDpr=0;function resize(){if(!root||!canvas||!ctx)return;const cssW=Math.max(1,root.clientWidth||innerWidth),cssH=Math.max(1,root.clientHeight||innerHeight);const device=window.devicePixelRatio||1;const weakDevice=(navigator.hardwareConcurrency||8)<=4||((navigator as Navigator&{deviceMemory?:number}).deviceMemory||8)<=4;const d=Math.max(1,Math.min(weakDevice?1.25:1.5,device));if(cssW===sizedW&&cssH===sizedH&&d===sizedDpr)return;sizedW=cssW;sizedH=cssH;sizedDpr=d;worldScale=cssW/W;viewW=W;viewH=cssH/worldScale;canvas.width=Math.round(cssW*d);canvas.height=Math.round(cssH*d);canvas.style.width=cssW+"px";canvas.style.height=cssH+"px";ctx.setTransform(d*worldScale,0,0,d*worldScale,0,0);ctx.imageSmoothingEnabled=true}
