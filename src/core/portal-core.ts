@@ -195,7 +195,6 @@ export class ZenithOSKernel {
       return { accepted: false, previous, current: previous, reason };
     }
     this.state.view = next;
-    this.bus.emit("navigation:changed", { view: next });
     return { accepted: true, previous, current: next, reason };
   }
 
