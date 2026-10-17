@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Refresh official LIVE statistics
         env:
-          LIVE_API_BASE: https://freezzz-telegram-auth.onrender.com
+          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE || 'https://freezzz-telegram-auth.onrender.com' }}
           LIVE_REFRESH_SECRET: ${{ secrets.LIVE_REFRESH_SECRET }}
         shell: bash
         run: |
@@ -46,7 +46,7 @@ jobs:
     steps:
       - name: Review LIVE catalog
         env:
-          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE }}
+          LIVE_API_BASE: ${{ secrets.LIVE_API_BASE || 'https://freezzz-telegram-auth.onrender.com' }}
           LIVE_REFRESH_SECRET: ${{ secrets.LIVE_REFRESH_SECRET }}
         shell: bash
         run: |
@@ -59,3 +59,14 @@ jobs:
             -X POST "${LIVE_API_BASE%/}/api/live/review" \
             -H "X-Live-Admin-Key: ${LIVE_REFRESH_SECRET}" \
             -H "Accept: application/json"
+          response="$(curl --fail-with-body --silent --show-error --connect-timeout 10 --max-time 180 \
+            -X POST "${LIVE_API_BASE%/}/api/live/monthly-publish" \
+            -H "X-Live-Admin-Key: ${LIVE_REFRESH_SECRET}" \
+            -H "Accept: application/json")"
+          echo "$response" | node -e '
+            let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{
+              const r=JSON.parse(s);
+              console.log(JSON.stringify({ok:r.ok,published:r.published,publishedMonth:r.publishedMonth,rankedEntries:r.rankedEntries,groups:r.groups,reason:r.reason}));
+              if(!r.published) process.exitCode=1;
+            });
+          '
