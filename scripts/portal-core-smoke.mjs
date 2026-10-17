@@ -28,7 +28,7 @@ assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("r
 assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-grid-shift:v7"'), "grid layout schema must be versioned after removing non-tile wrappers");
 assert.ok(gridSource.includes("updateGridMetrics") && gridSource.includes("gridAutofillWide"), "resizing must recalculate grid rows and close residual gaps");
 assert.ok(gridSource.includes('data-portal-block="library"') && gridSource.includes('data-portal-block="hero"'), "the grid editor must target only real Home tiles");
-assert.ok(multiWindowSource.includes('if(id==="home")') && multiWindowSource.includes('windows[windowId].open=false'), "returning HOME must dismiss all floating windows");
+assert.ok(multiWindowSource.includes('if(el.closest(".portal-toolbar"))') && multiWindowSource.includes("windows[windowId].open=false"), "top-level navigation must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
 assert.ok(multiWindowSource.includes("portal-mw-wave"), "floating radio must expose an audio visualization");
