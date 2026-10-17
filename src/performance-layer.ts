@@ -21,7 +21,7 @@ function tuneVideo(video: HTMLVideoElement) {
   video.playsInline = true;
   video.muted = true;
   if (video.dataset.persistentVideo) {
-    video.preload = target === "tv" ? "metadata" : "auto";
+    video.preload = "metadata";
   } else {
     video.preload = "metadata";
   }
@@ -51,9 +51,6 @@ function scheduleTune() {
     tuneDocument();
   });
 }
-
-const observer = new MutationObserver(scheduleTune);
-observer.observe(document.body, { childList: true, subtree: true });
 
 const visibilityObserver = new IntersectionObserver(entries => {
   for (const entry of entries) {
