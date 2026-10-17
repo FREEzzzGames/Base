@@ -126,3 +126,39 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 .portal-mw.portal-mw-focused .portal-mw-chat-list{min-height:0!important}
 .portal-mw [data-mw-focus]{min-width:34px;min-height:34px;border:1px solid #343434;border-radius:4px;background:#111;color:#ddd}
 .portal-mw.portal-mw-focused .portal-mw-head{cursor:default}
+
+/* Functional HOME workspace widgets: persisted app bookmarks and live system status. */
+.zenith-home-widgets{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:8px;min-width:0}
+.zenith-home-widget{min-width:0;position:relative;overflow:hidden;padding:12px;border:1px solid var(--zen-line);border-radius:8px;background:linear-gradient(145deg,#101010,#070707);color:#eee}
+.zenith-home-widget>header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.zenith-home-widget h2{margin:3px 0 0;font:11px "Space Mono",monospace;letter-spacing:.1em}
+.zenith-widget-kicker,.zenith-widget-count{font:8px "Space Mono",monospace;letter-spacing:.1em;color:#777}
+.zenith-bookmark-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.zenith-bookmark{position:relative;display:flex;align-items:center;gap:8px;min-width:0;min-height:43px;padding:7px;border:1px solid #292929;border-radius:5px;background:#0c0c0c;color:#ddd;text-align:left}
+.zenith-bookmark>span{display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;border:1px solid #333;border-radius:4px;color:#fff;font-size:15px}
+.zenith-bookmark b{overflow:hidden;text-overflow:ellipsis;font:9px "Space Mono",monospace;letter-spacing:.02em}
+.zenith-bookmark i{margin-left:auto;color:#777;font-style:normal}
+.zenith-bookmark:active{background:#1b1b1b}
+.zenith-widget-empty{grid-column:1/-1;color:#888;font-size:10px}
+.zenith-bookmark-editor{margin-top:8px;border-top:1px solid #252525;padding-top:7px}
+.zenith-bookmark-editor summary{cursor:pointer;color:#888;font:8px "Space Mono",monospace;letter-spacing:.08em}
+.zenith-bookmark-editor>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding-top:8px}
+.zenith-bookmark-editor label{display:flex;align-items:center;gap:6px;color:#aaa;font:9px "Space Mono",monospace}
+.zenith-bookmark-editor input{accent-color:#eee;width:14px;height:14px}
+.zenith-system-state{display:flex;align-items:center;gap:5px;font:8px "Space Mono",monospace;color:#999}
+.zenith-system-state i{width:6px;height:6px;border-radius:50%;background:#777}
+.zenith-system-state.is-online{color:#d8d8d8}
+.zenith-system-state.is-online i{background:#eee;box-shadow:0 0 8px #aaa}
+.zenith-system-state.is-offline{color:#888}
+.zenith-system-orbit{position:relative;width:70px;height:70px;margin:2px auto 10px;border:1px solid #555;border-radius:50%;display:grid;place-items:center}
+.zenith-system-orbit:before,.zenith-system-orbit:after,.zenith-system-orbit span{content:"";position:absolute;border:1px solid #454545;border-radius:50%;inset:8px}
+.zenith-system-orbit:after{inset:17px;border-color:#777}
+.zenith-system-orbit span:nth-child(1){inset:-4px 22px;border-radius:50%}
+.zenith-system-orbit span:nth-child(2){inset:22px -4px;border-radius:50%}
+.zenith-system-orbit span:nth-child(3){inset:4px;border-style:dashed;animation:zenith-orbit 18s linear infinite}
+.zenith-system dl{margin:0;display:grid;gap:6px}
+.zenith-system dl>div{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.zenith-system dt{font:7px "Space Mono",monospace;color:#777}
+.zenith-system dd{margin:0;text-align:right;font:7px "Space Mono",monospace;color:#c6c6c6;overflow-wrap:anywhere}
+@keyframes zenith-orbit{to{transform:rotate(360deg)}}
+@media(max-width:520px){.zenith-home-widgets{grid-template-columns:1fr}.zenith-bookmark-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.zenith-bookmark{flex-direction:column;justify-content:center;gap:5px;min-height:60px;text-align:center}.zenith-bookmark i{display:none}.zenith-system{display:grid;grid-template-columns:1fr auto;column-gap:12px}.zenith-system>header{grid-column:1/-1}.zenith-system-orbit{grid-row:2/4;grid-column:2;width:62px;height:62px}.zenith-system dl{grid-column:1;grid-row:2/4}}
