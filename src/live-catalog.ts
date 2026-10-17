@@ -7,7 +7,7 @@ const LANGUAGES=["all","uk","ru","en","de","unknown"] as const;
 type LanguageCode=typeof LANGUAGES[number];
 type Category=typeof CATEGORIES[number];
 type CatalogItem=LiveStream & {language?:LanguageCode;subcategory?:string;officialStatsAt?:string;rankingVerified?:boolean};
-type OfficialRankEntry={platform:string;language:string;category:string;subcategory:string;rank:number;name:string;metrics?:{subscribers?:number|null;live?:boolean;viewers?:number}};
+type OfficialRankEntry={platform:string;region?:string;month?:string;language:string;category:string;subcategory:string;rank:number;name:string;metrics?:{subscribers?:number|null;live?:boolean;viewers?:number;subscribersGrowth?:number|null;viewsGrowth?:number;avgViewers?:number;liveDays?:number}};
 const CREATOR_METADATA:Record<string,{language:LanguageCode;category:string;subcategory:string}>={leb1ga:{language:"uk",category:"gaming",subcategory:"Mobile Legends"},dendi:{language:"en",category:"gaming",subcategory:"MOBA"},rolex9:{language:"uk",category:"gaming",subcategory:"Mobile Legends"},papaplatte:{language:"de",category:"entertainment",subcategory:"Just Chatting"},montanablack88:{language:"de",category:"entertainment",subcategory:"Just Chatting"},trymacs:{language:"de",category:"gaming",subcategory:"Gaming"},smetana:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},smetanduck:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},titamin1:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},dunkelsch4tten:{language:"de",category:"gaming",subcategory:"Gaming"},buster:{language:"ru",category:"gaming",subcategory:"Gaming"},marmok:{language:"ru",category:"entertainment",subcategory:"Gaming videos"},marmok_twitch:{language:"ru",category:"entertainment",subcategory:"Gaming videos"},zubarefff:{language:"ru",category:"entertainment",subcategory:"Just Chatting"}};
 
 function readJson<T>(key:string,fallback:T):T{
@@ -107,15 +107,19 @@ export function bindLiveCatalog():void{
   if(apiBase&&officialStatus&&officialList){
     void fetch(apiBase+"/api/live/rankings",{headers:{Accept:"application/json"},cache:"no-store",credentials:"omit",signal:AbortSignal.timeout(8000)})
       .then(async response=>{if(!response.ok)throw new Error("API_UNAVAILABLE");return response.json();})
-      .then((payload:{rankings?:OfficialRankEntry[];lastUpdated?:string})=>{
+      .then((payload:{rankings?:OfficialRankEntry[];lastUpdated?:string;publishedMonth?:string})=>{
         const rankings=Array.isArray(payload.rankings)?payload.rankings:[];
         if(!rankings.length){officialStatus.textContent="Официальный топ пока не сформирован. Нужны API-ключи и успешная синхронизация.";return;}
         const grouped=new Map<string,OfficialRankEntry[]>();
-        for(const item of rankings){const key=[item.platform,item.language,item.category,item.subcategory].join("|");if(!grouped.has(key))grouped.set(key,[]);grouped.get(key)!.push(item);}
-        officialStatus.textContent="Данные API · обновлено: "+(payload.lastUpdated||"нет снимка");
+        for(const item of rankings){const key=[item.region||"unknown",item.platform,item.language,item.category,item.subcategory].join("|");if(!grouped.has(key))grouped.set(key,[]);grouped.get(key)!.push(item);}
+        officialStatus.textContent="Месяц: "+(payload.publishedMonth||"нет опубликованного рейтинга")+" · опубликовано: "+(payload.lastUpdated||"нет снимка");
         officialList.innerHTML=[...grouped.entries()].map(([key,items])=>{
-          const [platform,language,category,subcategory]=key.split("|");
-          return '<section class="live-official-group"><h4>'+escText(platform.toUpperCase())+' · '+escText(language.toUpperCase())+' · '+escText(category)+' / '+escText(subcategory)+'</h4><ol>'+items.sort((a,b)=>a.rank-b.rank).map(item=>'<li><span>'+escText(String(item.rank)+". "+item.name)+'</span><small>'+escText(item.metrics?.subscribers!=null?"Подписчики: "+Number(item.metrics.subscribers).toLocaleString():item.metrics?.live?"В эфире · зрители: "+Number(item.metrics.viewers||0).toLocaleString():"Статистика доступна")+'</small></li>').join("")+'</ol></section>';
+          const [region,platform,language,category,subcategory]=key.split("|");
+          return '<section class="live-official-group"><h4>'+escText(region.toUpperCase())+' · '+escText(platform.toUpperCase())+' · '+escText(language.toUpperCase())+' · '+escText(category)+' / '+escText(subcategory)+'</h4><ol>'+items.sort((a,b)=>a.rank-b.rank).map(item=>{
+            const m=item.metrics||{};
+            const detail=platform==="youtube"?(m.subscribersGrowth!=null?"Подписчики +"+Number(m.subscribersGrowth).toLocaleString()+" · просмотры +"+Number(m.viewsGrowth||0).toLocaleString():"Месячная статистика доступна"):(m.avgViewers!=null?"Средние зрители: "+Number(m.avgViewers).toLocaleString()+" · дней в эфире: "+Number(m.liveDays||0):"Месячная статистика доступна");
+            return '<li><span>'+escText(String(item.rank)+". "+item.name)+'</span><small>'+escText(detail)+'</small></li>';
+          }).join("")+'</ol></section>';
         }).join("");
       }).catch(()=>{officialStatus.textContent="Сервер статистики недоступен. Каталог и сохранённые ссылки продолжают работать.";});
   }else if(officialStatus){
