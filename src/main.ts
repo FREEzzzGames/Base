@@ -476,9 +476,9 @@ function render(){
           </div>
           <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(PORTAL_NICKNAME)}</h1>
           <p>${T("homeDescription")}</p>
-          ${(()=>{const last=getLastPlayedGameSummary();return last?'<button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button>':"";})()}
           </div>
         </section>
+        ${(()=>{const last=getLastPlayedGameSummary();return last?'<section class="portal-block home-card home-continue-tile" data-portal-block="continue" aria-label="'+escapeHtml(T("continueGame"))+'"><button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button></section>':"";})()}
         ${homeCard("live")}
         ${homeCard("chat")}
         ${homeCard("game")}
