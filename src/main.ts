@@ -610,7 +610,8 @@ function render(){
   updateHomeClock();
   bindTelegramBackButton(view!=="home" || profileOpen,()=>{
     if(profileOpen){profileOpen=false;portalEvents.emit("profile:toggled",{open:false});render();return;}
-    portalEvents.emit("navigation:changed",{view:"home"});
+    const result=zenithKernel.back();
+    portalEvents.emit("navigation:changed",{view:result.current});
   });
 }
 
@@ -794,6 +795,7 @@ function updateHomeClock(){
 }
 function setHudHidden(hidden:boolean){
   hudHidden=hidden;
+  zenithKernel.patchSystemState({hudHidden});
   const workspace=document.querySelector<HTMLElement>(".portal-workspace");
   workspace?.classList.toggle("portal-hud-hidden",hudHidden);
 }
@@ -876,7 +878,7 @@ function bind(){
     x.addEventListener("keydown",function(e){if(e.key!=="Enter"&&e.key!==" ")return;e.preventDefault();e.stopPropagation();navigate();});
   });
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
-    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;portalEvents.emit("profile:toggled",{open:profileOpen});render();};
+    x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;zenithKernel.patchSystemState({profileOpen});portalEvents.emit("profile:toggled",{open:profileOpen});render();};
     if(x.getAttribute("role")==="button"){
       x.onkeydown=function(e){
         if(e.key!=="Enter"&&e.key!==" ")return;
@@ -940,6 +942,7 @@ function bind(){
       if(lang===next){languageMenuOpen=false;render();return;}
       lang=next;
       portalState.language=next;
+      zenithKernel.setLanguage(next);
       languageMenuOpen=false;
       try{localStorage.setItem("freezzz:language",next);}catch{}
       document.documentElement.lang=next.toLowerCase();
