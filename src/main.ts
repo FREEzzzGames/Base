@@ -91,6 +91,14 @@ let radioActivityName="";
 let livePopups:LivePopupState[]=[];
 let liveAudioPriority=false;
 const PORTAL_NICKNAME="d3tr01t";
+const HOME_BOOKMARK_KEY="freezzz:zenith:home-bookmarks:v1";
+const HOME_BOOKMARKS:ReadonlyArray<{view:Exclude<View,"home">;label:string;symbol:string}>=[
+{view:"game",label:"GAME",symbol:"▣"},{view:"live",label:"LIVE",symbol:"◉"},{view:"chat",label:"CHAT",symbol:"◌"},{view:"radio",label:"RADIO",symbol:"♫"},{view:"library",label:"LIBRARY",symbol:"▤"},{view:"echo9",label:"ECHO-9",symbol:"⌁"}];
+function readHomeBookmarks():Set<string>{try{const stored=JSON.parse(localStorage.getItem(HOME_BOOKMARK_KEY)||'["game","live","radio","library"]');const valid=new Set(HOME_BOOKMARKS.map(item=>item.view));return new Set(Array.isArray(stored)?stored.map(String).filter(value=>valid.has(value as Exclude<View,"home">)):[]);}catch{return new Set(["game","live","radio","library"]);}}
+let homeBookmarks=readHomeBookmarks();
+function saveHomeBookmarks(){try{localStorage.setItem(HOME_BOOKMARK_KEY,JSON.stringify([...homeBookmarks]));}catch{}}
+function renderHomeBookmarks():string{const items=HOME_BOOKMARKS.filter(item=>homeBookmarks.has(item.view));return `<section class="zenith-home-widget zenith-bookmarks" data-portal-block="bookmarks"><header><div><span class="zenith-widget-kicker">WORKSPACE</span><h2>BOOKMARKS</h2></div><span class="zenith-widget-count">${items.length} SAVED</span></header><div class="zenith-bookmark-grid">${items.length?items.map(item=>`<button class="zenith-bookmark" data-bookmark-open="${item.view}" type="button"><span>${item.symbol}</span><b>${item.label}</b><i aria-hidden="true">↗</i></button>`).join(""):'<p class="zenith-widget-empty">Добавь приложения в быстрый доступ ниже.</p>'}</div><details class="zenith-bookmark-editor"><summary>EDIT BOOKMARKS</summary><div>${HOME_BOOKMARKS.map(item=>`<label><input type="checkbox" data-bookmark-toggle="${item.view}" ${homeBookmarks.has(item.view)?"checked":""}><span>${item.label}</span></label>`).join("")}</div></details></section>`;}
+function renderHomeSystem():string{const online=navigator.onLine;return `<section class="zenith-home-widget zenith-system" data-portal-block="system"><header><div><span class="zenith-widget-kicker">ZENITH OS</span><h2>SYSTEM</h2></div><span class="zenith-system-state ${online?"is-online":"is-offline"}"><i></i>${online?"ONLINE":"OFFLINE"}</span></header><div class="zenith-system-orbit" aria-hidden="true"><span></span><span></span><span></span></div><dl><div><dt>NETWORK</dt><dd>${online?"CONNECTED":"DISCONNECTED"}</dd></div><div><dt>RADIO</dt><dd>${escapeHtml(radioPlaybackStatus.toUpperCase())}</dd></div><div><dt>PLATFORM</dt><dd>${getTelegramWebApp()?"TELEGRAM MINI APP":"WEB"}</dd></div><div><dt>LOCAL TIME</dt><dd data-system-clock>--:--:--</dd></div></dl></section>`;}
 let hudHidden=false;
 let hudGestureBound=false;
 const telegramChatClient=createTelegramChatClient();
@@ -488,6 +496,7 @@ function render(){
           </div>
         </section>
         ${(()=>{const last=getLastPlayedGameSummary();return last?'<section class="portal-block home-card home-continue-tile" data-portal-block="continue" aria-label="'+escapeHtml(T("continueGame"))+'"><button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button></section>':"";})()}
+        <div class="zenith-home-widgets" data-portal-block="workspace-widgets">${renderHomeBookmarks()}${renderHomeSystem()}</div>
         ${homeCard("live")}
         ${homeCard("chat")}
         ${homeCard("game")}
@@ -803,6 +812,8 @@ function updateHomeClock(){
   const clock=document.querySelector<HTMLElement>("[data-home-clock]");
   if(!clock)return;
   clock.textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  const systemClock=document.querySelector<HTMLElement>("[data-system-clock]");if(systemClock)systemClock.textContent=clock.textContent;
+  const systemState=document.querySelector<HTMLElement>(".zenith-system-state");if(systemState){const online=navigator.onLine;systemState.classList.toggle("is-online",online);systemState.classList.toggle("is-offline",!online);const status=systemState.querySelector("i")?.nextSibling;if(status)status.textContent=online?"ONLINE":"OFFLINE";const network=document.querySelector<HTMLElement>(".zenith-system dd");if(network)network.textContent=online?"CONNECTED":"DISCONNECTED";}
 }
 function setHudHidden(hidden:boolean){
   hudHidden=hidden;
@@ -879,6 +890,8 @@ function bind(){
   document.querySelectorAll<HTMLElement>("[data-module-retry]").forEach(button=>{
     button.addEventListener("click",()=>render());
   });
+  document.querySelectorAll<HTMLElement>("[data-bookmark-open]").forEach(button=>button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();const next=button.dataset.bookmarkOpen as View;if(!next||!moduleManager.has(next))return;portalEvents.emit("navigation:changed",{view:next});}));
+  document.querySelectorAll<HTMLInputElement>("[data-bookmark-toggle]").forEach(input=>input.addEventListener("change",()=>{const key=input.dataset.bookmarkToggle||"";if(!HOME_BOOKMARKS.some(item=>item.view===key))return;if(input.checked)homeBookmarks.add(key);else homeBookmarks.delete(key);saveHomeBookmarks();render();}));
   document.querySelectorAll<HTMLElement>(".home-card[data-view]").forEach(function(x){
     const navigate=()=>{
       const next=x.dataset.view as View;
