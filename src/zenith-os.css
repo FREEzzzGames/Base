@@ -256,18 +256,3 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 .home-portal>[data-portal-block="hero"]{align-self:start}
 .home-portal>[data-portal-block="filters"] .zenith-home-filters{grid-column:1/-1;width:100%;min-width:0}
 .home-portal>[data-portal-block="continue"] .home-continue-game{min-height:74px}
-
-/* Enforce canonical HOME order over persisted inline order values on mobile and desktop. */
-.home-portal>[data-portal-block="hero"]{order:0!important}
-.home-portal>[data-portal-block="continue"]{order:1!important}
-.home-portal>[data-portal-block="filters"]{order:2!important}
-.home-portal>[data-portal-block="workspace-widgets"]{order:3!important}
-.home-portal>[data-portal-block="live"]{order:4!important}
-.home-portal>[data-portal-block="chat"]{order:5!important}
-.home-portal>[data-portal-block="game"]{order:6!important}
-.home-portal>[data-portal-block="radio"]{order:7!important}
-.home-portal>[data-portal-block="library"]{order:8!important}
-.home-portal>[data-portal-block="continue"] .home-continue-game{display:grid!important;grid-template-columns:24px minmax(0,1fr)!important;grid-template-rows:auto auto!important;align-content:center!important;gap:5px 8px!important}
-.home-portal>[data-portal-block="continue"] .home-continue-game .home-continue-icon{grid-row:1/3!important;grid-column:1!important}
-.home-portal>[data-portal-block="continue"] .home-continue-game span{grid-column:2!important;grid-row:1!important;display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-.home-portal>[data-portal-block="continue"] .home-continue-game strong{grid-column:2!important;grid-row:2!important;display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
