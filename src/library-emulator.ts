@@ -62,6 +62,7 @@ const SYSTEMS: Record<SystemId, { label: string; bits: 8 | 16 | 32; core: string
 let selectedSystem: "all" | "8" | "16" | "32" = "all";
 let librarySearch = "";
 let activeGame: LibraryGame | null = null;
+let libraryTab: "catalog" | "emulator" = "catalog";
 let activeRomUrl: string | null = null;
 let emulatorToken = 0;
 const activeGamepadReleases = new Set<() => void>();
@@ -420,13 +421,14 @@ export function renderLibrary(): string {
   return '<div class="content portal-layout library-portal" data-portal-layout="library">' +
     '<section class="library-shell portal-block">' +
       '<div class="library-head"><div><div class="library-kicker">FREEzzz // HOME BREW</div><h2>GAME LIBRARY</h2><p>' + total + ' игр · локально на устройстве · ROM-файлы не загружаются на сервер.</p></div>' +
-      '<label class="library-add-button tg-button"><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
-      '<div class="library-catalog-search"><span>⌕</span><input id="library-search" type="search" value="' + esc(librarySearch) + '" placeholder="Поиск игры, файла или системы..." autocomplete="off" spellcheck="false"><button type="button" data-library-search-clear aria-label="Очистить поиск">×</button></div>' +
-      '<div class="library-filters">' + systemCards() + '</div>' +
-      '<div class="library-catalog-meta"><span>' + games.length + ' RESULTS</span><span>' + (selectedSystem === "all" ? "ALL GENERATIONS" : selectedSystem + "-BIT") + '</span></div>' +
-      '<div class="library-game-grid">' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>NO GAMES FOUND</b><span>Измени поиск или добавь ROM в библиотеку.</span></div>') + '</div>' +
-      '<div class="library-emulator-root" id="library-emulator-root" hidden></div>' +
-      '<div class="library-hint">Эмуляция выполняется в браузере. Используй ROM-файлы, которыми ты имеешь право пользоваться.</div>' +
+      '<label class="library-add-button tg-button" ' + (libraryTab === "catalog" ? "" : "hidden") + '><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
+      '<div class="library-mode-tabs" role="tablist" aria-label="Library views"><button type="button" role="tab" data-library-tab="catalog" aria-selected="' + (libraryTab === "catalog") + '" class="' + (libraryTab === "catalog" ? "active" : "") + '">CATALOG</button><button type="button" role="tab" data-library-tab="emulator" aria-selected="' + (libraryTab === "emulator") + '" class="' + (libraryTab === "emulator" ? "active" : "") + '">EMULATOR</button></div>' +
+      '<div class="library-catalog-search" ' + (libraryTab === "catalog" ? "" : "hidden") + '><span>⌕</span><input id="library-search" type="search" value="' + esc(librarySearch) + '" placeholder="Поиск игры, файла или системы..." autocomplete="off" spellcheck="false"><button type="button" data-library-search-clear aria-label="Очистить поиск">×</button></div>' +
+      '<div class="library-filters" ' + (libraryTab === "catalog" ? "" : "hidden") + '>' + systemCards() + '</div>' +
+      '<div class="library-catalog-meta" ' + (libraryTab === "catalog" ? "" : "hidden") + '><span>' + games.length + ' RESULTS</span><span>' + (selectedSystem === "all" ? "ALL GENERATIONS" : selectedSystem + "-BIT") + '</span></div>' +
+      '<div class="library-game-grid" ' + (libraryTab === "catalog" ? "" : "hidden") + '>' + (games.length ? games.map(gameCard).join("") : '<div class="library-empty"><b>NO GAMES FOUND</b><span>Измени поиск или добавь ROM в библиотеку.</span></div>') + '</div>' +
+      '<div class="library-emulator-root" id="library-emulator-root" ' + (libraryTab === "emulator" ? "" : "hidden") + '></div>' +
+      '<div class="library-hint" ' + (libraryTab === "catalog" ? "" : "hidden") + '>Эмуляция выполняется в браузере. Используй ROM-файлы, которыми ты имеешь право пользоваться.</div>' +
     '</section>' +
   '</div>';
 }
@@ -821,6 +823,7 @@ function bindEmulatorControls(): void {
   document.querySelector<HTMLElement>("[data-library-exit]")?.addEventListener("click", () => {
     emulatorToken++;
     removeExistingEmulator();
+    libraryTab = "catalog";
     renderLibraryIntoPage();
   });
 
@@ -1232,10 +1235,11 @@ async function startGame(game: LibraryGame): Promise<void> {
     // This is especially important in Android WebViews where a File object can
     // boot the core but leave it at the RetroArch menu without content.
     activeRomUrl = URL.createObjectURL(emulatorRom);
-    // Keep the library rendered underneath; the emulator is a modal layer above it.
-    list.hidden = false;
-    filters.hidden = false;
-    head.hidden = false;
+    // Switch to the dedicated EMULATOR tab; never leave the catalog underneath.
+    libraryTab = "emulator";
+    list.hidden = true;
+    filters.hidden = true;
+    head.hidden = true;
     root.hidden = false;
     root.innerHTML = emulatorMarkup(game);
     document.querySelector(".portal-workspace")?.classList.add("portal-emulator-active");
@@ -1353,6 +1357,17 @@ function renderLibraryIntoPage(): void {
 }
 
 function bindLibrary(): void {
+  document.querySelectorAll<HTMLButtonElement>("[data-library-tab]").forEach(button => {
+    button.addEventListener("click", () => {
+      const next = button.dataset.libraryTab === "emulator" ? "emulator" : "catalog";
+      if (next !== "emulator" && activeGame) {
+        emulatorToken++;
+        removeExistingEmulator();
+      }
+      libraryTab = next;
+      renderLibraryIntoPage();
+    });
+  });
   void repairLegacyLibraryEntries();
 
   document.querySelectorAll<HTMLElement>("[data-library-filter]").forEach(button => {
@@ -1403,4 +1418,11 @@ function bindLibrary(): void {
 
 export function bindLibraryView(): void {
   bindLibrary();
+}
+
+/** Fully stop the current emulator when leaving the Library route. */
+export function stopLibraryEmulator(): void {
+  emulatorToken++;
+  removeExistingEmulator();
+  libraryTab = "catalog";
 }
