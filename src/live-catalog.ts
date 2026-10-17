@@ -8,6 +8,7 @@ type LanguageCode=typeof LANGUAGES[number];
 type Category=typeof CATEGORIES[number];
 type CatalogItem=LiveStream & {language?:LanguageCode;subcategory?:string;officialStatsAt?:string;rankingVerified?:boolean};
 type OfficialRankEntry={platform:string;language:string;category:string;subcategory:string;rank:number;name:string;metrics?:{subscribers?:number|null;live?:boolean;viewers?:number}};
+const CREATOR_METADATA:Record<string,{language:LanguageCode;category:string;subcategory:string}>={leb1ga:{language:"uk",category:"gaming",subcategory:"Mobile Legends"},dendi:{language:"en",category:"gaming",subcategory:"MOBA"},rolex9:{language:"uk",category:"gaming",subcategory:"Mobile Legends"},papaplatte:{language:"de",category:"entertainment",subcategory:"Just Chatting"},montanablack88:{language:"de",category:"entertainment",subcategory:"Just Chatting"},trymacs:{language:"de",category:"gaming",subcategory:"Gaming"},smetana:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},smetanduck:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},titamin1:{language:"ru",category:"gaming",subcategory:"Mobile Legends"},dunkelsch4tten:{language:"de",category:"gaming",subcategory:"Gaming"},buster:{language:"ru",category:"gaming",subcategory:"Gaming"},marmok:{language:"ru",category:"entertainment",subcategory:"Gaming videos"},marmok_twitch:{language:"ru",category:"entertainment",subcategory:"Gaming videos"},zubarefff:{language:"ru",category:"entertainment",subcategory:"Just Chatting"}};
 
 function readJson<T>(key:string,fallback:T):T{
   try{const value=localStorage.getItem(key);return value?JSON.parse(value) as T:fallback;}catch{return fallback;}
@@ -54,14 +55,14 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
     EN:{sub:"Creator catalog · ranking statistics will use official APIs",search:"Find a creator",add:"Add link",name:"Name",youtube:"YouTube URL (optional)",twitch:"Twitch URL (optional)",replay:"Replay URL",watch:"Open",empty:"No results",remove:"Remove",hint:"Favorites are saved on this device. Channels without verified official statistics are not assigned a top rank.",favorites:"★ Favorites",subcat:"Subcategory",any:"All subcategories",addError:"Add at least one valid YouTube or Twitch link.",top:"TOP 5 labels will appear only after official statistics are synchronized."}
   }[lang];
   const favorites=readFavorites();
-  const subcategories=[...new Set(all.map(s=>(s as CatalogItem).subcategory).filter((x):x is string=>Boolean(x)))].sort();
+  const subcategories=[...new Set(all.map(s=>CREATOR_METADATA[s.name.toLowerCase()]?.subcategory||(s as CatalogItem).subcategory).filter((x):x is string=>Boolean(x)))].sort();
   const cards=all.map(s=>{
     const key=(s.twitchChannel||s.youtubeChannel||s.name).toLowerCase();
     const favorite=favorites.includes(key);
     const verified=Boolean(s.rankingVerified&&s.officialStatsAt);
     const category=s.category||"entertainment";
     const language=s.language||"unknown";
-    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory="'+esc(s.subcategory||"")+'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
+    return '<article class="live-catalog-card" data-live-card data-category="'+esc(category)+'" data-language="'+esc(language)+'" data-subcategory=""+esc(metadata.subcategory)+"")+'" data-name="'+esc(s.name.toLowerCase())+'" data-favorite="'+favorite+'" data-key="'+esc(key)+'">'+
       '<div class="live-catalog-avatar-wrap">'+avatar(s)+'</div>'+
       '<div class="live-catalog-info"><strong>'+esc(s.name)+'</strong><small>'+categoryLabel(category,lang)+' · '+languageLabel(language,lang)+(s.custom?" · CUSTOM":"")+'</small><small class="live-ranking-status">'+(verified?"✓ "+esc(s.officialStatsAt||""):"Статистика не подтверждена")+'</small></div>'+
       '<div class="live-catalog-actions"><button class="tg-button" data-live-open="'+esc(s.name)+'" data-live-source="twitch" type="button" '+(!s.twitch?"disabled":"")+'>'+L.watch+' Twitch</button>'+
