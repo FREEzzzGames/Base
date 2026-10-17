@@ -20,11 +20,7 @@ function isVisible(el: Element): boolean {
 function tuneVideo(video: HTMLVideoElement) {
   video.playsInline = true;
   video.muted = true;
-  if (video.dataset.persistentVideo) {
-    video.preload = "metadata";
-  } else {
-    video.preload = "metadata";
-  }
+  video.preload = "metadata";
 }
 
 function tuneIframe(frame: HTMLIFrameElement) {
