@@ -160,6 +160,15 @@ function detectSystem(fileName: string): SystemId | null {
   return null;
 }
 
+/** Mega Drive ROMs commonly use .bin, which is also used by PlayStation disc images.
+ * Detect the Mega Drive cartridge header before falling back to the extension map. */
+async function isMegaDriveRom(blob: Blob): Promise<boolean> {
+  if (blob.size < 0x104) return false;
+  const bytes = new Uint8Array(await blob.slice(0x100, 0x204).arrayBuffer());
+  const header = new TextDecoder("ascii").decode(bytes);
+  return header.startsWith("SEGA") || header.slice(0x100, 0x104) === "SEGA";
+}
+
 async function inspectZip(file: File): Promise<{ name: string; method: number; compressedSize: number; localOffset: number }[]> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -210,9 +219,19 @@ async function repairLegacyLibraryEntries(): Promise<void> {
   const games = readMeta();
   let changed = false;
   for (const game of games) {
-    if (extensionOf(game.fileName) !== "zip") continue;
+    const ext = extensionOf(game.fileName);
+    if (ext !== "zip" && ext !== "bin") continue;
     try {
       const blob = await getRom(game.id);
+      if (ext === "bin" && await isMegaDriveRom(blob)) {
+        if (game.system !== "md" || game.bits !== 16) {
+          game.system = "md";
+          game.bits = 16;
+          changed = true;
+        }
+        continue;
+      }
+      if (ext !== "zip") continue;
       const resolved = await resolveImport(new File([blob], game.fileName, { type: blob.type || "application/zip" }));
       const config = SYSTEMS[resolved.system];
       if (game.system !== resolved.system || game.fileName !== resolved.fileName || game.size !== resolved.blob.size) {
@@ -281,6 +300,11 @@ async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob
   const ext = extensionOf(file.name);
 
   if (direct && ext !== "zip" && ext !== "7z") {
+    // A Genesis .bin must not be sent to the PlayStation core just because both
+    // systems use the extension. Existing PSX .bin images retain the PSX path.
+    if (ext === "bin" && await isMegaDriveRom(file)) {
+      return { system: "md", blob: file, fileName: file.name };
+    }
     return { system: direct, blob: file, fileName: file.name };
   }
 
@@ -337,6 +361,17 @@ async function resolveImport(file: File): Promise<{ system: SystemId; blob: Blob
   if (systems.length !== 1) throw new Error("ZIP_MULTIPLE_SYSTEMS_UNSUPPORTED");
 
   const system = systems[0];
+
+  // A single .bin in a ZIP may be a Genesis cartridge rather than a PSX disc.
+  // Keep multi-file BIN/CUE archives on the PlayStation path below.
+  if (candidates.length === 1 && extensionOf(candidates[0].name) === "bin") {
+    const entry = candidates[0];
+    const rom = await extractSingleZipRom(file, entry);
+    if (await isMegaDriveRom(rom)) {
+      return { system: "md", blob: rom, fileName: entry.name };
+    }
+    return { system: "psx", blob: rom, fileName: entry.name };
+  }
 
   // Disc-based PlayStation games commonly need both .cue and .bin files.
   // Preserve a multi-file PSX ZIP so EmulatorJS can extract the whole archive.
