@@ -17,6 +17,10 @@ assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSou
 const gridSource = await readFile(new URL("../src/home-grid-shift.ts", import.meta.url), "utf8");
 assert.ok(gridSource.includes("grid-shift-launch"), "HOME grid editing must have a discoverable launcher");
 assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid editing must be togglable without a long press");
+assert.ok(mainSource.includes("HOME_BOOKMARK_KEY"), "HOME bookmarks must persist in local storage");
+assert.ok(mainSource.includes("data-bookmark-open"), "HOME bookmarks must navigate to real portal modules");
+assert.ok(mainSource.includes("renderHomeSystem()"), "HOME must expose live system status");
+assert.ok(mainSource.includes("data-system-clock"), "system widget must display the current local clock");
 
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
