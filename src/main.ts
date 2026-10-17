@@ -18,7 +18,7 @@ import { loadPortalProfile, syncPortalIdentity, startPortalSession, recordLiveVi
 import { bindUniversalPortalPress } from "./portal-interactions";
 import { initVisualComfort } from "./visual-comfort";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
-import { renderLibrary, bindLibraryView, getLastPlayedGameSummary, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
+import { renderLibrary, bindLibraryView, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
 import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
 
 initTelegramBridge();
