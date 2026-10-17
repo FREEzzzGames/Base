@@ -1,6 +1,7 @@
 import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
+import "./zenith-os.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { bindHomeGridShift } from "./home-grid-shift";
@@ -449,7 +450,7 @@ function renderPortalToolbar(){
   ];
   return `<header class="portal-topbar">
     <button class="portal-top-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("profile","portal-top-profile-icon")}</button>
-    <div class="portal-top-brand"><strong>FREEzzzPortal</strong><span>good games. good people</span></div>
+    <div class="portal-top-brand"><strong>ZENITH OS</strong><span>good games. good people</span></div>
     <div class="portal-top-languages" role="group" aria-label="${T("language")}">
       <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
       <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
