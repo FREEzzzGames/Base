@@ -1327,6 +1327,12 @@ async function startGame(game: LibraryGame): Promise<void> {
       cleanupEmulatorDom();
       document.querySelector<HTMLElement>(".freezzz-emulator-host")?.remove();
       document.querySelector(".portal-workspace")?.classList.remove("portal-emulator-active");
+      if (activeRomUrl) {
+        try { URL.revokeObjectURL(activeRomUrl); } catch {}
+        activeRomUrl = null;
+      }
+      emulatorInitializedAt = 0;
+      emulatorCoreReadyAt = 0;
       activeGame = null;
       renderLibraryIntoPage();
     };
@@ -1362,8 +1368,11 @@ async function startGame(game: LibraryGame): Promise<void> {
     if (token !== emulatorToken) return;
     bindInputSurface();
   } catch (error) {
-    root.hidden = false;
-    root.innerHTML = '<div class="library-emulator-error"><b>EMULATOR ERROR</b><span>' + esc(error instanceof Error ? error.message : String(error)) + '</span><button type="button" class="tg-button secondary" data-library-exit>BACK</button></div>';
+    if (token === emulatorToken) {
+      removeExistingEmulator();
+      root.hidden = false;
+      root.innerHTML = '<div class="library-emulator-error"><b>EMULATOR ERROR</b><span>' + esc(error instanceof Error ? error.message : String(error)) + '</span><button type="button" class="tg-button secondary" data-library-exit>BACK</button></div>';
+    }
   }
 }
 
