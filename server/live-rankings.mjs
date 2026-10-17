@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import pg from "pg";
 
 const DATA_PATH = process.env.LIVE_DATA_PATH || "/tmp/freezzz-live-data.json";
+const DATABASE_URL = process.env.DATABASE_URL || "";\nconst { Pool } = pg;\nlet databasePool = null;\nasync function getDatabasePool(){\n  if(!DATABASE_URL)return null;\n  if(!databasePool){databasePool=new Pool({connectionString:DATABASE_URL,ssl:DATABASE_URL.includes("render.com")?{rejectUnauthorized:false}:undefined,max:3,idleTimeoutMillis:30000,connectionTimeoutMillis:8000});}\n  return databasePool;\n}
 const YOUTUBE_KEY = process.env.YOUTUBE_DATA_API_KEY || "";
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
@@ -71,6 +73,19 @@ function youtubeKey(url){
 }
 async function load(){
   if(store)return store;
+  const pool=await getDatabasePool();
+  if(pool){
+    await pool.query("CREATE TABLE IF NOT EXISTS freezzz_live_state (id SMALLINT PRIMARY KEY CHECK (id=1), payload JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+    const result=await pool.query("SELECT payload FROM freezzz_live_state WHERE id=1");
+    if(result.rows[0]?.payload){
+      const parsed=result.rows[0].payload;
+      store={schemaVersion:1,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
+    }else{
+      store={schemaVersion:1,creators:SEED,snapshots:[],rankings:[],lastDailyRefresh:null,lastMonthlyReview:null};
+      await persist();
+    }
+    return store;
+  }
   try{
     const parsed=JSON.parse(await fs.readFile(DATA_PATH,"utf8"));
     store={schemaVersion:1,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
@@ -86,6 +101,11 @@ async function persist(){
   if(!store)return;
   const snapshot=JSON.stringify(store);
   persistChain=persistChain.then(async()=>{
+    const pool=await getDatabasePool();
+    if(pool){
+      await pool.query("INSERT INTO freezzz_live_state (id,payload,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET payload=EXCLUDED.payload,updated_at=NOW()",[snapshot]);
+      return;
+    }
     await fs.mkdir(path.dirname(DATA_PATH),{recursive:true});
     const temp=DATA_PATH+"."+crypto.randomBytes(5).toString("hex")+".tmp";
     await fs.writeFile(temp,snapshot,{mode:0o600});
@@ -211,7 +231,7 @@ function monthlyReview(s){
 export async function handleLiveRoute(req,res,url,origin){
   const pathname=url.pathname;
   if(req.method==="GET"&&pathname==="/api/live/health"){
-    const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),persistentPath:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,lastError:lastSyncError},origin);
+    const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),storage:DATABASE_URL?"postgres":"local-file",persistentPath:DATABASE_URL?undefined:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,lastError:lastSyncError},origin);
   }
   if(req.method==="GET"&&pathname==="/api/live/catalog"){
     const s=await load();return json(res,200,{ok:true,creators:s.creators.map(({id,name,language,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,category,subcategory,platforms,source,verified,addedAt})),total:s.creators.length,generatedAt:new Date().toISOString()},origin);
