@@ -85,7 +85,7 @@ export function renderLiveCatalog(lang:"RU"|"DE"|"EN"):string{
     '<form class="live-add-form" id="live-add-form" hidden><input name="name" required maxlength="60" placeholder="'+L.name+'"><input name="youtube" type="url" placeholder="'+L.youtube+'"><input name="twitch" type="url" placeholder="'+L.twitch+'"><input name="replay" type="url" placeholder="'+L.replay+'"><select name="language" aria-label="Language"><option value="unknown">Language / Язык</option><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option><option value="de">Deutsch</option></select><select name="rankCategory" aria-label="Ranking category"><option value="gaming">Gaming</option><option value="entertainment">Entertainment</option><option value="music">Music</option><option value="education">Education</option><option value="technology">Technology</option><option value="lifestyle">Lifestyle</option><option value="sports">Sports</option><option value="creativity">Creativity</option></select><input name="subcategory" maxlength="80" placeholder="Subcategory"><button class="tg-button" type="submit">'+L.add+'</button><p data-live-form-error role="alert" hidden></p></form>'+
     '</div>';
 }
-export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string;replay?:string}):boolean{
+export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string;replay?:string;language?:LanguageCode;subcategory?:string}):boolean{
   const name=input.name.trim(),youtube=validProviderUrl(input.youtube,"youtube"),twitch=validProviderUrl(input.twitch||"","twitch"),replay=validProviderUrl(input.replay||"","replay");
   if(!name||(!youtube&&!twitch))return false;
   const twitchChannel=twitch?new URL(twitch).pathname.split("/").filter(Boolean)[0]||"":"";
@@ -94,7 +94,7 @@ export function addLiveStreamer(input:{name:string;youtube:string;twitch?:string
   const channelIndex=ytPath.findIndex(x=>x==="channel");
   const youtubeChannel=handle?handle.slice(1):channelIndex>=0?ytPath[channelIndex+1]||undefined:undefined;
   const custom=readCustom().filter(x=>x.name.toLowerCase()!==name.toLowerCase()&&x.twitch!==twitch&&x.youtube!==youtube);
-  custom.push({icon:"video",name,youtube,twitch,twitchChannel,youtubeChannel,category:"custom",language:"unknown",subcategory:"",lastRecordingUrl:replay,custom:true} as CatalogItem);
+  custom.push({icon:"video",name,youtube,twitch,twitchChannel,youtubeChannel,category:"custom",language:input.language||"unknown",subcategory:input.subcategory||"",lastRecordingUrl:replay,custom:true} as CatalogItem);
   saveCustom(custom);return true;
 }
 export function removeLiveStreamer(name:string){saveCustom(readCustom().filter(x=>x.name!==name));}
