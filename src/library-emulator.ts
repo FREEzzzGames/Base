@@ -1241,6 +1241,11 @@ async function startGame(game: LibraryGame): Promise<void> {
     filters.hidden = true;
     head.hidden = true;
     root.hidden = false;
+    document.querySelectorAll<HTMLButtonElement>("[data-library-tab]").forEach(button => {
+      const selected = button.dataset.libraryTab === "emulator";
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-selected", String(selected));
+    });
     root.innerHTML = emulatorMarkup(game);
     document.querySelector(".portal-workspace")?.classList.add("portal-emulator-active");
 
