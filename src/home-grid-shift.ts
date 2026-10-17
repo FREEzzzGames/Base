@@ -102,8 +102,8 @@ export function bindHomeGridShift(root: HTMLElement) {
   const chooseSizeFromDelta = (tile: Tile, dx: number, dy: number) => {
     const scale = Math.max(dx, dy);
     const current = SIZES.indexOf(resizeStartSize);
-    const step = scale > 54 ? 2 : scale > 22 ? 1 : 0;
-    tile.dataset.gridSize = SIZES[Math.max(0, Math.min(2, current + (step ? 1 : 0)))];
+    const step = scale > 54 ? 2 : scale > 22 ? 1 : scale < -54 ? -2 : scale < -22 ? -1 : 0;
+    tile.dataset.gridSize = SIZES[Math.max(0, Math.min(2, current + step))];
   };
   const hitTestTile = (x: number, y: number, except: Tile) => {
     let nearest: Tile | null = null, best = Number.POSITIVE_INFINITY;
