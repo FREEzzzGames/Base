@@ -140,19 +140,16 @@ export type ZenithNavigationResult = {
 
 export class ZenithOSKernel {
   private readonly modules: PortalModuleManager;
-  private readonly bus: PortalEventBus;
   private readonly history: PortalView[] = [];
   private readonly maxHistory: number;
   private state: ZenithSystemState;
 
   constructor(options: {
     modules?: PortalModuleManager;
-    bus?: PortalEventBus;
     initial?: Partial<ZenithSystemState>;
     maxHistory?: number;
   } = {}) {
     this.modules = options.modules ?? new PortalModuleManager();
-    this.bus = options.bus ?? new PortalEventBus();
     this.maxHistory = Math.max(1, Math.floor(options.maxHistory ?? 24));
     this.state = {
       view: "home",
