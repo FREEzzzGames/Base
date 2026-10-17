@@ -5,6 +5,13 @@ type Size = typeof SIZES[number];
 type Layout = { order: string[]; sizes: Record<string, Size> };
 const keyOf = (tile: Tile) => tile.dataset.portalBlock || "";
 
+export function calculateHomeGridMetrics(sizes: readonly Size[]): { rows:number; wideIndex:number } {
+  const area = sizes.reduce((total, size) => total + (size === "l" ? 4 : size === "m" ? 2 : 1), 0);
+  const wideIndex = area % 2 === 1 ? sizes.findIndex(size => size === "s") : -1;
+  const filledArea = area + (wideIndex >= 0 ? 1 : 0);
+  return { rows:Math.max(1, filledArea / 2), wideIndex };
+}
+
 function readLayout(): Layout {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Partial<Layout>;
@@ -58,14 +65,12 @@ export function bindHomeGridShift(root: HTMLElement) {
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
   const updateGridMetrics = () => {
-    const area = () => tiles.reduce((total, tile) => total + (tile.dataset.gridSize === "l" ? 4 : tile.dataset.gridSize === "m" ? 2 : 1), 0);
-    tiles.forEach(tile => tile.removeAttribute("data-grid-autofill-wide"));
-    let totalArea = area();
-    if (totalArea % 2 === 1) {
-      const fillTile = tiles.find(tile => tile.dataset.gridSize === "s");
-      if (fillTile) { fillTile.dataset.gridAutofillWide = "true"; totalArea += 1; }
-    }
-    root.style.setProperty("--zenith-grid-rows", String(Math.max(1, totalArea / 2)));
+    const plan = calculateHomeGridMetrics(tiles.map(tile => (tile.dataset.gridSize || "m") as Size));
+    tiles.forEach((tile, index) => {
+      if (index === plan.wideIndex) tile.dataset.gridAutofillWide = "true";
+      else tile.removeAttribute("data-grid-autofill-wide");
+    });
+    root.style.setProperty("--zenith-grid-rows", String(plan.rows));
   };
   updateGridMetrics();
   const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
