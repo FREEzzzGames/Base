@@ -41,6 +41,8 @@ let liveName=getLiveStreams()[0]?.name||streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
 let liveReplay=false;
 let liveOpacity=0.92;
+let radioStatus="idle";
+let radioStationName="";
 type TelegramPopupChat={id:string;title:string;kind:string;username?:string;lastMessage?:{text:string;date:string;outgoing:boolean}};
 type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
 let telegramPopupChat:TelegramPopupChat|null=null;
@@ -142,7 +144,7 @@ function render(){
   if(windows.radio.open){
     out.push('<section class="portal-mw portal-mw-radio '+(focusedWindow==="radio"?"portal-mw-focused":"") + '" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
       '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-focus="radio" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
-      '<div class="portal-mw-radio-body"><span>RADIO</span><div><button data-mw-radio="play">▶</button><button data-mw-radio="pause">Ⅱ</button><button data-mw-radio="stop">■</button></div></div></section>');
+      '<div class="portal-mw-radio-body"><div class="portal-mw-radio-now"><span class="portal-mw-radio-title">'+esc(radioStationName||"INTERNET RADIO")+'</span><span class="portal-mw-radio-state">'+esc(radioStatus.toUpperCase())+'</span></div><div class="portal-mw-wave" data-playing="'+(radioStatus==="playing"?"true":"false")+'" aria-label="Audio playback visualization">'+Array.from({length:18},(_,i)=>'<i style="--bar:'+(i%5+2)+'"></i>').join("")+'</div><div class="portal-mw-radio-controls"><button data-mw-radio="play" aria-label="Play">▶</button><button data-mw-radio="pause" aria-label="Pause">Ⅱ</button><button data-mw-radio="stop" aria-label="Stop">■</button></div></div></section>');
   }
   layer.innerHTML=out.join("");
   bind();
@@ -298,6 +300,7 @@ export function initMultiWindowPortal(){
     windows.live.open=true;fitWindow("live");focus("live");render();
     window.dispatchEvent(new CustomEvent("freezzz:live-window-opened",{detail:{name:liveName,source:liveSource}}));
   });
+  window.addEventListener("freezzz:radio-status",event=>{const detail=(event as CustomEvent<{status?:string;station?:string}>).detail;radioStatus=detail?.status||"idle";radioStationName=detail?.station||"";if(windows.radio.open)render();});
   window.addEventListener("freezzz:close-chat-popup",()=>close("chat"));
   window.addEventListener("freezzz:telegram-chat-sync",event=>{
     const detail=(event as CustomEvent<{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}>).detail;
