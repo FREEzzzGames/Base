@@ -1,4 +1,5 @@
 import { streams } from "./portal-ui";
+import { getLiveStreams } from "./live-catalog";
 import { liveEmbedUrl } from "./live-runtime";
 
 type MiniId = "live" | "chat" | "radio";
@@ -10,8 +11,9 @@ const windows:Record<MiniId,MiniWindow> = {
   radio:{open:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64}
 };
 let nextZ=60;
-let liveName=streams[0]?.name||"";
+let liveName=getLiveStreams()[0]?.name||streams[0]?.name||"";
 let liveSource:"twitch"|"youtube"="twitch";
+let liveOpacity=0.92;
 type TelegramPopupChat={id:string;title:string;kind:string;username?:string;lastMessage?:{text:string;date:string;outgoing:boolean}};
 type TelegramPopupMessage={id:string;senderName:string;text:string;date:string;outgoing:boolean};
 let telegramPopupChat:TelegramPopupChat|null=null;
@@ -60,7 +62,7 @@ function open(id:MiniId){
   if(id==="chat")window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));
   render();
 }
-function close(id:MiniId){windows[id].open=false;render();}
+function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandle(id:MiniId){
   return '<span class="portal-mw-resize portal-mw-resize-se" data-mw-resize="'+id+'" aria-hidden="true"></span>';
@@ -88,14 +90,15 @@ function render(){
   if(!layer)return;
   const out:string[]=[];
   if(windows.live.open){
-    const s=streams.find(x=>x.name===liveName)||streams[0];
+    const candidates=getLiveStreams();
+    const s=candidates.find(x=>x.name===liveName)||candidates[0]||streams[0];
     if(s){
       const src=liveEmbedUrl(s,liveSource,window.location.hostname);
-      out.push('<section class="portal-mw portal-mw-live" data-mw="live" style="left:'+windows.live.x+'px;top:'+windows.live.y+'px;width:'+windows.live.width+'px;height:'+windows.live.height+'px;z-index:'+windows.live.z+'">'+
+      out.push('<section class="portal-mw portal-mw-live" data-mw="live" style="left:'+windows.live.x+'px;top:'+windows.live.y+'px;width:'+windows.live.width+'px;height:'+windows.live.height+'px;z-index:'+Math.max(3001,windows.live.z)+';--live-panel-alpha:'+liveOpacity+'">'+
         '<header class="portal-mw-head" data-mw-drag="live"><strong>📺 '+esc(s.name)+'</strong><div>'+
         '<button data-mw-source="twitch" class="'+(liveSource==="twitch"?"active":"")+'">T</button>'+
         '<button data-mw-source="youtube" class="'+(liveSource==="youtube"?"active":"")+'">Y</button>'+
-        '<button data-mw-close="live">×</button></div></header>'+
+        '<label class="portal-mw-opacity" title="Прозрачность окна">◐<input data-mw-opacity type="range" min="20" max="100" step="5" value="'+Math.round(liveOpacity*100)+'" aria-label="Прозрачность окна"></label><button data-mw-close="live" type="button">×</button></div></header>'+
         '<div class="portal-mw-live-body">'+(src?'<iframe src="'+esc(src)+'" title="'+esc(s.name)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>':'LIVE unavailable')+'</div>'+resizeHandle("live")+'</section>');
     }
   }
@@ -121,6 +124,12 @@ function bind(){
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";render();
   });
+  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("input",event=>{
+    liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
+    const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
+    if(live)live.style.setProperty("--live-panel-alpha",String(liveOpacity));
+  });
+  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("pointerdown",event=>event.stopPropagation());
   layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(e=>e.onpointerdown=()=>focus(e.dataset.mw as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-drag]").forEach(h=>h.onpointerdown=e=>{
     if((e.target as HTMLElement).closest("button"))return;
@@ -221,7 +230,19 @@ function intercept(){
       window.dispatchEvent(new CustomEvent("freezzz:navigate",{detail:{view:id}}));
       return;
     }
-    if(id==="live"&&!liveName)liveName=streams[0]?.name||"";
+    if(id==="live"){
+      const candidates=getLiveStreams();
+      const saved=(()=>{try{return localStorage.getItem("freezzz:live:last-stream")||"";}catch{return "";}})();
+      const selected=candidates.find(s=>s.name===saved)||candidates.find(s=>s.twitchChannel)||candidates.find(s=>s.youtubeChannel)||candidates[0];
+      if(selected){
+        liveName=selected.name;
+        liveSource=selected.twitchChannel?"twitch":"youtube";
+        windows.live.open=true;fitWindow("live");focus("live");render();
+        try{localStorage.setItem("freezzz:live:last-stream",liveName);}catch{}
+        window.dispatchEvent(new CustomEvent("freezzz:live-window-opened",{detail:{name:liveName,source:liveSource}}));
+      }
+      return;
+    }
     toggle(id);
   },true);
 }
@@ -232,6 +253,18 @@ export function initMultiWindowPortal(){
   layer.className="portal-mw-layer";
   document.body.append(layer);
   intercept();
+  window.addEventListener("freezzz:live-window-open",event=>{
+    const detail=(event as CustomEvent<{name:string;source:"twitch"|"youtube"|"replay"}>).detail;
+    if(!detail?.name)return;
+    const item=getLiveStreams().find(s=>s.name===detail.name);
+    if(!item)return;
+    liveName=item.name;
+    if(detail.source==="twitch"||detail.source==="youtube")liveSource=detail.source;
+    else liveSource=item.twitchChannel?"twitch":"youtube";
+    try{localStorage.setItem("freezzz:live:last-stream",item.name);}catch{}
+    windows.live.open=true;fitWindow("live");focus("live");render();
+    window.dispatchEvent(new CustomEvent("freezzz:live-window-opened",{detail:{name:liveName,source:liveSource}}));
+  });
   window.addEventListener("freezzz:close-chat-popup",()=>close("chat"));
   window.addEventListener("freezzz:telegram-chat-sync",event=>{
     const detail=(event as CustomEvent<{chat?:TelegramPopupChat|null;messages?:TelegramPopupMessage[]}>).detail;
