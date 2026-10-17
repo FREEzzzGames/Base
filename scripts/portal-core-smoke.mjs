@@ -14,6 +14,8 @@ assert.ok(multiWindowSource.includes("data-mw-focus"), "floating windows must ex
 assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be reflected in the window state");
 assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1"'), "floating window geometry must have a versioned persistence key");
 assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSource.includes("saveWindowLayout();"), "floating window geometry must be restored and saved");
+assert.ok(multiWindowSource.includes('event.key==="Escape"&&focusedWindow'), "Escape must exit window focus mode");
+assert.ok(multiWindowSource.includes('window.addEventListener("resize"'), "window layout must adapt to viewport changes");
 const gridSource = await readFile(new URL("../src/home-grid-shift.ts", import.meta.url), "utf8");
 assert.ok(gridSource.includes("grid-shift-launch"), "HOME grid editing must have a discoverable launcher");
 assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid editing must be togglable without a long press");
