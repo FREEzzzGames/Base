@@ -245,3 +245,14 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  .home-continue-game{grid-template-columns:20px minmax(0,1fr)!important}
  .grid-shift-panel{position:relative!important;top:auto!important;z-index:8!important}
 }
+
+/* Restore a clean default HOME layout after the previous saved order placed core tiles out of sequence. */
+.home-portal>[data-portal-block="filters"]{grid-column:1/-1;min-width:0;order:2}
+.home-portal>[data-portal-block="hero"]{order:0}
+.home-portal>[data-portal-block="continue"]{order:1}
+.home-portal>[data-portal-block="workspace-widgets"]{order:8;align-self:start}
+.home-portal>[data-portal-block="live"],.home-portal>[data-portal-block="chat"],.home-portal>[data-portal-block="game"],.home-portal>[data-portal-block="radio"],.home-portal>[data-portal-block="library"]{order:3}
+.home-portal>[data-portal-block="continue"]{align-self:start}
+.home-portal>[data-portal-block="hero"]{align-self:start}
+.home-portal>[data-portal-block="filters"] .zenith-home-filters{grid-column:1/-1;width:100%;min-width:0}
+.home-portal>[data-portal-block="continue"] .home-continue-game{min-height:74px}
