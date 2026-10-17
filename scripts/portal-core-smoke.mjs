@@ -26,7 +26,7 @@ assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid e
 assert.ok(mainSource.includes('data-portal-block="hero"') && mainSource.includes('${homeCard("library")}'), "HOME must render the six core ZENITH tiles");
 assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("renderHomeBookmarks") && !mainSource.includes("renderHomeSystem") && !mainSource.includes("renderSignalFeed"), "HOME must not render extra experimental widget layers");
 assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-grid-shift:v7"'), "grid layout schema must be versioned after removing non-tile wrappers");
-assert.ok(gridSource.includes("updateGridMetrics") && gridSource.includes("dataGridAutofillWide"), "resizing must recalculate grid rows and close residual gaps");
+assert.ok(gridSource.includes("updateGridMetrics") && gridSource.includes("gridAutofillWide"), "resizing must recalculate grid rows and close residual gaps");
 assert.ok(gridSource.includes('data-portal-block="library"') && gridSource.includes('data-portal-block="hero"'), "the grid editor must target only real Home tiles");
 assert.ok(multiWindowSource.includes('if(id==="home")') && multiWindowSource.includes('windows[windowId].open=false'), "returning HOME must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
