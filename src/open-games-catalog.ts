@@ -213,7 +213,7 @@ export function bindOpenGamesCatalog(language: CatalogLanguage, rerender: () => 
   });
   document.querySelectorAll<HTMLButtonElement>("[data-open-game-back]").forEach(button => {
     button.addEventListener("click", () => {
-      selectedId = "";
+      stopOpenGamesSession();
       rerender();
     });
   });
