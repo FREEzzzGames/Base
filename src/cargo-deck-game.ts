@@ -32,13 +32,13 @@ let root:HTMLElement|null=null,canvas:HTMLCanvasElement|null=null,ctx:CanvasRend
 let mode:Mode="loadout",sel:LoadoutId="ASSAULT",save:Save=def(),player!:Player,mobs:Mob[]=[],nodes:Node[]=[],core={x:500,y:250,hp:2600,maxHp:2600};
 let bullets:Bullet[]=[],grenades:Grenade[]=[],pickups:Pickup[]=[],effects:{x:number;y:number;text:string;color:string;life:number;vy:number}[]=[],wave=0,kills=0,time=0,waveWait=0,won=false,resultReason="",waveState:"fighting"|"clear"="fighting",waveStart=0,msg="",msgT=0;
 let frame=0,last=0,raf=0,cam=0,viewW=0,viewH=0,worldScale=1,moveX=0,moveY=0,aim=0,auto=true,fireHeld=false,moveId:number|null=null,aimId:number|null=null,ability=0,abilityCd=0,muzzleFlash=0;let cleanup=()=>{};
-let obsCache:HsObstacle[]|null=null,obsFrame=-1;
+const obsCache:HsObstacle[]=[...OBS,...Array.from({length:6},()=>({x:-10000,y:-10000,w:0,h:0}))];
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
 function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch{}}
 function L(){return LOAD[sel]}function weapon(){return HS_WEAPONS[player?.weapon??save.weapon]||HS_WEAPONS[0]}
 function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;return dx*dx+dy*dy<r*r}
-function obstacles(){if(obsCache&&obsFrame===frame)return obsCache;obsCache=OBS.map(o=>({...o}));for(const n of nodes)if(n.hp>0)obsCache.push({x:n.x-34,y:n.y-44,w:68,h:72});obsFrame=frame;return obsCache}
+function obstacles(){for(let i=0;i<6;i++){const n=nodes[i];const o=obsCache[OBS.length+i];if(n&&n.hp>0){o.x=n.x-34;o.y=n.y-44;o.w=68;o.h=72}else{o.x=-10000;o.y=-10000;o.w=0;o.h=0}}return obsCache}
 function move(x:number,y:number,dx:number,dy:number,r:number){const o=obstacles(),steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4)),sx=dx/steps,sy=dy/steps;for(let i=0;i<steps;i++){let nx=Math.max(r,Math.min(W-r,x+sx));if(!o.some(a=>hitCircle(nx,y,r,a)))x=nx;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(Math.max(r,Math.min(W-r,x+sx*m)),y,r,a)))lo=m;else hi=m}x=Math.max(r,Math.min(W-r,x+sx*lo))}let ny=Math.max(180,Math.min(H-r,y+sy));if(!o.some(a=>hitCircle(x,ny,r,a)))y=ny;else{let lo=0,hi=1;for(let k=0;k<7;k++){const m=(lo+hi)/2;if(!o.some(a=>hitCircle(x,Math.max(180,Math.min(H-r,y+sy*m)),r,a)))lo=m;else hi=m}y=Math.max(180,Math.min(H-r,y+sy*lo))}}return[x,y]as const}
 function freePoint(a:number,b:number,r=20){for(let i=0;i<40;i++){const x=70+Math.random()*(W-140),y=a+Math.random()*(b-a);if(!obstacles().some(o=>hitCircle(x,y,r,o))&&Math.hypot(x-player.x,y-player.y)>360)return[x,y]as const}return[500,a+60]as const}
 function reset(){const l=L(),w=HS_WEAPONS[save.weapon]||HS_WEAPONS[0];player={x:500,y:2250,hp:l.hp,maxHp:l.hp,armor:l.armor,facing:-1,medkits:Math.min(5,save.medkits),weapon:save.weapon,combat:createCombatState(w),hit:0,damagePulse:0};ability=abilityCd=0}
@@ -303,7 +303,7 @@ function update(dt:number){
     e.y+=e.vy*dt;
     e.life-=dt;
   }
-  effects=effects.filter(e=>e.life>0);
+  let write=0;for(let i=0;i<effects.length;i++){const e=effects[i];if(e.life>0)effects[write++]=e;}effects.length=write;
 
   const w=weapon(),l=L();
   stepWeapon(player.combat,w,dt);
@@ -324,7 +324,7 @@ function update(dt:number){
   updatePickups(dt);
   updateNodes(dt);
 
-  mobs=mobs.filter(m=>m.hp>0);
+  write=0;for(let i=0;i<mobs.length;i++){const m=mobs[i];if(m.hp>0)mobs[write++]=m;}mobs.length=write;
   resolve();
 
   // Волна заканчивается только после уничтожения всех противников.
@@ -401,7 +401,7 @@ function update(dt:number){
     }
   }
 
-  bullets=bullets.filter(b=>b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80);
+  let write=0;for(let i=0;i<bullets.length;i++){const b=bullets[i];if(b.life>0&&b.x>-80&&b.x<W+80&&b.y>-80&&b.y<H+80)bullets[write++]=b;}bullets.length=write;
 }function updateGrenades(dt:number){for(const g of grenades){
   g.x+=g.vx*dt;g.y+=g.vy*dt;g.vx*=.94;g.vy*=.94;g.life-=dt;
   if(g.life<=0){
@@ -410,7 +410,7 @@ function update(dt:number){
     }
   }
 }
-grenades=grenades.filter(g=>g.life>0)}
+let write=0;for(let i=0;i<grenades.length;i++){const g=grenades[i];if(g.life>0)grenades[write++]=g;}grenades.length=write}
 function updatePickups(dt:number){for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(player.x-p.x,player.y-p.y)>40)continue;if(p.kind==="medkit"){if(player.medkits>=5)continue;player.medkits++;save.medkits=player.medkits;msg="АПТЕЧКА +1";msgT=60}else if(typeof p.weapon==="number"){if(!save.inventory.includes(p.weapon)){save.inventory.push(p.weapon);msg="ОРУЖИЕ ДОБАВЛЕНО · "+HS_WEAPONS[p.weapon].name}else{player.combat.reserve=Math.min(player.combat.reserve+HS_WEAPONS[p.weapon].magazine*2,HS_WEAPONS[p.weapon].magazine*12);msg="БОЕПРИПАСЫ · "+HS_WEAPONS[p.weapon].name}msgT=80;persist()}pickups.splice(i,1)}if(frame%360===0&&pickups.length<10)spawnPickup()}
 function updateNodes(dt:number){
   const o=obstacles();
