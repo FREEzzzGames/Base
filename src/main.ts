@@ -60,6 +60,7 @@ const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRo
 let view:View=initialView;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 const T=(key:string)=>pt(lang,key);
+try{document.documentElement.lang=lang.toLowerCase();}catch{}
 function safeModuleContent(moduleView:Exclude<PortalView,"home">,renderContent:()=>string,fallbackOverride?:string):string{
   const fallback=fallbackOverride??`<section class="module-fallback" role="status"><p>${escapeHtml(T("moduleUnavailable"))}</p><button type="button" data-module-retry>${escapeHtml(T("retry"))}</button></section>`;
   return moduleManager.runIsolated(moduleView,renderContent,fallback);
@@ -902,8 +903,25 @@ function bind(){
     const url=stream?(popup?.source==="twitch"?stream.twitch:popup?.source==="replay"?stream.lastRecordingUrl:stream.youtube):"";
     if(url)openExternalUrl(url);
   });
-  document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();languageMenuOpen=!languageMenuOpen;render();});
-  document.querySelectorAll<HTMLElement>("[data-lang]").forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();lang=(["RU","DE","EN"] as const).includes(x.dataset.lang as Language)?(x.dataset.lang as Language):"RU";languageMenuOpen=false;try{localStorage.setItem("freezzz:language",lang);}catch{};render();};});
+  document.querySelector<HTMLElement>("[data-language-toggle]")?.addEventListener("click",function(e){
+    e.preventDefault();e.stopPropagation();
+    languageMenuOpen=!languageMenuOpen;
+    render();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-lang]").forEach(button=>{
+    button.addEventListener("click",event=>{
+      event.preventDefault();event.stopPropagation();
+      const next=button.dataset.lang;
+      if(next!=="RU"&&next!=="DE"&&next!=="EN")return;
+      if(lang===next){languageMenuOpen=false;render();return;}
+      lang=next;
+      portalState.language=next;
+      languageMenuOpen=false;
+      try{localStorage.setItem("freezzz:language",next);}catch{}
+      document.documentElement.lang=next.toLowerCase();
+      render();
+    });
+  });
   document.querySelectorAll<HTMLElement>("[data-url]").forEach(function(x){
     x.onclick=function(e){
       e.preventDefault();
