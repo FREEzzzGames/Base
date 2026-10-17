@@ -11,18 +11,18 @@ const DAILY_HOUR_UTC = Number.isInteger(Number(process.env.LIVE_REFRESH_HOUR_UTC
 const CATEGORIES = ["gaming","entertainment","music","education","technology","lifestyle","sports","creativity"];
 const LANGUAGES = ["uk","ru","en","de","unknown"];
 const SEED = [
-  ["leb1ga","Leb1ga","uk","gaming","Mobile Legends","twitch"],
-  ["dendi","Dendi","en","gaming","MOBA","twitch"],
-  ["rolex9","Vitaliy Kushnyryk","uk","gaming","Mobile Legends","twitch"],
-  ["papaplatte","Papaplatte","de","entertainment","Just Chatting","twitch"],
-  ["montanablack88","MontanaBlack88","de","entertainment","Just Chatting","twitch"],
-  ["trymacs","Trymacs","de","gaming","Gaming","twitch"],
-  ["smetanduck","SMETANA","ru","gaming","Mobile Legends","twitch"],
-  ["titamin1","titamin1","ru","gaming","Mobile Legends","twitch"],
-  ["dunkelsch4tten","Dunkelsch4tten","de","gaming","Gaming","twitch"],
-  ["buster","Buster","ru","gaming","Gaming","twitch"],
-  ["marmok_twitch","Marmok","ru","entertainment","Gaming videos","twitch"],
-  ["zubarefff","ZUBAREFFF","ru","entertainment","Just Chatting","twitch"]
+  ["leb1ga","Leb1ga","uk","gaming","Mobile Legends","https://www.youtube.com/@leb1ga"],
+  ["dendi","Dendi","en","gaming","MOBA","https://www.youtube.com/@Dendi"],
+  ["rolex9","Vitaliy Kushnyryk","uk","gaming","Mobile Legends","https://www.youtube.com/@rolex9"],
+  ["papaplatte","Papaplatte","de","entertainment","Just Chatting","https://www.youtube.com/channel/UCDmbhGe7-wC1a55l5ZYAZJw"],
+  ["montanablack88","MontanaBlack88","de","entertainment","Just Chatting","https://www.youtube.com/@montanablack"],
+  ["trymacs","Trymacs","de","gaming","Gaming","https://www.youtube.com/channel/UC6Gc4KQ1ueDnh8x7plaAD3w"],
+  ["smetanduck","SMETANA","ru","gaming","Mobile Legends","https://www.youtube.com/@smetanaml"],
+  ["titamin1","titamin1","ru","gaming","Mobile Legends","https://www.youtube.com/@titamin1"],
+  ["dunkelsch4tten","Dunkelsch4tten","de","gaming","Gaming","https://www.youtube.com/@dunkelsch4tten"],
+  ["buster","Buster","ru","gaming","Gaming","https://www.youtube.com/@slavabuster"],
+  ["marmok_twitch","Marmok","ru","entertainment","Gaming videos","https://www.youtube.com/@MarmokLive"],
+  ["zubarefff","ZUBAREFFF","ru","entertainment","Just Chatting","https://www.youtube.com/@zubarefff11"]
 ].map(([twitchLogin,name,language,category,subcategory])=>({
   id:"twitch:"+twitchLogin, name, language, category, subcategory,
   platforms:{twitch:{login:twitchLogin,url:"https://www.twitch.tv/"+twitchLogin},youtube:null},
