@@ -1,5 +1,5 @@
 type Tile = HTMLElement;
-const STORAGE_KEY = "freezzz:home-grid-shift:v6";
+const STORAGE_KEY = "freezzz:home-grid-shift:v7";
 const SIZES = ["s", "m", "l"] as const;
 type Size = typeof SIZES[number];
 type Layout = { order: string[]; sizes: Record<string, Size> };
@@ -45,11 +45,11 @@ function animateReflow(tiles: Tile[], change: () => void) {
 
 export function bindHomeGridShift(root: HTMLElement) {
   if (root.dataset.gridShiftBound === "true") return;
-  const tiles = [...root.querySelectorAll<Tile>(":scope > [data-portal-block]")];
+  const tiles = [...root.querySelectorAll<Tile>(':scope > [data-portal-block="hero"], :scope > [data-portal-block="live"], :scope > [data-portal-block="chat"], :scope > [data-portal-block="game"], :scope > [data-portal-block="radio"], :scope > [data-portal-block="library"]')];
   if (tiles.length < 2) return;
   root.dataset.gridShiftBound = "true";
   const originalOrder = new Map(tiles.map((tile, index) => [keyOf(tile), index]));
-  const defaults: Record<string, Size> = { hero: "l", continue: "m", game: "l", live: "m", chat: "m", radio: "m", library: "m" };
+  const defaults: Record<string, Size> = { hero: "l", game: "m", live: "m", chat: "m", radio: "m", library: "l" };
   const saved = readLayout();
   tiles.forEach(tile => {
     const key = keyOf(tile);
@@ -57,6 +57,8 @@ export function bindHomeGridShift(root: HTMLElement) {
     tile.style.order = String(saved.order.includes(key) ? saved.order.indexOf(key) : (originalOrder.get(key) ?? 0));
   });
   const ordered = () => [...tiles].sort((a, b) => Number(a.style.order || 0) - Number(b.style.order || 0));
+  const updateGridMetrics = () => root.style.setProperty("--zenith-grid-rows", String(tiles.reduce((rows, tile) => rows + (tile.dataset.gridSize === "l" ? 2 : 1), 0)));
+  updateGridMetrics();
   const applyOrder = (list: Tile[]) => list.forEach((tile, index) => { tile.style.order = String(index); });
   const launcher = document.createElement("button");
   launcher.className = "grid-shift-launch";
@@ -84,12 +86,12 @@ export function bindHomeGridShift(root: HTMLElement) {
     order: ordered().map(keyOf),
     sizes: Object.fromEntries(tiles.map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size]))
   });
-  const commit = () => saveLayout(root, tiles);
+  const commit = () => { updateGridMetrics(); saveLayout(root, tiles); };
   const restore = (state: Layout) => {
     const lookup = new Map(tiles.map(tile => [keyOf(tile), tile]));
     animateReflow(tiles, () => {
       applyOrder(state.order.map(key => lookup.get(key)).filter((tile): tile is Tile => Boolean(tile)).concat(tiles.filter(tile => !state.order.includes(keyOf(tile)))));
-      tiles.forEach(tile => { tile.dataset.gridSize = state.sizes[keyOf(tile)] || defaults[keyOf(tile)] || "m"; });
+      tiles.forEach(tile => { const size=state.sizes[keyOf(tile)]; tile.dataset.gridSize = size && SIZES.includes(size) ? size : defaults[keyOf(tile)] || "m"; });
     });
     commit();
   };
@@ -186,6 +188,7 @@ export function bindHomeGridShift(root: HTMLElement) {
       if (resizing) {
         tile.classList.add("grid-shift-resizing");
         chooseSizeFromDelta(tile, lastX - startX, lastY - startY);
+        updateGridMetrics();
       } else if (dragging) {
         tile.style.setProperty("--grid-drag-x", `${lastX - startX}px`);
         tile.style.setProperty("--grid-drag-y", `${lastY - startY}px`);
@@ -227,6 +230,7 @@ export function bindHomeGridShift(root: HTMLElement) {
     animateReflow(tiles, () => {
       tiles.forEach(tile => { tile.style.order = String(originalOrder.get(keyOf(tile)) ?? 0); tile.dataset.gridSize = defaults[keyOf(tile)] || "m"; });
     });
+    updateGridMetrics();
     setEditing(false);
   });
 }
