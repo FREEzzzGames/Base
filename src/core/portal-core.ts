@@ -180,11 +180,7 @@ export class ZenithOSKernel {
     if (next === previous) {
       return { accepted: true, previous, current: previous, reason };
     }
-    if (reason === "back") {
-      const index = this.history.lastIndexOf(next);
-      if (index >= 0) this.history.splice(index);
-      else this.history.length = 0;
-    } else if (reason === "user" && previous !== "home") {
+    if (reason === "user" && previous !== "home") {
       this.history.push(previous);
       if (this.history.length > this.maxHistory) this.history.splice(0, this.history.length - this.maxHistory);
     }
