@@ -98,10 +98,10 @@ async function load(){
   }
   try{
     const parsed=JSON.parse(await fs.readFile(DATA_PATH,"utf8"));
-    store={schemaVersion:1,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
+    store={schemaVersion:2,creators:Array.isArray(parsed.creators)?parsed.creators:[],snapshots:Array.isArray(parsed.snapshots)?parsed.snapshots:[],rankings:Array.isArray(parsed.rankings)?parsed.rankings:[],publishedRankings:Array.isArray(parsed.publishedRankings)?parsed.publishedRankings:[],publishedMonth:parsed.publishedMonth||null,publishedAt:parsed.publishedAt||null,lastDailyRefresh:parsed.lastDailyRefresh||null,lastMonthlyReview:parsed.lastMonthlyReview||null};
   }catch(e){
     if(e?.code!=="ENOENT")console.error("[LIVE] store read failed",e?.message||e);
-    store={schemaVersion:1,creators:SEED,snapshots:[],rankings:[],lastDailyRefresh:null,lastMonthlyReview:null};
+    store={schemaVersion:2,creators:SEED,snapshots:[],rankings:[],publishedRankings:[],publishedMonth:null,publishedAt:null,lastDailyRefresh:null,lastMonthlyReview:null};
     await persist();
   }
   return store;
