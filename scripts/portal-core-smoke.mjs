@@ -28,6 +28,13 @@ assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("r
 assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-grid-shift:v7"'), "grid layout schema must be versioned after removing non-tile wrappers");
 assert.ok(gridSource.includes("updateGridMetrics") && gridSource.includes("gridAutofillWide"), "resizing must recalculate grid rows and close residual gaps");
 assert.ok(gridSource.includes('data-portal-block="library"') && gridSource.includes('data-portal-block="hero"'), "the grid editor must target only real Home tiles");
+const gridRuntime = await import("data:text/javascript;base64," + Buffer.from(ts.transpileModule(gridSource, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext }
+}).outputText).toString("base64"));
+assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","m","m","m","m","l"]), { rows:8, wideIndex:-1 }, "the default HOME grid must fill eight mobile tracks exactly");
+assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","s","m","m","m","l"]), { rows:8, wideIndex:1 }, "an odd-sized layout must widen one small tile to close the final half-row");
+assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["s","s","s","s","s","s"]), { rows:3, wideIndex:-1 }, "all-small tiles must pack into three full rows");
+assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","l","l","l","l","l"]), { rows:12, wideIndex:-1 }, "all-large tiles must get a matching row count");
 assert.ok(multiWindowSource.includes('if(el.closest(".portal-toolbar"))') && multiWindowSource.includes("windows[windowId].open=false"), "top-level navigation must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
