@@ -10003,3 +10003,20 @@ button:disabled,[aria-disabled="true"]{
   .portal-toolbar-item{min-height:48px!important;height:48px!important}
   .portal-toolbar-main{min-height:56px!important}
 }
+
+
+/* Neutralize legacy first-tab highlighting; active state belongs only to current view. */
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-nav > .portal-toolbar-item:first-child{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-nav > .portal-toolbar-item:first-child .portal-toolbar-icon{
+  filter:none!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-nav > .portal-toolbar-item:first-child.active{
+  background:rgba(102,252,241,.07)!important;
+}
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-nav > .portal-toolbar-item:first-child.active .portal-toolbar-icon{
+  filter:none!important;
+}
