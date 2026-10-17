@@ -306,3 +306,68 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  .home-portal[data-portal-layout="home"]>[data-portal-block="game"],
  .home-portal[data-portal-layout="home"]>[data-portal-block="radio"]{min-height:112px!important}
 }
+
+/* ZENITH OS — single layout authority. Disable legacy stacked HOME geometry. */
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]{
+ display:grid!important;position:relative!important;inset:auto!important;float:none!important;
+ width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;
+ margin:0!important;padding:6px 6px calc(88px + env(safe-area-inset-bottom,0px))!important;
+ box-sizing:border-box!important;overflow:visible!important;contain:none!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;
+ grid-auto-flow:row!important;grid-auto-rows:auto!important;grid-template-areas:none!important;
+ align-content:start!important;align-items:stretch!important;justify-items:stretch!important;gap:8px!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block]{
+ display:block!important;position:relative!important;inset:auto!important;float:none!important;
+ grid-area:auto!important;grid-row:auto!important;grid-column:auto!important;order:initial!important;
+ transform:none!important;translate:none!important;width:auto!important;height:auto!important;
+ min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;
+ margin:0!important;box-sizing:border-box!important;align-self:stretch!important;justify-self:stretch!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"],
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="filters"],
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"]{
+ grid-column:1/-1!important;grid-row:auto!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"]{
+ display:block!important;min-height:190px!important;aspect-ratio:auto!important;overflow:hidden!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="continue"]{
+ grid-column:1/-1!important;min-height:72px!important;overflow:hidden!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"]{
+ display:grid!important;position:relative!important;grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:none!important;grid-auto-rows:auto!important;gap:8px!important;overflow:visible!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"]>[data-portal-block]{
+ display:block!important;position:relative!important;inset:auto!important;grid-column:1/-1!important;
+ grid-row:auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ margin:0!important;overflow:hidden!important;transform:none!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="live"],
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="chat"],
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="game"],
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="radio"]{
+ grid-column:span 1!important;grid-row:auto!important;min-height:125px!important;height:auto!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="library"]{
+ grid-column:1/-1!important;grid-row:auto!important;min-height:180px!important;height:auto!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-hero-content{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-card-background-video,
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-card-background-overlay{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none!important;
+}
+.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-card-content{
+ position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:0!important;
+}
+@media(max-width:520px){
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:5px 5px calc(88px + env(safe-area-inset-bottom,0px))!important}
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"]{min-height:170px!important}
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="live"],
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="chat"],
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="game"],
+ .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="radio"]{min-height:112px!important}
+}
