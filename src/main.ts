@@ -733,10 +733,6 @@ moduleManager.registerAdapter("radio",{});
 moduleManager.registerAdapter("library",{
   onDeactivate:()=>stopLibraryEmulator()
 });
-moduleManager.registerAdapter("game",{
-  onActivate:()=>beginGameActivity(),
-  onDeactivate:()=>endGameActivity()
-});
 moduleManager.registerAdapter("echo9",{});
 portalEvents.on("navigation:changed",payload=>{
   if(payload.view!==view){
