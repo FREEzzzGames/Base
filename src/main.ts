@@ -8,7 +8,7 @@ import { portalVideoUrl } from "./video-assets";
 import { PORTAL_BUILD_ID } from "./build-info";
 import { icon, streams, streamAvatarSources } from "./portal-ui";
 import { bindTelegramBackButton, getTelegramWebApp, initTelegramBridge, openExternalUrl, verifyTelegramSession, type TelegramAuthResult, type TelegramVerifiedIdentity } from "./platform-bridge";
-import { renderLivePopups, type LivePopupState, type LiveSource } from "./live-runtime";
+import { type LivePopupState, type LiveSource } from "./live-runtime";
 import { bindLiveCatalog, getLiveStreams, removeLiveStreamer, renderLiveCatalog } from "./live-catalog";
 
 import { PortalModuleManager, PortalEventBus, createPlatformState, type PortalView } from "./core/portal-core";
