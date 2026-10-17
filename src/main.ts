@@ -424,6 +424,7 @@ function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
   radioPlaybackStatus=status;
   portalEvents.emit("radio:playback",{status});
   window.dispatchEvent(new CustomEvent("freezzz:radio-status",{detail:{status,station:radioAudio?.dataset.station||""}}));
+  const audioSignal=document.querySelector<HTMLElement>('[data-portal-block="signal-feed"] .zenith-signal-row:nth-of-type(2)');if(audioSignal){const label=audioSignal.querySelector("b");if(label)label.textContent=status.toUpperCase();const dot=audioSignal.querySelector("i");if(dot)dot.classList.toggle("is-on",status==="playing");}
 }
 
 function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;livePopups=[{key:name+"::"+source,name,source}];beginLiveActivity(name);if(radioAudio){radioAudio.pause();endRadioActivity();}window.dispatchEvent(new CustomEvent("freezzz:live-window-open",{detail:{name,source}}));portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});}
