@@ -39,7 +39,7 @@ const SEED = [
 }));
 
 let store = null;
-const liveSuggestionBuckets = new Map();\nconst liveSuggestionBuckets = new Map();
+const liveSuggestionBuckets = new Map();
 let syncInFlight = null;
 let lastSyncError = null;
 let twitchToken = "";
