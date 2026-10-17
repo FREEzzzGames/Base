@@ -36,6 +36,11 @@ jobs:
 
       - run: npm install
 
+      - name: Test server-side LIVE monthly ranking logic
+        run: |
+          npm --prefix server install
+          npm --prefix server test
+
       - name: Source integrity preflight
         shell: bash
         run: |
