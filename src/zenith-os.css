@@ -513,3 +513,40 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
     grid-template-rows:minmax(86px,.75fr) repeat(2,minmax(0,1fr)) minmax(0,1fr)!important;
   }
 }
+
+/* ZENITH OS GRID AUTOFILL: resized tiles must reflow into every available cell. */
+@media(max-width:700px){
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]{
+    grid-auto-flow:row dense!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(7,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(0,1fr)!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"]{
+    grid-column:1/-1!important;grid-row:span 2!important;order:0!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="live"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="chat"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="game"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="radio"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="library"]{
+    grid-row:auto!important;grid-column:auto!important;min-height:0!important;height:auto!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="s"]{
+    grid-column:span 1!important;grid-row:span 1!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-grid-size="m"]{
+    grid-column:span 1!important;grid-row:span 1!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-grid-size="l"]{
+    grid-column:1/-1!important;grid-row:span 2!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="filters"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="system"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="signal-feed"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="continue"]{display:none!important}
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"].grid-shift-editing{
+    grid-auto-flow:row dense!important;grid-template-rows:repeat(7,minmax(0,1fr))!important;
+  }
+}
