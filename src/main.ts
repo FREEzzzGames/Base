@@ -512,7 +512,7 @@ function render(){
           </div>
         </section>
         ${(()=>{const last=getLastPlayedGameSummary();return last?'<section class="portal-block home-card home-continue-tile" data-portal-block="continue" aria-label="'+escapeHtml(T("continueGame"))+'"><button class="home-continue-game" data-resume-last-game type="button">'+icon("play","home-continue-icon")+'<span>'+escapeHtml(T("continueGame"))+'</span><strong>'+escapeHtml(last.name)+'</strong></button></section>':"";})()}
-        ${renderHomeFilterBar()}
+        <div data-portal-block="filters">${renderHomeFilterBar()}</div>
         <div class="zenith-home-widgets" data-portal-block="workspace-widgets">${renderHomeBookmarks()}${renderHomeSystem()}</div>
         ${homeCard("live")}
         ${homeCard("chat")}
