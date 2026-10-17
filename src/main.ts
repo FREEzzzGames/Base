@@ -409,6 +409,7 @@ function mountPersistentBackgroundVideos(){
 function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
   radioPlaybackStatus=status;
   portalEvents.emit("radio:playback",{status});
+  window.dispatchEvent(new CustomEvent("freezzz:radio-status",{detail:{status,station:radioAudio?.dataset.station||""}}));
 }
 
 function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;livePopups=[{key:name+"::"+source,name,source}];beginLiveActivity(name);if(radioAudio){radioAudio.pause();endRadioActivity();}window.dispatchEvent(new CustomEvent("freezzz:live-window-open",{detail:{name,source}}));portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});}
