@@ -437,25 +437,26 @@ function renderProfileCard(){
 }
 function renderPortalToolbar(){
   const items:Array<[View,string,string]>=[
+    ["game","game","GAME"],
     ["live","video","LIVE"],
     ["chat","chat","CHAT"],
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"]
   ];
-  return `<nav class="portal-toolbar" aria-label="FREEzzz navigation">
-    ${persistentBackgroundVideo("hud",portalVideoUrl("hud"),"portal-toolbar-background-video")}
+  return `<header class="portal-topbar">
+    <button class="portal-top-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("profile","portal-top-profile-icon")}</button>
+    <div class="portal-top-brand"><strong>FREEzzzPortal</strong><span>good games. good people</span></div>
+    <div class="portal-top-languages" role="group" aria-label="${T("language")}">
+      <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
+      <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
+      <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
+    </div>
+  </header>
+  <nav class="portal-toolbar" aria-label="FREEzzz navigation">
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
-        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}</button>`).join("")}
-        <div class="portal-toolbar-language-wrap">
-          <button class="portal-toolbar-language-button" data-language-toggle type="button" aria-label="${T("language")}" title="${T("language")}" aria-expanded="${languageMenuOpen}">${icon("languages","portal-toolbar-icon")}</button>
-          <div class="portal-toolbar-language-menu" data-language-menu ${languageMenuOpen?"":"hidden"}>
-            <button type="button" data-lang="RU" class="${lang==="RU"?"active":""}" aria-pressed="${lang==="RU"}">RU</button>
-            <button type="button" data-lang="DE" class="${lang==="DE"?"active":""}" aria-pressed="${lang==="DE"}">DE</button>
-            <button type="button" data-lang="EN" class="${lang==="EN"?"active":""}" aria-pressed="${lang==="EN"}">EN</button>
-          </div>
-        </div>
+        ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
       </div>
     </div>
   </nav>`;
