@@ -9773,3 +9773,42 @@ body:has(.library-emulator-root:not([hidden])) .visual-comfort-control{
   background:rgba(255,32,32,.28)!important;
   outline:1px solid rgba(255,32,32,.55)!important;
 }
+
+
+/* Library has separate CATALOG and EMULATOR tabs; emulator never sits below the game grid. */
+.library-mode-tabs{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin:10px 0 14px!important;
+}
+.library-mode-tabs [data-library-tab]{
+  min-height:40px!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-radius:9px!important;
+  background:rgba(8,12,18,.92)!important;
+  color:#ddd!important;
+  font:700 12px/1.1 "Space Mono",monospace!important;
+  letter-spacing:.08em!important;
+}
+.library-mode-tabs [data-library-tab].active{
+  color:#fff!important;
+  border-color:#ff2020!important;
+  background:rgba(255,32,32,.18)!important;
+}
+.library-portal [hidden]{display:none!important}
+.library-emulator-root[hidden]{display:none!important}
+.library-emulator-root:not([hidden]){
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.library-emulator-root .freezzz-emulator-host{
+  width:100%!important;
+  max-width:none!important;
+  min-height:0!important;
+  margin:0!important;
+  border-radius:12px!important;
+}
