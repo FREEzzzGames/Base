@@ -38,7 +38,7 @@ const SEED = [
   source:"seed",verified:false,addedAt:new Date().toISOString()
 }));
 
-let store = null;
+let store = null;\nconst liveSuggestionBuckets = new Map();
 let syncInFlight = null;
 let lastSyncError = null;
 let twitchToken = "";
