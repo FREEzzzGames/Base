@@ -26,6 +26,10 @@ assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid e
 assert.ok(mainSource.includes("HOME_BOOKMARK_KEY"), "HOME bookmarks must persist in local storage");
 assert.ok(mainSource.includes("data-bookmark-open"), "HOME bookmarks must navigate to real portal modules");
 assert.ok(mainSource.includes("renderHomeSystem()"), "HOME must expose live system status");
+assert.ok(mainSource.includes('HOME_FILTER_KEY="freezzz:zenith:home-filter:v1"'), "HOME filters must persist selected category");
+assert.ok(mainSource.includes('data-home-filter="'+id) || mainSource.includes("data-home-filter"), "HOME must expose DISCOVER/AUDIO/VIDEO/FEEDS filters");
+assert.ok(mainSource.includes("function applyHomeFilter()") && mainSource.includes("applyHomeFilter();"), "HOME filters must change visible content");
+assert.ok(mainSource.includes("function renderSignalFeed()") && mainSource.includes("data-system-utc"), "SIGNAL FEED must display live telemetry and UTC time");
 assert.ok(mainSource.includes("data-system-clock"), "system widget must display the current local clock");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
 assert.ok(multiWindowSource.includes("portal-mw-wave"), "floating radio must expose an audio visualization");
