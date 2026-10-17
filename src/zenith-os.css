@@ -114,3 +114,15 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
  .grid-shift-launch{min-height:38px;font-size:10px}
  .grid-shift-panel{top:0}
 }
+
+
+/* Focus mode expands a floating app without discarding its normal window geometry. */
+.portal-mw.portal-mw-focused{
+  position:fixed!important;inset:max(6px,env(safe-area-inset-top)) 6px max(6px,env(safe-area-inset-bottom))!important;
+  width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;
+  z-index:9999!important;border-color:#777!important;border-radius:7px!important;
+}
+.portal-mw.portal-mw-focused .portal-mw-live-body,
+.portal-mw.portal-mw-focused .portal-mw-chat-list{min-height:0!important}
+.portal-mw [data-mw-focus]{min-width:34px;min-height:34px;border:1px solid #343434;border-radius:4px;background:#111;color:#ddd}
+.portal-mw.portal-mw-focused .portal-mw-head{cursor:default}
