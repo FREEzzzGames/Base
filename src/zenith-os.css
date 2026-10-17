@@ -364,3 +364,73 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="filters"],
 .portal-workspace.portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="workspace-widgets"]{grid-column:1/-1!important}
 .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"].grid-shift-editing>[data-portal-block]{transition:none!important}
+
+
+/* ZENITH OS — final HOME viewport contract. HOME is a fixed dashboard, not a scrolling web page. */
+@media (max-width: 700px) {
+  html, body, #app, .app, .app-shell {
+    width:100%!important; max-width:100%!important; height:100%!important; min-height:0!important;
+    margin:0!important; overflow:hidden!important; overscroll-behavior:none!important;
+  }
+  .app-shell {
+    height:100dvh!important; max-height:100dvh!important;
+    display:flex!important; flex-direction:column!important;
+    padding-top:env(safe-area-inset-top,0px)!important;
+    padding-bottom:env(safe-area-inset-bottom,0px)!important;
+    box-sizing:border-box!important;
+  }
+  .portal-topbar { flex:0 0 auto!important; min-height:46px!important; padding-top:5px!important; padding-bottom:5px!important; }
+  .portal-workspace { flex:1 1 auto!important; min-height:0!important; height:auto!important; overflow:hidden!important; }
+  .portal-workspace>main { height:100%!important; min-height:0!important; overflow:hidden!important; }
+  .portal-toolbar { flex:0 0 auto!important; position:relative!important; }
+  .portal-toolbar-nav { padding:2px!important; }
+  .portal-toolbar-item { min-height:42px!important; }
+  .portal-toolbar-label { font-size:7px!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] {
+    width:100%!important; height:100%!important; min-height:0!important; max-height:100%!important;
+    padding:6px!important; margin:0!important; overflow:hidden!important;
+    display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows: minmax(86px, .85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)!important;
+    grid-auto-rows:0!important; gap:6px!important; align-content:stretch!important;
+    box-sizing:border-box!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] {
+    grid-column:1/-1!important; grid-row:1!important; min-height:0!important; height:100%!important;
+    padding:8px!important; border-radius:6px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] .home-hero-content {
+    display:grid!important; grid-template-columns:minmax(0,1fr) auto!important; grid-template-rows:auto 1fr auto!important;
+    gap:4px!important; padding:4px!important; height:100%!important; min-height:0!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] .home-hero-top { grid-column:1/-1!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] .home-hero-brand { gap:6px!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] .home-hero-kicker { padding:3px 6px!important; font-size:9px!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] .home-hero-clock { font-size:clamp(15px,4.5vw,24px)!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] h1.home-hero-profile-trigger {
+    grid-column:1/-1!important; grid-row:2!important; margin:0!important; font-size:clamp(24px,7vw,38px)!important;
+    line-height:1!important; align-self:center!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="hero"] p {
+    grid-column:1/-1!important; grid-row:3!important; font-size:9px!important; line-height:1.1!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="continue"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="filters"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="workspace-widgets"] { display:none!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="live"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="chat"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="game"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="radio"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="library"] {
+    display:block!important; grid-column:span 1!important; min-width:0!important; min-height:0!important;
+    height:100%!important; max-height:none!important; padding:8px!important; overflow:hidden!important;
+    border-radius:6px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="live"] { grid-column:1!important; grid-row:2!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="chat"] { grid-column:2!important; grid-row:2!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="game"] { grid-column:1!important; grid-row:3!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="radio"] { grid-column:2!important; grid-row:3!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>[data-portal-block="library"] { grid-column:1/-1!important; grid-row:4!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-title { padding:6px!important; font-size:clamp(13px,4vw,22px)!important; }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-video,
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal .home-card-background-overlay { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; }
+}
