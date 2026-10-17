@@ -402,6 +402,8 @@ function setRadioPlaybackStatus(status:typeof radioPlaybackStatus){
 
 function openLivePopup(name:string,source:LiveSource="twitch"):void{if(!name)return;livePopups=[{key:name+"::"+source,name,source}];beginLiveActivity(name);if(radioAudio){radioAudio.pause();endRadioActivity();}window.dispatchEvent(new CustomEvent("freezzz:live-window-open",{detail:{name,source}}));portalEvents.emit("live:popup",{open:true,source:source==="replay"?"youtube":source});}
 function closeLivePopup(key?:string):void{const popup=key?livePopups.find(p=>p.key===key):livePopups[livePopups.length-1];if(!popup)return;livePopups=livePopups.filter(p=>p.key!==popup.key);if(!livePopups.some(p=>p.name===popup.name))endLiveActivity(popup.name);portalEvents.emit("live:popup",{open:Boolean(livePopups.length),source:popup.source==="replay"?"youtube":popup.source});render();}
+window.addEventListener("freezzz:live-window-opened",event=>{const detail=(event as CustomEvent<{name:string;source:LiveSource}>).detail;if(!detail?.name)return;livePopups=[{key:detail.name+"::"+detail.source,name:detail.name,source:detail.source}];beginLiveActivity(detail.name);if(radioAudio){radioAudio.pause();endRadioActivity();}});
+window.addEventListener("freezzz:live-window-closed",event=>{const detail=(event as CustomEvent<{name?:string}>).detail;const popup=detail?.name?livePopups.find(p=>p.name===detail.name):livePopups[livePopups.length-1];if(popup)closeLivePopup(popup.key);});
 function flushActivityTracking(){
   const now=Date.now();
   const elapsed=Math.max(0,(now-activityLastFlushAt)/1000);
