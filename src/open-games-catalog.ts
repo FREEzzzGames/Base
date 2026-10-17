@@ -144,7 +144,7 @@ function renderCards(lang: CatalogLanguage): string {
   return cards || `<p class="open-game-empty">${esc(copy(lang, "empty"))}</p>`;
 }
 
-export function renderOpenGamesCatalog(language: CatalogLanguage, buildId: string): string {
+export function renderOpenGamesCatalog(language: CatalogLanguage): string {
   const t = (key: string) => esc(copy(language, key));
   if (selectedId) {
     const entry = ENTRIES.find(item => item.id === selectedId);
