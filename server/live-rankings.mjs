@@ -23,9 +23,9 @@ const SEED = [
   ["buster","Buster","ru","gaming","Gaming","https://www.youtube.com/@slavabuster"],
   ["marmok_twitch","Marmok","ru","entertainment","Gaming videos","https://www.youtube.com/@MarmokLive"],
   ["zubarefff","ZUBAREFFF","ru","entertainment","Just Chatting","https://www.youtube.com/@zubarefff11"]
-].map(([twitchLogin,name,language,category,subcategory])=>({
+].map(([twitchLogin,name,language,category,subcategory,youtubeUrl])=>({
   id:"twitch:"+twitchLogin, name, language, category, subcategory,
-  platforms:{twitch:{login:twitchLogin,url:"https://www.twitch.tv/"+twitchLogin},youtube:null},
+  platforms:{twitch:{login:twitchLogin,url:"https://www.twitch.tv/"+twitchLogin},youtube:{url:youtubeUrl}},
   source:"seed",verified:false,addedAt:new Date().toISOString()
 }));
 
