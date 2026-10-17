@@ -508,7 +508,7 @@ function render(){
   }
 
   if(view==="game"){
-    body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang,PORTAL_BUILD_ID));
+    body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang));
   }
   if(view==="radio"){
     const selectedStation=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
