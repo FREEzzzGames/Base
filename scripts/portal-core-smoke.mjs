@@ -13,6 +13,10 @@ assert.ok(mainSource.includes('"freezzz:live-window-open"') && multiWindowSource
 assert.ok(multiWindowSource.includes("data-mw-focus"), "floating windows must expose focus-mode controls");
 assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be reflected in the window state");
 assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1"'), "floating window geometry must have a versioned persistence key");
+assert.ok(multiWindowSource.includes('WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1"'), "workspace settings must persist with a versioned key");
+assert.ok(multiWindowSource.includes("data-mw-settings-open") && multiWindowSource.includes("data-mw-settings-close"), "workspace settings panel must be openable and dismissible");
+assert.ok(multiWindowSource.includes("data-mw-setting-motion") && multiWindowSource.includes("data-mw-setting-opacity"), "workspace settings must expose motion and opacity controls");
+assert.ok(multiWindowSource.includes("zenith-reduce-motion") && multiWindowSource.includes("--zenith-window-opacity"), "workspace settings must apply accessible motion and opacity preferences");
 assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSource.includes("saveWindowLayout();"), "floating window geometry must be restored and saved");
 assert.ok(multiWindowSource.includes('event.key==="Escape"&&focusedWindow'), "Escape must exit window focus mode");
 assert.ok(multiWindowSource.includes('window.addEventListener("resize"'), "window layout must adapt to viewport changes");
