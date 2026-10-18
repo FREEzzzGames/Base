@@ -161,3 +161,13 @@ This document is project context, not a replacement for the actual implementatio
 - External games remain hosted at their source URLs; the portal does not copy their code or assets. Iframe restrictions and rights to names/assets vary by project. Individual mobile runtime and license audits are still required.
 - Source implementation commits: `5ff52bb58b00a45b5cd0d086b34836e428702742`, `753dcdaf11a581a3fed05b64100f85c50f275c98`, `ed199638e8b262c3cf6b4493b26a4580784dad6f`, `5f97f4a89a33f8fa7e7e8130fa7ded7199d1b445`, `8b206c59b30022a852819f7b18bd4e511c735fc0`.
 - CI and published-build verification must pass before marking this feature released; Telegram Android touch behavior and iframe compatibility remain device/runtime checks.
+
+
+## 15. 2026-10-19 EARTH CONTROL module
+
+- Added an independent `EARTH` portal route and HOME card, keeping the existing clusters intact.
+- The standalone `public/earth-control.html` dashboard includes an animated stylized globe, solar-orbit visualization, lunar phase/illumination estimate, atmosphere reference values, and Open-Meteo current weather for Pforzheim.
+- The dashboard is embedded in the portal and receives the active RU/DE/EN language via its query string; dashboard labels and weather conditions are localized.
+- Mobile layout uses a single-column panel stack at phone widths; the portal navigation has seven destinations and the stylesheet reserves seven tab columns.
+- The coordinates displayed are Pforzheim-area coordinates and align with the weather query. The globe is illustrative, not a live satellite image. Satellite positions/count remain explicitly unavailable until a validated live orbital feed is integrated.
+- The astronomical values are approximate visual estimates, not precision ephemerides. Device-level Telegram WebView behavior and external Open-Meteo reachability require runtime verification.
