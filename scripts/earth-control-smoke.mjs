@@ -5,10 +5,11 @@ import vm from "node:vm";
 const html = await readFile(new URL("../public/earth-control.html", import.meta.url), "utf8");
 const main = await readFile(new URL("../src/main.ts", import.meta.url), "utf8");
 const css = await readFile(new URL("../src/earth-control.css", import.meta.url), "utf8");
+const blueprint = await readFile(new URL("../public/orbit-blueprint.html", import.meta.url), "utf8");
 
 assert.ok(html.includes("<title>PLANET EARTH CONTROL DECK</title>"), "dashboard title missing");
 const panelIds = [...html.matchAll(/data-panel="([^"]+)"/g)].map(match => match[1]).filter(id => !id.includes("'+"));
-assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites"], "expected eight standalone dashboard panels");
+assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites", "blueprint"], "expected nine standalone dashboard panels including OrbitBlueprint");
 const idList = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const duplicates = idList.filter((id, index) => idList.indexOf(id) !== index);
 assert.deepEqual(duplicates, [], "duplicate HTML ids found");
@@ -32,4 +33,13 @@ assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nas
 assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html.includes('id="font-down"') && html.includes('id="landscape"'), "dashboard controls missing");
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
-console.log("EARTH_CONTROL_SMOKE_OK", JSON.stringify({ panels: panelIds.length, uniqueIds: idList.length, runtimeRefs: refs.length, endpoints: 7 }));
+
+assert.ok(html.includes('src="./orbit-blueprint.html?embed=1"'), "OrbitBlueprint iframe missing from Earth dashboard");
+assert.ok(html.includes('href="./orbit-blueprint.html"'), "OrbitBlueprint standalone launch link missing");
+assert.ok(blueprint.includes("ORBITBLUEPRINT") && blueprint.includes("INTERNATIONAL SPACE STATION") && blueprint.includes("SPACE SHUTTLE") && blueprint.includes("SATURN V"), "OrbitBlueprint spacecraft catalog incomplete");
+const blueprintScripts = [...blueprint.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]);
+assert.equal(blueprintScripts.length, 1, "expected one inline OrbitBlueprint runtime");
+new vm.Script(blueprintScripts[0], { filename: "orbit-blueprint.inline.js" });
+for (const control of ['id="craft"', 'id="modules"', 'id="mode"', 'id="rotate"', 'id="reset"', 'id="scene"']) assert.ok(blueprint.includes(control), "OrbitBlueprint control missing: " + control);
+
+console.log("EARTH_CONTROL_SMOKE_OK", JSON.stringify({ panels: panelIds.length, uniqueIds: idList.length, runtimeRefs: refs.length, endpoints: 7, orbitBlueprint: true }));
