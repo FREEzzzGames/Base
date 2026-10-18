@@ -150,7 +150,12 @@ button{font-size:9px;padding:4px}
  #live-media-panel .media-feed{display:none}
 }
 </style>
-</head><body><div class="wrap"><header class="top"><div class="title">PLANET EARTH <span>CONTROL DECK</span></div><div class="status">● SYS ONLINE &nbsp; <span id="net">CONNECTING</span></div><div id="clock">UTC --:--:--</div></header><div class="grid">
+<style id="earth-orientation-guidance">
+#orientationBtn{display:none;flex:0 0 auto;white-space:nowrap;border:1px solid var(--amber);color:var(--amber);background:#1a1110;padding:5px 7px;font:inherit;font-size:10px;cursor:pointer}
+@media(orientation:portrait){#orientationBtn{display:block}.top{flex-wrap:wrap}.title{max-width:100%}}
+@media(orientation:landscape){#orientationBtn{display:none}}
+</style>
+</head><body><div class="wrap"><header class="top"><div class="title">PLANET EARTH <span>CONTROL DECK</span></div><button id="orientationBtn" type="button" aria-label="Use landscape layout">↻ LANDSCAPE</button><div class="status">● SYS ONLINE &nbsp; <span id="net">CONNECTING</span></div><div id="clock">UTC --:--:--</div></header><div class="grid">
 <section class="panel"><h2>EARTH LIVE FEED</h2><div class="earth"><div class="globe"></div></div><div class="readouts"><div class="metric"><small>LAT / LON</small><b>48.89° N</b><br>8.70° E</div><div class="metric"><small>ROTATION</small><b>23h 56m</b><em>SIDEREAL DAY</em></div></div><p class="footer">Stylized globe animation · not a live satellite image</p></section>
 <section class="panel"><h2>STAR MAP / SOL SYSTEM</h2><div class="orbit"><div class="sun"></div><i></i><i></i><i></i><div class="planet"></div></div><div class="readouts"><div class="metric"><small>EARTH–SUN DISTANCE</small><b id="distance">149.6 M km</b></div><div class="metric"><small>EARTH ORBIT</small><b id="orbitday">DAY ---</b></div></div><p class="footer">Orbital distance estimated from date · visualization not to scale</p></section>
 <section class="panel right"><h2>VIEW SCREENS</h2><div class="sky"></div><div class="row"><span>SKY / SEASON</span><span class="pill" id="season">--</span></div><div class="row"><span>LOCAL WEATHER</span><span id="weather">LOADING…</span></div><div class="row"><span>TEMPERATURE</span><b class="green" id="temp">-- °C</b></div><div class="row"><span>WIND</span><b id="wind">-- km/h</b></div><div class="row"><span>PRESSURE</span><b id="pressure">-- hPa</b></div><div class="row"><span>FEELS LIKE</span><b id="feels">-- °C</b></div><div class="row"><span>HUMIDITY</span><b id="humidity">-- %</b></div><div class="row"><span>PRECIPITATION</span><b id="precip">-- mm</b></div><p class="footer">Weather location: Pforzheim, Germany</p></section>
@@ -296,4 +301,17 @@ async function loadEarthObservations(){
  await Promise.allSettled(jobs);
 }
 tick();load();loadEarthObservations();setInterval(loadEarthObservations,5*60*1000);setInterval(tick,1000);setInterval(load,10*60*1000);$("refresh").addEventListener("click",load);loadSatellites();setInterval(()=>loadSatellites(),2*60*60*1000);
-</script></body></html>
+</script><script>
+(function(){
+ const button=document.getElementById('orientationBtn');
+ if(!button)return;
+ button.addEventListener('click',async()=>{
+  try{
+   if(document.documentElement.requestFullscreen&&!document.fullscreenElement)await document.documentElement.requestFullscreen();
+   if(screen.orientation&&screen.orientation.lock){await screen.orientation.lock('landscape');button.textContent='LANDSCAPE ACTIVE';return;}
+  }catch(error){console.info('Landscape lock unavailable in this WebView; use device quick settings.',error);}
+  button.textContent='ROTATE PHONE ↻';
+ });
+})();
+</script>
+</body></html>
