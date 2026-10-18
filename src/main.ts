@@ -869,14 +869,33 @@ function bind(){
 
   document.querySelectorAll<HTMLElement>('.earth-module [data-view="home"]').forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
   document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>button.addEventListener("click",async()=>{
-    button.textContent="ROTATING…";
+    const module=button.closest<HTMLElement>(".earth-module");
+    if(!module)return;
+    if(document.fullscreenElement===module){
+      try{await document.exitFullscreen();}catch{}
+      button.textContent="↔ LANDSCAPE";
+      return;
+    }
+    button.textContent="OPENING…";
     try{
-      if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+      if(module.requestFullscreen)await module.requestFullscreen();
+      else throw new Error("Fullscreen is not supported");
+      button.textContent="FULLSCREEN ACTIVE";
       const orientation=(screen.orientation as unknown as {lock?:(value:string)=>Promise<void>}).lock;
-      if(orientation){await orientation.call(screen.orientation,"landscape");button.textContent="LANDSCAPE ACTIVE";}
-      else{button.textContent="ROTATE DEVICE ↔";}
-    }catch{button.textContent="ROTATE DEVICE ↔";}
+      if(orientation){
+        try{await orientation.call(screen.orientation,"landscape");button.textContent="LANDSCAPE ACTIVE";}
+        catch{button.textContent="FULLSCREEN ACTIVE";}
+      }
+    }catch{
+      button.textContent="FULLSCREEN UNAVAILABLE";
+    }
   }));
+  document.addEventListener("fullscreenchange",()=>{
+    document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>{
+      const module=button.closest<HTMLElement>(".earth-module");
+      if(module&&document.fullscreenElement!==module)button.textContent="↔ LANDSCAPE";
+    });
+  });
 
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
