@@ -498,7 +498,7 @@ function render(){
   }
 
   if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
+    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}&v=${encodeURIComponent(PORTAL_BUILD_ID)}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
   }
 
   if(view==="live"){
