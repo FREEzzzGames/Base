@@ -26,7 +26,7 @@
 <div class="media-tabs" role="group" aria-label="NASA video sources">
 <button type="button" data-media="iss" aria-pressed="true">ISS / Earth view</button>
 <button type="button" data-media="nasa">NASA live events</button>
-<button type="button" data-media="jpl">NASA JPL</button>
+<button type="button" data-media="archive">NASA TV archive</button>
 </div>
 <div class="media-frame"><iframe id="earthVideo" src="https://www.youtube-nocookie.com/embed/DfEr5XCFNWM?rel=0&modestbranding=1" title="NASA official International Space Station video" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
 <div class="media-caption"><span id="mediaStatus" class="pill">NASA · OFFICIAL SOURCE</span><a id="mediaOriginal" href="https://www.youtube.com/watch?v=DfEr5XCFNWM" target="_blank" rel="noopener noreferrer">Open original video ↗</a></div>
@@ -41,7 +41,7 @@
  const sources={
   iss:{url:'https://www.youtube-nocookie.com/embed/DfEr5XCFNWM?rel=0&modestbranding=1',watch:'https://www.youtube.com/watch?v=DfEr5XCFNWM',label:'NASA · ISS / EARTH VIDEO'},
   nasa:{url:'https://www.youtube-nocookie.com/embed/nA9UZF-SZoQ?rel=0&modestbranding=1',watch:'https://www.nasa.gov/live/',label:'NASA LIVE · CHECK OFFICIAL SCHEDULE'},
-  jpl:{url:'https://www.youtube-nocookie.com/embed/live_stream?channel=UCryGec9PdUCLjpJW2mgCuLw',watch:'https://www.youtube.com/@NASAJPL',label:'NASA JPL · LIVE CHANNEL'}
+  archive:{url:'https://www.youtube-nocookie.com/embed/nA9UZF-SZoQ?rel=0&modestbranding=1',watch:'https://www.youtube.com/watch?v=nA9UZF-SZoQ',label:'NASA TV · ARCHIVE / NOT A LIVE FEED'}
  };
  document.querySelectorAll('[data-media]').forEach(button=>button.addEventListener('click',()=>{
   const source=sources[button.dataset.media];if(!source)return;
