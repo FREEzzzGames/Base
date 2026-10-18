@@ -46,7 +46,7 @@ EN:{
  savedGames:"saved games",localLibrary:"Local Library",historyContinues:"story continues",chooseHero:"Choose your hero and begin the adventure",
  gameStory:"FREEzzz STORY",fourRaces:"4 RACES",radioLoadingShort:"Loading station…",stream:"stream",radio:"radio",thanks:"thanks",
  playError:"This station's stream could not be played.",autoplayError:"Press Play again — the browser blocked autoplay.",
- profile:"Profile",language:"Language",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",homeDescription:"Your interactive world inside one portal.",platforms:"Twitch + YouTube",internetRadio:"Internet Radio",
+ profile:"Profile",language:"Language",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",earth:"EARTH",edit:"EDIT",homeDescription:"Your interactive world inside one portal.",platforms:"Twitch + YouTube",internetRadio:"Internet Radio",
  visits:"visits",plays:"listens",telegramProfile:"Telegram profile",telegramIdentityUnavailable:"Telegram identity unavailable"
 }
 };
