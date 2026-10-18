@@ -2,6 +2,7 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import "./zenith-os.css";
+import "./earth-control.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { bindHomeGridShift } from "./home-grid-shift";
@@ -861,6 +862,8 @@ function bind(){
       portalEvents.emit("navigation:changed",{view:"echo9"});
     };
   });
+
+  document.querySelectorAll<HTMLElement>(".earth-module [data-view=\"home\"]").forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
 
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
