@@ -127,3 +127,14 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Preserved SPARK / Ichiraku Ramen: Shinobi Ops as a featured in-portal game; external individual games can be launched in an iframe with an external-open fallback and source links.
 - Added responsive mobile-first styling and RU/DE/EN catalog labels.
 - **Verification status:** source commits are pushed to `main`; the latest GitHub Actions workflow must be checked for typecheck, lint, build, release smoke, Pages deployment, and published-build verification. External URLs, iframe restrictions, mobile touch, and per-game licensing/assets have not all been individually verified.
+
+
+## 2026-10-19 EARTH CONTROL integration pass
+
+- Registered `earth` as an independent route in the canonical module manager.
+- Added a dedicated HOME card, bottom navigation entry, embedded monitor, and isolated stylesheet; the portal shell remains in control of navigation.
+- Corrected the coordinate display to the Pforzheim area to match the configured weather request.
+- Reworked the dashboard to a readable single-column layout on phone widths and expanded the embedded viewport height.
+- Added RU/DE/EN localization for the dashboard and its portal entry; weather labels now use Open-Meteo weather codes rather than only showing day/night.
+- Expanded the bottom navigation grid to seven destinations so EARTH is not clipped on narrow devices.
+- The GitHub Actions run for the latest commit must pass typecheck, lint, architecture/interaction smoke, build and release smoke before this change is treated as released. Telegram-device visual and API checks are still required.
