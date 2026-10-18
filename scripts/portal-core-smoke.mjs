@@ -9,6 +9,8 @@ assert.ok(mainSource.includes('createPlatformState({view:"home"'), "HOME must be
 assert.ok(mainSource.includes('safeModuleContent("live",()=>renderLiveCatalog(lang))'), "LIVE catalog must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("chat",()=>renderTelegramChat())'), "CHAT must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("library",()=>renderLibrary())'), "LIBRARY must have an error boundary");
+assert.ok(mainSource.includes('if(view==="earth")') && mainSource.includes('src="./earth-control.html?lang='), "EARTH must render as its own standalone monitor iframe");
+assert.ok(source.includes('{id:"EARTH",view:"earth",independent:true}'), "EARTH must be registered as an independent module");
 assert.ok(mainSource.includes('"freezzz:live-window-open"') && multiWindowSource.includes('"freezzz:live-window-open"'), "LIVE overlays must use the shared floating window");
 assert.ok(multiWindowSource.includes("data-mw-focus"), "floating windows must expose focus-mode controls");
 assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be reflected in the window state");
@@ -82,6 +84,9 @@ assert.equal(manager.activeView, "game");
 assert.equal(manager.transition("live"), true);
 assert.equal(manager.activeView, "live");
 assert.equal(manager.transition("home"), true);
+assert.equal(manager.has("earth"), true, "Earth Control must be a registered independent module");
+assert.equal(manager.transition("earth"), true, "Earth Control route must activate");
+assert.equal(manager.activeView, "earth");
 assert.deepEqual(lifecycle, [
   "game:activate",
   "game:deactivate",
