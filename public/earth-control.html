@@ -59,13 +59,36 @@
   if(image&&/^https:\/\//i.test(image)){apodImage.src=image;apodImage.hidden=false;apodImage.onerror=()=>{apodImage.hidden=true}}
  }).catch(()=>{apodTitle.textContent='NASA image metadata unavailable right now.';apodExplain.textContent='Use the official NASA media library.';apodLink.href='https://images.nasa.gov/'});
  const count=document.getElementById('neoCount'),date=document.getElementById('neoDate');
- const now=new Date(),iso=now.toISOString().slice(0,10);
- fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+iso+'&end_date='+iso+'&api_key=DEMO_KEY',{headers:{Accept:'application/json'}})
+ const neoKey='earth-control:nasa-neows:v1',neoMaxAge=30*60*1000;
+ let neoCached=null;try{neoCached=JSON.parse(localStorage.getItem(neoKey)||'null')}catch{}
+ function renderNeo(data,stamp){const iso=data.feedDate;const n=data.count;if(!Number.isFinite(n))throw Error('No NEO count');count.textContent=String(n);date.textContent='NASA NeoWs · '+iso+' UTC · '+data.dayCount+' records · updated '+new Date(stamp).toLocaleTimeString();}
+ if(neoCached&&neoCached.data&&Date.now()-neoCached.time<neoMaxAge){renderNeo(neoCached.data,neoCached.time)}
+ else fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+iso+'&end_date='+iso+'&api_key=DEMO_KEY',{headers:{Accept:'application/json'}})
  .then(r=>{if(!r.ok)throw Error('NeoWs HTTP '+r.status);return r.json()})
- .then(data=>{const n=data.element_count;if(!Number.isFinite(n))throw Error('No NEO count');count.textContent=String(n);date.textContent='NASA NeoWs · '+iso+' UTC · '+(data.near_earth_objects?.[iso]?.length||0)+' records for this date';})
- .catch(()=>{count.textContent='N/A';date.textContent='NASA NeoWs temporarily unavailable or DEMO_KEY rate limit reached.'});
+ .then(data=>{const n=data.element_count,dayCount=data.near_earth_objects?.[iso]?.length||0;if(!Number.isFinite(n))throw Error('No NEO count');const payload={feedDate:iso,count:n,dayCount};try{localStorage.setItem(neoKey,JSON.stringify({time:Date.now(),data:payload}))}catch{}renderNeo(payload,Date.now());})
+ .catch(()=>{count.textContent='N/A';date.textContent='NASA NeoWs unavailable; retry after a while (public DEMO_KEY has rate limits).'});
 })();
 </script></section>
+<section class="panel wide" id="earth-observations"><h2>GLOBAL EARTH MONITORING</h2>
+<style>
+#earth-observations .monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#earth-observations .monitor-card{min-width:0;border:1px solid var(--line);padding:9px;background:#041015}
+#earth-observations .monitor-card h3{font-size:11px;color:var(--cyan);margin:0 0 7px}
+#earth-observations .monitor-card p{margin:5px 0}
+#earth-observations .monitor-card a{color:var(--cyan)}
+#earth-observations .monitor-value{font-size:19px;color:var(--green);font-weight:700;overflow-wrap:anywhere}
+#earth-observations .monitor-list{display:grid;gap:6px;margin-top:7px}
+#earth-observations .monitor-item{border-top:1px solid #16434a;padding-top:6px;overflow-wrap:anywhere}
+@media(max-width:600px){#earth-observations .monitor-grid{grid-template-columns:1fr}}
+</style>
+<div class="monitor-grid">
+ <article class="monitor-card"><h3>USGS · EARTHQUAKES M2.5+ / PAST 24 H</h3><div id="quakeCount" class="monitor-value">—</div><p id="quakeUpdated" class="footer">Loading real-time seismic feed…</p><div id="quakeList" class="monitor-list"></div><a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" target="_blank" rel="noopener noreferrer">Open USGS GeoJSON ↗</a></article>
+ <article class="monitor-card"><h3>NOAA · PLANETARY K-INDEX</h3><div id="kpValue" class="monitor-value">—</div><p id="kpUpdated" class="footer">Loading space-weather observations…</p><p>Geomagnetic activity indicator; not a local aurora guarantee.</p><a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener noreferrer">NOAA Space Weather ↗</a></article>
+ <article class="monitor-card"><h3>OPEN-METEO / CAMS · AIR QUALITY</h3><div id="aqiValue" class="monitor-value">—</div><p id="aqUpdated" class="footer">Pforzheim · loading model data…</p><p id="aqDetails">PM2.5: — · PM10: — · UV: —</p><a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">API & methodology ↗</a></article>
+ <article class="monitor-card"><h3>ISS · LIVE POSITION</h3><div id="issPosition" class="monitor-value">—</div><p id="issUpdated" class="footer">Waiting for current position response…</p><p id="issVelocity">Altitude: — · Velocity: —</p><a href="https://wheretheiss.at/" target="_blank" rel="noopener noreferrer">Position data source ↗</a> · <a href="https://celestrak.org/" target="_blank" rel="noopener noreferrer">CelesTrak ↗</a></article>
+</div>
+<p class="footer">Live feeds are independent public services and may be unavailable due to network, CORS, rate limits or provider outages. Values are shown only when returned by a source; model estimates are labeled.</p>
+</section>
 <section class="panel"><h2>SATELLITE NETWORK</h2><div class="readouts"><div class="metric"><small>PUBLIC ORBIT DATA</small><b id="satStatus">WAITING</b></div><div class="metric"><small>STATION OBJECTS</small><b id="satCount">—</b></div></div><p class="footer" id="satUpdated">CelesTrak GP / OMM data. Orbital elements are not live ground positions.</p><div id="satList" style="display:grid;gap:5px;margin:8px 0"></div><p><a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=JSON" target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">Open raw CelesTrak station data ↗</a></p><button id="refresh" type="button">↻ REFRESH DATA</button><p class="error" id="err" role="status"></p></section>
 </div><div class="footer">FREEzzzGames · EARTH CONTROL MODULE · OPEN DATA · <a href="https://open-meteo.com/" style="color:var(--cyan)">Open-Meteo</a> · orbital and lunar values are estimates</div></div>
 <script>
@@ -107,5 +130,17 @@ function renderSatellites(data,time){
   row.append(label,value);list.append(row);
  });
 }
-tick();load();setInterval(tick,1000);setInterval(load,10*60*1000);$("refresh").addEventListener("click",load);loadSatellites();setInterval(()=>loadSatellites(),2*60*60*1000);
+async function loadEarthObservations(){
+ const set=(id,value)=>{const el=$(id);if(el)el.textContent=String(value)};
+ const stamp=()=>new Date().toLocaleTimeString('en-GB',{timeZone:'UTC',hour12:false})+' UTC';
+ const request=async(url)=>{const r=await fetch(url,{headers:{Accept:'application/geo+json, application/json'} ,cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
+ const jobs=[
+  (async()=>{try{const j=await request('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson');if(!Array.isArray(j.features))throw Error('Invalid USGS feed');set('quakeCount',j.metadata?.count??j.features.length);set('quakeUpdated','USGS feed generated '+(j.metadata?.generated?new Date(j.metadata.generated).toLocaleTimeString('en-GB',{timeZone:'UTC',hour12:false})+' UTC':stamp()));const list=$('quakeList');list.textContent='';j.features.slice(0,5).forEach(f=>{const p=f.properties||{},row=document.createElement('div');row.className='monitor-item';const a=document.createElement('a');a.href=p.url||'https://earthquake.usgs.gov/earthquakes/';a.target='_blank';a.rel='noopener noreferrer';a.textContent='M'+(Number.isFinite(p.mag)?p.mag.toFixed(1):'?')+' · '+(p.place||'Location unavailable');row.append(a);const small=document.createElement('div');small.className='footer';small.textContent=p.time?new Date(p.time).toLocaleString():'Time unavailable';row.append(small);list.append(row)});if(!j.features.length)list.textContent='No events in this feed window.';}catch(e){set('quakeCount','N/A');set('quakeUpdated','USGS feed unavailable in this browser.');console.warn('USGS feed',e)}})(),
+  (async()=>{try{const j=await request('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');if(!Array.isArray(j)||j.length<2)throw Error('Invalid NOAA K-index feed');const rows=j.filter(x=>x&&Number.isFinite(Number(x.kp_index))&&x.time_tag);const last=rows[rows.length-1];if(!last)throw Error('No K-index sample');set('kpValue','Kp '+Number(last.kp_index).toFixed(1));set('kpUpdated','NOAA sample · '+last.time_tag+' UTC · retrieved '+stamp());}catch(e){set('kpValue','N/A');set('kpUpdated','NOAA space-weather feed unavailable.');console.warn('NOAA K-index',e)}})(),
+  (async()=>{try{const j=await request('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=48.89&longitude=8.70&current=european_aqi,pm10,pm2_5,uv_index&timezone=Europe%2FBerlin');const q=j.current;if(!q)throw Error('No current air-quality sample');set('aqiValue',Number.isFinite(q.european_aqi)?'EU AQI '+Math.round(q.european_aqi):'N/A');set('aqUpdated','CAMS model · '+(q.time||'timestamp unavailable')+' · not a ground sensor');set('aqDetails','PM2.5: '+(Number.isFinite(q.pm2_5)?q.pm2_5.toFixed(1)+' µg/m³':'—')+' · PM10: '+(Number.isFinite(q.pm10)?q.pm10.toFixed(1)+' µg/m³':'—')+' · UV: '+(Number.isFinite(q.uv_index)?q.uv_index.toFixed(1):'—'));}catch(e){set('aqiValue','N/A');set('aqUpdated','Air-quality model unavailable.');set('aqDetails','No current sample returned.');console.warn('Open-Meteo air quality',e)}})(),
+  (async()=>{try{const j=await request('https://api.wheretheiss.at/v1/satellites/25544');if(!Number.isFinite(Number(j.latitude))||!Number.isFinite(Number(j.longitude)))throw Error('Invalid ISS position');set('issPosition',Number(j.latitude).toFixed(2)+'°, '+Number(j.longitude).toFixed(2)+'°');set('issUpdated','Position timestamp · '+(j.timestamp?new Date(Number(j.timestamp)*1000).toISOString():'not supplied'));set('issVelocity','Altitude: '+(Number.isFinite(Number(j.altitude))?Number(j.altitude).toFixed(1)+' km':'—')+' · Velocity: '+(Number.isFinite(Number(j.velocity))?Math.round(Number(j.velocity))+' km/h':'—'));}catch(e){set('issPosition','N/A');set('issUpdated','ISS position endpoint unavailable or blocked.');set('issVelocity','Open the source link to check current data.');console.warn('ISS position',e)}})()
+ ];
+ await Promise.allSettled(jobs);
+}
+tick();load();loadEarthObservations();setInterval(loadEarthObservations,5*60*1000);setInterval(tick,1000);setInterval(load,10*60*1000);$("refresh").addEventListener("click",load);loadSatellites();setInterval(()=>loadSatellites(),2*60*60*1000);
 </script></body></html>
