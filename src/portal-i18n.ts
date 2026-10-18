@@ -30,7 +30,7 @@ DE:{
  savedGames:"gespeicherte Spiele",localLibrary:"Lokale Bibliothek",historyContinues:"Geschichte geht weiter",chooseHero:"Wähle deinen Helden und beginne das Abenteuer",
  gameStory:"FREEzzz STORY",fourRaces:"4 VÖLKER",radioLoadingShort:"Sender wird geladen…",stream:"Stream",radio:"Radio",thanks:"Danke",
  playError:"Der Stream dieses Senders konnte nicht wiedergegeben werden.",autoplayError:"Tippe erneut auf Play – der Browser hat den Autostart blockiert.",
- profile:"Profil",language:"Sprache",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",edit:"EDIT",homeDescription:"Deine interaktive Welt in einem einzigen Portal.",platforms:"Twitch + YouTube",internetRadio:"Internetradio",
+ profile:"Profil",language:"Sprache",home:"HOME",live:"LIVE",chat:"CHAT",game:"GAME",library:"LIBRARY",earth:"EARTH",edit:"EDIT",homeDescription:"Deine interaktive Welt in einem einzigen Portal.",platforms:"Twitch + YouTube",internetRadio:"Internetradio",
  visits:"Besuche",plays:"Wiedergaben",telegramProfile:"Telegram-Profil",telegramIdentityUnavailable:"Telegram-Identität nicht verfügbar"
 },
 EN:{
