@@ -10055,3 +10055,45 @@ button:disabled,[aria-disabled="true"]{
 @media(max-width:430px){.portal-toolbar-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:1px!important}.portal-toolbar-item{min-width:0!important;padding-left:1px!important;padding-right:1px!important}.portal-toolbar-label{font-size:8px!important;letter-spacing:0!important}}
 /* The selected module, not a fixed first/legacy tab, controls active styling. */
 .portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child:not(.active){background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+
+
+/* EARTH CONTROL is a standalone route module. Keep the portal HUD outside its viewport. */
+.portal-route-workspace > main > .portal-layout[data-portal-layout="earth"]{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="earth"] > .section-head{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:4px 6px!important;
+}
+.portal-route-workspace > main > .portal-layout[data-portal-layout="earth"] > .earth-control-frame{
+  display:block!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  border-radius:6px!important;
+}
+/* Reserve real space for the fixed bottom navigation instead of letting it cover the monitor. */
+.portal-route-workspace > main:has(> .portal-layout[data-portal-layout="earth"]){
+  padding-top:0!important;
+  padding-bottom:calc(66px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)))!important;
+  overflow:hidden!important;
+}
+@media (orientation:landscape) and (max-height:600px){
+  .portal-route-workspace > main:has(> .portal-layout[data-portal-layout="earth"]){
+    padding-bottom:calc(52px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)))!important;
+  }
+}
