@@ -362,6 +362,18 @@ body.deck-focus-active .grid>section.panel:not(.is-expanded){filter:brightness(.
 .grid>section.panel.is-expanded .monitor-card h3{font-size:clamp(13px,1.1vw,17px)}
 .grid>section.panel.is-expanded .monitor-card p,.grid>section.panel.is-expanded .monitor-card>a,.grid>section.panel.is-expanded .monitor-card .monitor-list{display:block;font-size:clamp(12px,.95vw,15px);white-space:normal;overflow:visible}
 .grid>section.panel.is-expanded .monitor-card .monitor-detail-btn{display:none}
+.grid>section.panel.is-expanded.right .row:nth-of-type(n+5){display:flex!important}
+.grid>section.panel.is-expanded #satList .row:nth-child(n+5){display:flex!important}
+.grid>section.panel.is-expanded #live-media-panel .media-feed{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid>section.panel.is-expanded #live-media-panel .media-feed img{max-height:220px}
+.grid>section.panel.is-expanded .monitor-card .footer{white-space:normal;overflow:visible}
+.grid>section.panel.is-expanded .monitor-card .monitor-list{display:grid!important}
+.grid>section.panel.is-expanded .monitor-card .monitor-list .monitor-item{display:block}
+.grid>section.panel.is-expanded .monitor-card .monitor-detail-btn{display:none!important}
+.grid>section.panel.is-expanded .row{font-size:clamp(13px,1vw,16px);line-height:1.35}
+.grid>section.panel.is-expanded .metric small{font-size:clamp(12px,.95vw,15px)}
+.grid>section.panel.is-expanded .metric b{font-size:clamp(16px,1.5vw,24px)}
+
 .grid>section.panel.is-expanded .media-frame{max-height:none!important;min-height:0!important;aspect-ratio:16/9}
 .grid>section.panel.is-expanded .media-tabs button{min-height:34px;font-size:13px}
 @media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
