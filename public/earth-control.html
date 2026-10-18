@@ -691,4 +691,118 @@ tick();load();loadEarthObservations();setInterval(loadEarthObservations,5*60*100
  document.head.appendChild(api);
 })();
 </script>
+
+<style id="earth-reference-layout-final">
+/* Reference-led layout: strong hierarchy, asymmetrical zones, no wasted viewport. */
+:root{--ref-ink:#070414;--ref-amber:#ffbd62;--ref-coral:#f0443d;--ref-mint:#8bd5c4;--ref-muted:#a7a0b9}
+html,body{width:100%;height:100%;min-height:0;margin:0;overflow:hidden;background:var(--ref-ink)}
+body{font-size:12px;line-height:1.25}
+.wrap{width:100%;height:100dvh;max-width:none;margin:0;padding:clamp(5px,.7vw,10px);display:flex;flex-direction:column;gap:clamp(4px,.55vw,8px);overflow:hidden}
+.top{flex:0 0 auto;min-height:38px;padding:5px 10px;gap:10px;border:0;border-left:7px solid var(--ref-amber);background:var(--ref-amber);color:#130c20;box-shadow:none;align-items:center}
+.title{font-size:clamp(16px,2.1vw,29px);line-height:1;letter-spacing:.035em;color:#130c20;white-space:nowrap}
+.title span{color:#130c20}
+.status,#clock{color:#241a2b;font-size:clamp(10px,.95vw,13px);font-weight:800}
+#orientationBtn{display:block!important;flex:0 0 auto;background:#20152a;color:#ffbd62;border-color:#20152a;font-size:10px;padding:5px 8px}
+.text-scale-controls{display:flex;gap:3px;flex:0 0 auto}
+.text-scale-controls button{min-width:30px;min-height:27px;padding:3px 6px;border:1px solid #2b1c36;background:#20152a;color:#fff;font:700 11px ui-monospace,monospace}
+.grid{flex:1 1 auto;min-width:0;min-height:0;margin:0;gap:clamp(4px,.55vw,8px);display:grid!important;grid-template-columns:minmax(0,.9fr) minmax(0,1.12fr) minmax(0,1.12fr) minmax(0,.9fr)!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;overflow:hidden}
+body .wrap .grid>section.panel{min-width:0;min-height:0;padding:clamp(5px,.65vw,10px);gap:clamp(3px,.35vw,6px);overflow:hidden;border:1px solid #47374e;border-radius:8px;background:#100a20;box-shadow:none;display:flex;flex-direction:column}
+body .wrap .grid>section.panel h2{display:flex;align-items:center;gap:5px;justify-content:space-between;flex:0 0 auto;margin:0 0 3px;color:var(--ref-amber);font-size:clamp(11px,1.15vw,16px);line-height:1.1;letter-spacing:.025em;white-space:normal;overflow-wrap:normal;word-break:normal}
+body .wrap .grid>section.panel h2:before{content:"";display:inline-block;flex:0 0 7px;width:7px;height:7px;background:var(--ref-coral)}
+.panel-title{min-width:0;overflow-wrap:normal;word-break:normal}
+.panel-tools{flex:0 0 auto}
+.panel-expand{width:25px;height:23px;border:1px solid #66526e;background:#21152d;color:var(--ref-mint);font-size:16px}
+.footer{font-size:clamp(9px,.82vw,11px);line-height:1.15;color:var(--ref-muted);overflow-wrap:normal;word-break:normal}
+.earth,.orbit,.sky{height:auto;min-height:0;flex:1 1 0;width:100%;border:4px solid #65576b;border-radius:18px;background:#090615}
+.video-monitor .monitor-poster,.video-monitor .monitor-video{border-radius:12px}
+.video-live-tag{font-size:9px;line-height:1;padding:3px 5px}
+.readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0}
+.metric{min-width:0;padding:5px 6px;border:0;border-top:1px solid #4a394f;background:#171027;overflow:hidden}
+.metric small{display:block;font-size:clamp(9px,.82vw,12px);line-height:1.15;color:var(--ref-mint);overflow-wrap:normal;word-break:normal}
+.metric b{display:inline-block;margin-top:2px;font-size:clamp(13px,1.45vw,21px);line-height:1.05;color:var(--ref-amber);overflow-wrap:normal;word-break:normal}
+.metric em{display:block;font-size:9px;color:var(--ref-muted)}
+.row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:3px 0;font-size:clamp(10px,.9vw,13px);line-height:1.15}
+.row span:first-child{min-width:0;color:var(--ref-mint);overflow-wrap:normal;word-break:normal}
+.row span:last-child,.row b{flex:0 0 auto;text-align:right;color:var(--ref-amber);overflow-wrap:normal;word-break:normal}
+.pill{font-size:10px}
+.bars{max-height:30px;min-height:12px}
+#earth-observations .monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:0;flex:1 1 auto;overflow:hidden}
+#earth-observations .monitor-card{min-width:0;min-height:0;padding:6px;border:1px solid #493850;border-radius:5px;background:#171027;overflow:hidden;display:flex;flex-direction:column;gap:3px}
+#earth-observations .monitor-card h3{font-size:clamp(10px,.95vw,13px)!important;line-height:1.1!important;margin:0 0 3px;color:var(--ref-mint);overflow-wrap:normal!important;word-break:normal!important}
+#earth-observations .monitor-card p,#earth-observations .monitor-item{font-size:10px;line-height:1.15;overflow-wrap:normal;word-break:normal}
+#earth-observations .monitor-value{font-size:clamp(14px,1.5vw,21px)!important;line-height:1.05;overflow-wrap:normal!important;word-break:normal!important;color:var(--ref-amber)}
+#earth-observations .monitor-list{gap:3px;margin-top:3px}
+.monitor-detail-btn{margin-top:auto;align-self:flex-start;min-height:24px;padding:3px 6px;font-size:10px}
+#satList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px!important;min-height:0;overflow:hidden}
+#satList .row{margin:2px 0;font-size:clamp(9px,.82vw,12px)}
+#live-media-panel .media-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:3px 0}
+#live-media-panel .media-tabs button{min-height:27px;padding:4px 7px;font-size:clamp(9px,.82vw,12px);line-height:1.1}
+#live-media-panel .media-frame{flex:1 1 auto;min-height:0;max-height:none;aspect-ratio:16/9;width:100%;border:4px solid #65576b;border-radius:14px;background:#070414}
+#live-media-panel .media-caption{font-size:10px;margin-top:3px}
+#live-media-panel .media-feed{display:none!important}
+.wrap>.footer{flex:0 0 auto;min-height:12px;margin:0;font-size:9px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#8d829f}
+/* Asymmetrical deck map: Earth + ISS imagery above; telemetry and monitoring below. */
+body .wrap .grid>section.panel:nth-child(1){grid-column:1!important;grid-row:1/3!important}
+body .wrap .grid>section.panel:nth-child(2){grid-column:2/4!important;grid-row:1/3!important}
+body .wrap .grid>section.panel:nth-child(3){grid-column:4!important;grid-row:1!important}
+body .wrap .grid>section.panel:nth-child(4){grid-column:4!important;grid-row:2!important}
+body .wrap .grid>section.panel:nth-child(5){grid-column:1/3!important;grid-row:3/5!important}
+body .wrap .grid>section.panel:nth-child(6){grid-column:3!important;grid-row:3/5!important}
+body .wrap .grid>section.panel:nth-child(7){grid-column:4!important;grid-row:3!important}
+body .wrap .grid>section.panel:nth-child(8){grid-column:4!important;grid-row:4!important}
+body .wrap .grid>section.panel:nth-child(1) .earth{min-height:70px}
+body .wrap .grid>section.panel:nth-child(2) .orbit{min-height:95px}
+body .wrap .grid>section.panel:nth-child(5) .readouts{grid-template-columns:repeat(4,minmax(0,1fr))}
+body .wrap .grid>section.panel:nth-child(5) .metric b{font-size:clamp(12px,1.3vw,18px)}
+body .wrap .grid>section.panel:nth-child(5) .bars{flex:0 0 25px}
+body .wrap .grid>section.panel:nth-child(6) .media-frame{min-height:0}
+body .wrap .grid>section.panel:nth-child(7) .monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+body .wrap .grid>section.panel:nth-child(8) #satList .row:nth-child(n+5){display:none}
+/* Portrait remains usable, but landscape is the intended dashboard view. */
+@media(orientation:portrait){
+ .wrap{height:100dvh;padding:4px;gap:4px}
+ .top{min-height:35px;padding:4px 6px;gap:5px;flex-wrap:wrap}
+ .title{font-size:clamp(12px,3vw,17px)}
+ .status,#clock{font-size:9px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;gap:4px}
+ body .wrap .grid>section.panel:nth-child(1){grid-column:1!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(2){grid-column:2!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(3){grid-column:1!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(4){grid-column:2!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(5){grid-column:1!important;grid-row:3!important}
+ body .wrap .grid>section.panel:nth-child(6){grid-column:2!important;grid-row:3!important}
+ body .wrap .grid>section.panel:nth-child(7){grid-column:1!important;grid-row:4!important}
+ body .wrap .grid>section.panel:nth-child(8){grid-column:2!important;grid-row:4!important}
+ body .wrap .grid>section.panel h2{font-size:clamp(9px,2.1vw,12px)}
+ .earth,.orbit,.sky{min-height:30px;border-width:2px;border-radius:8px}
+ .readouts{gap:2px}
+ .metric{padding:3px}
+ .metric small{font-size:9px}
+ .metric b{font-size:clamp(11px,2.5vw,15px)}
+ .row{font-size:9px;gap:3px}
+ #earth-observations .monitor-grid{gap:2px}
+ #earth-observations .monitor-card{padding:3px}
+ #earth-observations .monitor-card h3{font-size:9px!important}
+ #earth-observations .monitor-value{font-size:12px!important}
+ #earth-observations .monitor-card p,#earth-observations .monitor-item{font-size:8px}
+ #live-media-panel .media-tabs button{min-height:22px;padding:3px;font-size:8px}
+ #live-media-panel .media-feed{display:none!important}
+ #satList{grid-template-columns:1fr!important}
+ #satList .row:nth-child(n+4){display:none}
+ body .wrap .grid>section.panel:nth-child(5) .readouts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-height:430px) and (orientation:landscape){
+ .top{min-height:28px;padding:3px 7px}
+ .title{font-size:clamp(12px,1.9vw,19px)}
+ body .wrap .grid>section.panel{padding:4px;gap:2px}
+ body .wrap .grid>section.panel h2{font-size:clamp(9px,1vw,12px)}
+ .earth,.orbit,.sky{border-width:3px}
+ .metric{padding:3px}
+ .metric b{font-size:clamp(11px,1.25vw,16px)}
+ .row{font-size:10px;margin:2px 0}
+ #earth-observations .monitor-card{padding:3px}
+ #earth-observations .monitor-card h3{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
 </body></html>
