@@ -867,7 +867,7 @@ function bind(){
   });
 
 
-  document.querySelectorAll<HTMLElement>(".earth-module [data-view=\\"home\\"]").forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
+  document.querySelectorAll<HTMLElement>('.earth-module [data-view="home"]').forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
   document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>button.addEventListener("click",async()=>{
     button.textContent="ROTATING…";
     try{
