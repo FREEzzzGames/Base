@@ -224,10 +224,95 @@ body .wrap .grid>section.panel:nth-child(8){grid-column:4!important;grid-row:4!i
 .bars i{animation:none!important}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
+
+<style id="earth-mobile-landscape-final">
+/* Phone landscape: 8 independent cells, sized from the actual iframe viewport. */
+.video-monitor{min-width:0;min-height:0;flex:0 0 auto}
+.video-monitor .monitor-poster{opacity:1;transition:opacity .2s ease}
+.video-monitor.video-ready .monitor-poster{opacity:0;pointer-events:none}
+.video-monitor .monitor-video{opacity:0!important;pointer-events:none}
+.video-monitor.video-ready .monitor-video{opacity:1!important;pointer-events:auto}
+.video-fallback-link{display:none;position:absolute;z-index:4;left:5px;right:5px;bottom:5px;min-height:22px;align-items:center;justify-content:center;padding:4px;background:#041015ed;border:1px solid var(--cyan);color:var(--cyan);font-size:9px;text-decoration:none;text-align:center}
+.video-monitor.video-error .monitor-video{opacity:0!important;pointer-events:none}
+.video-monitor.video-error .monitor-poster{opacity:1!important}
+.video-monitor.video-error .video-fallback-link{display:flex}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ html,body{width:100%;height:100%;min-height:0;overflow:hidden}
+ .wrap{width:100%;height:100dvh;max-width:none;padding:3px;gap:3px;overflow:hidden}
+ .top{min-height:27px;max-height:32px;flex:0 0 27px;padding:3px 6px;gap:5px;overflow:hidden}
+ .title{font-size:clamp(10px,1.7vw,15px);line-height:1.15;white-space:nowrap}
+ .status,#clock{font-size:clamp(8px,.95vw,10px);white-space:nowrap}
+ .grid{flex:1 1 auto;min-height:0;min-width:0;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:3px;margin:0;overflow:hidden}
+ body .wrap .grid>section.panel:nth-child(1){grid-column:1!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(2){grid-column:2!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(3){grid-column:3!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(4){grid-column:4!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(5){grid-column:1!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(6){grid-column:2!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(7){grid-column:3!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(8){grid-column:4!important;grid-row:2!important}
+ .grid>section.panel{display:flex;min-width:0;min-height:0;padding:4px;gap:2px;overflow:hidden}
+ .grid>section.panel h2{flex:0 0 auto;font-size:clamp(8px,1vw,10px);line-height:1.05;letter-spacing:0;margin:0 0 2px;white-space:normal;overflow-wrap:anywhere}
+ .grid>section.panel .footer{font-size:8px;line-height:1.05;margin:1px 0}
+ .earth.video-monitor,.orbit.video-monitor,.sky.video-monitor{width:100%;height:clamp(38px,17dvh,70px);flex:0 0 auto}
+ .readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;min-width:0}
+ .metric{min-width:0;padding:3px;overflow:hidden}
+ .metric small{font-size:clamp(7px,.8vw,9px);line-height:1.05;overflow-wrap:anywhere}
+ .metric b{font-size:clamp(9px,1.1vw,12px);line-height:1.05;overflow-wrap:anywhere}
+ .metric em{font-size:7px}
+ .row{display:flex;gap:3px;margin:1px 0;font-size:clamp(8px,.85vw,9px);line-height:1.05;min-width:0}
+ .row span:first-child{min-width:0;overflow-wrap:anywhere}
+ .row span:last-child,.row b{text-align:right;min-width:0;overflow-wrap:anywhere}
+ .right .row:nth-of-type(n+5){display:none}
+ .bars{display:none!important}
+ #live-media-panel .media-tabs{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+ #live-media-panel .media-tabs button{min-height:22px;padding:3px 4px;font-size:8px}
+ #live-media-panel .media-frame{flex:0 0 auto;width:100%;height:auto;min-height:0;max-height:none;aspect-ratio:16/9}
+ #live-media-panel .media-caption{font-size:8px;margin-top:2px;gap:3px}
+ #live-media-panel .media-feed,#live-media-panel .footer{display:none!important}
+ #earth-observations .monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;min-height:0;overflow:hidden}
+ #earth-observations .monitor-card{min-width:0;min-height:0;padding:3px;overflow:hidden}
+ #earth-observations .monitor-card h3{font-size:8px;line-height:1.05;margin:0 0 2px}
+ #earth-observations .monitor-card p,#earth-observations .monitor-item{font-size:8px;line-height:1.05;margin:1px 0;padding-top:1px;overflow-wrap:anywhere}
+ #earth-observations .monitor-value{font-size:clamp(9px,1vw,12px);line-height:1.05;overflow-wrap:anywhere}
+ #earth-observations .monitor-list{gap:1px;margin-top:1px}
+ #earth-observations>.footer{display:none}
+ #satList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px!important;overflow:hidden}
+ #satList .row{font-size:8px;margin:0}
+ #satList .row:nth-child(n+5){display:none}
+ .grid>.panel:nth-child(1) .readouts{margin-top:1px}
+ .grid>.panel:nth-child(2) .readouts{margin-top:1px}
+ .grid>.panel:nth-child(5) .bars{display:none}
+ .grid>.panel:nth-child(5) .row{font-size:8px}
+ .grid>.panel:nth-child(6) .media-frame{max-height:calc(17dvh)}
+ .grid>.panel:nth-child(7) .monitor-grid{flex:1 1 auto}
+ .grid>.panel:nth-child(8) #satList{flex:1 1 auto}
+ .wrap>.footer{flex:0 0 10px;font-size:7px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+}
+@media (orientation:portrait) and (max-width:700px){
+ .wrap{padding:3px;gap:3px}
+ .top{padding:4px 6px;gap:4px}
+ .title{font-size:clamp(11px,3vw,16px)}
+ .status,#clock{font-size:9px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;gap:3px}
+ body .wrap .grid>section.panel:nth-child(1){grid-column:1!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(2){grid-column:2!important;grid-row:1!important}
+ body .wrap .grid>section.panel:nth-child(3){grid-column:1!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(4){grid-column:2!important;grid-row:2!important}
+ body .wrap .grid>section.panel:nth-child(5){grid-column:1!important;grid-row:3!important}
+ body .wrap .grid>section.panel:nth-child(6){grid-column:2!important;grid-row:3!important}
+ body .wrap .grid>section.panel:nth-child(7){grid-column:1!important;grid-row:4!important}
+ body .wrap .grid>section.panel:nth-child(8){grid-column:2!important;grid-row:4!important}
+ .grid>section.panel{padding:4px;gap:2px}
+ .earth.video-monitor,.orbit.video-monitor,.sky.video-monitor{height:clamp(38px,8dvh,64px)}
+ #live-media-panel .media-feed{display:none!important}
+ #live-media-panel .media-frame{min-height:0;max-height:12dvh}
+}
+</style>
 </head><body><div class="wrap"><header class="top"><div class="title">PLANET EARTH <span>CONTROL DECK</span></div><button id="orientationBtn" type="button" aria-label="Use landscape layout">↻ LANDSCAPE</button><div class="status">● SYS ONLINE &nbsp; <span id="net">CONNECTING</span></div><div id="clock">UTC --:--:--</div></header><div class="grid">
-<section class="panel"><h2>EARTH LIVE FEED</h2><div class="earth video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/jKHvbJe9c_Y/hqdefault.jpg" alt="NASA ISS Earth view preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1" title="NASA live video from the International Space Station" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● NASA LIVE</span></div><div class="readouts"><div class="metric"><small>LAT / LON</small><b>48.89° N</b><br>8.70° E</div><div class="metric"><small>ROTATION</small><b>23h 56m</b><em>SIDEREAL DAY</em></div></div><p class="footer">Live NASA/ISS video feed · coordinates are a reference location</p></section>
-<section class="panel"><h2>STAR MAP / SOL SYSTEM</h2><div class="orbit video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/yf5cEJULZXk/hqdefault.jpg" alt="NASA ISS live Earth view preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/yf5cEJULZXk?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1" title="NASA live high-definition Earth views from the International Space Station" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● ISS EARTH VIEW</span></div><div class="readouts"><div class="metric"><small>EARTH–SUN DISTANCE</small><b id="distance">149.6 M km</b></div><div class="metric"><small>EARTH ORBIT</small><b id="orbitday">DAY ---</b></div></div><p class="footer">Orbital distance estimated from date · visualization not to scale</p></section>
-<section class="panel right"><h2>VIEW SCREENS</h2><div class="sky video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/jKHvbJe9c_Y/hqdefault.jpg" alt="NASA live space station view preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1" title="NASA live space station view" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● LIVE FEED</span></div><div class="row"><span>SKY / SEASON</span><span class="pill" id="season">--</span></div><div class="row"><span>LOCAL WEATHER</span><span id="weather">LOADING…</span></div><div class="row"><span>TEMPERATURE</span><b class="green" id="temp">-- °C</b></div><div class="row"><span>WIND</span><b id="wind">-- km/h</b></div><div class="row"><span>PRESSURE</span><b id="pressure">-- hPa</b></div><div class="row"><span>FEELS LIKE</span><b id="feels">-- °C</b></div><div class="row"><span>HUMIDITY</span><b id="humidity">-- %</b></div><div class="row"><span>PRECIPITATION</span><b id="precip">-- mm</b></div><p class="footer">Weather location: Pforzheim, Germany</p></section>
+<section class="panel"><h2>EARTH LIVE FEED</h2><div class="earth video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/jKHvbJe9c_Y/hqdefault.jpg" alt="NASA ISS Earth view preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io" title="NASA live video from the International Space Station" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● NASA LIVE</span><a class="video-fallback-link" href="https://www.youtube.com/watch?v=jKHvbJe9c_Y" target="_blank" rel="noopener noreferrer">OPEN LIVE VIDEO ↗</a></div><div class="readouts"><div class="metric"><small>LAT / LON</small><b>48.89° N</b><br>8.70° E</div><div class="metric"><small>ROTATION</small><b>23h 56m</b><em>SIDEREAL DAY</em></div></div><p class="footer">Live NASA/ISS video feed · coordinates are a reference location</p></section>
+<section class="panel"><h2>STAR MAP / SOL SYSTEM</h2><div class="orbit video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/wG4YaEcNlb0/hqdefault.jpg" alt="NASA official ISS HD live video preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/wG4YaEcNlb0?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io" title="NASA live high-definition Earth views from the International Space Station" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● ISS EARTH VIEW</span><a class="video-fallback-link" href="https://www.youtube.com/watch?v=wG4YaEcNlb0" target="_blank" rel="noopener noreferrer">OPEN LIVE VIDEO ↗</a></div><div class="readouts"><div class="metric"><small>EARTH–SUN DISTANCE</small><b id="distance">149.6 M km</b></div><div class="metric"><small>EARTH ORBIT</small><b id="orbitday">DAY ---</b></div></div><p class="footer">Orbital distance estimated from date · visualization not to scale</p></section>
+<section class="panel right"><h2>VIEW SCREENS</h2><div class="sky video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/jKHvbJe9c_Y/hqdefault.jpg" alt="NASA live space station view preview" loading="eager"><iframe class="monitor-video" src="https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1" title="NASA live space station view" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><span class="video-live-tag">● LIVE FEED</span><a class="video-fallback-link" href="https://www.youtube.com/watch?v=jKHvbJe9c_Y" target="_blank" rel="noopener noreferrer">OPEN LIVE VIDEO ↗</a></div><div class="row"><span>SKY / SEASON</span><span class="pill" id="season">--</span></div><div class="row"><span>LOCAL WEATHER</span><span id="weather">LOADING…</span></div><div class="row"><span>TEMPERATURE</span><b class="green" id="temp">-- °C</b></div><div class="row"><span>WIND</span><b id="wind">-- km/h</b></div><div class="row"><span>PRESSURE</span><b id="pressure">-- hPa</b></div><div class="row"><span>FEELS LIKE</span><b id="feels">-- °C</b></div><div class="row"><span>HUMIDITY</span><b id="humidity">-- %</b></div><div class="row"><span>PRECIPITATION</span><b id="precip">-- mm</b></div><p class="footer">Weather location: Pforzheim, Germany</p></section>
 <section class="panel"><h2>ATMOSPHERE</h2><div class="readouts"><div class="metric"><small>O₂ · STANDARD DRY AIR</small><b>20.95%</b></div><div class="metric"><small>N₂ · STANDARD DRY AIR</small><b>78.08%</b></div><div class="metric"><small>ARGON</small><b>0.93%</b></div><div class="metric"><small>CO₂</small><b>~0.04%</b></div></div><p class="footer">Reference composition values, not local sensor readings.</p></section>
 <section class="panel wide"><h2>CURRENT SHIP STATUS / TELEMETRY</h2><div class="readouts"><div class="metric"><small>EARTH–MOON DISTANCE</small><b id="moonDist">384,400 km</b></div><div class="metric"><small>MOON PHASE</small><b id="phase">--</b><em id="illum">--% ILLUMINATION</em></div><div class="metric"><small>UTC DATE</small><b id="date">----</b></div><div class="metric"><small>DATA REFRESH</small><b id="updated">PENDING</b></div></div><div class="bars" aria-label="Decorative telemetry waveform"><i style="--h:18%"></i><i style="--h:88.59925207106201%"></i><i style="--h:33.37263254255989%"></i><i style="--h:57.822991778570774%"></i><i style="--h:28.625235979024055%"></i><i style="--h:19.748658168925598%"></i><i style="--h:35.959641015710574%"></i><i style="--h:46.76014015441716%"></i><i style="--h:71.84294776754552%"></i><i style="--h:46.74323895248165%"></i><i style="--h:89.9818570204155%"></i><i style="--h:28.384347849751638%"></i><i style="--h:75.42814660800494%"></i><i style="--h:22.27530412933658%"></i><i style="--h:34.78560298537994%"></i><i style="--h:20.356293072928544%"></i><i style="--h:44.141922974409255%"></i><i style="--h:47.21250674809049%"></i><i style="--h:65.31970884206343%"></i><i style="--h:74.80646959430702%"></i><i style="--h:57.410770847286166%"></i><i style="--h:79.81893340774155%"></i><i style="--h:34.067560395922804%"></i><i style="--h:53.04809014327081%"></i><i style="--h:18.528316192059908%"></i><i style="--h:28.869796491015343%"></i><i style="--h:25.27876233279586%"></i><i style="--h:67.90469952304937%"></i><i style="--h:48.72800996182167%"></i><i style="--h:79.02902715283804%"></i><i style="--h:67.49748975389082%"></i><i style="--h:60.867784451504825%"></i><i style="--h:61.07750251198113%"></i><i style="--h:31.726439060715474%"></i></div><div class="row"><span>OPEN-METEO API</span><span id="apiStatus" class="pill">WAITING</span></div><div class="row"><span>MOON / ORBIT</span><span class="pill">ASTRONOMICAL ESTIMATE</span></div></section>
 <section class="panel wide" id="live-media-panel"><h2>LIVE VIDEO / NASA MEDIA</h2>
@@ -385,13 +470,36 @@ tick();load();loadEarthObservations();setInterval(loadEarthObservations,5*60*100
 </script>
 <script>
 (function(){
- document.querySelectorAll('.video-monitor .monitor-video').forEach(function(frame){
-  frame.addEventListener('load',function(){
-   const monitor=frame.closest('.video-monitor');
-   /* YouTube's iframe load event can precede actual player paint. Keep the poster visible briefly to avoid a black flash. */
-   window.setTimeout(function(){if(monitor)monitor.classList.add('video-ready');},2200);
-  },{once:true});
+ const monitors=[...document.querySelectorAll('.video-monitor')];
+ monitors.forEach(function(monitor){
+  window.setTimeout(function(){
+   if(!monitor.classList.contains('video-ready'))monitor.classList.add('video-error');
+  },12000);
  });
+ window.onYouTubeIframeAPIReady=function(){
+  if(!window.YT||!window.YT.Player)return;
+  document.querySelectorAll('.video-monitor .monitor-video').forEach(function(frame){
+   const monitor=frame.closest('.video-monitor');
+   try{
+    new YT.Player(frame,{
+     events:{
+      onStateChange:function(event){
+       if(event.data===YT.PlayerState.PLAYING){
+        monitor.classList.add('video-ready');
+        monitor.classList.remove('video-error');
+       }
+      },
+      onError:function(){monitor.classList.add('video-error');}
+     }
+    });
+   }catch(error){monitor.classList.add('video-error');}
+  });
+ };
+ const api=document.createElement('script');
+ api.src='https://www.youtube.com/iframe_api';
+ api.async=true;
+ api.onerror=function(){monitors.forEach(m=>m.classList.add('video-error'));};
+ document.head.appendChild(api);
 })();
 </script>
 </body></html>
