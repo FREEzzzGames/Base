@@ -498,7 +498,7 @@ function render(){
   }
 
   if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}&v=${encodeURIComponent(PORTAL_BUILD_ID)}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
+    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><div class="earth-header-actions"><button class="tg-button secondary earth-landscape-toggle" type="button" data-earth-landscape aria-label="Switch Earth Control to landscape">↻ LANDSCAPE</button><button class="tg-button secondary" type="button" data-view="home">HOME</button></div></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}&v=${encodeURIComponent(PORTAL_BUILD_ID)}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen; screen-wake-lock" referrerpolicy="no-referrer"></iframe></div>`;
   }
 
   if(view==="live"){
@@ -864,6 +864,15 @@ function bind(){
   });
 
   document.querySelectorAll<HTMLElement>(".earth-module [data-view=\"home\"]").forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
+  document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>button.addEventListener("click",async()=>{
+    button.textContent="ROTATING…";
+    try{
+      if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+      const orientation=(screen.orientation as unknown as {lock?:(value:string)=>Promise<void>}).lock;
+      if(orientation){await orientation.call(screen.orientation,"landscape");button.textContent="LANDSCAPE ACTIVE";}
+      else{button.textContent="ROTATE PHONE ↻";}
+    }catch(error){button.textContent="ROTATE PHONE ↻";console.info("Landscape lock unavailable in this WebView; rotate the device.",error);}
+  }));
 
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
