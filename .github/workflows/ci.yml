@@ -133,6 +133,9 @@ jobs:
         run: node --check server/index.mjs
 
 
+      - name: Earth Control dashboard smoke
+        run: node scripts/earth-control-smoke.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
