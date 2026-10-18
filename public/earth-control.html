@@ -7,6 +7,66 @@
 <section class="panel right"><h2>VIEW SCREENS</h2><div class="sky"></div><div class="row"><span>SKY / SEASON</span><span class="pill" id="season">--</span></div><div class="row"><span>LOCAL WEATHER</span><span id="weather">LOADING…</span></div><div class="row"><span>TEMPERATURE</span><b class="green" id="temp">-- °C</b></div><div class="row"><span>WIND</span><b id="wind">-- km/h</b></div><div class="row"><span>PRESSURE</span><b id="pressure">-- hPa</b></div><div class="row"><span>FEELS LIKE</span><b id="feels">-- °C</b></div><div class="row"><span>HUMIDITY</span><b id="humidity">-- %</b></div><div class="row"><span>PRECIPITATION</span><b id="precip">-- mm</b></div><p class="footer">Weather location: Pforzheim, Germany</p></section>
 <section class="panel"><h2>ATMOSPHERE</h2><div class="readouts"><div class="metric"><small>O₂ · STANDARD DRY AIR</small><b>20.95%</b></div><div class="metric"><small>N₂ · STANDARD DRY AIR</small><b>78.08%</b></div><div class="metric"><small>ARGON</small><b>0.93%</b></div><div class="metric"><small>CO₂</small><b>~0.04%</b></div></div><p class="footer">Reference composition values, not local sensor readings.</p></section>
 <section class="panel wide"><h2>CURRENT SHIP STATUS / TELEMETRY</h2><div class="readouts"><div class="metric"><small>EARTH–MOON DISTANCE</small><b id="moonDist">384,400 km</b></div><div class="metric"><small>MOON PHASE</small><b id="phase">--</b><em id="illum">--% ILLUMINATION</em></div><div class="metric"><small>UTC DATE</small><b id="date">----</b></div><div class="metric"><small>DATA REFRESH</small><b id="updated">PENDING</b></div></div><div class="bars" aria-label="Decorative telemetry waveform"><i style="--h:18%"></i><i style="--h:88.59925207106201%"></i><i style="--h:33.37263254255989%"></i><i style="--h:57.822991778570774%"></i><i style="--h:28.625235979024055%"></i><i style="--h:19.748658168925598%"></i><i style="--h:35.959641015710574%"></i><i style="--h:46.76014015441716%"></i><i style="--h:71.84294776754552%"></i><i style="--h:46.74323895248165%"></i><i style="--h:89.9818570204155%"></i><i style="--h:28.384347849751638%"></i><i style="--h:75.42814660800494%"></i><i style="--h:22.27530412933658%"></i><i style="--h:34.78560298537994%"></i><i style="--h:20.356293072928544%"></i><i style="--h:44.141922974409255%"></i><i style="--h:47.21250674809049%"></i><i style="--h:65.31970884206343%"></i><i style="--h:74.80646959430702%"></i><i style="--h:57.410770847286166%"></i><i style="--h:79.81893340774155%"></i><i style="--h:34.067560395922804%"></i><i style="--h:53.04809014327081%"></i><i style="--h:18.528316192059908%"></i><i style="--h:28.869796491015343%"></i><i style="--h:25.27876233279586%"></i><i style="--h:67.90469952304937%"></i><i style="--h:48.72800996182167%"></i><i style="--h:79.02902715283804%"></i><i style="--h:67.49748975389082%"></i><i style="--h:60.867784451504825%"></i><i style="--h:61.07750251198113%"></i><i style="--h:31.726439060715474%"></i></div><div class="row"><span>OPEN-METEO API</span><span id="apiStatus" class="pill">WAITING</span></div><div class="row"><span>MOON / ORBIT</span><span class="pill">ASTRONOMICAL ESTIMATE</span></div></section>
+<section class="panel wide" id="live-media-panel"><h2>LIVE VIDEO / NASA MEDIA</h2>
+<style>
+#live-media-panel .media-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+#live-media-panel .media-tabs button{min-height:36px;cursor:pointer}
+#live-media-panel .media-tabs button[aria-pressed="true"]{background:#12434a;border-color:var(--cyan);color:#fff}
+#live-media-panel .media-frame{width:100%;aspect-ratio:16/9;min-height:180px;border:1px solid var(--line);background:#000}
+#live-media-panel .media-frame iframe{width:100%;height:100%;border:0;display:block}
+#live-media-panel .media-caption{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px}
+#live-media-panel .media-caption a{color:var(--cyan)}
+#live-media-panel .media-feed{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+#live-media-panel .media-feed article{border:1px solid var(--line);padding:8px;min-width:0}
+#live-media-panel .media-feed img{width:100%;max-height:150px;object-fit:cover;background:#000}
+#live-media-panel .media-feed a{color:var(--cyan)}
+#live-media-panel .media-feed p{margin:5px 0}
+@media(max-width:600px){#live-media-panel .media-feed{grid-template-columns:1fr}}
+</style>
+<div class="media-tabs" role="group" aria-label="NASA video sources">
+<button type="button" data-media="iss" aria-pressed="true">ISS / Earth view</button>
+<button type="button" data-media="nasa">NASA live events</button>
+<button type="button" data-media="jpl">NASA JPL</button>
+</div>
+<div class="media-frame"><iframe id="earthVideo" src="https://www.youtube-nocookie.com/embed/DfEr5XCFNWM?rel=0&modestbranding=1" title="NASA official International Space Station video" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+<div class="media-caption"><span id="mediaStatus" class="pill">NASA · OFFICIAL SOURCE</span><a id="mediaOriginal" href="https://www.youtube.com/watch?v=DfEr5XCFNWM" target="_blank" rel="noopener noreferrer">Open original video ↗</a></div>
+<p class="footer">Embedded playback depends on YouTube availability, regional restrictions and Telegram WebView policy. If playback is blocked, use the official source link.</p>
+<div class="media-feed">
+<article><h2>NASA · IMAGE OF THE DAY</h2><img id="apodImage" alt="NASA image of the day" loading="lazy" hidden><p id="apodTitle">Loading NASA media metadata…</p><p id="apodExplain" class="footer"></p><a id="apodLink" href="https://science.nasa.gov/solar-system/" target="_blank" rel="noopener noreferrer">NASA source ↗</a></article>
+<article><h2>NEAR-EARTH OBJECTS</h2><div class="metric"><small>OBJECTS IN NASA FEED</small><b id="neoCount">—</b></div><p id="neoDate" class="footer">Waiting for NASA NeoWs…</p><a href="https://cneos.jpl.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA/JPL CNEOS ↗</a></article>
+</div>
+<script>
+(function(){
+ const player=document.getElementById('earthVideo'),status=document.getElementById('mediaStatus'),original=document.getElementById('mediaOriginal');
+ const sources={
+  iss:{url:'https://www.youtube-nocookie.com/embed/DfEr5XCFNWM?rel=0&modestbranding=1',watch:'https://www.youtube.com/watch?v=DfEr5XCFNWM',label:'NASA · ISS / EARTH VIDEO'},
+  nasa:{url:'https://www.youtube-nocookie.com/embed/nA9UZF-SZoQ?rel=0&modestbranding=1',watch:'https://www.nasa.gov/live/',label:'NASA LIVE · CHECK OFFICIAL SCHEDULE'},
+  jpl:{url:'https://www.youtube-nocookie.com/embed/live_stream?channel=UCryGec9PdUCLjpJW2mgCuLw',watch:'https://www.youtube.com/@NASAJPL',label:'NASA JPL · LIVE CHANNEL'}
+ };
+ document.querySelectorAll('[data-media]').forEach(button=>button.addEventListener('click',()=>{
+  const source=sources[button.dataset.media];if(!source)return;
+  player.src=source.url;original.href=source.watch;status.textContent=source.label;
+  document.querySelectorAll('[data-media]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+ }));
+ const apodImage=document.getElementById('apodImage'),apodTitle=document.getElementById('apodTitle'),apodExplain=document.getElementById('apodExplain'),apodLink=document.getElementById('apodLink');
+ fetch('https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1',{headers:{Accept:'application/json'}})
+ .then(r=>{if(!r.ok)throw Error('NASA APOD HTTP '+r.status);return r.json()})
+ .then(data=>{const item=Array.isArray(data)?data[0]:data;if(!item)throw Error('No APOD item');
+  const title=item.title?.rendered||item.title||'NASA Image of the Day';
+  const image=item.featured_media_url||item.image_url||item.url||'';
+  apodTitle.textContent=title.replace(/<[^>]*>/g,'');
+  apodExplain.textContent=(item.excerpt?.rendered||item.description||'Official NASA astronomy media.').replace(/<[^>]*>/g,' ').slice(0,320);
+  const link=item.link||'https://science.nasa.gov/';apodLink.href=link;
+  if(image&&/^https:\/\//i.test(image)){apodImage.src=image;apodImage.hidden=false;apodImage.onerror=()=>{apodImage.hidden=true}}
+ }).catch(()=>{apodTitle.textContent='NASA image metadata unavailable right now.';apodExplain.textContent='Use the official NASA media library.';apodLink.href='https://images.nasa.gov/'});
+ const count=document.getElementById('neoCount'),date=document.getElementById('neoDate');
+ const now=new Date(),iso=now.toISOString().slice(0,10);
+ fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+iso+'&end_date='+iso+'&api_key=DEMO_KEY',{headers:{Accept:'application/json'}})
+ .then(r=>{if(!r.ok)throw Error('NeoWs HTTP '+r.status);return r.json()})
+ .then(data=>{const n=data.element_count;if(!Number.isFinite(n))throw Error('No NEO count');count.textContent=String(n);date.textContent='NASA NeoWs · '+iso+' UTC · '+(data.near_earth_objects?.[iso]?.length||0)+' records for this date';})
+ .catch(()=>{count.textContent='N/A';date.textContent='NASA NeoWs temporarily unavailable or DEMO_KEY rate limit reached.'});
+})();
+</script></section>
 <section class="panel"><h2>SATELLITE NETWORK</h2><div class="readouts"><div class="metric"><small>ORBITAL DATA</small><b>PUBLIC TLE</b></div><div class="metric"><small>LIVE COUNT</small><b>NOT LOADED</b></div></div><p class="footer">Live satellite positions require a validated TLE feed and propagation; no fake live count is shown.</p><button id="refresh" type="button">↻ REFRESH DATA</button><p class="error" id="err" role="status"></p></section>
 </div><div class="footer">FREEzzzGames · EARTH CONTROL MODULE · OPEN DATA · <a href="https://open-meteo.com/" style="color:var(--cyan)">Open-Meteo</a> · orbital and lunar values are estimates</div></div>
 <script>
