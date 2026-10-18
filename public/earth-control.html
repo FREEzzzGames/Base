@@ -32,6 +32,8 @@ body{height:100dvh;min-height:0}
 .pill{font-size:8px;padding:1px 3px}
 button{font-size:9px;padding:4px}
 #live-media-panel{grid-column:span 1}
+.grid>.panel.wide{grid-column:span 1}
+#live-media-panel .media-frame{max-height:10vh}
 #live-media-panel .media-tabs{gap:3px;margin:2px 0}
 #live-media-panel .media-tabs button{min-height:23px;padding:3px 5px;font-size:9px}
 #live-media-panel .media-frame{flex:1 1 auto;min-height:0;height:auto;aspect-ratio:16/9;max-height:100%}
@@ -44,7 +46,7 @@ button{font-size:9px;padding:4px}
 #live-media-panel .media-feed p{font-size:9px;line-height:1.1;margin:2px 0}
 #live-media-panel .media-feed .footer{display:none}
 #earth-observations{grid-column:span 1}
-#earth-observations .monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
+#earth-observations .monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:0}
 #earth-observations .monitor-card{padding:4px;min-height:0;overflow:hidden}
 #earth-observations .monitor-card h3{font-size:9px;line-height:1.1;margin:0 0 3px}
 #earth-observations .monitor-card p{font-size:9px;line-height:1.1;margin:2px 0}
@@ -57,6 +59,7 @@ button{font-size:9px;padding:4px}
 #satList .row{font-size:9px;margin:1px 0}
 #satList .row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #satList .row b{font-size:9px}
+#satList .row:nth-child(n+5){display:none}
 .grid>.panel:nth-child(1){grid-column:span 1}
 .grid>.panel:nth-child(2){grid-column:span 1}
 .grid>.panel:nth-child(3){grid-column:span 1}
@@ -71,7 +74,7 @@ button{font-size:9px;padding:4px}
  .panel{padding:4px}
  .panel h2{font-size:9px}
  #live-media-panel,#earth-observations{grid-column:span 1}
- #live-media-panel .media-frame{flex:0 0 auto;height:auto;min-height:54px;max-height:18vh}
+ #live-media-panel .media-frame{flex:0 0 auto;height:auto;min-height:40px;max-height:12vh}
  #live-media-panel .media-tabs{flex-wrap:wrap}
  #live-media-panel .media-feed{display:grid}
  #earth-observations .monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
