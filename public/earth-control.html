@@ -336,7 +336,7 @@ body .wrap .grid>section.panel:nth-child(8){grid-column:4!important;grid-row:4!i
 <button type="button" data-media="nasa">NASA live events</button>
 <button type="button" data-media="archive">NASA video library</button>
 </div>
-<div class="media-frame"><iframe id="earthVideo" src="https://www.youtube-nocookie.com/embed/DfEr5XCFNWM?rel=0&modestbranding=1" title="NASA official International Space Station video" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+<div class="media-frame video-monitor"><img class="monitor-poster" src="https://img.youtube.com/vi/jKHvbJe9c_Y/hqdefault.jpg" alt="NASA ISS live stream preview" loading="eager"><iframe id="earthVideo" class="monitor-video" src="https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io" title="NASA official International Space Station live video" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><span class="video-live-tag">● NASA LIVE</span><a class="video-fallback-link" href="https://www.youtube.com/watch?v=jKHvbJe9c_Y" target="_blank" rel="noopener noreferrer">OPEN LIVE VIDEO ↗</a></div>
 <div class="media-caption"><span id="mediaStatus" class="pill">NASA · OFFICIAL SOURCE</span><a id="mediaOriginal" href="https://www.youtube.com/watch?v=DfEr5XCFNWM" target="_blank" rel="noopener noreferrer">Open original video ↗</a></div>
 <p class="footer">Embedded playback depends on YouTube availability, regional restrictions and Telegram WebView policy. If playback is blocked, use the official source link.</p>
 <div class="media-feed">
@@ -347,9 +347,9 @@ body .wrap .grid>section.panel:nth-child(8){grid-column:4!important;grid-row:4!i
 (function(){
  const player=document.getElementById('earthVideo'),status=document.getElementById('mediaStatus'),original=document.getElementById('mediaOriginal');
  const sources={
-  iss:{url:'https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1',watch:'https://www.youtube.com/watch?v=jKHvbJe9c_Y',label:'NASA · ISS / EARTH LIVE VIDEO'},
-  nasa:{url:'https://www.youtube-nocookie.com/embed/wG4YaEcNlb0?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1',watch:'https://www.nasa.gov/live/',label:'NASA LIVE · OFFICIAL LIVE SCHEDULE'},
-  archive:{url:'https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1',watch:'https://www.youtube.com/@NASA/videos',label:'NASA VIDEO LIBRARY · OFFICIAL CHANNEL'}
+  iss:{url:'https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io',watch:'https://www.youtube.com/watch?v=jKHvbJe9c_Y',label:'NASA · ISS / EARTH LIVE VIDEO'},
+  nasa:{url:'https://www.youtube-nocookie.com/embed/wG4YaEcNlb0?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io',watch:'https://www.nasa.gov/live/',label:'NASA LIVE · OFFICIAL LIVE SCHEDULE'},
+  archive:{url:'https://www.youtube-nocookie.com/embed/jKHvbJe9c_Y?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Ffreezzzgames.github.io',watch:'https://www.youtube.com/@NASA/videos',label:'NASA VIDEO LIBRARY · OFFICIAL CHANNEL'}
  };
  document.querySelectorAll('[data-media]').forEach(button=>button.addEventListener('click',()=>{
   const source=sources[button.dataset.media];if(!source)return;
