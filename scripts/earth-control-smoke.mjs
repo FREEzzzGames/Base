@@ -33,6 +33,10 @@ assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nas
 assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html.includes('id="font-down"') && html.includes('id="landscape"'), "dashboard controls missing");
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
+assert.ok(main.includes('module.requestFullscreen()'), "Earth landscape must fullscreen only the monitor module");
+assert.ok(!main.includes('document.documentElement.requestFullscreen()'), "Earth landscape must not fullscreen the whole portal shell");
+assert.ok(css.includes('.earth-module:fullscreen') && css.includes('> .earth-module-head{display:none!important}'), "fullscreen monitor must hide duplicate portal header");
+
 
 assert.ok(!html.includes('src="./orbit-blueprint.html?embed=1"'), "OrbitBlueprint must not occupy a dashboard grid row");
 assert.ok(html.includes('href="./orbit-blueprint.html"'), "OrbitBlueprint standalone launch link missing");
@@ -41,5 +45,9 @@ const blueprintScripts = [...blueprint.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<
 assert.equal(blueprintScripts.length, 1, "expected one inline OrbitBlueprint runtime");
 new vm.Script(blueprintScripts[0], { filename: "orbit-blueprint.inline.js" });
 for (const control of ['id="craft"', 'id="modules"', 'id="mode"', 'id="rotate"', 'id="reset"', 'id="scene"']) assert.ok(blueprint.includes(control), "OrbitBlueprint control missing: " + control);
+assert.ok(blueprint.includes('.module-name{display:block') && blueprint.includes('.module-meta{display:block'), "OrbitBlueprint module names and metadata must occupy separate lines");
+assert.ok(blueprint.includes('sx=Math.max(18,Math.min(w*.22,h*.56))'), "OrbitBlueprint node layout must scale to wide, short embedded canvases");
+assert.ok(blueprint.includes("SOLAR ARRAY") && blueprint.includes("ZVEZDA"), "OrbitBlueprint compact node labels missing");
+
 
 console.log("EARTH_CONTROL_SMOKE_OK", JSON.stringify({ panels: panelIds.length, uniqueIds: idList.length, runtimeRefs: refs.length, endpoints: 7, standaloneOrbitBlueprint: true }));
