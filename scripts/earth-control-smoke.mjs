@@ -9,7 +9,7 @@ const blueprint = await readFile(new URL("../public/orbit-blueprint.html", impor
 
 assert.ok(html.includes("<title>PLANET EARTH CONTROL DECK</title>"), "dashboard title missing");
 const panelIds = [...html.matchAll(/data-panel="([^"]+)"/g)].map(match => match[1]).filter(id => !id.includes("'+"));
-assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites", "blueprint"], "expected nine standalone dashboard panels including OrbitBlueprint");
+assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites"], "expected original eight dashboard panels");
 const idList = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const duplicates = idList.filter((id, index) => idList.indexOf(id) !== index);
 assert.deepEqual(duplicates, [], "duplicate HTML ids found");
@@ -34,7 +34,7 @@ assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
 
-assert.ok(html.includes('src="./orbit-blueprint.html?embed=1"'), "OrbitBlueprint iframe missing from Earth dashboard");
+assert.ok(!html.includes('src="./orbit-blueprint.html?embed=1"'), "OrbitBlueprint must not occupy a dashboard grid row");
 assert.ok(html.includes('href="./orbit-blueprint.html"'), "OrbitBlueprint standalone launch link missing");
 assert.ok(blueprint.includes("ORBIT") && blueprint.includes("BLUEPRINT") && blueprint.includes("INTERNATIONAL SPACE STATION") && blueprint.includes("SPACE SHUTTLE") && blueprint.includes("SATURN V"), "OrbitBlueprint spacecraft catalog incomplete");
 const blueprintScripts = [...blueprint.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]);
@@ -42,4 +42,4 @@ assert.equal(blueprintScripts.length, 1, "expected one inline OrbitBlueprint run
 new vm.Script(blueprintScripts[0], { filename: "orbit-blueprint.inline.js" });
 for (const control of ['id="craft"', 'id="modules"', 'id="mode"', 'id="rotate"', 'id="reset"', 'id="scene"']) assert.ok(blueprint.includes(control), "OrbitBlueprint control missing: " + control);
 
-console.log("EARTH_CONTROL_SMOKE_OK", JSON.stringify({ panels: panelIds.length, uniqueIds: idList.length, runtimeRefs: refs.length, endpoints: 7, orbitBlueprint: true }));
+console.log("EARTH_CONTROL_SMOKE_OK", JSON.stringify({ panels: panelIds.length, uniqueIds: idList.length, runtimeRefs: refs.length, endpoints: 7, standaloneOrbitBlueprint: true }));
