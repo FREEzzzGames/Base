@@ -30,3 +30,18 @@
 .home-earth .home-card-title{color:#eee!important;text-shadow:none!important}
 .home-earth:before{background:radial-gradient(circle at 35% 30%,#aaa,#333 42%,#080808 74%)!important;box-shadow:0 0 14px #fff2!important}
 .home-earth:after{border-color:#aaa8!important}
+
+/* Fullscreen belongs to the Earth monitor itself, not the whole portal shell. */
+.portal-route-workspace > main > .earth-module:fullscreen{
+ position:fixed!important;inset:0!important;z-index:2147483000!important;
+ display:flex!important;flex-direction:column!important;width:100vw!important;height:100dvh!important;
+ max-height:100dvh!important;min-height:0!important;padding:0!important;margin:0!important;gap:0!important;
+ background:#050505!important;border:0!important;overflow:hidden!important;
+}
+.portal-route-workspace > main > .earth-module:fullscreen > .earth-module-head{display:none!important}
+.portal-route-workspace > main > .earth-module:fullscreen > .earth-control-frame{
+ flex:1 1 auto!important;width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;
+}
+.earth-module:fullscreen{background:#050505!important}
+.earth-module:fullscreen > .earth-module-head{display:none!important}
+.earth-module:fullscreen > .earth-control-frame{flex:1 1 auto!important;width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important}
