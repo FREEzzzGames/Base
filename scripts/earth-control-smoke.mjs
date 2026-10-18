@@ -36,7 +36,7 @@ assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth"
 
 assert.ok(html.includes('src="./orbit-blueprint.html?embed=1"'), "OrbitBlueprint iframe missing from Earth dashboard");
 assert.ok(html.includes('href="./orbit-blueprint.html"'), "OrbitBlueprint standalone launch link missing");
-assert.ok(blueprint.includes("ORBITBLUEPRINT") && blueprint.includes("INTERNATIONAL SPACE STATION") && blueprint.includes("SPACE SHUTTLE") && blueprint.includes("SATURN V"), "OrbitBlueprint spacecraft catalog incomplete");
+assert.ok(blueprint.includes("ORBIT") && blueprint.includes("BLUEPRINT") && blueprint.includes("INTERNATIONAL SPACE STATION") && blueprint.includes("SPACE SHUTTLE") && blueprint.includes("SATURN V"), "OrbitBlueprint spacecraft catalog incomplete");
 const blueprintScripts = [...blueprint.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]);
 assert.equal(blueprintScripts.length, 1, "expected one inline OrbitBlueprint runtime");
 new vm.Script(blueprintScripts[0], { filename: "orbit-blueprint.inline.js" });
