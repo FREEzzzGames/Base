@@ -2,7 +2,6 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import "./zenith-os.css";
-import "./earth-control.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { bindHomeGridShift } from "./home-grid-shift";
@@ -448,7 +447,6 @@ function renderPortalToolbar(){
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"],
-    ["earth","rocket",T("earth")]
   ];
   return `<header class="portal-topbar">
     <button class="portal-top-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("profile","portal-top-profile-icon")}</button>
@@ -493,13 +491,9 @@ function render(){
         ${homeCard("game")}
         ${homeCard("radio")}
         ${homeCard("library")}
-        ${homeCard("earth")}
       </div>`;
   }
 
-  if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><div class="earth-header-actions"><button class="tg-button secondary earth-landscape-toggle" type="button" data-earth-landscape aria-label="Switch Earth Control to landscape">↻ LANDSCAPE</button><button class="tg-button secondary" type="button" data-view="home">HOME</button></div></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}&v=${encodeURIComponent(PORTAL_BUILD_ID)}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen; screen-wake-lock" referrerpolicy="no-referrer"></iframe></div>`;
-  }
 
   if(view==="live"){
     body=`
@@ -635,8 +629,7 @@ function homeCard(v:Exclude<View,"home">){
     library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
-  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",earth:"PLANET EARTH CONTROL DECK"};
-  if(v==="earth")return `<div class="card home-card portal-block home-earth" data-portal-card="earth" data-portal-block="earth" data-view="earth" role="button" tabindex="0" aria-label="${T("earthCard")}"><span class="home-card-title">${T("earth")}</span><span class="home-earth-subtitle">${T("earthSub")}</span></div>`;
+  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY"};
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
@@ -863,16 +856,6 @@ function bind(){
     };
   });
 
-  document.querySelectorAll<HTMLElement>(".earth-module [data-view=\"home\"]").forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
-  document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>button.addEventListener("click",async()=>{
-    button.textContent="ROTATING…";
-    try{
-      if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
-      const orientation=(screen.orientation as unknown as {lock?:(value:string)=>Promise<void>}).lock;
-      if(orientation){await orientation.call(screen.orientation,"landscape");button.textContent="LANDSCAPE ACTIVE";}
-      else{button.textContent="ROTATE PHONE ↻";}
-    }catch(error){button.textContent="ROTATE PHONE ↻";console.info("Landscape lock unavailable in this WebView; rotate the device.",error);}
-  }));
 
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
