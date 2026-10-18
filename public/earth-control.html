@@ -1,6 +1,97 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05090d"><title>PLANET EARTH CONTROL DECK</title><style>
 :root{color-scheme:dark;--bg:#05090d;--panel:#07151b;--line:#16434a;--cyan:#48f3e8;--green:#24f5a0;--red:#ff394b;--amber:#ffb45c;--white:#d9f7f8;font:12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#10252e 0,#05090d 65%);color:var(--white);min-height:100vh}body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#56f8ec08 4px);z-index:3}.wrap{padding:10px;max-width:1500px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:12px;background:#061016;box-shadow:0 0 18px #20f5e812}.title{font-size:clamp(16px,3vw,28px);font-weight:900;letter-spacing:.05em}.title span{color:var(--red)}.status{color:var(--green);white-space:nowrap}.grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;margin-top:8px}.panel{min-width:0;border:1px solid var(--line);background:linear-gradient(145deg,#08171d,#050b10);padding:10px;position:relative;overflow:hidden}.panel h2{font-size:13px;margin:0 0 9px;color:var(--cyan);letter-spacing:.08em}.panel h2:before{content:"■ ";color:var(--red)}.earth{height:190px;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#10363d 0,#07151b 65%,#04090d)}.globe{width:155px;height:155px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#a8fcff 0,#287c91 10%,#0b3c59 42%,#03080d 72%);box-shadow:inset -24px -8px 28px #000,0 0 22px #39dbe8aa;position:relative;overflow:hidden;animation:turn 22s linear infinite}.globe:before{content:"";position:absolute;inset:-15%;background:repeating-linear-gradient(90deg,transparent 0 20px,#57e9ef55 21px 22px),repeating-linear-gradient(0deg,transparent 0 20px,#57e9ef33 21px 22px);border-radius:50%;transform:rotate(-18deg)}.globe:after{content:"";position:absolute;inset:15% 23%;background:#3ad4a255;clip-path:polygon(18% 0,65% 8%,78% 29%,55% 43%,72% 67%,48% 100%,29% 68%,0 41%);filter:drop-shadow(0 0 6px #24f5a0)}@keyframes turn{to{filter:hue-rotate(25deg);transform:rotate(360deg)}}.readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.metric{border:1px solid #16434a;padding:7px;background:#041015}.metric small{display:block;color:#80a9b1;font-size:10px}.metric b{font-size:16px;color:var(--green)}.metric em{font-style:normal;color:var(--amber);font-size:10px}.wide{grid-column:span 2}.orbit{height:190px;display:grid;place-items:center;position:relative}.sun{width:36px;height:36px;border-radius:50%;background:#ffb34f;box-shadow:0 0 15px #ffb34f,0 0 42px #ff552d;position:absolute}.orbit i{position:absolute;border:1px solid #ff8e4255;border-radius:50%;width:170px;height:88px;animation:orbit 14s linear infinite}.orbit i:nth-child(2){width:230px;height:125px;animation-duration:20s;transform:rotate(35deg)}.orbit i:nth-child(3){width:280px;height:150px;animation-duration:27s;transform:rotate(-28deg)}.planet{position:absolute;width:15px;height:15px;border-radius:50%;background:#47b6ff;box-shadow:0 0 10px #47b6ff;animation:planet 9s linear infinite}@keyframes planet{to{transform:rotate(360deg) translateX(105px) rotate(-360deg)}}@keyframes orbit{to{transform:rotate(360deg)}}.sky{height:120px;background:radial-gradient(ellipse at 50% 100%,#24405d,#07101b 65%);position:relative;overflow:hidden}.sky:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#d6ffff 1px,transparent 1.5px);background-size:29px 23px;animation:stars 8s linear infinite}@keyframes stars{to{background-position:29px 46px}}.bars{height:74px;display:flex;align-items:end;gap:4px;padding:8px 0}.bars i{flex:1;background:linear-gradient(0deg,#0d655c,var(--cyan));height:var(--h);box-shadow:0 0 7px #48f3e855;animation:pulse 1.8s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.45}}.footer{color:#6e969d;font-size:10px;margin:10px 0}.red{color:var(--red)}.green{color:var(--green)}button{background:#0a2027;color:var(--cyan);border:1px solid var(--line);padding:7px;font:inherit}button:active{background:#16434a}.row{display:flex;justify-content:space-between;gap:8px;margin:5px 0}.pill{color:var(--green);border:1px solid #1a6e59;padding:2px 5px;font-size:10px}.error{color:var(--amber);font-size:10px}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide,.right{grid-column:auto}.top{align-items:flex-start;flex-direction:column}.earth{height:170px}.globe{width:138px;height:138px}.orbit{height:170px;overflow:hidden}.orbit i:nth-child(1){width:145px;height:74px}.orbit i:nth-child(2){width:185px;height:100px}.orbit i:nth-child(3){width:225px;height:122px}.metric b{font-size:15px}.metric{overflow-wrap:anywhere}.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:6px}.panel{padding:9px}.row span:first-child{min-width:0}.row span:last-child,.row b{text-align:right}}@media(max-width:390px){.grid{grid-template-columns:1fr}.wide,.right{grid-column:auto}}
+</style><style id="earth-fit-screen">
+/* One-screen dashboard: all modules stay visible; no page-level scrolling. */
+html,body{width:100%;height:100%;min-height:0;margin:0;overflow:hidden}
+body{height:100dvh;min-height:0}
+.wrap{height:100dvh;min-height:0;max-width:none;padding:5px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.top{flex:0 0 auto;min-height:34px;padding:5px 9px;gap:6px}
+.title{font-size:clamp(12px,1.7vw,20px)}
+.status,#clock{font-size:clamp(9px,1vw,12px)}
+.grid{flex:1 1 auto;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:5px;margin-top:0;overflow:hidden}
+.panel{min-height:0;min-width:0;padding:6px;overflow:hidden;display:flex;flex-direction:column;gap:3px}
+.panel h2{font-size:clamp(9px,.9vw,12px);line-height:1.15;margin:0 0 3px;letter-spacing:.035em}
+.panel .footer{font-size:9px;line-height:1.2;margin:3px 0;overflow-wrap:anywhere}
+.earth{height:clamp(68px,16vh,130px);min-height:0;flex:0 0 auto}
+.globe{width:clamp(58px,9vw,112px);height:clamp(58px,9vw,112px)}
+.readouts{gap:4px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.metric{padding:4px;min-width:0;overflow:hidden}
+.metric small{font-size:9px;line-height:1.1}
+.metric b{font-size:clamp(10px,1.15vw,15px);overflow-wrap:anywhere}
+.metric em{font-size:8px}
+.orbit{height:clamp(68px,16vh,130px);min-height:0;flex:0 0 auto;overflow:hidden}
+.orbit i:nth-child(3){width:min(85%,210px);height:75%}
+.orbit i:nth-child(2){width:min(70%,170px);height:60%}
+.orbit i:nth-child(1){width:min(54%,130px);height:42%}
+.sun{width:22px;height:22px}
+.planet{width:9px;height:9px}
+.sky{height:clamp(42px,9vh,72px);min-height:0;flex:0 0 auto}
+.bars{height:24px;min-height:0;padding:2px 0;flex:0 0 auto}
+.row{gap:4px;margin:2px 0;font-size:10px;line-height:1.15}
+.pill{font-size:8px;padding:1px 3px}
+button{font-size:9px;padding:4px}
+#live-media-panel{grid-column:span 2}
+#live-media-panel .media-tabs{gap:3px;margin:2px 0}
+#live-media-panel .media-tabs button{min-height:23px;padding:3px 5px;font-size:9px}
+#live-media-panel .media-frame{flex:1 1 auto;min-height:0;height:auto;aspect-ratio:16/9;max-height:100%}
+#live-media-panel .media-caption{font-size:9px;margin-top:2px}
+#live-media-panel .footer{display:none}
+#live-media-panel .media-feed{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:3px;min-height:0}
+#live-media-panel .media-feed article{padding:4px;min-width:0;overflow:hidden}
+#live-media-panel .media-feed h2{font-size:9px}
+#live-media-panel .media-feed img{max-height:38px;object-fit:cover}
+#live-media-panel .media-feed p{font-size:9px;line-height:1.1;margin:2px 0}
+#live-media-panel .media-feed .footer{display:none}
+#earth-observations{grid-column:span 2}
+#earth-observations .monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
+#earth-observations .monitor-card{padding:4px;min-height:0;overflow:hidden}
+#earth-observations .monitor-card h3{font-size:9px;line-height:1.1;margin:0 0 3px}
+#earth-observations .monitor-card p{font-size:9px;line-height:1.1;margin:2px 0}
+#earth-observations .monitor-value{font-size:clamp(10px,1.1vw,15px);line-height:1.1}
+#earth-observations .monitor-list{gap:2px;margin-top:2px}
+#earth-observations .monitor-item{font-size:9px;padding-top:2px;line-height:1.1}
+#earth-observations .monitor-card .footer{font-size:8px}
+#earth-observations>.footer{display:none}
+#satList{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px!important;overflow:hidden}
+#satList .row{font-size:9px;margin:1px 0}
+#satList .row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#satList .row b{font-size:9px}
+.grid>.panel:nth-child(1){grid-column:span 1}
+.grid>.panel:nth-child(2){grid-column:span 1}
+.grid>.panel:nth-child(3){grid-column:span 1}
+.grid>.panel:nth-child(4){grid-column:span 1}
+.grid>.panel:nth-child(5){grid-column:span 1}
+.grid>.panel:nth-child(8){grid-column:span 2}
+.wrap>.footer{flex:0 0 auto;font-size:8px;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(orientation:portrait){
+ .wrap{padding:4px;gap:4px}
+ .top{min-height:32px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
+ .panel{padding:4px}
+ .panel h2{font-size:9px}
+ #live-media-panel,#earth-observations{grid-column:span 1}
+ #live-media-panel .media-frame{flex:0 0 auto;height:auto;min-height:54px;max-height:18vh}
+ #live-media-panel .media-tabs{flex-wrap:wrap}
+ #live-media-panel .media-feed{display:none}
+ #earth-observations .monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #earth-observations .monitor-card:nth-child(n+5){display:none}
+ .grid>.panel:nth-child(8){grid-column:span 1}
+ .earth{height:9vh}
+ .orbit{height:9vh}
+ .sky{height:5vh}
+}
+@media(max-height:430px) and (orientation:landscape){
+ .title{font-size:12px}
+ .top{padding:3px 7px;min-height:28px}
+ .earth,.orbit{height:10vh}
+ .sky{height:5vh}
+ .panel{padding:4px}
+ .metric{padding:3px}
+ #live-media-panel .media-feed{display:none}
+ #earth-observations .monitor-card:nth-child(n+4){display:none}
+ #earth-observations .monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 </style></head><body><div class="wrap"><header class="top"><div class="title">PLANET EARTH <span>CONTROL DECK</span></div><div class="status">● SYS ONLINE &nbsp; <span id="net">CONNECTING</span></div><div id="clock">UTC --:--:--</div></header><div class="grid">
 <section class="panel"><h2>EARTH LIVE FEED</h2><div class="earth"><div class="globe"></div></div><div class="readouts"><div class="metric"><small>LAT / LON</small><b>48.89° N</b><br>8.70° E</div><div class="metric"><small>ROTATION</small><b>23h 56m</b><em>SIDEREAL DAY</em></div></div><p class="footer">Stylized globe animation · not a live satellite image</p></section>
 <section class="panel"><h2>STAR MAP / SOL SYSTEM</h2><div class="orbit"><div class="sun"></div><i></i><i></i><i></i><div class="planet"></div></div><div class="readouts"><div class="metric"><small>EARTH–SUN DISTANCE</small><b id="distance">149.6 M km</b></div><div class="metric"><small>EARTH ORBIT</small><b id="orbitday">DAY ---</b></div></div><p class="footer">Orbital distance estimated from date · visualization not to scale</p></section>
