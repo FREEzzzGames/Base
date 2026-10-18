@@ -49,14 +49,13 @@
   document.querySelectorAll('[data-media]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
  }));
  const apodImage=document.getElementById('apodImage'),apodTitle=document.getElementById('apodTitle'),apodExplain=document.getElementById('apodExplain'),apodLink=document.getElementById('apodLink');
- fetch('https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1',{headers:{Accept:'application/json'}})
- .then(r=>{if(!r.ok)throw Error('NASA APOD HTTP '+r.status);return r.json()})
- .then(data=>{const item=Array.isArray(data)?data[0]:data;if(!item)throw Error('No APOD item');
-  const title=item.title?.rendered||item.title||'NASA Image of the Day';
-  const image=item.featured_media_url||item.image_url||item.url||'';
-  apodTitle.textContent=title.replace(/<[^>]*>/g,'');
-  apodExplain.textContent=(item.excerpt?.rendered||item.description||'Official NASA astronomy media.').replace(/<[^>]*>/g,' ').slice(0,320);
-  const link=item.link||'https://science.nasa.gov/';apodLink.href=link;
+ fetch('https://images-api.nasa.gov/search?q=Earth%20from%20space&media_type=image&page_size=1',{headers:{Accept:'application/json'}})
+ .then(r=>{if(!r.ok)throw Error('NASA Images API HTTP '+r.status);return r.json()})
+ .then(data=>{const item=data.collection?.items?.[0];if(!item)throw Error('No NASA image result');
+  const meta=item.data?.[0]||{},image=item.links?.find(x=>x.rel==='preview')?.href||'';
+  apodTitle.textContent=meta.title||'NASA image: Earth from space';
+  apodExplain.textContent=(meta.description||meta.location||'NASA Image and Video Library · search result.').replace(/<[^>]*>/g,' ').slice(0,320);
+  apodLink.href=meta.nasa_id?'https://images.nasa.gov/details/'+encodeURIComponent(meta.nasa_id):'https://images.nasa.gov/';
   if(image&&/^https:\/\//i.test(image)){apodImage.src=image;apodImage.hidden=false;apodImage.onerror=()=>{apodImage.hidden=true}}
  }).catch(()=>{apodTitle.textContent='NASA image metadata unavailable right now.';apodExplain.textContent='Use the official NASA media library.';apodLink.href='https://images.nasa.gov/'});
  const count=document.getElementById('neoCount'),date=document.getElementById('neoDate');
