@@ -10049,3 +10049,9 @@ button:disabled,[aria-disabled="true"]{
 .live-official-group li{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px}
 .live-official-group li span{min-width:0;overflow-wrap:anywhere}
 .live-official-group li small{flex:0 0 auto;color:var(--fz-muted,#9ba8b2);font-size:10px;text-align:right}
+
+/* Seven independent portal destinations: keep every tab visible on mobile. */
+.portal-toolbar-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important}
+@media(max-width:430px){.portal-toolbar-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:1px!important}.portal-toolbar-item{min-width:0!important;padding-left:1px!important;padding-right:1px!important}.portal-toolbar-label{font-size:8px!important;letter-spacing:0!important}}
+/* The selected module, not a fixed first/legacy tab, controls active styling. */
+.portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child:not(.active){background:transparent!important;border-color:transparent!important;box-shadow:none!important}
