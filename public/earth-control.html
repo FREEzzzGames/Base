@@ -31,7 +31,7 @@ body{height:100dvh;min-height:0}
 .row{gap:4px;margin:2px 0;font-size:10px;line-height:1.15}
 .pill{font-size:8px;padding:1px 3px}
 button{font-size:9px;padding:4px}
-#live-media-panel{grid-column:span 2}
+#live-media-panel{grid-column:span 1}
 #live-media-panel .media-tabs{gap:3px;margin:2px 0}
 #live-media-panel .media-tabs button{min-height:23px;padding:3px 5px;font-size:9px}
 #live-media-panel .media-frame{flex:1 1 auto;min-height:0;height:auto;aspect-ratio:16/9;max-height:100%}
@@ -43,7 +43,7 @@ button{font-size:9px;padding:4px}
 #live-media-panel .media-feed img{max-height:38px;object-fit:cover}
 #live-media-panel .media-feed p{font-size:9px;line-height:1.1;margin:2px 0}
 #live-media-panel .media-feed .footer{display:none}
-#earth-observations{grid-column:span 2}
+#earth-observations{grid-column:span 1}
 #earth-observations .monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
 #earth-observations .monitor-card{padding:4px;min-height:0;overflow:hidden}
 #earth-observations .monitor-card h3{font-size:9px;line-height:1.1;margin:0 0 3px}
@@ -62,7 +62,7 @@ button{font-size:9px;padding:4px}
 .grid>.panel:nth-child(3){grid-column:span 1}
 .grid>.panel:nth-child(4){grid-column:span 1}
 .grid>.panel:nth-child(5){grid-column:span 1}
-.grid>.panel:nth-child(8){grid-column:span 2}
+.grid>.panel:nth-child(8){grid-column:span 1}
 .wrap>.footer{flex:0 0 auto;font-size:8px;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(orientation:portrait){
  .wrap{padding:4px;gap:4px}
@@ -73,9 +73,9 @@ button{font-size:9px;padding:4px}
  #live-media-panel,#earth-observations{grid-column:span 1}
  #live-media-panel .media-frame{flex:0 0 auto;height:auto;min-height:54px;max-height:18vh}
  #live-media-panel .media-tabs{flex-wrap:wrap}
- #live-media-panel .media-feed{display:none}
+ #live-media-panel .media-feed{display:grid}
  #earth-observations .monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- #earth-observations .monitor-card:nth-child(n+5){display:none}
+
  .grid>.panel:nth-child(8){grid-column:span 1}
  .earth{height:9vh}
  .orbit{height:9vh}
@@ -88,8 +88,8 @@ button{font-size:9px;padding:4px}
  .sky{height:5vh}
  .panel{padding:4px}
  .metric{padding:3px}
- #live-media-panel .media-feed{display:none}
- #earth-observations .monitor-card:nth-child(n+4){display:none}
+ #live-media-panel .media-feed{display:grid}
+
  #earth-observations .monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 </style></head><body><div class="wrap"><header class="top"><div class="title">PLANET EARTH <span>CONTROL DECK</span></div><div class="status">● SYS ONLINE &nbsp; <span id="net">CONNECTING</span></div><div id="clock">UTC --:--:--</div></header><div class="grid">
