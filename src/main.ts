@@ -498,7 +498,7 @@ function render(){
   }
 
   if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>PLANET EARTH CONTROL DECK</h1><p>Open-data planetary telemetry</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
+    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>PLANET EARTH CONTROL DECK</h1><p>Open-data planetary telemetry</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
   }
 
   if(view==="live"){
