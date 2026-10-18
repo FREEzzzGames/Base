@@ -448,7 +448,7 @@ function renderPortalToolbar(){
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"],
-    ["earth","rocket","EARTH"]
+    ["earth","rocket",T("earth")]
   ];
   return `<header class="portal-topbar">
     <button class="portal-top-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("profile","portal-top-profile-icon")}</button>
@@ -498,7 +498,7 @@ function render(){
   }
 
   if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>PLANET EARTH CONTROL DECK</h1><p>Open-data planetary telemetry</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
+    body=`<div class="content portal-layout earth-module" data-portal-layout="earth"><div class="section-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><button class="tg-button secondary" type="button" data-view="home">HOME</button></div><iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div>`;
   }
 
   if(view==="live"){
@@ -636,7 +636,7 @@ function homeCard(v:Exclude<View,"home">){
   };
   const background=backgrounds[v];
   const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",earth:"PLANET EARTH CONTROL DECK"};
-  if(v==="earth")return `<div class="card home-card portal-block home-earth" data-portal-card="earth" data-portal-block="earth" data-view="earth" role="button" tabindex="0" aria-label="PLANET EARTH CONTROL DECK"><span class="home-card-title">EARTH CONTROL</span><span class="home-earth-subtitle">Planetary telemetry · live data</span></div>`;
+  if(v==="earth")return `<div class="card home-card portal-block home-earth" data-portal-card="earth" data-portal-block="earth" data-view="earth" role="button" tabindex="0" aria-label="${T("earthCard")}"><span class="home-card-title">${T("earth")}</span><span class="home-earth-subtitle">${T("earthSub")}</span></div>`;
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
