@@ -195,6 +195,27 @@
 .panel-earthdata .monitor-view .footer,.panel-orbit .footer{flex-shrink:0!important;position:relative!important;background:#090909;z-index:4}
 
 #sat-count{font-variant-numeric:tabular-nums}
+
+/* Operator onboarding and contextual glossary */
+#help-open{border-color:#666;color:#fff}
+.term-help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;padding:0;margin:0 2px;border:1px solid #555;border-radius:50%;font-size:9px;line-height:1;color:#ddd;vertical-align:middle}
+.term{white-space:normal}
+.intro-overlay{position:fixed;inset:0;z-index:1000;background:#000d;display:grid;place-items:center;padding:16px}
+.intro-overlay[hidden],.term-popover[hidden]{display:none}
+.intro-card{width:min(520px,100%);background:#080808;border:1px solid #888;box-shadow:0 0 0 1px #222;padding:clamp(18px,4vw,30px);font-family:inherit}
+.intro-kicker{font-size:9px;letter-spacing:.12em;color:#888}
+.intro-card h2{font-size:clamp(17px,3vw,24px);letter-spacing:.08em;margin:12px 0}
+.intro-card p{color:#ccc;line-height:1.7;min-height:3em}
+.intro-progress{color:#888;font-size:10px;border-top:1px solid #333;padding-top:12px}
+.intro-actions{display:flex;justify-content:space-between;gap:8px;margin-top:16px}
+.intro-actions button:last-child,.dialog-actions button{border-color:#aaa}
+.panel.onboarding-target,.blueprint-target{outline:2px solid #fff!important;outline-offset:2px;z-index:20;box-shadow:0 0 0 5px #fff2}
+.term-popover{position:fixed;z-index:1100;left:50%;bottom:18px;transform:translateX(-50%);width:min(360px,calc(100vw - 24px));padding:15px 38px 15px 15px;background:#080808;border:1px solid #777;box-shadow:0 8px 30px #000;font-size:11px}
+.term-popover strong{color:#fff;letter-spacing:.08em}.term-popover p{color:#bbb;line-height:1.6;margin:8px 0 0}
+#term-close{position:absolute;right:6px;top:6px;padding:2px 7px}
+.help-dialog{width:min(760px,calc(100vw - 24px));max-height:min(80dvh,720px)}
+.help-entry{padding:9px 0;border-bottom:1px solid #292929}.help-entry strong{display:block;color:#fff;font-size:11px}.help-entry p{margin:4px 0 0;color:#aaa;font-size:10px;line-height:1.6}
+@media(max-width:650px){#help-open{font-size:9px!important;padding:5px}.intro-card{padding:18px}}
 </style>
 </head>
 <body>
@@ -203,7 +224,7 @@
 <span class="mark"></span><div class="brand">PLANET EARTH CONTROL DECK</div>
 <div class="subbrand">GLOBAL OBSERVATION / PUBLIC DATA</div>
 <div class="status" id="net-status"><span class="dot"></span>INITIALIZING</div>
-<div class="actions"><button id="refresh" type="button" title="Refresh public data">↻ REFRESH</button><button id="font-down" type="button" aria-label="Decrease text size">A−</button><button id="font-up" type="button" aria-label="Increase text size">A+</button><button id="landscape" type="button" title="Request landscape orientation">↔ LANDSCAPE</button><a class="expand" href="./orbit-blueprint.html" target="_blank" rel="noopener noreferrer" title="Open OrbitBlueprint in a separate window" style="border:1px solid #555;padding:5px 7px;text-decoration:none;white-space:nowrap">BLUEPRINT ↗</a></div>
+<div class="actions"><button id="refresh" type="button" title="Refresh public data">↻ REFRESH</button><button id="help-open" type="button" title="Operator help">[?] HELP</button><button id="font-down" type="button" aria-label="Decrease text size">A−</button><button id="font-up" type="button" aria-label="Increase text size">A+</button><button id="landscape" type="button" title="Request landscape orientation">↔ LANDSCAPE</button><a class="expand" href="./orbit-blueprint.html" target="_blank" rel="noopener noreferrer" title="Open OrbitBlueprint in a separate window" style="border:1px solid #555;padding:5px 7px;text-decoration:none;white-space:nowrap">BLUEPRINT ↗</a></div>
 </header>
 <main class="grid" id="monitor-grid">
 <section class="panel panel-globe" data-panel="earth">
@@ -220,12 +241,12 @@
 <section class="panel panel-weather" data-panel="weather">
 <div class="panel-head"><span class="index">03</span><h2>WEATHER / ATMOSPHERE</h2><button class="expand" data-expand="weather" aria-label="Expand weather panel">↗</button></div>
 <div class="panel-body"><div class="kicker">PFORZHEIM, GERMANY · OPEN-METEO</div><div class="big mono" id="weather-temp">— °C</div><div class="medium" id="weather-code">FETCHING WEATHER</div><div class="small" id="weather-time">Timestamp —</div><div class="line"></div><div class="rows">
-<div class="row"><span>FEELS LIKE</span><strong id="feels">—</strong></div><div class="row"><span>WIND</span><strong id="wind">—</strong></div><div class="row"><span>PRESSURE</span><strong id="pressure">—</strong></div><div class="row"><span>HUMIDITY</span><strong id="humidity">—</strong></div><div class="row"><span>PRECIPITATION</span><strong id="precip">—</strong></div><div class="row"><span>AIR QUALITY · EU AQI</span><strong id="aqi">—</strong></div><div class="row"><span>PM2.5</span><strong id="pm25">—</strong></div><div class="row"><span>UV INDEX</span><strong id="uv">—</strong></div></div></div>
+<div class="row"><span>FEELS LIKE</span><strong id="feels">—</strong></div><div class="row"><span>WIND</span><strong id="wind">—</strong></div><div class="row"><span>PRESSURE</span><strong id="pressure">—</strong></div><div class="row"><span>HUMIDITY</span><strong id="humidity">—</strong></div><div class="row"><span>PRECIPITATION</span><strong id="precip">—</strong></div><div class="row"><span>AIR QUALITY · EU AQI</span><strong id="aqi">—</strong></div><div class="row"><span>AQI <button type="button" class="term-help" data-help-term="aqi" aria-label="Explain AQI">?</button> · PM2.5</span><strong id="pm25">—</strong></div><div class="row"><span>UV INDEX</span><strong id="uv">—</strong></div></div></div>
 <div class="footer"><a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer">WEATHER API</a> · <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">AIR QUALITY API</a></div>
 </section>
 <section class="panel panel-orbit" data-panel="orbit">
 <div class="panel-head"><span class="index">04</span><h2>ORBIT / ISS TELEMETRY</h2><button class="expand" data-expand="orbit" aria-label="Expand orbital telemetry">↗</button></div>
-<div class="panel-body"><div class="kicker">INTERNATIONAL SPACE STATION · NORAD 25544</div><div class="big mono" id="iss-alt">— KM</div><div class="small" id="iss-status">REQUESTING POSITION</div><div class="line"></div><div class="rows"><div class="row"><span>LATITUDE</span><strong id="iss-lat">—</strong></div><div class="row"><span>LONGITUDE</span><strong id="iss-lon">—</strong></div><div class="row"><span>VELOCITY</span><strong id="iss-vel">—</strong></div><div class="row"><span>ORBIT PERIOD (EST.)</span><strong id="iss-period">~92 MIN</strong></div></div><div class="line"></div><div class="small">LIVE API SAMPLE · NOT A PREDICTION</div></div>
+<div class="panel-body"><div class="kicker">INTERNATIONAL SPACE STATION · <span class="term">NORAD <button type="button" class="term-help" data-help-term="norad" aria-label="Explain NORAD">?</button> 25544</span></div><div class="big mono" id="iss-alt">— KM</div><div class="small" id="iss-status">REQUESTING POSITION</div><div class="line"></div><div class="rows"><div class="row"><span>LATITUDE</span><strong id="iss-lat">—</strong></div><div class="row"><span>LONGITUDE</span><strong id="iss-lon">—</strong></div><div class="row"><span>VELOCITY</span><strong id="iss-vel">—</strong></div><div class="row"><span>ORBIT PERIOD (EST.)</span><strong id="iss-period">~92 MIN</strong></div></div><div class="line"></div><div class="small">LIVE API SAMPLE · NOT A PREDICTION</div></div>
 <div class="footer"><a href="https://wheretheiss.at/" target="_blank" rel="noopener noreferrer">POSITION API</a> · <a href="https://www.nasa.gov/live/" target="_blank" rel="noopener noreferrer">NASA LIVE</a></div>
 </section>
 <section class="panel panel-video" data-panel="video">
@@ -236,7 +257,7 @@
 <section class="panel panel-earthdata" data-panel="earthdata">
 <div class="panel-head"><span class="index">06</span><h2 id="earthdata-title">GLOBAL EARTH MONITOR</h2><button class="expand" data-expand="earthdata" aria-label="Expand global Earth monitor">↗</button></div>
 <nav class="monitor-tabs" role="tablist" aria-label="Earth monitor modes"><button type="button" class="monitor-tab is-active" role="tab" aria-selected="true" data-monitor-tab="earthdata">06 EARTH</button><button type="button" class="monitor-tab" role="tab" aria-selected="false" data-monitor-tab="spaceweather">09 SPACE</button><button type="button" class="monitor-tab" role="tab" aria-selected="false" data-monitor-tab="wildfires">10 FIRES</button><button type="button" class="monitor-tab" role="tab" aria-selected="false" data-monitor-tab="airquality">11 AQI</button></nav>
-<div class="monitor-view is-active" data-monitor-view="earthdata" role="tabpanel"><div class="panel-body"><div class="metrics"><div class="metric"><b id="quake-count">—</b><small>USGS M2.5+ / 24H</small></div><div class="metric"><b id="eonet-count">—</b><small>NASA EONET EVENTS</small></div></div><div class="line"></div><div class="row"><span>LARGEST QUAKE</span><strong id="quake-largest">—</strong></div><div class="row"><span>LOCATION</span><strong id="quake-place">—</strong></div><div class="row"><span>SOLAR K-INDEX</span><strong id="kp">—</strong></div><div class="row"><span>SPACE WEATHER</span><strong id="solar-state">FETCHING</strong></div><div class="line"></div><div class="small" id="earthdata-time">Waiting for public data sources.</div></div><div class="footer"><a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" target="_blank" rel="noopener noreferrer">USGS FEED</a> · <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET</a> · <a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener noreferrer">NOAA SWPC</a></div></div>
+<div class="monitor-view is-active" data-monitor-view="earthdata" role="tabpanel"><div class="panel-body"><div class="metrics"><div class="metric"><b id="quake-count">—</b><small>USGS M2.5+ / 24H</small></div><div class="metric"><b id="eonet-count">—</b><small>NASA EONET EVENTS</small></div></div><div class="line"></div><div class="row"><span>LARGEST QUAKE</span><strong id="quake-largest">—</strong></div><div class="row"><span>LOCATION</span><strong id="quake-place">—</strong></div><div class="row"><span>SOLAR K-INDEX <button type="button" class="term-help" data-help-term="kp" aria-label="Explain Kp index">?</button></span><strong id="kp">—</strong></div><div class="row"><span>SPACE WEATHER</span><strong id="solar-state">FETCHING</strong></div><div class="line"></div><div class="small" id="earthdata-time">Waiting for public data sources.</div></div><div class="footer"><a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" target="_blank" rel="noopener noreferrer">USGS FEED</a> · <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET</a> · <a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener noreferrer">NOAA SWPC</a></div></div>
 <div class="monitor-view" data-monitor-view="spaceweather" role="tabpanel" hidden><div class="panel-body"><div class="kicker">NOAA SWPC · LIVE SPACE WEATHER</div><div class="metrics"><div class="metric"><b id="sw-kp">—</b><small>Kp INDEX · 0–9</small></div><div class="metric"><b id="sw-speed">—</b><small>SOLAR WIND · KM/S</small></div></div><div class="solar-bar"><i id="sw-kp-bar"></i></div><div class="row"><span>GEOMAGNETIC STATUS</span><strong id="sw-status">FETCHING</strong></div><div class="row"><span>X-RAY FLUX</span><strong id="sw-xray">—</strong></div><div class="row"><span>FLUX SAMPLE</span><strong id="sw-xray-band">—</strong></div><div class="small monitor-updated" id="sw-updated">Waiting for NOAA SWPC.</div></div><div class="footer"><a href="https://services.swpc.noaa.gov/json/" target="_blank" rel="noopener noreferrer">NOAA SWPC JSON ↗</a> · <a href="https://www.swpc.noaa.gov/" target="_blank" rel="noopener noreferrer">SPACE WEATHER ↗</a></div></div>
 <div class="monitor-view" data-monitor-view="wildfires" role="tabpanel" hidden><div class="panel-body"><div class="kicker">NASA EONET · OPEN WILDFIRE EVENTS</div><div class="big mono" id="fire-count">—</div><div class="small">ACTIVE WILDFIRE EVENTS · CURRENT CATALOG</div><div class="line"></div><div class="fire-list" id="fire-list"><div class="fire-row"><span>WAITING FOR EVENT FEED</span><strong>—</strong></div></div><div class="small monitor-updated" id="fire-updated">No data loaded.</div><div class="small">EONET has no brightness temperature; this view reports event coordinates, not fabricated thermal readings.</div></div><div class="footer"><a href="https://eonet.gsfc.nasa.gov/api/v3/events?status=open" target="_blank" rel="noopener noreferrer">NASA EONET OPEN EVENTS ↗</a> · <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA FIRMS ↗</a></div></div>
 <div class="monitor-view" data-monitor-view="airquality" role="tabpanel" hidden><div class="panel-body"><div class="kicker">PFORZHEIM, GERMANY · OPEN-METEO</div><div class="metrics"><div class="metric"><b id="us-aqi">—</b><small>US AQI INDEX</small></div><div class="metric"><b id="aqi-status">—</b><small>CONDITION</small></div></div><div class="line"></div><div class="row"><span>PM2.5</span><strong id="aqi-pm25">—</strong></div><div class="row"><span>PM10</span><strong id="aqi-pm10">—</strong></div><div class="row"><span>NO₂</span><strong id="aqi-no2">—</strong></div><div class="small monitor-updated" id="aqi-updated">Waiting for air-quality API.</div></div><div class="footer"><a href="https://air-quality-api.open-meteo.com/v1/air-quality" target="_blank" rel="noopener noreferrer">OPEN-METEO AIR QUALITY API ↗</a></div></div>
@@ -249,13 +270,16 @@
 </section>
 <section class="panel panel-satellites" data-panel="satellites">
 <div class="panel-head"><span class="index">08</span><h2>SATELLITE NETWORK</h2><button class="expand" data-expand="satellites" aria-label="Expand satellite network">↗</button></div>
-<div class="panel-body"><div class="kicker">CELESTRAK · STATIONS GROUP</div><div class="big mono" id="sat-count">—</div><div class="small">CATALOG OBJECTS IN STATIONS GROUP</div><div class="line"></div><div class="sat-list" id="sat-list"><div class="sat-item"><span>WAITING FOR ORBITAL DATA</span><strong>—</strong></div></div><div class="line"></div><div class="small" id="sat-updated">NOT YET UPDATED</div></div>
+<div class="panel-body"><div class="kicker">CELESTRAK · STATIONS GROUP · <button type="button" class="term-help" data-help-term="tle" aria-label="Explain TLE">?</button> TLE</div><div class="big mono" id="sat-count">—</div><div class="small">CATALOG OBJECTS IN STATIONS GROUP</div><div class="line"></div><div class="sat-list" id="sat-list"><div class="sat-item"><span>WAITING FOR ORBITAL DATA</span><strong>—</strong></div></div><div class="line"></div><div class="small" id="sat-updated">NOT YET UPDATED</div></div>
 <div class="footer"><a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=JSON" target="_blank" rel="noopener noreferrer">LIVE TLE/OMM CATALOG ↗</a></div>
 </section>
 
 </main>
 <footer class="footbar"><span>EARTH CONTROL DECK · MONOCHROME INSTRUMENT PANEL</span><span id="data-status">PUBLIC DATA · INITIALIZING</span><span>NO API KEYS STORED IN CLIENT</span></footer>
 </div>
+<dialog class="details-dialog help-dialog" id="operator-help"><div class="dialog-head"><h2>OPERATOR REFERENCE / HELP</h2><button type="button" id="help-close">CLOSE ✕</button></div><div class="dialog-body" id="help-content"></div><div class="dialog-actions"><button type="button" id="help-start-tour">RUN INTRO TOUR ↗</button></div></dialog>
+<div class="intro-overlay" id="intro-overlay" hidden><section class="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title"><div class="intro-kicker">PLANET EARTH CONTROL DECK · FIRST BOOT</div><h2 id="intro-title">OPERATOR INITIALIZATION</h2><p id="intro-copy">Initialize your operator view.</p><div class="intro-progress" id="intro-progress">STEP 01 / 04</div><div class="intro-actions"><button type="button" id="intro-skip">SKIP</button><button type="button" id="intro-next">NEXT ↗</button></div></section></div>
+<div class="term-popover" id="term-popover" role="status" hidden><button type="button" id="term-close" aria-label="Close explanation">×</button><strong id="term-title"></strong><p id="term-copy"></p></div>
 <dialog class="details-dialog" id="details"><div class="dialog-head"><h2 id="dialog-title">PANEL DETAILS</h2><button id="dialog-close" type="button">CLOSE ✕</button></div><div class="dialog-body" id="dialog-body"></div><div class="dialog-actions"><button id="dialog-refresh" type="button">REFRESH SOURCES ↻</button></div></dialog>
 <script>
 (()=>{"use strict";
@@ -304,6 +328,53 @@ const names={earth:"EARTH / LIVE STATUS",stars:"DEEP SPACE / STAR FIELD",weather
 function panelDetails(id){const p=byPanel(id);if(!p)return "";const lines=[names[id]||id,"",...Array.from(p.querySelectorAll(".row,.metric,.small,.kicker,.footer")).map(el=>el.innerText.trim()).filter(Boolean)];if(id==="earthdata")lines.push("Source: USGS M2.5+ daily GeoJSON, NASA EONET public events, NOAA SWPC planetary K-index.");if(id==="spaceweather")lines.push("Sources: NOAA SWPC planetary K-index, solar-wind plasma and GOES X-ray flux. Kp < 4 QUIET, 4–<5 UNSETTLED, >=5 STORM.");if(id==="wildfires")lines.push("Source: NASA EONET open wildfire event catalog. EONET does not supply VIIRS/MODIS brightness temperature; NASA FIRMS satellite thermal anomaly data requires an API key.");if(id==="airquality")lines.push("Source: Open-Meteo Air Quality API model estimates for Pforzheim, Germany; not a regulatory ground monitor.");if(id==="weather")lines.push("Source: Open-Meteo forecast and air-quality APIs; location is Pforzheim, Germany. Model values are not ground-station measurements.");if(id==="orbit")lines.push("Source: WhereTheISS.at public ISS position endpoint. Position is a live sample and can be temporarily unavailable.");if(id==="stars")lines.push("Star field and connecting lines are a generated visual, not a validated astronomical catalog.");if(id==="moon")lines.push("Lunar phase and orbital distances are approximate calculations from time-based formulas.");if(id==="satellites")lines.push("Source: CelesTrak public GP catalog for the STATIONS group. The count represents objects returned by that specific group, not all satellites in orbit.");if(id==="video")lines.push("If the embedded player is blocked by the browser or network, use the official links in the panel.");return lines.join("\n");}
 function openDetails(id){const dialog=$("details");$("dialog-title").textContent=names[id]||"PANEL DETAILS";$("dialog-body").textContent=panelDetails(id);dialog.dataset.panel=id;if(!dialog.open)dialog.showModal();}
 document.querySelectorAll("[data-monitor-tab]").forEach(button=>button.addEventListener("click",()=>{const mode=button.dataset.monitorTab;document.querySelectorAll("[data-monitor-tab]").forEach(tab=>{const active=tab===button;tab.classList.toggle("is-active",active);tab.setAttribute("aria-selected",String(active));});document.querySelectorAll("[data-monitor-view]").forEach(view=>{const active=view.dataset.monitorView===mode;view.classList.toggle("is-active",active);view.hidden=!active;});const titles={earthdata:"GLOBAL EARTH MONITOR",spaceweather:"SPACE WEATHER & SOLAR FLUX",wildfires:"GLOBAL WILDFIRES & THERMAL ANOMALIES",airquality:"AIR QUALITY & ATMOSPHERE"};set("earthdata-title",titles[mode]||"GLOBAL EARTH MONITOR");}));
+
+const glossary={
+norad:{title:"NORAD ID",ru:"Уникальный каталожный номер объекта на орбите. Например, 25544 — Международная космическая станция.",en:"A catalog identifier for an object in orbit. 25544 identifies the International Space Station."},
+kp:{title:"Kp-INDEX",ru:"Индекс геомагнитной активности от 0 до 9. Чем выше значение, тем сильнее возмущение магнитного поля Земли.",en:"A 0–9 measure of geomagnetic activity. Higher values indicate stronger disturbances in Earth's magnetic field."},
+aqi:{title:"AQI",ru:"Индекс качества воздуха. Он сводит уровень загрязнения к понятной шкале; категории зависят от используемой системы индекса.",en:"Air Quality Index: a scale summarizing pollution levels. Categories depend on the AQI standard used."},
+tle:{title:"TLE",ru:"Two-Line Element — набор орбитальных параметров спутника. Это расчётные элементы орбиты, а не прямое измерение его положения в эту секунду.",en:"Two-Line Element set: orbital parameters used to propagate a satellite's orbit, not a live position measurement."}
+};
+function showTerm(key,anchor){const item=glossary[key];if(!item)return;set("term-title",item.title);set("term-copy",item.ru+" / "+item.en);const pop=$("term-popover");pop.hidden=false;const rect=anchor?.getBoundingClientRect();if(rect&&rect.top>window.innerHeight*.55){pop.style.bottom="auto";pop.style.top=Math.max(8,rect.top-8)+"px"}else{pop.style.top="auto";pop.style.bottom="18px"}}
+document.querySelectorAll("[data-help-term]").forEach(btn=>btn.addEventListener("click",()=>showTerm(btn.dataset.helpTerm,btn)));
+$("term-close").addEventListener("click",()=>{$("term-popover").hidden=true});
+const helpEntries=[
+["01 / EARTH / LIVE STATUS","UTC clock, local weather snapshot and recent M2.5+ earthquake count. Video backgrounds may fall back to animated graphics if a public clip cannot be loaded."],
+["02 / DEEP SPACE / STAR FIELD","Atmospheric star-field visualization. It is explicitly a visualization, not a scientific star catalog."],
+["03 / WEATHER / ATMOSPHERE","Open-Meteo weather data for Pforzheim. Forecast/model data may differ from a nearby physical weather station."],
+["04 / ORBIT / ISS TELEMETRY","ISS altitude, coordinates and estimated orbital period. Position is a public API sample; use [?] for NORAD."],
+["05 / NASA / ISS LIVE VIDEO","Embedded video may be blocked or unavailable. Use the official video links in the panel when playback fails."],
+["06 / GLOBAL EARTH MONITOR","USGS earthquake feed, NASA EONET events and NOAA space-weather data. Switch tabs for SPACE, FIRES and AQI."],
+["07 / MOON / CELESTIAL CYCLE","Calculated lunar phase, illumination and approximate Earth–Moon/Earth–Sun distances."],
+["08 / SATELLITE NETWORK","CelesTrak station-group catalog. CACHED or REFERENCE BASELINE means the count is not a confirmed live catalog result."],
+["09 / SPACE WEATHER","NOAA SWPC geomagnetic Kp, solar-wind speed and GOES X-ray flux. Public feeds may occasionally be delayed."],
+["10 / WILDFIRES","NASA EONET open wildfire events and coordinates. EONET does not provide VIIRS/MODIS brightness temperature."],
+["11 / AIR QUALITY","Open-Meteo modelled US AQI, PM2.5, PM10 and NO₂ estimates for the configured location."],
+["REFRESH","Reload public data sources. Unavailable feeds may be reported as partial data."],
+["A− / A+","Adjust interface text size."],
+["LANDSCAPE","Requests fullscreen/landscape where the browser and device allow it."],
+["BLUEPRINT","Opens the separate Orbit Blueprint engineering interface."]
+];
+$("help-content").innerHTML=helpEntries.map(([title,body])=>'<div class="help-entry"><strong>'+title+'</strong><p>'+body+'</p></div>').join("");
+$("help-open").addEventListener("click",()=>$("operator-help").showModal());
+$("help-close").addEventListener("click",()=>$("operator-help").close());
+$("operator-help").addEventListener("click",e=>{if(e.target===$("operator-help"))$("operator-help").close()});
+const tourSteps=[
+{selector:'[data-panel="globe"]',title:"01 / EARTH STATUS",copy:"Start here: UTC clock, local conditions and a quick view of Earth-related indicators."},
+{selector:'[data-panel="stars"]',title:"02 / DEEP SPACE",copy:"This is a visual star field, not a scientific star catalog. Video playback may fall back to procedural animation."},
+{selector:'[data-panel="orbit"]',title:"04 / ISS TELEMETRY",copy:"Review the ISS altitude and coordinates. NORAD 25544 is the station's catalog identifier."},
+{selector:'.masthead a[href*="orbit-blueprint"]',title:"ORBIT BLUEPRINT",copy:"Open the separate spacecraft engineering workspace. The dashboard remains available in this tab."}
+];
+let tourIndex=0;
+function clearTourTarget(){document.querySelectorAll(".onboarding-target,.blueprint-target").forEach(el=>el.classList.remove("onboarding-target","blueprint-target"))}
+function renderTour(){clearTourTarget();const step=tourSteps[tourIndex];const target=document.querySelector(step.selector);if(target){target.classList.add(target.matches("a")?"blueprint-target":"onboarding-target");target.scrollIntoView?.({block:"nearest",inline:"nearest",behavior:"smooth"})}set("intro-title","OPERATOR INITIALIZATION · "+step.title);set("intro-copy",step.copy);set("intro-progress","STEP "+String(tourIndex+1).padStart(2,"0")+" / "+String(tourSteps.length).padStart(2,"0"));$("intro-next").textContent=tourIndex===tourSteps.length-1?"FINISH ✓":"NEXT ↗"}
+function startTour(){tourIndex=0;$("operator-help").close();$("intro-overlay").hidden=false;renderTour()}
+function finishTour(){clearTourTarget();$("intro-overlay").hidden=true;try{localStorage.setItem("hasSeenIntro","1")}catch{}}
+$("intro-next").addEventListener("click",()=>{if(tourIndex>=tourSteps.length-1){finishTour();return}tourIndex++;renderTour()});
+$("intro-skip").addEventListener("click",finishTour);
+$("help-start-tour").addEventListener("click",startTour);
+if(!localStorage.getItem("hasSeenIntro"))setTimeout(startTour,450);
+
 document.querySelectorAll("[data-expand]").forEach(b=>b.addEventListener("click",()=>openDetails(b.dataset.expand)));
 $("dialog-close").addEventListener("click",()=>$("details").close());$("dialog-refresh").addEventListener("click",()=>refreshAll());
 $("refresh").addEventListener("click",()=>refreshAll());
