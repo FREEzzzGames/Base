@@ -45,6 +45,10 @@ const blueprintScripts = [...blueprint.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<
 assert.equal(blueprintScripts.length, 1, "expected one inline OrbitBlueprint runtime");
 new vm.Script(blueprintScripts[0], { filename: "orbit-blueprint.inline.js" });
 for (const control of ['id="craft"', 'id="modules"', 'id="mode"', 'id="rotate"', 'id="reset"', 'id="scene"']) assert.ok(blueprint.includes(control), "OrbitBlueprint control missing: " + control);
+assert.ok(blueprint.includes('id="landscape"'), "OrbitBlueprint landscape button missing");
+assert.ok(blueprint.includes("orientation.lock('landscape')"), "OrbitBlueprint must request native landscape orientation");
+assert.ok(blueprint.includes("force-landscape") && blueprint.includes("transform:rotate(90deg)"), "OrbitBlueprint CSS landscape fallback missing");
+
 assert.ok(blueprint.includes('.module-name{display:block') && blueprint.includes('.module-meta{display:block'), "OrbitBlueprint module names and metadata must occupy separate lines");
 assert.ok(blueprint.includes('sx=Math.max(18,Math.min(w*.22,h*.56))'), "OrbitBlueprint node layout must scale to wide, short embedded canvases");
 assert.ok(blueprint.includes("SOLAR ARRAY") && blueprint.includes("ZVEZDA"), "OrbitBlueprint compact node labels missing");
