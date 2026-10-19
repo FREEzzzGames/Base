@@ -47,6 +47,10 @@ assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html
 assert.ok(html.includes('id="camera-grid"') && html.includes('id="rotate-cams"') && html.includes('CLOSE CAM'), "regional camera grid, rotation, or expand modal missing");
 assert.ok(html.includes("grayscale(100%) contrast(125%)") && html.includes("function renderCameraGrid()") && html.includes("function openCamera(item)"), "monochrome regional camera rendering or interactions missing");
 assert.ok(html.includes("https://www.stuttgart.de/tourismus/stadtportraet/stuttgarter-webcams") && html.includes("https://verkehrsinfo-bw.de/verkehrskameras"), "regional official camera source links missing");
+assert.ok(html.includes("verkehr.autobahn.de/o/autobahn/") && html.includes("function loadRegionalCameraFeeds()") && html.includes("setInterval(loadRegionalCameraFeeds,60000)"), "regional public Autobahn JPEG camera adapter or refresh missing");
+assert.ok(html.includes("STREAM OFFLINE / WAITING FOR SIGNAL") && html.includes('id="connect-nasa-stream"'), "monochrome NASA stream standby missing");
+assert.ok(html.includes(".panel-globe .visual{padding-bottom:18px}") && html.includes(".panel-orbit .rows{margin-bottom:10px;padding-bottom:5px}") && html.includes("justify-content:space-between;gap:4px;padding-bottom:16px!important"), "telemetry/data-panel spacing fixes missing");
+assert.ok(html.includes("camera-timestamp") && html.includes("cell.append(overlay,stamp,state)"), "camera timestamp must be independent from top overlay");
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
 assert.ok(main.includes('module.requestFullscreen()'), "Earth landscape must fullscreen only the monitor module");
