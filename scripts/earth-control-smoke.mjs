@@ -32,7 +32,7 @@ for (const endpoint of [
 assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nasa.gov/live/"), "NASA video or fallback links missing");
 assert.ok(html.includes('id="earth-ambient-video" autoplay muted loop playsinline') && html.includes('id="space-ambient-video" autoplay muted loop playsinline'), "looping ambient videos for panels 01/02 missing");
 assert.ok(html.includes('images-api.nasa.gov/search') && html.includes('resolveNASAClip'), "NASA public video resolver missing");
-assert.ok(html.includes('.status.is-connected{color:#8ee6a0!important}') && html.includes('● CONNECTED'), "connected status styling missing");
+assert.ok(html.includes('.status.is-connected{color:#8ee6a0!important}') && html.includes('langDict.connected') && html.includes('"● CONNECTED"'), "connected status styling or localized status missing");
 assert.ok(html.includes('.panel-orbit .panel-body{padding-bottom:10px!important}') && html.includes('.panel-earthdata #earthdata-time{white-space:normal!important'), "panel footer spacing/wrapping regression");
 
 assert.ok(html.includes('data-monitor-tab="spaceweather"') && html.includes('data-monitor-tab="wildfires"') && html.includes('data-monitor-tab="airquality"'), "new monitor mode tabs missing");
