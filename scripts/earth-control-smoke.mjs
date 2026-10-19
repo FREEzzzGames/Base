@@ -9,7 +9,7 @@ const blueprint = await readFile(new URL("../public/orbit-blueprint.html", impor
 
 assert.ok(html.includes("<title>PLANET EARTH CONTROL DECK</title>"), "dashboard title missing");
 const panelIds = [...html.matchAll(/data-panel="([^"]+)"/g)].map(match => match[1]).filter(id => !id.includes("'+"));
-assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites"], "expected original eight dashboard panels");
+assert.deepEqual(panelIds, ["earth", "stars", "weather", "orbit", "video", "earthdata", "moon", "satellites", "cameras"], "expected eight original panels plus regional cameras");
 const idList = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const duplicates = idList.filter((id, index) => idList.indexOf(id) !== index);
 assert.deepEqual(duplicates, [], "duplicate HTML ids found");
@@ -44,6 +44,9 @@ assert.ok(html.includes('.panel-orbit .panel-body{overflow-y:auto') && html.incl
 assert.ok(html.includes('eonet.gsfc.nasa.gov/api/v3/events?status=open') && html.includes('EONET does not supply VIIRS/MODIS brightness temperature'), "wildfire event source / thermal-data limitation note missing");
 
 assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html.includes('id="font-down"') && html.includes('id="landscape"'), "dashboard controls missing");
+assert.ok(html.includes('id="camera-grid"') && html.includes('id="rotate-cams"') && html.includes('CLOSE CAM'), "regional camera grid, rotation, or expand modal missing");
+assert.ok(html.includes("grayscale(100%) contrast(125%)") && html.includes("function renderCameraGrid()") && html.includes("function openCamera(item)"), "monochrome regional camera rendering or interactions missing");
+assert.ok(html.includes("https://www.stuttgart.de/tourismus/stadtportraet/stuttgarter-webcams") && html.includes("https://verkehrsinfo-bw.de/verkehrskameras"), "regional official camera source links missing");
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
 assert.ok(main.includes('module.requestFullscreen()'), "Earth landscape must fullscreen only the monitor module");
