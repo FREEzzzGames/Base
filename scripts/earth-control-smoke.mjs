@@ -50,7 +50,12 @@ assert.ok(blueprint.includes("orientation.lock('landscape')"), "OrbitBlueprint m
 assert.ok(blueprint.includes("force-landscape") && blueprint.includes("transform:rotate(90deg)"), "OrbitBlueprint CSS landscape fallback missing");
 
 assert.ok(blueprint.includes('.module-name{display:block') && blueprint.includes('.module-meta{display:block'), "OrbitBlueprint module names and metadata must occupy separate lines");
-assert.ok(blueprint.includes('sx=Math.max(18,Math.min(w*.22,h*.56))'), "OrbitBlueprint node layout must scale to wide, short embedded canvases");
+assert.ok(blueprint.includes('unit=Math.max(28,Math.min(w*.25,h*.45))*zoom'), "OrbitBlueprint isometric layout must scale to wide, short embedded canvases and support zoom");
+assert.ok(blueprint.includes("gesture?.mode==='pinch'") && blueprint.includes("canvas.addEventListener('wheel'"), "OrbitBlueprint pinch and wheel zoom controls missing");
+assert.ok(blueprint.includes("canvas.addEventListener('drop'") && blueprint.includes('body.draggable=true'), "OrbitBlueprint assembly drag-and-drop repository missing");
+assert.ok(blueprint.includes('function metadata(m)') && blueprint.includes("['DIAMETER',meta.diameter]"), "OrbitBlueprint node inspection metadata missing");
+assert.ok(blueprint.includes('function updateStaticLabels()') && blueprint.includes('id="lang"'), "OrbitBlueprint EN/RU localization control missing");
+assert.ok(blueprint.includes('RESET TO NOMINAL') && blueprint.includes('drawStarted'), "OrbitBlueprint nominal reset and wireframe reveal missing");
 assert.ok(blueprint.includes("SOLAR ARRAY") && blueprint.includes("ZVEZDA"), "OrbitBlueprint compact node labels missing");
 
 
