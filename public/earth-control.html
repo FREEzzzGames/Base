@@ -137,6 +137,28 @@
 .monitor-updated{margin-top:auto;padding-top:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px}
 @media(orientation:landscape) and (max-height:760px){.panel-earthdata .monitor-tabs{padding:3px 4px;gap:2px}.monitor-tab{font-size:7px!important;padding:3px 1px!important}.panel-earthdata .monitor-view .panel-body{padding:3px 5px}.panel-earthdata .monitor-view .footer{padding:3px 4px;font-size:7px}.solar-bar{margin:5px 0}.fire-list{gap:3px}.fire-row{font-size:8px;padding-bottom:3px}.fire-row strong{font-size:8px}}
 
+
+/* Landscape overflow repair: keep footers in their own row and make dense telemetry readable. */
+@media(orientation:landscape) and (max-height:760px){
+ .panel-weather .footer{display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px;white-space:normal!important;line-height:1.2!important;min-height:25px;padding:4px 5px!important;overflow:visible!important}
+ .panel-weather .footer a{display:inline-block;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+ .panel-weather .panel-body{min-height:0}
+ .panel-orbit .panel-body{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#444 #090909}
+ .panel-orbit .panel-body::-webkit-scrollbar{width:3px}
+ .panel-orbit .panel-body::-webkit-scrollbar-thumb{background:#444}
+ .panel-earthdata .panel-body{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#444 #090909}
+ .panel-earthdata .panel-body::-webkit-scrollbar{width:3px}
+ .panel-earthdata .panel-body::-webkit-scrollbar-thumb{background:#444}
+ #earthdata-time,#solar-state{white-space:normal!important;overflow-wrap:anywhere;line-height:1.2;max-width:100%}
+ #quake-place{white-space:normal!important;overflow-wrap:anywhere;max-width:62%!important}
+ .panel-earthdata .row{align-items:flex-start}
+ .panel-earthdata .row strong{overflow-wrap:anywhere;white-space:normal}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .panel-weather .footer{font-size:7px!important;min-height:22px}
+ .panel-orbit .panel-body,.panel-earthdata .panel-body{padding-bottom:5px}
+}
+
 </style>
 </head>
 <body>
