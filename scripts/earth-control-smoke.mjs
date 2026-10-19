@@ -30,6 +30,11 @@ for (const endpoint of [
   "celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=JSON"
 ]) assert.ok(html.includes(endpoint), "missing live data endpoint: " + endpoint);
 assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nasa.gov/live/"), "NASA video or fallback links missing");
+assert.ok(html.includes('id="earth-ambient-video" autoplay muted loop playsinline') && html.includes('id="space-ambient-video" autoplay muted loop playsinline'), "looping ambient videos for panels 01/02 missing");
+assert.ok(html.includes('images-api.nasa.gov/search') && html.includes('resolveNASAClip'), "NASA public video resolver missing");
+assert.ok(html.includes('.status.is-connected{color:#8ee6a0!important}') && html.includes('● CONNECTED'), "connected status styling missing");
+assert.ok(html.includes('.panel-orbit .panel-body{padding-bottom:10px!important}') && html.includes('.panel-earthdata #earthdata-time{white-space:normal!important'), "panel footer spacing/wrapping regression");
+
 assert.ok(html.includes('data-monitor-tab="spaceweather"') && html.includes('data-monitor-tab="wildfires"') && html.includes('data-monitor-tab="airquality"'), "new monitor mode tabs missing");
 assert.ok(html.includes('services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json') && html.includes('services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json'), "NOAA solar wind/X-ray feeds missing");
 assert.ok(html.includes('current=european_aqi,us_aqi,pm10,pm2_5,nitrogen_dioxide,uv_index'), "US AQI / PM / NO2 variables missing");
