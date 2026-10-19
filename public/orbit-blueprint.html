@@ -11,13 +11,26 @@
 .embedded,.embedded html{height:100%;min-height:0;overflow:hidden}.embedded .app{height:100dvh;min-height:0;grid-template-columns:minmax(0,1fr) 190px;overflow:hidden}.embedded .viewport{min-height:0;overflow:hidden}.embedded .canvas-wrap{min-height:0}.embedded .side{padding:6px;gap:5px;overflow:auto}.embedded .description{display:none}.embedded .label{margin:0 0 4px}.embedded .module-list{max-height:90px;overflow:auto}.embedded .module{gap:5px;padding:5px}.embedded .module-name{font-size:9px}.embedded .module-meta{font-size:7px;margin-top:3px}.embedded .detail p{margin:4px 0}.embedded .note{font-size:7px;padding-top:4px}.embedded .top{padding:5px 7px}.embedded .stats .stat{padding:5px}.embedded .stat strong{font-size:11px}.embedded .brand{font-size:10px}.embedded .sub{font-size:7px}.embedded .tools button{padding:4px 5px;font-size:8px}
 @media(max-width:620px){.app{grid-template-columns:minmax(0,1fr)}.viewport{border-right:0;border-bottom:1px solid #19364b;min-height:360px}.canvas-wrap{min-height:250px}.side{display:grid;grid-template-columns:1fr 1fr;align-items:start}.side>.catalog,.side>.installed,.side>.detail,.side>.note{min-width:0}.side>.catalog{grid-column:1}.side>.installed{grid-column:2;grid-row:1}.side>.detail,.side>.note{grid-column:1/-1}.module-list{max-height:210px;overflow:auto}.brand{font-size:11px}.top{align-items:flex-start}.tools button{padding:6px;font-size:9px}.stats .stat{padding:7px}.stats small{font-size:7px}}
 @media(max-width:620px){.embedded .app{grid-template-columns:minmax(0,1fr) 145px;height:100dvh;min-height:0}.embedded .viewport{min-height:0}.embedded .side{display:flex;flex-direction:column;gap:4px;padding:4px}.embedded .side>.catalog,.embedded .side>.installed,.embedded .side>.detail,.embedded .side>.note{grid-column:auto;grid-row:auto}.embedded .module-list{max-height:55px}.embedded .top{gap:4px}.embedded .tools{gap:2px}.embedded .tools button{padding:3px;font-size:7px}.embedded .caption{font-size:7px}.embedded .hud{font-size:7px}.embedded .stats .stat{padding:3px}.embedded .stat small{font-size:6px}.embedded .stat strong{font-size:9px}}
+/* Native landscape plus a CSS fallback for browsers that reject Screen Orientation Lock. */
+@media(orientation:landscape) and (max-height:600px){.app{height:100dvh;min-height:0;grid-template-columns:minmax(0,1fr) clamp(180px,24vw,260px);overflow:hidden}.viewport{min-height:0;height:100dvh;overflow:hidden}.canvas-wrap{min-height:0}.side{overflow:auto;max-height:100dvh}.top{padding:5px 8px}.stats .stat{padding:5px}}
+body.force-landscape{overflow:hidden}
+body.force-landscape .app{position:fixed;left:0;top:0;width:100dvh;height:100vw;min-height:0;grid-template-columns:minmax(0,1fr) 190px;transform-origin:top left;transform:rotate(90deg) translateY(-100%);overflow:hidden}
+body.force-landscape .viewport{min-height:0;height:100%;overflow:hidden}
+body.force-landscape .canvas-wrap{min-height:0}
+body.force-landscape .side{overflow:auto;max-height:100%}
+body.force-landscape .description{display:none}
+body.force-landscape .module-list{max-height:90px;overflow:auto}
+body.force-landscape .top{padding:5px 7px}
+body.force-landscape .tools button{padding:4px 5px;font-size:8px}
+body.force-landscape .stats .stat{padding:5px}
+body.force-landscape .stats .stat strong{font-size:11px}
 @media(max-width:390px){.side{grid-template-columns:1fr}.side>.catalog,.side>.installed,.side>.detail,.side>.note{grid-column:1;grid-row:auto}.module-list{max-height:none}.top{flex-wrap:wrap}}
 </style>
 </head>
 <body>
 <div class="app">
 <section class="viewport">
-<header class="top"><div><div class="brand">ORBIT<span>BLUEPRINT</span></div><div class="sub">SPACECRAFT ENGINEERING / MODULAR EXPLORER</div></div><div class="tools"><button id="mode">INSPECTION</button><button id="rotate">ROTATION ON</button><button id="reset">RESET</button></div></header>
+<header class="top"><div><div class="brand">ORBIT<span>BLUEPRINT</span></div><div class="sub">SPACECRAFT ENGINEERING / MODULAR EXPLORER</div></div><div class="tools"><button id="mode">INSPECTION</button><button id="rotate">ROTATION ON</button><button id="landscape" aria-pressed="false">↔ LANDSCAPE</button><button id="reset">RESET</button></div></header>
 <div class="canvas-wrap"><canvas id="scene" aria-label="Interactive spacecraft blueprint; drag to rotate and tap modules to inspect"></canvas><div class="hud" id="hud">SYSTEM / INITIALIZING<br>MODE / BLUEPRINT<br>SELECT A NODE</div><div class="caption"><span>DRAG TO ROTATE · TAP NODE TO INSPECT</span><span id="frame">ORBIT / 000</span></div></div>
 <div class="stats"><div class="stat"><small>ASSEMBLY MASS</small><strong id="mass">—</strong></div><div class="stat"><small>MAX COMPONENT LENGTH</small><strong id="length">—</strong></div><div class="stat"><small>POWER RATING*</small><strong id="power">—</strong></div></div>
 </section>
@@ -69,7 +82,25 @@ canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect()
 canvas.addEventListener('pointermove',e=>{if(drag){angle=drag.angle+(e.clientX-drag.x)*.008;}});
 canvas.addEventListener('pointerup',e=>{if(!drag)return;const r=canvas.getBoundingClientRect(),dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)<8){let best=null,dist=Infinity;for(const m of installed){const p=project(m,angle,r.width,r.height),d=Math.hypot(p.x-(e.clientX-r.left),p.y-(e.clientY-r.top));if(d<dist){dist=d;best=m;}}if(best&&dist<Math.min(r.width,r.height)*.16){selected=best.id;renderDetail();}}drag=null;});
 canvas.addEventListener('pointercancel',()=>drag=null);
-$('craft').addEventListener('change',e=>{craft=e.target.value;reset();});$('mode').addEventListener('click',()=>{inspection=!inspection;$('mode').textContent=inspection?'BLUEPRINT':'INSPECTION';updateStats();});$('rotate').addEventListener('click',()=>{rotating=!rotating;$('rotate').textContent=rotating?'ROTATION ON':'ROTATION OFF';});$('reset').addEventListener('click',reset);
+$('craft').addEventListener('change',e=>{craft=e.target.value;reset();});$('mode').addEventListener('click',()=>{inspection=!inspection;$('mode').textContent=inspection?'BLUEPRINT':'INSPECTION';updateStats();});$('rotate').addEventListener('click',()=>{rotating=!rotating;$('rotate').textContent=rotating?'ROTATION ON':'ROTATION OFF';});$('landscape').addEventListener('click',async()=>{
+const button=$('landscape'),active=button.getAttribute('aria-pressed')==='true';
+if(active){
+document.body.classList.remove('force-landscape');
+try{if(screen.orientation&&typeof screen.orientation.unlock==='function')screen.orientation.unlock();}catch{}
+try{if(document.fullscreenElement)await document.exitFullscreen();}catch{}
+button.setAttribute('aria-pressed','false');button.textContent='↔ LANDSCAPE';resize();return;
+}
+button.textContent='LANDSCAPE…';
+try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();}catch{}
+let locked=false;
+try{const orientation=screen.orientation;if(orientation&&typeof orientation.lock==='function'){await orientation.lock('landscape');locked=true;}}catch{}
+if(!locked&&matchMedia('(orientation: portrait)').matches){document.body.classList.add('force-landscape');}
+button.setAttribute('aria-pressed','true');button.textContent='↔ EXIT LANDSCAPE';
+setTimeout(resize,80);
+});
+document.addEventListener('fullscreenchange',()=>{setTimeout(resize,80);});
+window.addEventListener('orientationchange',()=>{document.body.classList.remove('force-landscape');setTimeout(resize,150);});
+$('reset').addEventListener('click',reset);
 new ResizeObserver(resize).observe(canvas);resize();reset();paint(0);
 if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embedded');
 })();
