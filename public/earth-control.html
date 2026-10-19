@@ -360,9 +360,9 @@ $("help-open").addEventListener("click",()=>$("operator-help").showModal());
 $("help-close").addEventListener("click",()=>$("operator-help").close());
 $("operator-help").addEventListener("click",e=>{if(e.target===$("operator-help"))$("operator-help").close()});
 const tourSteps=[
-{selector:'[data-panel="globe"]',title:"01 / EARTH STATUS",copy:"Start here: UTC clock, local conditions and a quick view of Earth-related indicators."},
-{selector:'[data-panel="stars"]',title:"02 / DEEP SPACE",copy:"This is a visual star field, not a scientific star catalog. Video playback may fall back to procedural animation."},
-{selector:'[data-panel="orbit"]',title:"04 / ISS TELEMETRY",copy:"Review the ISS altitude and coordinates. NORAD 25544 is the station's catalog identifier."},
+{selector:".panel-globe",title:"01 / EARTH STATUS",copy:"Start here: UTC clock, local conditions and a quick view of Earth-related indicators."},
+{selector:".panel-stars",title:"02 / DEEP SPACE",copy:"This is a visual star field, not a scientific star catalog. Video playback may fall back to procedural animation."},
+{selector:".panel-orbit",title:"04 / ISS TELEMETRY",copy:"Review the ISS altitude and coordinates. NORAD 25544 is the station's catalog identifier."},
 {selector:'.masthead a[href*="orbit-blueprint"]',title:"ORBIT BLUEPRINT",copy:"Open the separate spacecraft engineering workspace. The dashboard remains available in this tab."}
 ];
 let tourIndex=0;
