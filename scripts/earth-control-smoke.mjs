@@ -30,6 +30,11 @@ for (const endpoint of [
   "celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=JSON"
 ]) assert.ok(html.includes(endpoint), "missing live data endpoint: " + endpoint);
 assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nasa.gov/live/"), "NASA video or fallback links missing");
+assert.ok(html.includes('data-monitor-tab="spaceweather"') && html.includes('data-monitor-tab="wildfires"') && html.includes('data-monitor-tab="airquality"'), "new monitor mode tabs missing");
+assert.ok(html.includes('services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json') && html.includes('services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json'), "NOAA solar wind/X-ray feeds missing");
+assert.ok(html.includes('current=european_aqi,us_aqi,pm10,pm2_5,nitrogen_dioxide,uv_index'), "US AQI / PM / NO2 variables missing");
+assert.ok(html.includes('eonet.gsfc.nasa.gov/api/v3/events?status=open') && html.includes('EONET does not supply VIIRS/MODIS brightness temperature'), "wildfire event source / thermal-data limitation note missing");
+
 assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html.includes('id="font-down"') && html.includes('id="landscape"'), "dashboard controls missing");
 assert.ok(css.includes(".earth-module") && css.includes("repeat(7,minmax(0,1fr))"), "independent portal layout styles missing");
 assert.ok(main.includes('if(view==="earth")') && main.includes('homeCard("earth")'), "portal route or HOME entry missing");
