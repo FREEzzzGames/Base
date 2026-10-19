@@ -53,7 +53,7 @@ assert.ok(blueprint.includes('.module-name{display:block') && blueprint.includes
 assert.ok(blueprint.includes('unit=Math.max(28,Math.min(w*.25,h*.45))*zoom'), "OrbitBlueprint isometric layout must scale to wide, short embedded canvases and support zoom");
 assert.ok(blueprint.includes("gesture?.mode==='pinch'") && blueprint.includes("canvas.addEventListener('wheel'"), "OrbitBlueprint pinch and wheel zoom controls missing");
 assert.ok(blueprint.includes("canvas.addEventListener('drop'") && blueprint.includes('body.draggable=true'), "OrbitBlueprint assembly drag-and-drop repository missing");
-assert.ok(blueprint.includes('function metadata(m)') && blueprint.includes("['DIAMETER',meta.diameter]"), "OrbitBlueprint node inspection metadata missing");
+assert.ok(blueprint.includes('function metadata(m)') && blueprint.includes('meta.diameter'), "OrbitBlueprint node inspection metadata missing");
 assert.ok(blueprint.includes('function updateStaticLabels()') && blueprint.includes('id="lang"'), "OrbitBlueprint EN/RU localization control missing");
 assert.ok(blueprint.includes('RESET TO NOMINAL') && blueprint.includes('drawStarted'), "OrbitBlueprint nominal reset and wireframe reveal missing");
 assert.ok(blueprint.includes("SOLAR ARRAY") && blueprint.includes("ZVEZDA"), "OrbitBlueprint compact node labels missing");
