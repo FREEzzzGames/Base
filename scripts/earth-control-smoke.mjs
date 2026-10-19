@@ -33,6 +33,9 @@ assert.ok(html.includes("youtube-nocookie.com/embed/") && html.includes("www.nas
 assert.ok(html.includes('data-monitor-tab="spaceweather"') && html.includes('data-monitor-tab="wildfires"') && html.includes('data-monitor-tab="airquality"'), "new monitor mode tabs missing");
 assert.ok(html.includes('services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json') && html.includes('services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json'), "NOAA solar wind/X-ray feeds missing");
 assert.ok(html.includes('current=european_aqi,us_aqi,pm10,pm2_5,nitrogen_dioxide,uv_index'), "US AQI / PM / NO2 variables missing");
+assert.ok(html.includes('.panel-weather .footer{display:flex;flex-wrap:wrap') && html.includes('white-space:normal!important;overflow-wrap:anywhere'), "landscape footer/text overflow fixes missing");
+assert.ok(html.includes('.panel-orbit .panel-body{overflow-y:auto') && html.includes('.panel-earthdata .panel-body{overflow-y:auto'), "dense telemetry panels should allow internal scrolling");
+
 assert.ok(html.includes('eonet.gsfc.nasa.gov/api/v3/events?status=open') && html.includes('EONET does not supply VIIRS/MODIS brightness temperature'), "wildfire event source / thermal-data limitation note missing");
 
 assert.ok(html.includes('id="refresh"') && html.includes('id="font-up"') && html.includes('id="font-down"') && html.includes('id="landscape"'), "dashboard controls missing");
