@@ -217,6 +217,28 @@
 .help-entry{padding:9px 0;border-bottom:1px solid #292929}.help-entry strong{display:block;color:#fff;font-size:11px}.help-entry p{margin:4px 0 0;color:#aaa;font-size:10px;line-height:1.6}
 @media(max-width:650px){#help-open{font-size:9px!important;padding:5px}.intro-card{padding:18px}}
 .language-switch{display:inline-flex;border:1px solid #444;gap:0}.language-switch button{border:0;border-right:1px solid #333;padding:5px 6px;background:#080808;color:#888;font:10px inherit;min-width:25px}.language-switch button[aria-pressed="true"]{color:#fff;background:#262626;box-shadow:inset 0 -2px #fff}@media(max-width:420px){.language-switch button{min-width:22px;padding:4px}}
+
+.panel-cameras{grid-column:1/6;grid-row:3;min-height:0}
+.panel-cameras .panel-head{justify-content:space-between;flex-wrap:nowrap}
+#rotate-cams{font-size:9px;padding:4px 6px;white-space:nowrap}
+.camera-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:5px;flex:1;min-height:0;padding:5px}
+.camera-cell{position:relative;display:block;min-width:0;min-height:0;overflow:hidden;border:1px solid #343434;background:#050505;color:#fff;text-decoration:none}
+.camera-cell img,.camera-cell video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(100%) contrast(125%);background:#050505}
+.camera-cell .camera-no-signal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;color:#666;font-size:10px;letter-spacing:.1em;background:repeating-linear-gradient(0deg,#0a0a0a 0 2px,#080808 2px 4px)}
+.camera-overlay{position:absolute;left:0;right:0;top:0;padding:5px;background:linear-gradient(#000e,transparent);display:flex;flex-direction:column;gap:2px;font-size:9px;text-shadow:0 1px 2px #000;pointer-events:none}
+.camera-overlay strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camera-overlay span{color:#b0b0b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camera-state{position:absolute;right:5px;bottom:5px;background:#000c;border:1px solid #555;padding:2px 4px;font-size:8px;letter-spacing:.08em}
+.camera-modal{position:fixed;inset:0;z-index:10000;background:#000e;display:none;align-items:center;justify-content:center;padding:16px}
+.camera-modal.is-open{display:flex}
+.camera-modal-dialog{width:min(1100px,96vw);height:min(82dvh,760px);background:#050505;border:1px solid #666;display:flex;flex-direction:column;min-height:0}
+.camera-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px;border-bottom:1px solid #333}
+.camera-modal-screen{position:relative;flex:1;min-height:0;background:#000}
+.camera-modal-screen img,.camera-modal-screen video{width:100%;height:100%;object-fit:contain;filter:grayscale(100%) contrast(125%)}
+.camera-modal-screen .camera-no-signal{position:absolute;inset:0;display:grid;place-items:center;color:#777;font-size:12px}
+@media(orientation:landscape) and (max-height:760px){.grid{grid-template-rows:minmax(0,.85fr) minmax(0,.9fr) minmax(0,.8fr)}.panel-cameras .panel-head{min-height:22px;padding:3px 6px}.camera-grid{gap:4px;padding:4px}.camera-overlay{padding:3px;font-size:8px}.camera-overlay strong{font-size:9px}.camera-state{font-size:7px}.panel-cameras .footer{padding:3px 5px}}
+@media(max-width:700px){.panel-cameras{grid-column:1/3;grid-row:auto;min-height:250px}.camera-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}.grid{grid-template-rows:none}.panel-cameras .panel-head h2{font-size:9px}}
+@media(orientation:landscape) and (min-width:701px){.camera-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -275,6 +297,12 @@
 <div class="footer"><a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=JSON" target="_blank" rel="noopener noreferrer">LIVE TLE/OMM CATALOG ↗</a></div>
 </section>
 
+
+<section class="panel panel-cameras" data-panel="cameras" data-panel-number="12">
+  <div class="panel-head"><span class="index">12</span><h2>REGIONAL CAMERAS / 300 KM RADIUS</h2><button id="rotate-cams" type="button" title="Rotate active cameras">↻ ROTATE CAMS</button></div>
+  <div class="camera-grid" id="camera-grid" aria-live="polite"></div>
+  <div class="footer"><span>REGIONAL CCTV · MONOCHROME</span><a href="https://www.stuttgart.de/tourismus/stadtportraet/stuttgarter-webcams" target="_blank" rel="noopener noreferrer">STUTTGART CAMERAS ↗</a><a href="https://verkehrsinfo-bw.de/verkehrskameras" target="_blank" rel="noopener noreferrer">TRAFFIC CAMERAS ↗</a></div>
+</section>
 </main>
 <footer class="footbar"><span>EARTH CONTROL DECK · MONOCHROME INSTRUMENT PANEL</span><span id="data-status">PUBLIC DATA · INITIALIZING</span><span>NO API KEYS STORED IN CLIENT</span></footer>
 </div>
@@ -354,6 +382,28 @@ document.querySelectorAll("[data-language]").forEach(b=>b.setAttribute("aria-pre
 try{if(save)localStorage.setItem("earth-deck-language",lang)}catch{}}
 document.querySelectorAll("[data-language]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.language)));
 let initialLang="en";try{initialLang=localStorage.getItem("earth-deck-language")||"en"}catch{}setLanguage(initialLang,false);
+
+
+/* Regional camera adapter. Configure direct JPEG/MJPEG/HLS URLs here; public webcam
+   directories often expose landing pages rather than embeddable streams. */
+const CAMERA_POOL=[
+{id:"pf",name:"PFORZHEIM CTR",distanceKm:0,lat:48.8922,lon:8.6946,streamUrl:"",sourceUrl:"https://www.google.com/search?q=webcam+Pforzheim+live"},
+{id:"st",name:"STUTTGART CTR",distanceKm:38,lat:48.7758,lon:9.1829,streamUrl:"",sourceUrl:"https://www.stuttgart.de/tourismus/stadtportraet/stuttgarter-webcams"},
+{id:"ka",name:"KARLSRUHE CTR",distanceKm:25,lat:49.0069,lon:8.4037,streamUrl:"",sourceUrl:"https://www.google.com/search?q=webcam+Karlsruhe+live"},
+{id:"str",name:"STRASBOURG CTR",distanceKm:65,lat:48.5734,lon:7.7521,streamUrl:"",sourceUrl:"https://www.google.com/search?q=webcam+Strasbourg+live"},
+{id:"fra",name:"FRANKFURT CTR",distanceKm:145,lat:50.1109,lon:8.6821,streamUrl:"",sourceUrl:"https://www.google.com/search?q=webcam+Frankfurt+live"},
+{id:"bad",name:"BADEN-BADEN CTR",distanceKm:50,lat:48.7621,lon:8.2400,streamUrl:"",sourceUrl:"https://www.google.com/search?q=webcam+Baden-Baden+live"}
+];
+let cameraOffset=0;let cameraModalItem=null;
+const cameraGrid=document.getElementById("camera-grid");
+const cameraModal=document.createElement("div");cameraModal.className="camera-modal";cameraModal.id="camera-modal";cameraModal.innerHTML='<div class="camera-modal-dialog" role="dialog" aria-modal="true" aria-label="Regional camera"><div class="camera-modal-head"><strong id="camera-modal-title">REGIONAL CAMERA</strong><button type="button" id="close-camera">CLOSE CAM ✕</button></div><div class="camera-modal-screen" id="camera-modal-screen"></div></div>';document.body.appendChild(cameraModal);
+function cameraTimestamp(){return new Date().toISOString().replace("T"," ").slice(0,19)+" UTC"}
+function renderCameraMedia(item,container,large=false){container.replaceChildren();if(item.streamUrl){const url=item.streamUrl;let media;if(/\.(mp4|webm)(\?|$)/i.test(url)){media=document.createElement("video");media.autoplay=true;media.muted=true;media.loop=true;media.playsInline=true;media.src=url}else{media=document.createElement("img");media.alt=item.name+" live frame";media.src=url;if(!/\.m?jpg(e)?(\?|$)/i.test(url))media.dataset.streamType="external"}media.onerror=()=>{container.querySelector(".camera-no-signal")?.remove();const no=document.createElement("div");no.className="camera-no-signal";no.textContent="SIGNAL UNAVAILABLE";container.appendChild(no)};container.appendChild(media)}else{const no=document.createElement("div");no.className="camera-no-signal";no.textContent="NO EMBEDDABLE STREAM CONFIGURED";container.appendChild(no)}}
+function openCamera(item){cameraModalItem=item;document.getElementById("camera-modal-title").textContent=item.name+" · "+item.distanceKm+" KM";const screen=document.getElementById("camera-modal-screen");renderCameraMedia(item,screen,true);if(!item.streamUrl){const link=document.createElement("a");link.href=item.sourceUrl;link.target="_blank";link.rel="noopener noreferrer";link.textContent="OPEN OFFICIAL CAMERA SOURCE ↗";link.style.cssText="position:absolute;left:12px;bottom:12px;background:#000;padding:8px;border:1px solid #555;color:#fff";screen.appendChild(link)}cameraModal.classList.add("is-open")}
+function closeCamera(){cameraModal.classList.remove("is-open");document.getElementById("camera-modal-screen").replaceChildren();cameraModalItem=null}
+document.getElementById("close-camera").addEventListener("click",closeCamera);cameraModal.addEventListener("click",e=>{if(e.target===cameraModal)closeCamera()});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCamera()});
+function renderCameraGrid(){if(!cameraGrid)return;cameraGrid.replaceChildren();const active=Array.from({length:4},(_,i)=>CAMERA_POOL[(cameraOffset+i)%CAMERA_POOL.length]);active.forEach((item,i)=>{const cell=document.createElement("button");cell.type="button";cell.className="camera-cell";cell.setAttribute("aria-label","Open "+item.name);renderCameraMedia(item,cell);const overlay=document.createElement("div");overlay.className="camera-overlay";const title=document.createElement("strong");title.textContent=item.name+" · "+item.distanceKm+" KM";const coords=document.createElement("span");coords.textContent=item.lat.toFixed(4)+"°, "+item.lon.toFixed(4)+"°";const stamp=document.createElement("span");stamp.textContent=cameraTimestamp();overlay.append(title,coords,stamp);const state=document.createElement("span");state.className="camera-state";state.textContent=item.streamUrl?"LIVE · CAM "+String(i+1).padStart(2,"0"):"SOURCE REQUIRED · CAM "+String(i+1).padStart(2,"0");cell.append(overlay,state);cell.addEventListener("click",()=>openCamera(item));cameraGrid.appendChild(cell)})}
+document.getElementById("rotate-cams").addEventListener("click",()=>{cameraOffset=(cameraOffset+1+Math.floor(Math.random()*(CAMERA_POOL.length-1)))%CAMERA_POOL.length;renderCameraGrid()});renderCameraGrid();
 
 document.querySelectorAll("[data-help-term]").forEach(btn=>btn.addEventListener("click",()=>showTerm(btn.dataset.helpTerm,btn)));
 $("term-close").addEventListener("click",()=>{$("term-popover").hidden=true});
