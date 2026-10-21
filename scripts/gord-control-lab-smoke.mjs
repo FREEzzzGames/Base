@@ -24,6 +24,11 @@ assert.ok(html.includes("if(s.cooldowns[idn]>0)return"), "Skills must reject cas
 assert.ok(html.includes("Math.min(.4,(previous?.value||0)+value)"), "Gord passive slow must stack no more than twice");
 assert.ok(html.includes("slowFactor=1-(t.statuses?.slow?.value||0)"), "Slow status must affect target movement");
 assert.ok(html.includes("Math.abs(Math.sin((sh.age||0)*18))*10"), "Gord orb must show a bouncing flight animation");
+assert.ok(html.includes('skills:["Crimson Gleam","Doom Waltz","Throne of Ruin"]'), "Alice must use the revamped skill names");
+assert.ok(html.includes("aliceCrimsonTimer=4"), "Alice passive stacks must have a four-second expiry");
+assert.ok(html.includes("aliceUltCharge={life:1.5}"), "Alice ultimate must include its charge time");
+assert.ok(html.includes("function healPlayer(amount)"), "Alice healing must affect player HP");
+assert.ok(html.includes('id="playerHp"'), "Player HP must be visible in the training HUD");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
