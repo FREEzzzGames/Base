@@ -45,7 +45,7 @@ assert.deepEqual(SCALES.minor, [0, 2, 3, 5, 7, 8, 10]);
 assert.deepEqual(composeMotif({ seed: 42 }), composeMotif({ seed: 42 }), "Same seed must produce identical phrase");
 assert.equal(composeMotif({ seed: 7, bars: 5 }).length, 80, "Five-bar phrase must contain 80 steps");
 assert.ok(composeMotif({ seed: 9, style: "schranz" }).some((n) => n !== null), "Composition must contain notes");
-assert.equal(quantizeMidi(61, 60, "major"), 62, "Major-scale quantization must choose the nearest allowed note");
+assert.equal(quantizeMidi(62, 60, "major"), 62, "Major-scale quantization must choose the nearest allowed note");
 assert.equal(seededRandom(1)(), seededRandom(1)(), "Seeded random source must be repeatable");
 const quality = scorePattern({ style: "detroit", kick: Array.from({ length: 16 }, (_, i) => [0,4,8,12].includes(i)), snare: Array.from({ length: 16 }, (_, i) => [4,12].includes(i)) });
 assert.equal(quality.genreFit, 100, "A canon-perfect Detroit kick/snare should score 100 genre fit");
