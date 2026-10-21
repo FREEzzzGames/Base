@@ -19,7 +19,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;pad
 canvas{display:block;width:100%;height:100%;touch-action:none}
 #toast{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#0a121ee8;border:1px solid #34516b;border-radius:999px;padding:7px 12px;font-size:11px;color:#dceeff;white-space:nowrap;pointer-events:none;max-width:90%;overflow:hidden;text-overflow:ellipsis}
 #aimHint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:10px;color:#d3e6f8;background:#0a121ebf;border:1px solid #2a4056;border-radius:8px;padding:6px 9px;white-space:nowrap;pointer-events:none}
-#bottom{display:grid;grid-template-columns:1fr 1.1fr;gap:8px;flex-shrink:0}
+#skillDetails{border:1px solid var(--line);border-radius:10px;background:#0b1420;padding:7px 9px;font-size:10px;color:#bdd0e3;line-height:1.35;max-height:76px;overflow:auto;flex-shrink:0}#skillDetails strong{color:var(--cyan)}#bottom{display:grid;grid-template-columns:1fr 1.1fr;gap:8px;flex-shrink:0}
 .panel{border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#111b2a,#0c131e);padding:9px;min-width:0}
 .panelTitle{font-size:9px;letter-spacing:.12em;color:var(--muted);font-weight:800;margin:0 0 8px}
 #moveArea{height:112px;display:flex;align-items:center;justify-content:center;position:relative}
@@ -46,6 +46,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 <div class="stat"><div class="label">Комбо</div><div class="value" id="combo">0</div></div>
 </section>
 <div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания</div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
+<div id="skillDetails">Данные навыка появятся после выбора персонажа.</div>
 <section id="bottom">
 <div class="panel"><div class="panelTitle">ПЕРЕМЕЩЕНИЕ</div><div id="moveArea"><div id="stickBase"><div id="stickKnob"></div></div></div></div>
 <div class="panel"><div class="panelTitle">НАВЫКИ · НАЖМИ, НАПРАВЬ, ОТПУСТИ</div><div id="skills">
@@ -79,7 +80,7 @@ const MAGES=[
 {id:"chang-e",name:"Chang'e",role:"Залп",skills:["Starmoon Shockwave","Crescent Moon","Meteor Shower"],types:["bolt","summon","beam"],damage:[22,10,5]},
 {id:"cyclops",name:"Cyclops",role:"Самонаводка",skills:["Stardust Shock","Planets Attack","Star Power Lockdown"],types:["bolt","orb","orb"],damage:[30,9,42]},
 {id:"eudora",name:"Eudora",role:"Взрывной урон",skills:["Forked Lightning","Ball Lightning","Thunder's Wrath"],types:["burst","bolt","burst"],damage:[25,35,62]},
-{id:"gord",name:"Gord",role:"Луч и зоны",skills:["Mystic Projectile","Mystic Injunction","Mystic Gush"],types:["bolt","zone","beam"],damage:[35,8,7]},
+{id:"gord",name:"Gord",role:"Луч и зоны",skills:["Mystic Projectile","Mystic Injunction","Mystic Gush"],types:["bolt","zone","beam"],damage:[270,55,110],cd:[10,8,44],details:["Сфера летит по направлению, взрывается при попадании, оглушает и раскрывает цель на 1 с. Урон: 270–495 + 80% общей магической силы; перезарядка на 1 уровне: 10 с.","Поле наносит урон каждые 0,3 с, максимум 13 срабатываний. Урон за тик: 55–105 + 16% общей магической силы; перезарядка на 1 уровне: 8 с.","Направляемый луч наносит урон каждые 0,2 с, максимум 16 срабатываний. Урон за тик: 110–210 + 32% общей магической силы; перезарядка ультимейта: 44/40/36 с."],source:"https://mobile-legends.fandom.com/wiki/Gord"},
 {id:"harith",name:"Harith",role:"Мобильность",skills:["Synchro Fission","Chrono Dash","Zaman Force"],types:["burst","dash","zone"],damage:[26,24,8]},
 {id:"guinevere",name:"Guinevere",role:"Магический контроль",skills:["Energy Wave","Spatial Migration","Violet Requiem"],types:["bolt","dash","burst"],damage:[28,24,46]},
 {id:"harley",name:"Harley",role:"Комбо",skills:["Poker Trick","Space Escape","Deadly Magic"],types:["bolt","dash","orb"],damage:[22,18,45]},
@@ -107,7 +108,16 @@ const MAGES=[
 {id:"esmeralda",name:"Esmeralda",role:"Щит и сближение",skills:["Frostmoon Shield","Stardust Dance","Falling Starmoon"],types:["dash","burst","zone"],damage:[16,15,34]}
 ];
 function renderMagePicker(){const root=$('magePicker');root.innerHTML='';for(const m of MAGES){const b=document.createElement('button');b.className='mageCard'+(m.id===state.mageId?' selected':'');b.innerHTML=m.name+'<small>'+m.role+'</small>';b.addEventListener('click',()=>selectMage(m.id));root.appendChild(b);}}
-function selectMage(id){const m=MAGES.find(x=>x.id===id)||MAGES[0];state.mageId=m.id;state.shots=[];state.effects=[];state.ultimate=null;state.drag=null;state.aim=null;state.cooldowns=[0,0,0];$('mageSubtitle').textContent=m.name.toUpperCase()+' · '+m.role.toUpperCase();document.querySelectorAll('.skill').forEach((b,i)=>{b.querySelector('.name').textContent='Навык '+(i+1);b.querySelector('.key').textContent=m.skills[i];b.querySelector('.icon').textContent=['✦','◉','✧'][i];});renderMagePicker();say('Выбран маг: '+m.name+' · '+m.role);}
+function selectMage(id){
+const m=MAGES.find(x=>x.id===id)||MAGES[0];
+state.mageId=m.id;state.shots=[];state.effects=[];state.ultimate=null;state.drag=null;state.aim=null;state.cooldowns=[0,0,0];state.cdMax=m.cd||[4.2,6.5,22];
+$('mageSubtitle').textContent=m.name.toUpperCase()+' · '+m.role.toUpperCase();
+document.querySelectorAll('.skill').forEach((b,i)=>{b.querySelector('.name').textContent='Навык '+(i+1);b.querySelector('.key').textContent=m.skills[i];b.querySelector('.icon').textContent=['✦','◉','✧'][i];});
+const details=$('skillDetails');
+if(m.details){details.innerHTML='<strong>Данные навыков · уровень 1</strong><br>'+m.details.map((d,i)=>'<b>'+(i+1)+'. '+m.skills[i]+':</b> '+d).join('<br>')+'<br><a href="'+m.source+'" target="_blank" rel="noopener">Источник характеристик</a> · значения могут меняться с патчами.';}
+else{details.innerHTML='<strong>'+m.name+'</strong>: профиль механики пока не сверён по актуальным значениям патча. Сейчас используется типовая модель навыков; точный урон и перезарядка не выдаются за официальные. <a href="https://www.mobilelegends.com/en/hero" target="_blank" rel="noopener">Официальная база героев</a> · <a href="https://www.youtube.com/@MobileLegends5v5MOBA/search?query='+encodeURIComponent(m.name+' hero skills')+'" target="_blank" rel="noopener">Видео навыков</a>';}
+renderMagePicker();say('Выбран маг: '+m.name+' · '+m.role);
+}
 function currentMage(){return MAGES.find(m=>m.id===state.mageId)||MAGES[6];}
 function castSkill(id,angle,targetPoint){
 const s=state,idn=id-1,m=currentMage(),kind=m.types[idn],damage=m.damage[idn],p=s.player;
@@ -115,16 +125,16 @@ if(s.cooldowns[idn]>0)return;
 s.casts++;s.cooldowns[idn]=s.cdMax[idn];const dir={x:Math.cos(angle),y:Math.sin(angle)};p.face=angle;
 const point=targetPoint||{x:p.x+dir.x*145,y:p.y+dir.y*145};
 const x=Math.max(16,Math.min(s.w-16,point.x)),y=Math.max(16,Math.min(s.h-16,point.y));
-if(kind==='bolt'){s.shots.push({x:p.x+dir.x*18,y:p.y+dir.y*18,vx:dir.x*420,vy:dir.y*420,life:Math.min(s.w,s.h)*.8/420,skill:id,r:7,damage,hit:new Set()});addFx(p.x,p.y,'#66fcf1',.18,16);}
-else if(kind==='zone'){s.effects.push({type:'zone',x,y,life:2.3,max:2.3,r:38,color:'#a68bff',tick:0,damage});}
-else if(kind==='beam'){s.ultimate={angle,life:id===3?2.5:1.1,max:id===3?2.5:1.1,tick:0,damage};}
+if(kind==='bolt'){s.shots.push({x:p.x+dir.x*18,y:p.y+dir.y*18,vx:dir.x*420,vy:dir.y*420,life:Math.min(s.w,s.h)*.8/420,skill:id,r:7,damage:damage+state.magicPower*(m.id==='gord'&&id===1?.8:0),hit:new Set()});addFx(p.x,p.y,'#66fcf1',.18,16);}
+else if(kind==='zone'){const gord=m.id==='gord'&&id===2;s.effects.push({type:'zone',x,y,life:gord?3.9:2.3,max:gord?3.9:2.3,r:38,color:'#a68bff',tick:0,interval:gord?.3:.25,maxTicks:gord?13:0,ticks:0,damage:damage+state.magicPower*(gord?.16:0)});}
+else if(kind==='beam'){const gord=m.id==='gord'&&id===3;s.ultimate={angle,life:gord?3.2:(id===3?2.5:1.1),max:gord?3.2:(id===3?2.5:1.1),tick:0,interval:gord?.2:.12,maxTicks:gord?16:0,ticks:0,damage:damage+state.magicPower*(gord?.32:0)};}
 else if(kind==='burst'){for(const t of s.targets)if(t.alive&&Math.hypot(t.x-x,t.y-y)<72)hitTarget(t,damage);addFx(x,y,'#ffca6a',.42,60);}
 else if(kind==='orb'){s.effects.push({type:'zone',x,y,life:1.5,max:1.5,r:25,color:'#66fcf1',tick:0,damage});for(const t of s.targets)if(t.alive&&Math.hypot(t.x-x,t.y-y)<95)hitTarget(t,Math.round(damage*.7));}
 else if(kind==='dash'){p.x=Math.max(15,Math.min(s.w-15,p.x+dir.x*95));p.y=Math.max(15,Math.min(s.h-15,p.y+dir.y*95));addFx(p.x,p.y,'#66fcf1',.3,25);for(const t of s.targets)if(t.alive&&Math.hypot(t.x-p.x,t.y-p.y)<42)hitTarget(t,damage);}
 else if(kind==='summon'){s.effects.push({type:'zone',x,y,life:3,max:3,r:48,color:'#ffca6a',tick:0,damage:Math.max(4,Math.round(damage*.65))});addFx(x,y,'#ffca6a',.4,35);}
 say(m.name+' · '+m.skills[idn]);updateStats();
 }
-function hitTarget(t,damage){if(!t.alive)return;t.hp-=damage;state.hits++;state.combo++;state.best=Math.max(state.best,state.combo);addFx(t.x,t.y,'#ffca6a',.22,15);if(t.hp<=0){t.alive=false;t.respawn=1.1;addFx(t.x,t.y,'#ff6378',.4,27);say('Попадание! Цель восстановится автоматически');}updateStats();}
+function hitTarget(t,damage){if(!t.alive)return;const mage=currentMage();t.hitStack=(t.hitStack||0)+1;t.hp-=damage;if(mage.id==='gord'&&t.hitStack%4===0){t.hp-=140+state.magicPower*.6;addFx(t.x,t.y,'#66fcf1',.3,20);}state.hits++;state.combo++;state.best=Math.max(state.best,state.combo);addFx(t.x,t.y,'#ffca6a',.22,15);if(t.hp<=0){t.alive=false;t.respawn=1.1;addFx(t.x,t.y,'#ff6378',.4,27);say('Попадание! Цель восстановится автоматически');}updateStats();}
 function updateStats(){ui.hits.textContent=state.hits+' / '+state.casts;ui.accuracy.textContent=state.casts?Math.round(state.hits/state.casts*100)+'%':'—';ui.combo.textContent=state.combo;}
 function draw(){
 const w=state.w,h=state.h;ctx.clearRect(0,0,w,h);ctx.fillStyle='#0a1421';ctx.fillRect(0,0,w,h);
@@ -142,8 +152,8 @@ function update(dt){const s=state,p=s.player;for(let i=0;i<3;i++)s.cooldowns[i]=
 if(s.move.x||s.move.y){const n=norm(s.move.x,s.move.y);p.x+=n.x*p.speed*dt;p.y+=n.y*p.speed*dt;p.face=Math.atan2(n.y,n.x);}p.x=Math.max(p.r+2,Math.min(s.w-p.r-2,p.x));p.y=Math.max(p.r+2,Math.min(s.h-p.r-2,p.y));
 for(const t of s.targets){if(!t.alive){t.respawn-=dt;if(t.respawn<=0){t.alive=true;t.hp=t.max;t.x=18+Math.random()*(s.w-36);t.y=24+Math.random()*s.h*.48;}continue;}if(s.movingTargets){t.phase+=dt;t.x+=Math.sin(t.phase*1.2+iSafe(t.phase))*dt*12;t.y+=Math.cos(t.phase*.8)*dt*7;t.x=Math.max(t.r+5,Math.min(s.w-t.r-5,t.x));t.y=Math.max(t.r+25,Math.min(s.h*.49,t.y));}}
 for(let i=s.shots.length-1;i>=0;i--){const sh=s.shots[i];sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;sh.life-=dt;let consumed=false;for(const t of s.targets){if(!t.alive||sh.hit.has(t))continue;if(Math.hypot(t.x-sh.x,t.y-sh.y)<t.r+sh.r){sh.hit.add(t);hitTarget(t,sh.damage||30);consumed=true;break;}}if(consumed||sh.life<=0||sh.x<0||sh.y<0||sh.x>s.w||sh.y>s.h)s.shots.splice(i,1);}
-for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.type==='zone'){f.tick-=dt;if(f.tick<=0){f.tick=.25;for(const t of s.targets)if(t.alive&&Math.hypot(t.x-f.x,t.y-f.y)<f.r+t.r)hitTarget(t,f.damage||8);}}if(f.life<=0)s.effects.splice(i,1);}
-if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.tick=.12;const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+8)hitTarget(t,u.damage||7);}}if(u.life<=0)s.ultimate=null;}
+for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.type==='zone'){f.tick-=dt;if(f.tick<=0){f.ticks=(f.ticks||0)+1;f.tick=f.interval||.25;for(const t of s.targets)if(t.alive&&Math.hypot(t.x-f.x,t.y-f.y)<f.r+t.r)hitTarget(t,f.damage||8);if(f.maxTicks&&f.ticks>=f.maxTicks)f.life=0;}}if(f.life<=0)s.effects.splice(i,1);}
+if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.ticks=(u.ticks||0)+1;u.tick=u.interval||.12;const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+8)hitTarget(t,u.damage||7);}if(u.maxTicks&&u.ticks>=u.maxTicks)u.life=0;}if(u.life<=0)s.ultimate=null;}
 draw();for(let i=1;i<=3;i++){const b=document.querySelector('[data-skill="'+i+'"]');const cd=s.cooldowns[i-1];b.classList.toggle('cooling',cd>0);b.dataset.cd=cd>0?cd.toFixed(1):'';b.classList.toggle('active',s.drag===i||!!(i===3&&s.ultimate));}}
 function iSafe(x){return Math.sin(x*.31);}
 function loop(now){const dt=Math.min(.033,(now-(state.last||now))/1000);state.last=now;update(dt);requestAnimationFrame(loop);}
