@@ -5,7 +5,7 @@ import { STYLE_RULES, SCALES, TECHNO_THEORY, composeMotif, scorePattern, seededR
 
 const file = "public/freezzz-studio.html";
 const html = readFileSync(file, "utf8");
-const scriptMatch = html.match(/<script(?: type="module")?>([\\s\\S]*?)<\\/script>/i);
+const scriptMatch = html.match(/<script(?: type="module")?>([\s\S]*?)<\/script>/i);
 assert.ok(scriptMatch, "Studio inline script must exist");
 const js = scriptMatch[1].replace(/^import\s+\{[^}]+\}\s+from\s+[\'"][^\'"]+[\'"];\s*/m, "");
 
