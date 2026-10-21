@@ -54,6 +54,10 @@ assert.ok(html.includes("eudoraBall:true"), "Eudora Ball Lightning must have a d
 assert.ok(html.includes("eudoraThunderburst:true"), "Eudora's marked ultimate must create a delayed Thunderburst");
 assert.ok(html.includes("t.marks.superconductor=3"), "Eudora skills must apply the Superconductor mark");
 assert.ok(html.includes("s.cooldowns[0]=Math.max(0,s.cooldowns[0]-1.5)"), "Eudora's marked S1 chain must refund cooldown");
+assert.ok(html.includes("cyclopsDisk:true"), "Cyclops Stardust Shock must fire two traveling disks");
+assert.ok(html.includes("cyclopsSphere:true"), "Cyclops Planets Attack must use homing spheres");
+assert.ok(html.includes("cyclopsUlt:true"), "Cyclops ultimate must lock and track its selected target");
+assert.ok(html.includes("state.cooldowns[i]=Math.max(0,state.cooldowns[i]-.5)"), "Cyclops passive must reduce all skill cooldowns on hits");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
