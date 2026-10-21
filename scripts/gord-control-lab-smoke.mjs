@@ -20,7 +20,7 @@ assert.ok(html.includes("passiveStacks"), "Gord passive stack tracking must exis
 assert.ok(html.includes("ultSteeringPointer"), "Active ultimate must track its steering pointer");
 assert.ok(html.includes("state.ultimate.angle=state.player.face"), "Active ultimate must update direction from pointer movement");
 assert.ok(html.includes("pointercancel"), "Touch cancellation must be handled");
-assert.ok(html.includes("if(s.cooldowns[idn]>0)return"), "Skills must reject casts while on cooldown");
+assert.ok(html.includes("if(s.cooldowns[idn]>0&&!(m.id==='harley'&&id===2&&s.harleyHat&&s.harleyHat.life>0))return"), "Skills must reject casts while on cooldown except Harley's hat recast");
 assert.ok(html.includes("Math.min((currentMage().id==='gord'?.4:.9),(previous?.value||0)+value)"), "Gord slow must cap at 40% and other hero slows can reach 90%");
 assert.ok(html.includes("slowFactor=1-(t.statuses?.slow?.value||0)"), "Slow status must affect target movement");
 assert.ok(html.includes("Math.abs(Math.sin((sh.age||0)*18))*10"), "Gord orb must show a bouncing flight animation");
