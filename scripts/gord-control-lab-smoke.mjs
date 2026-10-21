@@ -35,6 +35,11 @@ assert.ok(html.includes("baneShark"), "Bane ultimate must use a traveling shark 
 assert.ok(html.includes("damage=(140+state.magicPower*1.3)*(1+Math.min(1,charge/1.5))"), "Bane Ale recast must scale with hold duration");
 assert.ok(html.includes("s.baneTidal=Math.min(2,s.baneTidal+1)"), "Bane passive stacks must cap at two");
 assert.ok(html.includes("function basicAttack()"), "Basic attack must consume Bane passive stacks");
+assert.ok(html.includes("auroraHail:true"), "Aurora's first skill must create five hailstone ticks");
+assert.ok(html.includes("auroraFrozenZone:true"), "Aurora's second skill must create a freezing end-zone");
+assert.ok(html.includes("auroraGlacier:true"), "Aurora's ultimate must grow and detonate a glacier");
+assert.ok(html.includes("state.auroraPassiveCooldown=150"), "Aurora's fatal-damage passive must have a 150-second cooldown");
+assert.ok(html.includes('id="testPassive"'), "Aurora's survival passive must be manually testable in the lab");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
