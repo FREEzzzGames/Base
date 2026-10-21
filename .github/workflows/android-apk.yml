@@ -30,6 +30,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.13"
+      - name: Auto-format Kotlin sources
+        run: gradle -p android ktlintFormat --no-daemon
       - name: Kotlin / Android static analysis
         run: gradle -p android ktlintCheck lintDebug --no-daemon
       - name: Build debug APK
