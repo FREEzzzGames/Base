@@ -295,7 +295,7 @@ else if(m.id==='cyclops'&&id===2){
  p.speed=175;setTimeout(()=>{p.speed=145;},2000);
 }
 else if(m.id==='eudora'&&id===1){
- for(const t of s.targets){if(!t.alive)continue;const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx)-angle;if(d<145&&Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<.55)hitTarget(t,275+state.magicPower);}
+ for(const t of s.targets){if(!t.alive)continue;const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx)-angle;if(d<145&&Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<.55){const was=!!(t.marks?.superconductor>0);hitTarget(t,275+state.magicPower,1,{color:'#8da9ff'});if(was){hitTarget(t,10+state.magicPower*.04,1,{color:'#b6c5ff'});hitTarget(t,275+state.magicPower,1,{color:'#d7e0ff'});s.cooldowns[0]=Math.max(0,s.cooldowns[0]-1.5);s.eudoraSpeedTimer=1;p.speed=203;sparkBurst(t.x,t.y,'#8da9ff',12,90);}}}
  addFx(x,y,'#8da9ff',.3,70);
 }
 else if(kind==='bolt'){s.shots.push({x:p.x+dir.x*18,y:p.y+dir.y*18,vx:dir.x*420,vy:dir.y*420,life:Math.min(s.w,s.h)*.8/420,skill:id,r:7,damage:damage+state.magicPower*(m.id==='gord'&&id===1?.8:0),hit:new Set()});addFx(p.x,p.y,'#66fcf1',.18,16);}
