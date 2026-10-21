@@ -21,6 +21,9 @@ assert.ok(html.includes("ultSteeringPointer"), "Active ultimate must track its s
 assert.ok(html.includes("state.ultimate.angle=state.player.face"), "Active ultimate must update direction from pointer movement");
 assert.ok(html.includes("pointercancel"), "Touch cancellation must be handled");
 assert.ok(html.includes("if(s.cooldowns[idn]>0)return"), "Skills must reject casts while on cooldown");
+assert.ok(html.includes("Math.min(.4,(previous?.value||0)+value)"), "Gord passive slow must stack no more than twice");
+assert.ok(html.includes("slowFactor=1-(t.statuses?.slow?.value||0)"), "Slow status must affect target movement");
+assert.ok(html.includes("Math.abs(Math.sin((sh.age||0)*18))*10"), "Gord orb must show a bouncing flight animation");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
