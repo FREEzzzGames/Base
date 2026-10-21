@@ -67,6 +67,10 @@ assert.ok(html.includes("harithFission:true"), "Harith Synchro Fission must crea
 assert.ok(html.includes("harithEnhancedAttack"), "Harith Chrono Dash must empower the next basic attack");
 assert.ok(html.includes("state.harithShield>0"), "Harith dash shield must absorb incoming damage");
 assert.ok(html.includes("harithRift:true"), "Harith Zaman Force must create a persistent slowing rift");
+assert.ok(html.includes("harleyCard:true"), "Harley Poker Trick must use card projectiles");
+assert.ok(html.includes("harleyHat"), "Harley Space Escape must support return-to-hat recast");
+assert.ok(html.includes("harleyRingTimer=4"), "Harley Deadly Magic must use a four-second ring timer");
+assert.ok(html.includes("(t.harleyRingDamage||0)*.5"), "Harley ring explosion must include half of accumulated damage");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
