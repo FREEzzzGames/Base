@@ -35,6 +35,29 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 #foot{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#70869e;padding:0 3px 3px;flex-shrink:0}
 @media(min-height:800px){#moveArea{height:132px}#stickBase{width:112px;height:112px}#stickKnob{left:35px;top:35px}.skill{height:94px}}
 @media(max-height:620px){header{padding-top:2px}.sub{display:none}#app{gap:5px;padding-left:7px;padding-right:7px}#moveArea{height:80px}#stickBase{width:72px;height:72px}#stickKnob{width:30px;height:30px;left:21px;top:21px}.skill{height:68px}.skill .icon{font-size:17px}.panel{padding:7px}}
+
+/* MOBA-style controls live inside the arena instead of a separate control block */
+#stage{isolation:isolate}
+#arenaControls{position:absolute;inset:0;z-index:4;pointer-events:none}
+.arenaControl{position:absolute;bottom:12px;pointer-events:auto}
+#movePanel{left:10px;width:116px}
+#skillPanel{right:9px;width:min(66%,250px)}
+.controlCaption{font-size:8px;font-weight:900;letter-spacing:.14em;color:#d8e9f8;text-shadow:0 1px 4px #000;padding:0 0 5px 3px}
+#moveArea{height:104px;display:flex;align-items:center;justify-content:center;position:relative}
+#stickBase{width:94px;height:94px;border:2px solid #a6bfd5a8;background:#101c2db8;border-radius:50%;position:relative;box-shadow:inset 0 0 20px #0009,0 2px 12px #0008;backdrop-filter:blur(2px)}
+#stickBase:before,#stickBase:after{content:"";position:absolute;background:#8aa3ba55}#stickBase:before{width:1px;height:100%;left:50%}#stickBase:after{height:1px;width:100%;top:50%}
+#stickKnob{position:absolute;width:38px;height:38px;left:26px;top:26px;border-radius:50%;border:2px solid #d4ffff;background:#66fcf155;box-shadow:0 0 13px #66fcf177;pointer-events:none}
+#skills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.skill{height:78px;min-width:0;border:1px solid #b6d1e6a6;border-radius:50%;aspect-ratio:1/1;background:linear-gradient(145deg,#28415bdc,#101a2bdc);color:#edf8ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;padding:3px;touch-action:none;box-shadow:0 3px 10px #0009,inset 0 0 12px #ffffff0b}
+.skill .icon{font-size:19px;font-weight:900;color:var(--cyan)}.skill .name{font-size:9px;font-weight:800}.skill .key{font-size:7px;color:#c4d7e9;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skill.cooling:after{content:attr(data-cd);position:absolute;inset:0;background:#080d16c9;border-radius:50%;display:grid;place-items:center;font-size:17px;font-weight:900;color:white}
+.skill.active{border-color:var(--gold);box-shadow:0 0 0 2px #ffca6a66,0 0 16px #ffca6a44}
+.arenaActions{display:flex;gap:4px;margin-top:5px}.arenaActions .smallBtn{background:#101a2bdc;border-color:#91a9c08c;padding:6px 3px;font-size:8px}
+#aimHint{bottom:122px;font-size:9px;background:#07101bbd}
+#toast{top:8px;max-width:78%;font-size:10px}
+#skillDetails{max-height:92px;flex-shrink:0}
+@media(max-width:380px){#movePanel{left:5px;width:100px}#stickBase{width:82px;height:82px}#stickKnob{left:22px;top:22px;width:34px;height:34px}#skillPanel{right:5px;width:68%}.skill{height:68px}.skill .key{display:none}.arenaControl{bottom:8px}}
+@media(max-height:650px){#movePanel{bottom:5px}#skillPanel{bottom:5px}.skill{height:60px}.skill .icon{font-size:16px}#moveArea{height:75px}#stickBase{width:68px;height:68px}#stickKnob{left:18px;top:18px;width:30px;height:30px}#aimHint{bottom:91px}#skillDetails{max-height:58px}}
 </style>
 </head>
 <body>
@@ -45,16 +68,15 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 <div class="stat"><div class="label">Точность</div><div class="value" id="accuracy">—</div></div>
 <div class="stat"><div class="label">Комбо</div><div class="value" id="combo">0</div></div>
 </section>
-<div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания</div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
-<div id="skillDetails">Данные навыка появятся после выбора персонажа.</div>
-<section id="bottom">
-<div class="panel"><div class="panelTitle">ПЕРЕМЕЩЕНИЕ</div><div id="moveArea"><div id="stickBase"><div id="stickKnob"></div></div></div></div>
-<div class="panel"><div class="panelTitle">НАВЫКИ · НАЖМИ, НАПРАВЬ, ОТПУСТИ</div><div id="skills">
+<div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания<div id="arenaControls" aria-label="Встроенное управление на арене">
+<div id="movePanel" class="arenaControl"><div class="controlCaption">MOVE</div><div id="moveArea"><div id="stickBase"><div id="stickKnob"></div></div></div></div>
+<div id="skillPanel" class="arenaControl"><div class="controlCaption">SKILLS</div><div id="skills">
 <button class="skill" data-skill="1"><span class="icon">↗</span><span class="name">Навык 1</span><span class="key">Mystic Projectile</span></button>
 <button class="skill" data-skill="2"><span class="icon">◎</span><span class="name">Навык 2</span><span class="key">Mystic Injunction</span></button>
 <button class="skill" data-skill="3"><span class="icon">━</span><span class="name">Ульта</span><span class="key">Mystic Gush</span></button>
-</div><div class="actions"><button class="smallBtn" id="reset">Сбросить</button><button class="smallBtn" id="targets">Цели: движение</button></div></div>
-</section>
+</div><div class="arenaActions"><button class="smallBtn" id="reset">Сбросить</button><button class="smallBtn" id="targets">Цели: движение</button></div></div></div></div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
+<div id="skillDetails">Данные навыка появятся после выбора персонажа.</div>
+
 <div id="foot"><span>Тренировочный симулятор · не клиент MLBB</span><span>Canvas 2D · Touch</span></div>
 </div>
 <script>
