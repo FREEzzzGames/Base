@@ -77,7 +77,7 @@ assert.ok(html.includes("vexanaGuard:true"), "Vexana Eternal Guard must attack r
 assert.ok(html.includes("t.netherCurse=5"), "Vexana passive curse must last five seconds");
 assert.ok(html.includes("const passiveDamage=108+38*10+state.magicPower*.6"), "Vexana cursed death must explode with area damage");
 assert.ok(html.includes("valirFireball:true"), "Valir Burst Fireball must have a dedicated impact handler");
-assert.ok(html.includes("state.valirUltBuff=3"), "Valir Vengeance Flame must enhance three subsequent skills");
+assert.ok(html.includes("s.valirUltBuff=3"), "Valir Vengeance Flame must enhance three subsequent skills");
 assert.ok(html.includes("t.valirStacks>=3"), "Valir passive must trigger on the third stack");
 assert.ok(html.includes("state.cooldowns[0]=0"), "Valir fireball hits must refresh its charge");
 
