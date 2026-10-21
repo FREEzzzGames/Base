@@ -1,0 +1,510 @@
+{
+  "name": "Kenney Interface Sounds",
+  "license": "CC0-1.0",
+  "source": "https://kenney.nl/assets/interface-sounds",
+  "repository": "https://github.com/Calinou/kenney-interface-sounds",
+  "attribution": "Kenney (optional)",
+  "format": "WAV",
+  "files": [
+    {
+      "file": "back_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/back_001.wav",
+      "category": "back"
+    },
+    {
+      "file": "back_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/back_002.wav",
+      "category": "back"
+    },
+    {
+      "file": "back_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/back_003.wav",
+      "category": "back"
+    },
+    {
+      "file": "back_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/back_004.wav",
+      "category": "back"
+    },
+    {
+      "file": "bong_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/bong_001.wav",
+      "category": "bong"
+    },
+    {
+      "file": "click_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_001.wav",
+      "category": "click"
+    },
+    {
+      "file": "click_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_002.wav",
+      "category": "click"
+    },
+    {
+      "file": "click_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_003.wav",
+      "category": "click"
+    },
+    {
+      "file": "click_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_004.wav",
+      "category": "click"
+    },
+    {
+      "file": "click_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/click_005.wav",
+      "category": "click"
+    },
+    {
+      "file": "close_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/close_001.wav",
+      "category": "close"
+    },
+    {
+      "file": "close_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/close_002.wav",
+      "category": "close"
+    },
+    {
+      "file": "close_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/close_003.wav",
+      "category": "close"
+    },
+    {
+      "file": "close_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/close_004.wav",
+      "category": "close"
+    },
+    {
+      "file": "confirmation_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/confirmation_001.wav",
+      "category": "confirmation"
+    },
+    {
+      "file": "confirmation_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/confirmation_002.wav",
+      "category": "confirmation"
+    },
+    {
+      "file": "confirmation_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/confirmation_003.wav",
+      "category": "confirmation"
+    },
+    {
+      "file": "confirmation_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/confirmation_004.wav",
+      "category": "confirmation"
+    },
+    {
+      "file": "drop_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/drop_001.wav",
+      "category": "drop"
+    },
+    {
+      "file": "drop_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/drop_002.wav",
+      "category": "drop"
+    },
+    {
+      "file": "drop_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/drop_003.wav",
+      "category": "drop"
+    },
+    {
+      "file": "drop_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/drop_004.wav",
+      "category": "drop"
+    },
+    {
+      "file": "error_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_001.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_002.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_003.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_004.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_005.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_006.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_007.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_007.wav",
+      "category": "error"
+    },
+    {
+      "file": "error_008.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/error_008.wav",
+      "category": "error"
+    },
+    {
+      "file": "glass_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_001.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glass_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_002.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glass_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_003.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glass_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_004.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glass_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_005.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glass_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glass_006.wav",
+      "category": "glass"
+    },
+    {
+      "file": "glitch_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glitch_001.wav",
+      "category": "glitch"
+    },
+    {
+      "file": "glitch_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glitch_002.wav",
+      "category": "glitch"
+    },
+    {
+      "file": "glitch_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glitch_003.wav",
+      "category": "glitch"
+    },
+    {
+      "file": "glitch_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/glitch_004.wav",
+      "category": "glitch"
+    },
+    {
+      "file": "maximize_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_001.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_002.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_003.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_004.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_005.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_006.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_007.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_007.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_008.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_008.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "maximize_009.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/maximize_009.wav",
+      "category": "maximize"
+    },
+    {
+      "file": "minimize_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_001.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_002.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_003.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_004.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_005.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_006.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_007.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_007.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_008.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_008.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "minimize_009.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/minimize_009.wav",
+      "category": "minimize"
+    },
+    {
+      "file": "open_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/open_001.wav",
+      "category": "open"
+    },
+    {
+      "file": "open_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/open_002.wav",
+      "category": "open"
+    },
+    {
+      "file": "open_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/open_003.wav",
+      "category": "open"
+    },
+    {
+      "file": "open_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/open_004.wav",
+      "category": "open"
+    },
+    {
+      "file": "pluck_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/pluck_001.wav",
+      "category": "pluck"
+    },
+    {
+      "file": "pluck_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/pluck_002.wav",
+      "category": "pluck"
+    },
+    {
+      "file": "question_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/question_001.wav",
+      "category": "question"
+    },
+    {
+      "file": "question_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/question_002.wav",
+      "category": "question"
+    },
+    {
+      "file": "question_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/question_003.wav",
+      "category": "question"
+    },
+    {
+      "file": "question_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/question_004.wav",
+      "category": "question"
+    },
+    {
+      "file": "scratch_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scratch_001.wav",
+      "category": "scratch"
+    },
+    {
+      "file": "scratch_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scratch_002.wav",
+      "category": "scratch"
+    },
+    {
+      "file": "scratch_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scratch_003.wav",
+      "category": "scratch"
+    },
+    {
+      "file": "scratch_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scratch_004.wav",
+      "category": "scratch"
+    },
+    {
+      "file": "scratch_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scratch_005.wav",
+      "category": "scratch"
+    },
+    {
+      "file": "scroll_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scroll_001.wav",
+      "category": "scroll"
+    },
+    {
+      "file": "scroll_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scroll_002.wav",
+      "category": "scroll"
+    },
+    {
+      "file": "scroll_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scroll_003.wav",
+      "category": "scroll"
+    },
+    {
+      "file": "scroll_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scroll_004.wav",
+      "category": "scroll"
+    },
+    {
+      "file": "scroll_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/scroll_005.wav",
+      "category": "scroll"
+    },
+    {
+      "file": "select_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_001.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_002.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_003.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_004.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_005.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_006.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_007.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_007.wav",
+      "category": "select"
+    },
+    {
+      "file": "select_008.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/select_008.wav",
+      "category": "select"
+    },
+    {
+      "file": "switch_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_001.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_002.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_003.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_004.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_005.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_005.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_006.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_006.wav",
+      "category": "switch"
+    },
+    {
+      "file": "switch_007.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/switch_007.wav",
+      "category": "switch"
+    },
+    {
+      "file": "tick_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/tick_001.wav",
+      "category": "tick"
+    },
+    {
+      "file": "tick_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/tick_002.wav",
+      "category": "tick"
+    },
+    {
+      "file": "tick_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/tick_004.wav",
+      "category": "tick"
+    },
+    {
+      "file": "toggle_001.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/toggle_001.wav",
+      "category": "toggle"
+    },
+    {
+      "file": "toggle_002.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/toggle_002.wav",
+      "category": "toggle"
+    },
+    {
+      "file": "toggle_003.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/toggle_003.wav",
+      "category": "toggle"
+    },
+    {
+      "file": "toggle_004.wav",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/toggle_004.wav",
+      "category": "toggle"
+    }
+  ]
+}
