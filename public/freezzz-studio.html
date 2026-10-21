@@ -124,64 +124,75 @@ acid:{bpm:[132,148],kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],openHat:[7,15],
 dub:{bpm:[118,132],kick:[0,8],snare:[4,12],hat:[6,14],openHat:[7],perc:[3,11],bass:[0,8],synth:[2,10],fx:[7,15],swing:12,rule:'Space, offbeat echo-like accents, sparse kick and long gaps.'},
 melodic:{bpm:[120,132],kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],openHat:[7,15],perc:[3,11],bass:[0,6,8,14],synth:[2,6,10,14],fx:[7,15],swing:0,rule:'Stable pulse, recurring four-beat harmonic motif and gradual phrase lift.'}
 };
+const CANON_MOTIFS={
+detroit:[{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,11],bass:[0,6,8,14],synth:[2,10]},{kick:[0,4,8,12],snare:[4,12],hat:[2,3,6,10,11,14],perc:[3,7,11],bass:[0,6,8,14],synth:[2,10,14]},{kick:[0,4,7,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,11,15],bass:[0,3,8,14],synth:[2,10]}],
+minimal:[{kick:[0,4,8,12],snare:[4,12],hat:[2,10,14],perc:[6],bass:[0,8],synth:[10]},{kick:[0,4,8,12],snare:[4,12],hat:[6,14],perc:[3,15],bass:[0,8],synth:[2]},{kick:[0,4,8,12],snare:[12],hat:[2,10,14],perc:[6,15],bass:[0,8],synth:[10]}],
+rave:[{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[6,14],bass:[0,3,8,11],synth:[2,6,10,14]},{kick:[0,4,8,12],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[6,14],bass:[0,3,8,11],synth:[2,6,10,14]},{kick:[0,4,8,12],snare:[4,7,12,15],hat:[2,6,10,14],perc:[3,6,11,14],bass:[0,3,8,11],synth:[2,6,10,14]}],
+industrial:[{kick:[0,4,6,8,12,14],snare:[4,12],hat:[2,6,10,14],perc:[1,3,7,9,11,15],bass:[0,6,8,14],synth:[10]},{kick:[0,4,6,8,12,14],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[1,3,7,9,11,15],bass:[0,6,8,14],synth:[2,10]},{kick:[0,4,6,8,12,14],snare:[4,12],hat:[2,6,10,14],perc:[3,7,11,15],bass:[0,6,8,14],synth:[10,14]}],
+schranz:[{kick:[0,2,4,6,8,10,12,14],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[3,7,11,15],bass:[0,4,8,12],synth:[14]},{kick:[0,2,4,6,8,10,12,14],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[3,7,11,15],bass:[0,4,8,12],synth:[]},{kick:[0,2,4,6,8,10,12,14],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[1,3,7,9,11,15],bass:[0,4,8,12],synth:[14]}],
+hard:[{kick:[0,4,8,12],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[3,7,11,15],bass:[0,6,8,14],synth:[2,10,14]},{kick:[0,4,8,12],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[3,7,11,15],bass:[0,4,8,14],synth:[2,10]},{kick:[0,4,6,8,12,14],snare:[4,12],hat:[1,3,5,7,9,11,13,15],perc:[3,7,11,15],bass:[0,6,8,14],synth:[2,10,14]}],
+acid:[{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,11],bass:[0,6,8,14],synth:[2,5,6,10,13,14]},{kick:[0,4,8,12],snare:[4,12],hat:[2,3,6,10,11,14],perc:[3,11],bass:[0,6,8,14],synth:[2,6,9,10,14]},{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,7,11,15],bass:[0,6,8,14],synth:[2,5,6,10,13,14]}],
+dub:[{kick:[0,8],snare:[4,12],hat:[6,14],perc:[3,11],bass:[0,8],synth:[2,10]},{kick:[0,8],snare:[4,12],hat:[6,14],perc:[3,15],bass:[0,8],synth:[2,10]},{kick:[0,8],snare:[4,12],hat:[6,14],perc:[7],bass:[0,8],synth:[2,10]}],
+melodic:[{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,11],bass:[0,6,8,14],synth:[2,6,10,14]},{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,7,11,15],bass:[0,6,8,14],synth:[2,6,10,14]},{kick:[0,4,8,12],snare:[4,12],hat:[2,6,10,14],perc:[3,11],bass:[0,3,8,14],synth:[2,6,10,13,14]}]
+};
+function choose(arr){return arr[randInt(0,arr.length-1)]}
 function makeSixteen(){
- const chosen=$('randStyle').value;
- const style=chosen==='auto'?Object.keys(STYLE_CANONS)[randInt(0,Object.keys(STYLE_CANONS).length-1)]:chosen;
- const canon=STYLE_CANONS[style]||STYLE_CANONS.detroit;
- const profile=RANDOM_PROFILES[style]||RANDOM_PROFILES.detroit;
- const moodValue=$('randMood').value,mood=moodValue==='auto'?['dark','euphoric','hypnotic','aggressive','playful','dreamy'][randInt(0,5)]:moodValue;
+ const chosen=$('randStyle').value,style=chosen==='auto'?choose(Object.keys(STYLE_CANONS)):chosen;
+ const canon=STYLE_CANONS[style]||STYLE_CANONS.detroit,profile=RANDOM_PROFILES[style]||RANDOM_PROFILES.detroit;
+ const mv=$('randMood').value,mood=mv==='auto'?choose(['dark','euphoric','hypnotic','aggressive','playful','dreamy']):mv;
  const energy=+$('randEnergy').value,density=+$('randDensity').value,variation=+$('randVariation').value;
- const e=energy/3,d=density/3,v=variation/3;
- const p={};TYPES.forEach(t=>p[t.id]=Array(16).fill(false));
- const hit=(id,step,base,prob=1)=>{if(canon[id]&&canon[id].includes(step)&&Math.random()<prob)p[id][step]=true};
+ const motif=choose(CANON_MOTIFS[style]||CANON_MOTIFS.detroit),p={};
+ TYPES.forEach(t=>p[t.id]=Array(16).fill(false));
+ for(const id of ['kick','snare','hat','perc','bass','synth'])for(const i of (motif[id]||[]))if((canon[id]||[]).includes(i))p[id][i]=true;
  for(let i=0;i<16;i++){
-  // Canonical anchors are deliberately stable; randomization affects supporting details, not the identity of the style.
-  hit('kick',i,0,style==='schranz'?.99:.98);
-  hit('snare',i,0,style==='minimal'?.62:.88);
-  hit('hat',i,0,Math.min(.99,.62+(d-1)*.12));
-  hit('perc',i,0,Math.min(.96,.48+(d-1)*.14));
-  hit('bass',i,0,Math.min(.96,.65+(e-1)*.10));
-  hit('synth',i,0,Math.min(.96,.55+(e-1)*.12));
-  hit('fx',i,0,Math.min(.95,.48+(e-1)*.1));
-  // Genre-specific extra hits are selected from musically useful subdivisions.
-  if(i%2===1&&Math.random()<Math.max(0,(density-2)*.07))p.hat[i]=true;
-  if([3,7,11,15].includes(i)&&Math.random()<Math.max(0,(variation-1)*.045))p.perc[i]=true;
-  if([6,14].includes(i)&&Math.random()<Math.max(0,(variation-1)*.035))p.bass[i]=true;
-  if([5,13].includes(i)&&Math.random()<Math.max(0,(variation-1)*.04))p.synth[i]=true;
-  if([7,15].includes(i)&&Math.random()<.18*e)p.fx[i]=true;
+  if(canon.kick.includes(i))p.kick[i]=true;
+  if(canon.snare.includes(i)&&!(style==='minimal'&&Math.random()<.18))p.snare[i]=true;
+  if(p.hat[i]&&Math.random()>(.58+(density-3)*.1))p.hat[i]=false;
+  if(p.perc[i]&&Math.random()>(.62+(density-3)*.1))p.perc[i]=false;
+  if(p.bass[i]&&Math.random()>(.72+(energy-3)*.07))p.bass[i]=false;
+  if(p.synth[i]&&Math.random()>(.62+(energy-3)*.09))p.synth[i]=false;
+  if([3,7,11,15].includes(i)&&variation>=3&&Math.random()<.08*(variation-1)&&(canon.perc||[]).includes(i))p.perc[i]=true;
+  if([7,15].includes(i)&&Math.random()<.08*energy)p.fx[i]=true;
  }
- // Mood changes emphasis without breaking the genre's rhythmic signature.
- if(mood==='dark'){[2,6,10,14].forEach(i=>{if(Math.random()<.45)p.synth[i]=false});[7,15].forEach(i=>p.fx[i]=Math.random()<.5)}
- if(mood==='euphoric'){[6,14].forEach(i=>{if(style==='rave'||style==='melodic'||style==='acid')p.synth[i]=true});}
- if(mood==='hypnotic'){for(let i=0;i<16;i++)if(![0,4,8,12].includes(i)&&Math.random()<.25)p.perc[i]=false;}
- if(mood==='aggressive'){if(style==='schranz'||style==='industrial'||style==='hard')for(let i of [2,6,10,14])p.kick[i]=true;for(let i of [3,7,11,15])if(Math.random()<.45)p.perc[i]=true;}
- if(mood==='playful'){for(let i of [3,7,11,15])if(Math.random()<.55)p.perc[i]=true;}
- if(mood==='dreamy'){for(let i of [6,14])if(Math.random()<.5)p.kick[i]=false;for(let i of [6,14])p.synth[i]=Math.random()<.7;}
- // Respect genre-specific exclusions: sparse minimal/dub, melodic restraint in Schranz.
- if(style==='minimal'){for(let i=0;i<16;i++){if(!canon.hat.includes(i)&&Math.random()<.7)p.hat[i]=false;if(!canon.perc.includes(i)&&Math.random()<.8)p.perc[i]=false;if(!canon.synth.includes(i))p.synth[i]=false}}
- if(style==='dub'){for(let i=0;i<16;i++){if(!canon.kick.includes(i))p.kick[i]=false;if(!canon.hat.includes(i)&&!canon.openHat.includes(i))p.hat[i]=false}}
- if(style==='schranz'||style==='industrial'){for(let i=0;i<16;i++)if(!canon.synth.includes(i)&&Math.random()<.85)p.synth[i]=false}
- return {pattern:p,style,mood,canon};
+ if(density>=4&&style!=='minimal'&&style!=='dub')for(let i of [1,3,5,7,9,11,13,15])if(!p.hat[i]&&Math.random()<.16*(density-2))p.hat[i]=true;
+ if(style==='acid'&&energy>=3)for(let i of [5,13])if(Math.random()<.25*energy/3)p.synth[i]=true;
+ if(mood==='dark'){[2,6,10,14].forEach(i=>{if(Math.random()<.45)p.synth[i]=false});p.fx[15]=Math.random()<.5}
+ if(mood==='euphoric'&&['rave','melodic','acid'].includes(style))for(let i of [6,14])if(canon.synth.includes(i))p.synth[i]=true;
+ if(mood==='hypnotic')for(let i=0;i<16;i++)if(![0,4,8,12].includes(i)&&Math.random()<.28)p.perc[i]=false;
+ if(mood==='aggressive'){if(['schranz','industrial','hard'].includes(style))for(let i of [2,6,10,14])if(canon.kick.includes(i))p.kick[i]=true;for(let i of [3,7,11,15])if(Math.random()<.35&&(canon.perc||[]).includes(i))p.perc[i]=true}
+ if(mood==='playful')for(let i of [3,7,11,15])if((canon.perc||[]).includes(i)&&Math.random()<.55)p.perc[i]=true;
+ if(mood==='dreamy'&&['dub','melodic'].includes(style))for(let i of [6,14])if(canon.synth.includes(i))p.synth[i]=true;
+ if(style==='minimal')for(let i=0;i<16;i++){if(!canon.hat.includes(i))p.hat[i]=false;if(!canon.perc.includes(i))p.perc[i]=false;if(!canon.synth.includes(i))p.synth[i]=false}
+ if(style==='dub')for(let i=0;i<16;i++){if(!canon.kick.includes(i))p.kick[i]=false;if(!canon.hat.includes(i)&&!canon.openHat.includes(i))p.hat[i]=false}
+ if(style==='schranz'||style==='industrial')for(let i=0;i<16;i++)if(!canon.synth.includes(i))p.synth[i]=false;
+ if(density===1)for(let i=0;i<16;i++)if(!canon.kick.includes(i)&&!canon.snare.includes(i)){if(Math.random()<.35)p.perc[i]=false;p.hat[i]=p.hat[i]&&canon.hat.includes(i)}
+ if(energy===1)for(let i=0;i<16;i++)if(!canon.synth.includes(i))p.synth[i]=false;
+ return {pattern:p,style,mood,canon,energy,density,variation,profile};
 }
 function buildUniqueVariation(){
- const {pattern:base,style,mood,canon}=makeSixteen();
- const key=patternHash(base),out={};TYPES.forEach(t=>out[t.id]=Array.from({length:80},(_,i)=>base[t.id][i%16]));
- const structure=$('randStructure').value,v=+$('randVariation').value;
- // DJ-like arrangement: repeat the core motif, then introduce or remove a few elements at phrase boundaries.
- for(let phrase=1;phrase<5;phrase++)for(let b=0;b<16;b++){
-  const i=phrase*16+b;
-  if(phrase===1){if(b%4===3&&Math.random()<.18*v/3)out.perc[i]=true;if(b===15&&Math.random()<.35)out.fx[i]=true}
-  if(phrase===2){if(b%8===7&&Math.random()<.4)out.fx[i]=true;if(b===6||b===14)out.synth[i]=out.synth[i]||Math.random()<.25}
-  if(phrase===3&&structure==='breaks'){if(b<8){if(b%4!==0)out.kick[i]=false;if(Math.random()<.45)out.hat[i]=false}if(b===7||b===15)out.fx[i]=true}
-  if(phrase===4&&structure!=='steady'){if([3,7,11,15].includes(b)&&Math.random()<.25*v)out.perc[i]=true;if(b===15)out.fx[i]=true}
-  const mutate=(id,prob)=>{if(Math.random()<prob)out[id][i]=!out[id][i]};
-  const amount=Math.max(0,v-1)*.018;
-  mutate('hat',amount);mutate('perc',amount*.9);mutate('bass',amount*.5);mutate('synth',amount*.35);
-  // Protect the essential kick and backbeat; only mutate secondary layers.
-  if(b%4===0&&canon.kick.includes(b))out.kick[i]=true;
-  if((b===4||b===12)&&canon.snare.includes(b)&&structure!=='breaks')out.snare[i]=true;
+ const {pattern:base,style,mood,canon,energy,density,variation}=makeSixteen(),out={};
+ TYPES.forEach(t=>out[t.id]=Array.from({length:80},(_,i)=>base[t.id][i%16]));
+ const structure=$('randStructure').value;
+ for(let phrase=0;phrase<5;phrase++){
+  const start=phrase*16;
+  for(let b=0;b<16;b++){
+   const i=start+b;
+   if(phrase>0&&variation>=3&&[3,7,11,15].includes(b)&&Math.random()<.025*(variation-1)&&(canon.perc||[]).includes(b))out.perc[i]=!out.perc[i];
+   if(phrase===1&&[7,15].includes(b)&&Math.random()<.22)out.fx[i]=true;
+   if(phrase===2&&[6,14].includes(b)&&['rave','acid','melodic'].includes(style)&&energy>=3)out.synth[i]=out.synth[i]||Math.random()<.35;
+   if(phrase===3&&structure==='breaks'){if(b<8){if(b%4!==0)out.kick[i]=false;if(b%2===1)out.hat[i]=false;if(b>3)out.synth[i]=false}if(b===7||b===15)out.fx[i]=true}
+   if(phrase===4&&structure!=='steady'&&[3,7,11,15].includes(b)&&Math.random()<.12*variation/3&&(canon.perc||[]).includes(b))out.perc[i]=true;
+  }
+  if(phrase>0&&structure!=='steady'){
+   const end=start+15;
+   if(style==='schranz'||style==='industrial'){out.perc[end]=true;out.fx[end]=phrase>=2}
+   else if(style==='rave'||style==='hard'){out.perc[start+14]=Math.random()<.55;out.fx[end]=phrase>=1&&Math.random()<.65}
+   else if(style==='minimal'||style==='dub'){out.fx[end]=phrase===3||Math.random()<.18}
+   else out.fx[end]=phrase>=2&&Math.random()<.55;
+  }
+  for(let b=0;b<16;b++){const i=start+b;if(canon.kick.includes(b))out.kick[i]=true;if(canon.snare.includes(b)&&!(structure==='breaks'&&phrase===3&&b<8))out.snare[i]=true}
  }
- return {out,key,style,mood};
+ return {out,style,mood,canon};
 }
 function generateUniquePattern(){
  let result,key,tries=0;do{result=buildUniqueVariation();key=patternHash(result.out);tries++}while(key===generatedPatternKey&&tries<20);
