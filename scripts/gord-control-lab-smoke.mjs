@@ -17,6 +17,10 @@ assert.ok(html.includes("function draw()"), "Canvas renderer must exist");
 assert.ok(html.includes("function sparkBurst"), "Skill spark VFX must exist");
 assert.ok(html.includes("gordProjectile"), "Gord projectile implementation must exist");
 assert.ok(html.includes("passiveStacks"), "Gord passive stack tracking must exist");
+assert.ok(html.includes("ultSteeringPointer"), "Active ultimate must track its steering pointer");
+assert.ok(html.includes("state.ultimate.angle=state.player.face"), "Active ultimate must update direction from pointer movement");
+assert.ok(html.includes("pointercancel"), "Touch cancellation must be handled");
+assert.ok(html.includes("if(s.cooldowns[idn]>0)return"), "Skills must reject casts while on cooldown");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
