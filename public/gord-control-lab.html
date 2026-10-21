@@ -106,11 +106,21 @@ const MAGES=[
 function renderMagePicker(){const root=$('magePicker');root.innerHTML='';for(const m of MAGES){const b=document.createElement('button');b.className='mageCard'+(m.id===state.mageId?' selected':'');b.innerHTML=m.name+'<small>'+m.role+'</small>';b.addEventListener('click',()=>selectMage(m.id));root.appendChild(b);}}
 function selectMage(id){const m=MAGES.find(x=>x.id===id)||MAGES[0];state.mageId=m.id;state.shots=[];state.effects=[];state.ultimate=null;state.drag=null;state.aim=null;state.cooldowns=[0,0,0];$('mageSubtitle').textContent=m.name.toUpperCase()+' · '+m.role.toUpperCase();document.querySelectorAll('.skill').forEach((b,i)=>{b.querySelector('.name').textContent='Навык '+(i+1);b.querySelector('.key').textContent=m.skills[i];b.querySelector('.icon').textContent=['✦','◉','✧'][i];});renderMagePicker();say('Выбран маг: '+m.name+' · '+m.role);}
 function currentMage(){return MAGES.find(m=>m.id===state.mageId)||MAGES[6];}
-function castSkill(id,angle,targetPoint){const s=state,idn=id-1;if(s.cooldowns[idn]>0)return;const p=s.player;s.casts++;s.cooldowns[idn]=s.cdMax[idn];const dir={x:Math.cos(angle),y:Math.sin(angle)};s.player.face=angle;
-if(id===1){const len=Math.min(Math.max(s.w*.56,145),270);s.shots.push({x:p.x+dir.x*18,y:p.y+dir.y*18,vx:dir.x*390,vy:dir.y*390,life:len/390,skill:1,r:7,hit:new Set()});addFx(p.x,p.y,'#66fcf1',.18,16);say('Навык 1: снаряд выпущен');}
-else if(id===2){const point=targetPoint||{x:p.x+dir.x*125,y:p.y+dir.y*125};const x=Math.max(16,Math.min(s.w-16,point.x)),y=Math.max(16,Math.min(s.h-16,point.y));s.effects.push({type:'zone',x,y,life:2.3,max:2.3,r:38,color:'#a68bff',tick:0});say('Навык 2: область размещена');}
-else {s.ultimate={angle,life:2.5,max:2.5,tick:0};say('Ультимейт: удерживай и веди направление');}
-updateStats();}
+function castSkill(id,angle,targetPoint){
+const s=state,idn=id-1,m=currentMage(),kind=m.types[idn],damage=m.damage[idn],p=s.player;
+if(s.cooldowns[idn]>0)return;
+s.casts++;s.cooldowns[idn]=s.cdMax[idn];const dir={x:Math.cos(angle),y:Math.sin(angle)};p.face=angle;
+const point=targetPoint||{x:p.x+dir.x*145,y:p.y+dir.y*145};
+const x=Math.max(16,Math.min(s.w-16,point.x)),y=Math.max(16,Math.min(s.h-16,point.y));
+if(kind==='bolt'){s.shots.push({x:p.x+dir.x*18,y:p.y+dir.y*18,vx:dir.x*420,vy:dir.y*420,life:Math.min(s.w,s.h)*.8/420,skill:id,r:7,damage,hit:new Set()});addFx(p.x,p.y,'#66fcf1',.18,16);}
+else if(kind==='zone'){s.effects.push({type:'zone',x,y,life:2.3,max:2.3,r:38,color:'#a68bff',tick:0,damage});}
+else if(kind==='beam'){s.ultimate={angle,life:id===3?2.5:1.1,max:id===3?2.5:1.1,tick:0,damage};}
+else if(kind==='burst'){for(const t of s.targets)if(t.alive&&Math.hypot(t.x-x,t.y-y)<72)hitTarget(t,damage);addFx(x,y,'#ffca6a',.42,60);}
+else if(kind==='orb'){s.effects.push({type:'zone',x,y,life:1.5,max:1.5,r:25,color:'#66fcf1',tick:0,damage});for(const t of s.targets)if(t.alive&&Math.hypot(t.x-x,t.y-y)<95)hitTarget(t,Math.round(damage*.7));}
+else if(kind==='dash'){p.x=Math.max(15,Math.min(s.w-15,p.x+dir.x*95));p.y=Math.max(15,Math.min(s.h-15,p.y+dir.y*95));addFx(p.x,p.y,'#66fcf1',.3,25);for(const t of s.targets)if(t.alive&&Math.hypot(t.x-p.x,t.y-p.y)<42)hitTarget(t,damage);}
+else if(kind==='summon'){s.effects.push({type:'zone',x,y,life:3,max:3,r:48,color:'#ffca6a',tick:0,damage:Math.max(4,Math.round(damage*.65))});addFx(x,y,'#ffca6a',.4,35);}
+say(m.name+' · '+m.skills[idn]);updateStats();
+}
 function hitTarget(t,damage){if(!t.alive)return;t.hp-=damage;state.hits++;state.combo++;state.best=Math.max(state.best,state.combo);addFx(t.x,t.y,'#ffca6a',.22,15);if(t.hp<=0){t.alive=false;t.respawn=1.1;addFx(t.x,t.y,'#ff6378',.4,27);say('Попадание! Цель восстановится автоматически');}updateStats();}
 function updateStats(){ui.hits.textContent=state.hits+' / '+state.casts;ui.accuracy.textContent=state.casts?Math.round(state.hits/state.casts*100)+'%':'—';ui.combo.textContent=state.combo;}
 function draw(){
@@ -129,7 +139,7 @@ function update(dt){const s=state,p=s.player;for(let i=0;i<3;i++)s.cooldowns[i]=
 if(s.move.x||s.move.y){const n=norm(s.move.x,s.move.y);p.x+=n.x*p.speed*dt;p.y+=n.y*p.speed*dt;p.face=Math.atan2(n.y,n.x);}p.x=Math.max(p.r+2,Math.min(s.w-p.r-2,p.x));p.y=Math.max(p.r+2,Math.min(s.h-p.r-2,p.y));
 for(const t of s.targets){if(!t.alive){t.respawn-=dt;if(t.respawn<=0){t.alive=true;t.hp=t.max;t.x=18+Math.random()*(s.w-36);t.y=24+Math.random()*s.h*.48;}continue;}if(s.movingTargets){t.phase+=dt;t.x+=Math.sin(t.phase*1.2+iSafe(t.phase))*dt*12;t.y+=Math.cos(t.phase*.8)*dt*7;t.x=Math.max(t.r+5,Math.min(s.w-t.r-5,t.x));t.y=Math.max(t.r+25,Math.min(s.h*.49,t.y));}}
 for(let i=s.shots.length-1;i>=0;i--){const sh=s.shots[i];sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;sh.life-=dt;let consumed=false;for(const t of s.targets){if(!t.alive||sh.hit.has(t))continue;if(Math.hypot(t.x-sh.x,t.y-sh.y)<t.r+sh.r){sh.hit.add(t);hitTarget(t,sh.damage||30);consumed=true;break;}}if(consumed||sh.life<=0||sh.x<0||sh.y<0||sh.x>s.w||sh.y>s.h)s.shots.splice(i,1);}
-for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.type==='zone'){f.tick-=dt;if(f.tick<=0){f.tick=.25;for(const t of s.targets)if(t.alive&&Math.hypot(t.x-f.x,t.y-f.y)<f.r+t.r)hitTarget(t,8);}}if(f.life<=0)s.effects.splice(i,1);}
+for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.type==='zone'){f.tick-=dt;if(f.tick<=0){f.tick=.25;for(const t of s.targets)if(t.alive&&Math.hypot(t.x-f.x,t.y-f.y)<f.r+t.r)hitTarget(t,f.damage||8);}}if(f.life<=0)s.effects.splice(i,1);}
 if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.tick=.12;const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+8)hitTarget(t,u.damage||7);}}if(u.life<=0)s.ultimate=null;}
 draw();for(let i=1;i<=3;i++){const b=document.querySelector('[data-skill="'+i+'"]');const cd=s.cooldowns[i-1];b.classList.toggle('cooling',cd>0);b.dataset.cd=cd>0?cd.toFixed(1):'';b.classList.toggle('active',s.drag===i||!!(i===3&&s.ultimate));}}
 function iSafe(x){return Math.sin(x*.31);}
