@@ -29,6 +29,12 @@ assert.ok(html.includes("aliceCrimsonTimer=4"), "Alice passive stacks must have 
 assert.ok(html.includes("aliceUltCharge={life:1.5}"), "Alice ultimate must include its charge time");
 assert.ok(html.includes("function healPlayer(amount)"), "Alice healing must affect player HP");
 assert.ok(html.includes('id="playerHp"'), "Player HP must be visible in the training HUD");
+assert.ok(html.includes('id="basicAttack"'), "Basic attack control must exist for attack-triggered passives");
+assert.ok(html.includes("baneCannon"), "Bane cannon must have a dedicated projectile collision handler");
+assert.ok(html.includes("baneShark"), "Bane ultimate must use a traveling shark wave");
+assert.ok(html.includes("damage=(140+state.magicPower*1.3)*(1+Math.min(1,charge/1.5))"), "Bane Ale recast must scale with hold duration");
+assert.ok(html.includes("state.baneTidal=Math.min(2,state.baneTidal+1)"), "Bane passive stacks must cap at two");
+assert.ok(html.includes("function basicAttack()"), "Basic attack must consume Bane passive stacks");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
