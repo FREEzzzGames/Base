@@ -464,6 +464,7 @@ function renderPortalToolbar(){
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target||(target==="home"&&view==="echo9")}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
         <a class="portal-toolbar-item portal-toolbar-studio" href="./freezzz-studio.html" style="text-decoration:none" aria-label="STUDIO" title="FREEzzz Studio">${icon("editor","portal-toolbar-icon")}<span class="portal-toolbar-label">STUDIO</span></a>
+        <a class="portal-toolbar-item" href="./timeloop.html" style="text-decoration:none" aria-label="TIMELOOP" title="TIMELOOP"><span class="portal-toolbar-label">TIMELOOP</span></a>
       </div>
     </div>
   </nav>`;
@@ -495,6 +496,7 @@ function render(){
         ${homeCard("radio")}
         ${homeCard("library")}
         ${homeCard("earth")}
+        <a class="card home-card portal-block home-timeloop" href="./timeloop.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #67e8f9;text-decoration:none" data-portal-card="timeloop" data-portal-block="timeloop" aria-label="TIMELOOP"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">TIMELOOP</span><span style="position:absolute;left:13px;bottom:12px;color:#67e8f9;font-size:11px;letter-spacing:1.5px">VISUAL HISTORY ENGINE · TIME MAP</span></a>
         <a class="card home-card portal-block home-studio" href="./freezzz-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">BLOCK SEQUENCER · AUDIO LAB</span></a>
         <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
       </div>`;
