@@ -1,12 +1,13 @@
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import assert from "node:assert/strict";
+import { STYLE_RULES, SCALES, composeMotif, scorePattern, seededRandom, quantizeMidi } from "../public/freezzz-studio-engine.js";
 
 const file = "public/freezzz-studio.html";
 const html = readFileSync(file, "utf8");
 const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);
 assert.ok(scriptMatch, "Studio inline script must exist");
-const js = scriptMatch[1];
+const js = scriptMatch[1].replace(/^import\s+\{[^}]+\}\s+from\s+[\'"][^\'"]+[\'"];\s*/m, "");
 
 // Parse the complete inline application without executing browser-only APIs.
 new vm.Script(js, { filename: file });
@@ -37,6 +38,17 @@ assert.match(js, /\$\('generate'\)\.onclick/);
 assert.match(js, /\$\('generatePlay'\)\.onclick/);
 assert.match(js, /\$\('play'\)\.onclick=play/);
 assert.match(js, /\$\('stop'\)\.onclick=stop/);
+
+// Deterministic, genre-aware composition engine regression tests.
+assert.equal(Object.keys(STYLE_RULES).length, 9, "All nine genre canons must exist");
+assert.deepEqual(SCALES.minor, [0, 2, 3, 5, 7, 8, 10]);
+assert.deepEqual(composeMotif({ seed: 42 }), composeMotif({ seed: 42 }), "Same seed must produce identical phrase");
+assert.equal(composeMotif({ seed: 7, bars: 5 }).length, 80, "Five-bar phrase must contain 80 steps");
+assert.ok(composeMotif({ seed: 9, style: "schranz" }).some((n) => n !== null), "Composition must contain notes");
+assert.equal(quantizeMidi(61, 60, "major"), 62, "Major-scale quantization must choose the nearest allowed note");
+assert.equal(seededRandom(1)(), seededRandom(1)(), "Seeded random source must be repeatable");
+const quality = scorePattern({ style: "detroit", kick: Array.from({ length: 16 }, (_, i) => [0,4,8,12].includes(i)), snare: Array.from({ length: 16 }, (_, i) => [4,12].includes(i)) });
+assert.equal(quality.genreFit, 100, "A canon-perfect Detroit kick/snare should score 100 genre fit");
 
 console.log("FREEZZ_STUDIO_SMOKE_OK");
 console.log("HTML IDs:", ids.length, "| event bindings:", boundIds.length, "| functions:", functionNames.length);
