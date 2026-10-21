@@ -6,6 +6,8 @@ if (!existsSync(file)) throw new Error("TIMELOOP page missing from Pages artifac
 const html = readFileSync(file, "utf8");
 const required = [
   "tabNav.className='tl-tabs'",
+  "p.id='tl-panel-'+id",
+  "['map','КАРТА'],['time','ЭПОХА'],['cities','ГОРОДА'],['archive','АРХИВ']",
   "id='tl-panel-map'",
   "id='tl-panel-time'",
   "id='tl-panel-cities'",
