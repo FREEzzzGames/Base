@@ -35,11 +35,11 @@ const TYPES=[
 let selected=TYPES[0], pattern={}, scenes={}, currentScene='A', audio=null, timer=null, step=0, nodes=[];
 const SAMPLE_BASE='https://raw.githubusercontent.com/octalmusic/octal-samples/main/';
 const SAMPLE_SETS={
-kick:['samples/kicks/deep-01.wav','samples/kicks/punch-01.wav','samples/kicks/sub-01.wav','samples/kicks/tight-01.wav'],
-snare:['samples/snares/snap-01.wav','samples/snares/body-01.wav','samples/claps/classic-01.wav'],
-hat:['samples/hats/closed-01.wav','samples/hats/closed-03.wav','samples/hats/closed-06.wav','samples/hats/open-01.wav'],
-perc:['samples/percs/blip-01.wav','samples/percs/shaker-01.wav','samples/percs/tom-01.wav','samples/percs/tick-01.wav'],
-bass:[],synth:[],fx:['samples/fx/riser-01.wav','samples/fx/noise-01.wav']
+kick:['samples/kicks/deep-01.wav','samples/kicks/deep-02.wav','samples/kicks/punch-01.wav','samples/kicks/punch-02.wav','samples/kicks/punch-03.wav','samples/kicks/punch-04.wav','samples/kicks/sub-01.wav','samples/kicks/sub-02.wav','samples/kicks/sub-03.wav','samples/kicks/tight-01.wav','samples/kicks/tight-02.wav','samples/kicks/tight-03.wav'],
+snare:['samples/snares/snap-01.wav','samples/snares/body-01.wav','samples/claps/classic-01.wav','samples/claps/classic-02.wav','samples/claps/classic-03.wav'],
+hat:['samples/hats/closed-01.wav','samples/hats/closed-02.wav','samples/hats/closed-03.wav','samples/hats/closed-04.wav','samples/hats/closed-05.wav','samples/hats/closed-06.wav','samples/hats/closed-07.wav','samples/hats/closed-08.wav','samples/hats/closed-09.wav','samples/hats/open-01.wav','samples/hats/open-02.wav','samples/hats/open-03.wav','samples/hats/open-04.wav'],
+perc:['samples/percs/blip-01.wav','samples/percs/blip-02.wav','samples/percs/blip-03.wav','samples/percs/shaker-01.wav','samples/percs/shaker-02.wav','samples/percs/tom-01.wav','samples/percs/tom-02.wav','samples/percs/tom-03.wav','samples/percs/tick-01.wav','samples/percs/tick-02.wav'],
+bass:[],synth:[],fx:['samples/fx/riser-01.wav','samples/fx/noise-01.wav','samples/cymbals/crash-01.wav','samples/cymbals/ride-01.wav']
 };
 const sampleBuffers=new Map();const userSamples=[];let activeUserSample=null;let sampleVariant={kick:0,snare:0,hat:0,perc:0,fx:0};let synthVariant={bass:0,synth:0};let sampleLoadPromise=null;
 const SYNTH_PRESETS={bass:[{name:'SUB ROUND',wave:'sine',freq:48,filter:180},{name:'RAVE SAW',wave:'sawtooth',freq:55,filter:420},{name:'DIRTY SQUARE',wave:'square',freq:62,filter:650},{name:'REese BASS',wave:'sawtooth',freq:44,filter:280}],synth:[{name:'DARK STAB',wave:'triangle',freq:165,filter:900},{name:'ACID SQUARE',wave:'square',freq:220,filter:1600},{name:'RAVE SAW',wave:'sawtooth',freq:330,filter:2400},{name:'GLASS PLUCK',wave:'sine',freq:440,filter:3200}]};
