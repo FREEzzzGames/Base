@@ -63,6 +63,10 @@ assert.ok(html.includes("nanaMolina:true"), "Nana Molina Smooch must chase and t
 assert.ok(html.includes("nanaUlt:true"), "Nana ultimate must strike the same area three times");
 assert.ok(html.includes("state.nanaCooldown=150"), "Nana's survival passive must use a 150-second cooldown");
 assert.ok(html.includes("state.nanaTransform=2"), "Nana must become invulnerable and unable to cast after fatal damage");
+assert.ok(html.includes("harithFission:true"), "Harith Synchro Fission must create a midpoint collision explosion");
+assert.ok(html.includes("harithEnhancedAttack"), "Harith Chrono Dash must empower the next basic attack");
+assert.ok(html.includes("state.harithShield>0"), "Harith dash shield must absorb incoming damage");
+assert.ok(html.includes("harithRift:true"), "Harith Zaman Force must create a persistent slowing rift");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
