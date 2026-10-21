@@ -139,6 +139,9 @@ jobs:
       - name: GORD Control Lab source smoke
         run: node scripts/gord-control-lab-smoke.mjs
 
+      - name: GORD Control Lab runtime mechanics tests
+        run: node scripts/gord-control-lab-runtime-test.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
