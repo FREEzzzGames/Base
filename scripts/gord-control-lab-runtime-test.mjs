@@ -175,4 +175,24 @@ lab.castSkill(3, 0, { x: 250, y: 420 });
 lab.update(0.2);
 assert.ok(t.hp < 10000, "Cecilion Bats Feast must hit nearby targets");
 
+lab.selectMage("chang-e");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(2, 0, { x: 230, y: 420 });
+assert.ok(lab.state.changEShield > 0, "Chang'e Crescent Moon must grant a shield");
+lab.castSkill(1, 0, { x: 300, y: 420 });
+assert.equal(lab.state.shots.filter((shot) => shot.changEWave).length, 5, "Chang'e S1 must fire five spheres with Crescent Moon active");
+step(0.2);
+assert.ok(t.hp < 10000, "Chang'e Starmoon Shockwave must hit along its path");
+assert.equal(t.changEMarks > 0, true, "Chang'e passive must mark damaged targets");
+const shieldBefore = lab.state.changEShield;
+lab.takePlayerDamage(50);
+assert.ok(lab.state.changEShield < shieldBefore, "Incoming damage must deplete Chang'e's shield");
+lab.selectMage("chang-e");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(3, 0, { x: 300, y: 420 });
+step(0.4);
+assert.ok(t.hp < 10000, "Chang'e Meteor Shower must launch damaging meteors");
+
 console.log("GORD_CONTROL_LAB_RUNTIME_OK Gord/Alice/Bane/Aurora/Cecilion mechanics passed");
