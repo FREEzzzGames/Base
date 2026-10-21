@@ -148,7 +148,7 @@ else if(kind==='zone'){
 else if(kind==='beam'){
  const gord=m.id==='gord'&&id===3;
  const changE=m.id==="chang-e"&&id===3;
- if(changE){s.ultimate={angle,life:4,max:4,tick:0,interval:4/30,maxTicks:30,ticks:0,damage:60+state.magicPower*.33,meteor:true};}
+ if(changE){s.effects.push({type:'zone',x,y,life:4,max:4,r:72,color:'#ffca6a',tick:0,interval:4/30,maxTicks:30,ticks:0,damage:60+state.magicPower*.33,meteor:true});}
  else {s.ultimate={angle,life:gord?3.2:(id===3?2.5:1.1),max:gord?3.2:(id===3?2.5:1.1),tick:0,interval:gord?.2:.12,maxTicks:gord?16:0,ticks:0,damage:damage+state.magicPower*(gord?.32:0)};}
 }
 else if(kind==='burst'){for(const t of s.targets)if(t.alive&&Math.hypot(t.x-x,t.y-y)<72)hitTarget(t,damage);addFx(x,y,'#ffca6a',.42,60);}
@@ -180,7 +180,7 @@ for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.type
  else for(const t of s.targets)if(t.alive&&Math.hypot(t.x-f.x,t.y-f.y)<f.r+t.r)hitTarget(t,f.damage||8);
  if(f.summon){const target=closestTarget({x:f.x,y:f.y});if(target){const dx=target.x-f.x,dy=target.y-f.y,l=Math.hypot(dx,dy)||1;f.x+=dx/l*dt*36;f.y+=dy/l*dt*36;}}
  if(f.maxTicks&&f.ticks>=f.maxTicks)f.life=0;}}if(f.life<=0)s.effects.splice(i,1);}
-if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.ticks=(u.ticks||0)+1;u.tick=u.interval||.12;if(u.meteor){const alive=s.targets.filter(t=>t.alive);if(alive.length){const t=alive[Math.floor(Math.random()*alive.length)];hitTarget(t,u.damage||60);}if(u.maxTicks&&u.ticks>=u.maxTicks)u.life=0;continue;}const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+8)hitTarget(t,u.damage||7);}if(u.maxTicks&&u.ticks>=u.maxTicks)u.life=0;}if(u.life<=0)s.ultimate=null;}
+if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.ticks=(u.ticks||0)+1;u.tick=u.interval||.12;const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+8)hitTarget(t,u.damage||7);}if(u.maxTicks&&u.ticks>=u.maxTicks)u.life=0;}if(u.life<=0)s.ultimate=null;}
 draw();for(let i=1;i<=3;i++){const b=document.querySelector('[data-skill="'+i+'"]');const cd=s.cooldowns[i-1];b.classList.toggle('cooling',cd>0);b.dataset.cd=cd>0?cd.toFixed(1):'';b.classList.toggle('active',s.drag===i||!!(i===3&&s.ultimate));}}
 function iSafe(x){return Math.sin(x*.31);}
 function loop(now){const dt=Math.min(.033,(now-(state.last||now))/1000);state.last=now;update(dt);requestAnimationFrame(loop);}
