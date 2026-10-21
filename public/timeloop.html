@@ -27,6 +27,36 @@
 .archive-library-actions button{border:1px solid #31505d;background:#0c202a;color:var(--text);padding:9px 12px;font:9px var(--mono);cursor:pointer}
 .archive-library-actions button:hover{border-color:var(--cyan);color:var(--cyan)}
 .archive-library-actions button.primary{border-color:var(--cyan);color:var(--cyan)}
+
+/* TIMELOOP mobile workspace: compact tabbed navigation */
+.workspace{grid-template-columns:1fr;gap:0}
+.tl-tabs{position:sticky;top:0;z-index:1200;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:8px;margin:0 -8px 14px;background:#071018f2;border:1px solid #1a3442;backdrop-filter:blur(12px)}
+.tl-tab{min-width:0;padding:12px 4px;background:#0b1a24;border:1px solid #1a3442;color:#8ca3af;font:10px var(--mono);letter-spacing:.2px}
+.tl-tab[aria-selected="true"]{background:#12303b;border-color:var(--cyan);color:var(--cyan);box-shadow:inset 0 -2px var(--cyan)}
+.tl-tabpanel[hidden]{display:none!important}
+.tl-tabpanel{min-width:0;animation:tlIn .18s ease-out}
+@keyframes tlIn{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl-tabpanel .mapbox,.tl-tabpanel .timebox{width:100%;margin:0}
+.tl-tabpanel .archive{padding:12px 0 28px}
+.tl-tabpanel .citypanel{margin:0}
+.tl-tabpanel #map{height:min(52vh,430px);min-height:260px}
+.tl-tabpanel .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tl-tabpanel .thumb{height:145px}
+.tl-tabpanel .archive-tools-row{grid-template-columns:1fr}
+.tl-tabpanel .archive-library-actions{display:grid;grid-template-columns:1fr 1fr}
+.tl-tabpanel .archive-library-actions button{width:100%;padding:12px 8px}
+.tl-tabpanel .archive-library-actions #showCurrentSearch{grid-column:1/-1}
+.tl-tabpanel .cityintro{margin:0 0 12px}
+.tl-tabpanel .timebox>.primary{min-height:48px}
+.tl-tabpanel .panelhead{padding:17px 15px 13px}
+.tl-tabpanel .timeline{padding-left:14px;padding-right:14px}
+.tl-tabpanel .era{margin-left:14px;margin-right:14px}
+.tl-tabpanel .note{font-size:10px}
+.tl-tabpanel .sectitle{align-items:flex-start;flex-direction:column}
+.tl-tabpanel .sectitle>a{padding:10px 0}
+@media(min-width:850px){.tl-tabs{grid-template-columns:repeat(4,minmax(0,1fr));margin-left:0;margin-right:0}.tl-tabpanel .grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tl-tabpanel .archive-tools-row{grid-template-columns:2fr 1fr 1fr 1fr}}
+@media(max-width:520px){.shell{padding:0 20px}.hero{padding-top:30px}.hero h1{font-size:45px;letter-spacing:-2px}.tl-tab{font-size:9px;padding:11px 1px}.tl-tabpanel .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tl-tabpanel .thumb{height:115px}.tl-tabpanel .archive-library-actions{grid-template-columns:1fr}.tl-tabpanel .archive-library-actions #showCurrentSearch{grid-column:auto}.tl-tabpanel .mapfoot{padding:9px 10px;gap:10px;font-size:7px}}
+
 </style>
 </head>
 <body>
@@ -51,7 +81,34 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (()=>{'use strict';
+
 const $=id=>document.getElementById(id);
+/* Build focused workspace tabs without duplicating any feature or data. */
+const hero=document.querySelector('.hero');
+const workspace=document.querySelector('.workspace');
+const mapbox=document.querySelector('.mapbox');
+const timebox=document.querySelector('.timebox');
+const citypanel=document.querySelector('.citypanel');
+const archivePanel=document.querySelector('.archive');
+const cityIntro=document.querySelector('.cityintro');
+const tabs=[['map','КАРТА'],['time','ЭПОХА'],['cities','ГОРОДА'],['archive','АРХИВ']];
+const tabNav=document.createElement('nav');
+tabNav.className='tl-tabs';tabNav.setAttribute('aria-label','Разделы TIMELOOP');
+tabNav.innerHTML=tabs.map(([id,label],i)=>'<button type="button" class="tl-tab" role="tab" id="tl-tab-'+id+'" aria-controls="tl-panel-'+id+'" aria-selected="'+(i===0?'true':'false')+'" tabindex="'+(i===0?'0':'-1')+'">'+label+'</button>').join('');
+const tabViews=document.createElement('div');tabViews.className='tl-tabviews';
+const panels={map:document.createElement('section'),time:document.createElement('section'),cities:document.createElement('section'),archive:document.createElement('section')};
+Object.entries(panels).forEach(([id,p])=>{p.className='tl-tabpanel';p.id='tl-panel-'+id;p.setAttribute('role','tabpanel');p.setAttribute('aria-labelledby','tl-tab-'+id);p.hidden=id!=='map';tabViews.appendChild(p);});
+panels.map.appendChild(mapbox);panels.time.appendChild(timebox);panels.cities.appendChild(cityIntro);panels.cities.appendChild(citypanel);panels.archive.appendChild(archivePanel);
+workspace.remove();hero.after(tabNav,tabViews);
+function activateTab(id,opts={}) {
+  if(!panels[id])return;
+  tabs.forEach(([key])=>{const b=$('tl-tab-'+key);b.setAttribute('aria-selected',String(key===id));b.tabIndex=key===id?0:-1;panels[key].hidden=key!==id;});
+  if(id==='map'&&window.map&&typeof window.map.invalidateSize==='function')setTimeout(()=>window.map.invalidateSize(),80);
+  if(opts.scroll!==false)tabNav.scrollIntoView({behavior:'smooth',block:'start'});
+}
+tabNav.addEventListener('click',e=>{const b=e.target.closest('[role="tab"]');if(b)activateTab(b.id.replace('tl-tab-',''));});
+tabNav.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();let i=tabs.findIndex(([id])=>$('tl-tab-'+id)===document.activeElement);if(e.key==='ArrowRight')i=(i+1)%tabs.length;else if(e.key==='ArrowLeft')i=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else i=tabs.length-1;const id=tabs[i][0];activateTab(id,{scroll:false});$('tl-tab-'+id).focus();});
+
 const eras=[[1800,'До индустриального века','Мир до железных дорог и массовой фотографии. В архивах встречаются исторические карты, гравюры и ранние изображения.','XVIII — XIX ВЕК'],[1850,'Новый взгляд на мир','Ранняя фотография начинает фиксировать города, людей и повседневную жизнь.','1840 — 1870'],[1900,'Эпоха перемен','Индустриальные города, электрическое освещение и новые способы передвижения меняют повседневность.','1880 — 1914'],[1945,'Мир на переломе','Документы и фотографии эпохи, изменившей карту Европы. Ищи реальные архивные материалы и открывай первоисточники.','1939 — 1945'],[1989,'Границы меняются','Политические перемены, уличные события и новые визуальные культуры конца XX века.','1980 — 1991'],[2000,'На пороге цифрового мира','Переход к цифровой фотографии, мобильным устройствам и глобальному интернету.','1995 — 2010'],[2020,'Настоящее становится архивом','Современные изображения тоже становятся историческими свидетельствами будущего.','2010 — 2020']];
 let year=1945,place='Berlin',lat=52.52,lon=13.405,map,marker,loading=false,requestToken=0;
 const cityMarkers=new Map();let cities=[],cityLayer=null,cityLoaded=false,selectedCity='';
@@ -255,7 +312,7 @@ async function loadArchive(){
  if(!items.length){state('Материалы пока не найдены. Повтори поиск позже — сбой одного архива не влияет на остальные.',true);return;}
  $('state').hidden=true;activeArchiveCategory='all';setupArchiveFolders(items,jobs,providers);if(token===requestToken)renderArchiveCatalog();
 }
-document.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>setYear(b.dataset.year)));$('range').addEventListener('input',e=>setYear(e.target.value));document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>setPlace(b.dataset.place,b.dataset.lat,b.dataset.lon)));$('searchForm').addEventListener('submit',searchPlace);$('explore').addEventListener('click',loadArchive);$('loadCities').addEventListener('click',loadGermanCities);$('cityFilter').addEventListener('input',renderCities);$('stateFilter').addEventListener('change',renderCities);
+document.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>setYear(b.dataset.year)));$('range').addEventListener('input',e=>setYear(e.target.value));document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>setPlace(b.dataset.place,b.dataset.lat,b.dataset.lon)));$('searchForm').addEventListener('submit',searchPlace);$('explore').addEventListener('click',()=>{activateTab('archive');loadArchive();});$('loadCities').addEventListener('click',loadGermanCities);$('cityFilter').addEventListener('input',renderCities);$('stateFilter').addEventListener('change',renderCities);
 const random=[['Rome',41.9028,12.4964],['London',51.5072,-.1276],['Cairo',30.0444,31.2357],['Kyiv',50.4501,30.5234],['Pforzheim',48.8922,8.6946],['San Francisco',37.7749,-122.4194],['Istanbul',41.0082,28.9784]];$('random').addEventListener('click',()=>{const p=random[Math.floor(Math.random()*random.length)];setPlace(...p);});
 function close(){ $('modal').hidden=true;}$('about').addEventListener('click',()=>$('modal').hidden=false);$('close').addEventListener('click',close);$('ok').addEventListener('click',close);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))close();});
 setYear(1945);
