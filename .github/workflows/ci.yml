@@ -136,6 +136,9 @@ jobs:
       - name: Earth Control dashboard smoke
         run: node scripts/earth-control-smoke.mjs
 
+      - name: GORD Control Lab source smoke
+        run: node scripts/gord-control-lab-smoke.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
