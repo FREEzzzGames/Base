@@ -240,4 +240,28 @@ lab.castSkill(3, 0, { x: 230, y: 420 });
 step(0.5);
 assert.ok(t.statuses.root, "Cyclops ultimate must immobilize its locked target");
 
+lab.selectMage("nana");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(1, 0, { x: 300, y: 420 });
+step(0.75);
+assert.ok(t.hp < 10000, "Nana Magic Boomerang must hit on its outward and return paths");
+lab.selectMage("nana");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(2, 0, { x: 230, y: 420 });
+step(0.3);
+assert.ok(t.statuses.root, "Nana Molina Smooch must transform and immobilize its target");
+lab.selectMage("nana");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(3, 0, { x: 230, y: 420 });
+step(1.3);
+assert.ok(t.statuses.stun, "Nana Molina Blitz must stun targets hit by all three strikes");
+lab.selectMage("nana");
+lab.takePlayerDamage(lab.state.player.hp + 1);
+assert.ok(lab.state.nanaTransform > 0, "Nana Molina's Gift must prevent fatal damage");
+step(2);
+assert.ok(lab.state.player.hp >= 100, "Nana passive must restore 10% max HP over two seconds");
+
 console.log("GORD_CONTROL_LAB_RUNTIME_OK Gord/Alice/Bane/Aurora/Cecilion mechanics passed");
