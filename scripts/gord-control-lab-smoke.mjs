@@ -50,6 +50,10 @@ assert.ok(html.includes("changEMeteorShower:true"), "Chang'e ultimate must fire 
 assert.ok(html.includes("t.changEMarks=Math.min(20"), "Chang'e passive marks must stack to 20");
 assert.ok(html.includes("s.changEShield=300+state.magicPower*1.5"), "Chang'e Crescent Moon must grant a shield");
 assert.ok(html.includes("id==='chang-e'&&state.changEShield>0"), "Chang'e shield must absorb incoming damage");
+assert.ok(html.includes("eudoraBall:true"), "Eudora Ball Lightning must have a dedicated projectile handler");
+assert.ok(html.includes("eudoraThunderburst:true"), "Eudora's marked ultimate must create a delayed Thunderburst");
+assert.ok(html.includes("t.marks.superconductor=3"), "Eudora skills must apply the Superconductor mark");
+assert.ok(html.includes("s.cooldowns[0]=Math.max(0,s.cooldowns[0]-1.5)"), "Eudora's marked S1 chain must refund cooldown");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
