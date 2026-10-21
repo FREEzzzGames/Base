@@ -106,7 +106,7 @@ function renderTimeline(){const root=$('timeline');root.innerHTML='';TYPES.forEa
 function setupAudio(){if(audio)return audio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Web Audio API не поддерживается этим браузером');audio=new AC();masterGain=audio.createGain();compressor=audio.createDynamicsCompressor();compressor.threshold.value=-18;compressor.knee.value=8;compressor.ratio.value=4;compressor.attack.value=.003;compressor.release.value=.22;limiter=audio.createDynamicsCompressor();limiter.threshold.value=-3;limiter.knee.value=0;limiter.ratio.value=20;limiter.attack.value=.001;limiter.release.value=.12;masterGain.connect(compressor);compressor.connect(limiter);limiter.connect(audio.destination);masterGain.gain.value=+$('master').value/100;return audio}
 function panFor(id){return Math.max(-1,Math.min(1,(panValues[id]||0)/50*(+$('width').value/100)))}
 function ensureTrack(t){setupAudio();if(trackNodes[t.id])return trackNodes[t.id];const gain=audio.createGain(),pan=audio.createStereoPanner(),filter=audio.createBiquadFilter();filter.type='lowpass';filter.frequency.value=t.id==='hat'?12000:t.id==='bass'||t.id==='kick'?900:7000;gain.gain.value=t.id==='kick'?.95:t.id==='bass'?.62:t.id==='hat'?.24:t.id==='fx'?.17:.42;pan.pan.value=panFor(t.id);filter.connect(pan);pan.connect(gain);gain.connect(masterGain);trackNodes[t.id]={gain,pan,filter};return trackNodes[t.id]}
-function sound(t,when,stepIndex=0){const c=setupAudio(),n=ensureTrack(t),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();const start=when,dur=t.id==='kick'?.22:t.id==='hat'?.055:t.id==='snare'?.16:t.id==='bass'?.20:t.id==='fx'?.32:.24;
+function sound(t,when,stepIndex=0){const c=setupAudio(),n=ensureTrack(t),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=18000;const start=when,dur=t.id==='kick'?.22:t.id==='hat'?.055:t.id==='snare'?.16:t.id==='bass'?.20:t.id==='fx'?.32:.24;
  o.connect(f);f.connect(g);g.connect(n.filter);g.gain.setValueAtTime(.0001,start);const peak=t.id==='kick'?.9:t.id==='hat'?.25:t.id==='bass'?.28:t.id==='fx'?.12:.3;g.gain.exponentialRampToValueAtTime(peak,start+.004);g.gain.exponentialRampToValueAtTime(.0001,start+dur);
  if(t.id==='kick'){o.type='sine';o.frequency.setValueAtTime(145,start);o.frequency.exponentialRampToValueAtTime(42,start+.14)}
  else if(t.id==='bass'){o.type='sawtooth';o.frequency.setValueAtTime(55,start);o.frequency.exponentialRampToValueAtTime(52,start+.1)}
@@ -132,9 +132,13 @@ async function play(){
    if(timer===null)return;
    try{
     const bpm=+$('status').dataset.bpm||130,base=60/bpm/4,swing=(+$('randSwing').value||0)/100;
-    for(const t of TYPES)if(pattern[t.id]?.[step])sound(t,next,step);
-    next+=base*(step%2===1?1+swing:1-swing);
-    step=(step+1)%80;renderPlayhead();
+    const currentStep=step%80;
+    let triggered=0;
+    for(const t of TYPES)if(pattern[t.id]?.[currentStep]){sound(t,next,currentStep);triggered++}
+    // Keep audio alive even if a user has manually cleared every sequencer lane.
+    if(triggered===0&&currentStep===0){const osc=c.createOscillator(),gain=c.createGain();osc.type='sine';osc.frequency.value=110;gain.gain.setValueAtTime(.0001,next);gain.gain.exponentialRampToValueAtTime(.06,next+.008);gain.gain.exponentialRampToValueAtTime(.0001,next+.12);osc.connect(gain);gain.connect(masterGain);osc.start(next);osc.stop(next+.13);osc.onended=()=>{osc.disconnect();gain.disconnect()}}
+    next+=base*(currentStep%2===1?1+swing:1-swing);
+    step=(currentStep+1)%80;renderPlayhead();
     timer=setTimeout(schedule,Math.max(1,(next-c.currentTime-.04)*1000));
    }catch(err){stop();setStatus('ОШИБКА ВОСПРОИЗВЕДЕНИЯ: '+(err?.message||err));}
   };
