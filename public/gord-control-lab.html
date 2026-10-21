@@ -58,14 +58,50 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 #skillDetails{max-height:92px;flex-shrink:0}
 @media(max-width:380px){#movePanel{left:5px;width:100px}#stickBase{width:82px;height:82px}#stickKnob{left:22px;top:22px;width:34px;height:34px}#skillPanel{right:5px;width:68%}.skill{height:68px}.skill .key{display:none}.arenaControl{bottom:8px}}
 @media(max-height:650px){#movePanel{bottom:5px}#skillPanel{bottom:5px}.skill{height:60px}.skill .icon{font-size:16px}#moveArea{height:75px}#stickBase{width:68px;height:68px}#stickKnob{left:18px;top:18px;width:30px;height:30px}#aimHint{bottom:91px}#skillDetails{max-height:58px}}
+
+/* Compact mobile-first HUD: more room for the arena, controls remain over the playfield */
+#app{width:min(100%,560px);gap:5px;padding-left:8px;padding-right:8px}
+header{padding-top:3px}.brand{font-size:11px}.sub{font-size:9px}
+#magePicker{gap:5px;padding:1px 1px 3px;scrollbar-width:none}
+#magePicker::-webkit-scrollbar{display:none}
+.mageCard{min-width:70px;padding:5px 7px;border-radius:9px;font-size:10px}
+.mageCard small{font-size:8px;margin-top:2px}
+#stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.stat{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:6px 8px;border-radius:9px}
+.label{font-size:8px;letter-spacing:.05em}.value{font-size:13px;margin:0;white-space:nowrap}
+#stage{min-height:240px;flex:1.6;border-radius:14px}
+#toast{top:7px;font-size:10px;padding:6px 9px;max-width:72%}
+#aimHint{display:none}
+#arenaControls .arenaControl{bottom:8px}
+#movePanel{left:7px;width:92px}
+#moveArea{height:84px}
+#stickBase{width:76px;height:76px}
+#stickKnob{width:32px;height:32px;left:20px;top:20px}
+#skillPanel{right:7px;width:min(66%,246px)}
+.controlCaption{font-size:7px;padding-bottom:4px}
+#skills{gap:4px}
+.skill{width:100%;height:auto;aspect-ratio:1/1;max-height:70px;border-radius:50%;padding:3px;gap:2px;background:linear-gradient(145deg,#28415be8,#101a2be8)}
+.skill .icon{font-size:18px}.skill .name{font-size:9px}.skill .key{font-size:7px;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+.skill.cooling:after{border-radius:50%;font-size:16px}
+.arenaActions{gap:4px;margin-top:4px}.arenaActions .smallBtn{padding:6px 2px;font-size:8px}
+#skillInfo{flex-shrink:0;max-height:36vh;border:1px solid var(--line);border-radius:10px;background:#0b1420;overflow:hidden}
+#skillInfo summary{padding:8px 10px;font-size:10px;font-weight:800;color:var(--cyan);cursor:pointer;list-style:none}
+#skillInfo summary::-webkit-details-marker{display:none}
+#skillInfo summary:after{content:"＋";float:right;color:var(--muted)}
+#skillInfo[open] summary:after{content:"−"}
+#skillDetails{border:0;border-top:1px solid var(--line);border-radius:0;padding:8px 10px;font-size:10px;max-height:calc(36vh - 35px);overflow:auto}
+#foot{font-size:8px;padding-bottom:1px}
+@media(max-width:380px){#movePanel{left:5px;width:78px}#moveArea{height:72px}#stickBase{width:66px;height:66px}#stickKnob{left:17px;top:17px;width:28px;height:28px}#skillPanel{right:5px;width:68%}.skill{max-height:64px}.skill .key{display:none}}
+@media(max-height:700px){#stage{min-height:190px}#skillInfo:not([open]){max-height:34px}#skillPanel,#movePanel{bottom:5px}.skill{max-height:58px}#moveArea{height:64px}#stickBase{width:58px;height:58px}#stickKnob{left:15px;top:15px;width:26px;height:26px}}
 </style>
 </head>
 <body>
 <div id="app">
 <header><div><div class="brand">FREEzzz // CONTROL LAB</div><div class="sub" id="mageSubtitle">GORD · МЕХАНИКА УПРАВЛЕНИЯ</div></div><div class="pill" id="modePill">Свободная практика</div></header>
-<div id="magePicker" aria-label="Выбор мага"></div>\n<section id="stats">
-<div class="stat"><div class="label">Попадания</div><div class="value" id="hits">0 / 0</div></div>
-<div class="stat"><div class="label">Точность</div><div class="value" id="accuracy">—</div></div>
+<div id="magePicker" aria-label="Выбор мага"></div>
+<section id="stats">
+<div class="stat"><div class="label">Попадания</div><div class="value" id="hits">0</div></div>
+<div class="stat"><div class="label">Применения</div><div class="value" id="accuracy">0</div></div>
 <div class="stat"><div class="label">Комбо</div><div class="value" id="combo">0</div></div>
 </section>
 <div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания</div><div id="arenaControls" aria-label="Встроенное управление на арене">
@@ -75,7 +111,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 <button class="skill" data-skill="2"><span class="icon">◎</span><span class="name">Навык 2</span><span class="key">Mystic Injunction</span></button>
 <button class="skill" data-skill="3"><span class="icon">━</span><span class="name">Ульта</span><span class="key">Mystic Gush</span></button>
 </div><div class="arenaActions"><button class="smallBtn" id="reset">Сбросить</button><button class="smallBtn" id="targets">Цели: движение</button></div></div></div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
-<div id="skillDetails">Данные навыка появятся после выбора персонажа.</div>
+<details id="skillInfo"><summary>Информация о навыках</summary><div id="skillDetails">Данные навыка появятся после выбора персонажа.</div></details>
 
 <div id="foot"><span>Тренировочный симулятор · не клиент MLBB</span><span>Canvas 2D · Touch</span></div>
 </div>
@@ -203,7 +239,7 @@ addFx(t.x,t.y,'#ffca6a',.22,15);
 if(t.hp<=0){t.alive=false;t.respawn=1.1;addFx(t.x,t.y,'#ff6378',.4,27);say('Попадание! Цель восстановится автоматически');}
 updateStats();
 }
-function updateStats(){ui.hits.textContent=state.hits+' / '+state.casts;ui.accuracy.textContent=state.casts?Math.round(state.hits/state.casts*100)+'%':'—';ui.combo.textContent=state.combo;}
+function updateStats(){ui.hits.textContent=state.hits;ui.accuracy.textContent=state.casts;ui.combo.textContent=state.combo;}
 function draw(){
 const w=state.w,h=state.h;ctx.clearRect(0,0,w,h);ctx.fillStyle='#0a1421';ctx.fillRect(0,0,w,h);
 const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#102338');g.addColorStop(1,'#09111d');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
