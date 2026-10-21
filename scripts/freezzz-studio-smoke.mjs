@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import assert from "node:assert/strict";
-import { STYLE_RULES, SCALES, composeMotif, scorePattern, seededRandom, quantizeMidi } from "../public/freezzz-studio-engine.js";
+import { STYLE_RULES, SCALES, TECHNO_THEORY, composeMotif, scorePattern, seededRandom, quantizeMidi, makeChordProgression, validateArrangement, equalPowerPan } from "../public/freezzz-studio-engine.js";
 
 const file = "public/freezzz-studio.html";
 const html = readFileSync(file, "utf8");
@@ -49,6 +49,14 @@ assert.equal(quantizeMidi(62, 60, "major"), 62, "Major-scale quantization must c
 assert.equal(seededRandom(1)(), seededRandom(1)(), "Seeded random source must be repeatable");
 const quality = scorePattern({ style: "detroit", kick: Array.from({ length: 16 }, (_, i) => [0,4,8,12].includes(i)), snare: Array.from({ length: 16 }, (_, i) => [4,12].includes(i)) });
 assert.equal(quality.genreFit, 100, "A canon-perfect Detroit kick/snare should score 100 genre fit");
+
+assert.equal(TECHNO_THEORY.meter.numerator, 4, "Techno engine uses 4/4 meter");
+assert.equal(Object.keys(TECHNO_THEORY.genres).length, 9, "Theory library covers all nine supported styles");
+assert.equal(makeChordProgression({ seed: 11, bars: 8 }).length, 8, "Harmony engine returns requested bar count");
+assert.deepEqual(validateArrangement({ style: "dub", bpm: 124, steps: 80, swing: 8 }).issues, [], "Valid Dub arrangement must pass canon validation");
+assert.ok(validateArrangement({ style: "schranz", bpm: 120 }).issues.includes("tempo-outside-style-range"), "Out-of-canon tempo must be flagged");
+const pan = equalPowerPan(0);
+assert.ok(Math.abs(pan.left - Math.SQRT1_2) < 1e-9 && Math.abs(pan.right - Math.SQRT1_2) < 1e-9, "Center pan must use equal-power coefficients");
 
 console.log("FREEZZ_STUDIO_SMOKE_OK");
 console.log("HTML IDs:", ids.length, "| event bindings:", boundIds.length, "| functions:", functionNames.length);
