@@ -2,7 +2,6 @@ import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
 import { RADIO_GENRES } from "./radio-config";
 import "./styles.css";
 import "./zenith-os.css";
-import "./earth-control.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
 import { bindHomeGridShift } from "./home-grid-shift";
@@ -448,7 +447,6 @@ function renderPortalToolbar(){
     ["home","home","HOME"],
     ["radio","radio","RADIO"],
     ["library","library","LIBRARY"],
-    ["earth","rocket","EARTH"],
   ];
   return `<header class="portal-topbar">
     <button class="portal-top-profile" data-profile-toggle type="button" aria-label="${T("profile")}" title="${T("profile")}">${icon("profile","portal-top-profile-icon")}</button>
@@ -464,7 +462,6 @@ function renderPortalToolbar(){
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target||(target==="home"&&view==="echo9")}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
         <a class="portal-toolbar-item portal-toolbar-studio" href="./freezzz-studio.html" style="text-decoration:none" aria-label="STUDIO" title="FREEzzz Studio">${icon("editor","portal-toolbar-icon")}<span class="portal-toolbar-label">STUDIO</span></a>
-        <a class="portal-toolbar-item" href="./timeloop.html" style="text-decoration:none" aria-label="TIMELOOP" title="TIMELOOP"><span class="portal-toolbar-label">TIMELOOP</span></a>
       </div>
     </div>
   </nav>`;
@@ -495,20 +492,11 @@ function render(){
         ${homeCard("game")}
         ${homeCard("radio")}
         ${homeCard("library")}
-        ${homeCard("earth")}
-        <a class="card home-card portal-block home-timeloop" href="./timeloop.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #67e8f9;text-decoration:none" data-portal-card="timeloop" data-portal-block="timeloop" aria-label="TIMELOOP"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">TIMELOOP</span><span style="position:absolute;left:13px;bottom:12px;color:#67e8f9;font-size:11px;letter-spacing:1.5px">VISUAL HISTORY ENGINE · TIME MAP</span></a>
         <a class="card home-card portal-block home-studio" href="./freezzz-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">BLOCK SEQUENCER · AUDIO LAB</span></a>
         <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
       </div>`;
   }
 
-
-  if(view==="earth"){
-    body=`<div class="content portal-layout earth-module" data-portal-layout="earth">
-      <div class="section-head earth-module-head"><div><h1>${T("earthCard")}</h1><p>${T("earthSub")}</p></div><div class="earth-header-actions"><button class="tg-button secondary earth-landscape-toggle" type="button" data-earth-landscape aria-label="Switch Earth Control to landscape">↔ LANDSCAPE</button><button class="tg-button secondary" type="button" data-view="home">HOME</button></div></div>
-      <iframe class="earth-control-frame" src="./earth-control.html?lang=${lang}&v=${encodeURIComponent(PORTAL_BUILD_ID)}" title="Planet Earth Control Deck" loading="eager" allow="fullscreen; screen-wake-lock" referrerpolicy="no-referrer"></iframe>
-    </div>`;
-  }
 
   if(view==="live"){
     body=`
@@ -873,35 +861,6 @@ function bind(){
 
 
   document.querySelectorAll<HTMLElement>('.earth-module [data-view="home"]').forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
-  document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>button.addEventListener("click",async()=>{
-    const module=button.closest<HTMLElement>(".earth-module");
-    if(!module)return;
-    if(document.fullscreenElement===module){
-      try{await document.exitFullscreen();}catch{}
-      button.textContent="↔ LANDSCAPE";
-      return;
-    }
-    button.textContent="OPENING…";
-    try{
-      if(module.requestFullscreen)await module.requestFullscreen();
-      else throw new Error("Fullscreen is not supported");
-      button.textContent="FULLSCREEN ACTIVE";
-      const orientation=(screen.orientation as unknown as {lock?:(value:string)=>Promise<void>}).lock;
-      if(orientation){
-        try{await orientation.call(screen.orientation,"landscape");button.textContent="LANDSCAPE ACTIVE";}
-        catch{button.textContent="FULLSCREEN ACTIVE";}
-      }
-    }catch{
-      button.textContent="FULLSCREEN UNAVAILABLE";
-    }
-  }));
-  document.addEventListener("fullscreenchange",()=>{
-    document.querySelectorAll<HTMLButtonElement>(".earth-module [data-earth-landscape]").forEach(button=>{
-      const module=button.closest<HTMLElement>(".earth-module");
-      if(module&&document.fullscreenElement!==module)button.textContent="↔ LANDSCAPE";
-    });
-  });
-
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
           e.preventDefault();
