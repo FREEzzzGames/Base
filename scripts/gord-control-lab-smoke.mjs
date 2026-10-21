@@ -24,7 +24,7 @@ assert.equal(new Set(heroIds).size, heroIds.length, "Hero profile IDs must be un
 
 for (const id of heroIds) {
   const start = script.indexOf(`{id:"${id}"`);
-  const next = script.indexOf("\\n{id:", start + 1);
+  const next = script.indexOf("\n{id:", start + 1);
   const profile = script.slice(start, next === -1 ? script.indexOf("];", start) : next);
   assert.match(profile, /skills:\[[^\]]{3,}\]/, `Hero ${id} must declare skills`);
   assert.match(profile, /types:\[[^\]]{3,}\]/, `Hero ${id} must declare skill types`);
