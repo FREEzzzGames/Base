@@ -463,6 +463,7 @@ function renderPortalToolbar(){
     <div class="portal-toolbar-main">
       <div class="portal-toolbar-nav" role="tablist">
         ${items.map(([target,iconName,label])=>`<button class="portal-toolbar-item ${view===target||(target==="home"&&view==="echo9")?"active":""}" data-view="${target}" type="button" role="tab" aria-selected="${view===target||(target==="home"&&view==="echo9")}" aria-label="${label}" title="${label}">${icon(iconName,"portal-toolbar-icon")}<span class="portal-toolbar-label">${label}</span></button>`).join("")}
+        <a class="portal-toolbar-item portal-toolbar-studio" href="./freezzz-studio.html" aria-label="STUDIO" title="FREEzzz Studio">${icon("editor","portal-toolbar-icon")}<span class="portal-toolbar-label">STUDIO</span></a>
       </div>
     </div>
   </nav>`;
@@ -494,6 +495,7 @@ function render(){
         ${homeCard("radio")}
         ${homeCard("library")}
         ${homeCard("earth")}
+        <a class="card home-card portal-block home-studio" href="./freezzz-studio.html" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Studio"><span class="home-card-title">FREEzzz STUDIO</span><span class="home-card-subtitle">BLOCK SEQUENCER · AUDIO LAB</span></a>
         <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
       </div>`;
   }
