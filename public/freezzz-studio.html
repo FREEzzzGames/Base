@@ -13,9 +13,9 @@
 <section class="grid">
 <aside class="panel library-panel"><h3>SOUND OBJECTS</h3><div class="categories" id="categories"></div><p class="notice">Выбери объект, затем нажми на шаг сетки. Блоки можно перетаскивать по дорожкам.</p></aside>
 <section class="panel timeline-panel"><div class="panel-head"><h3 style="margin-right:auto">PATTERN SEQUENCER</h3><span class="muted">16 STEPS · 4 BARS</span></div><div class="timeline-wrap"><div class="timeline" id="timeline"></div></div><div class="transport"><button class="play" id="play">▶ PLAY</button><button class="stop" id="stop">■ STOP</button><button id="clear">CLEAR</button><span class="muted" id="status">READY · 130 BPM</span></div><h3>BLOCK LANE / DRAG & DROP</h3><div id="blocks" class="blocks"><span class="muted">Выбери звуковой объект слева — блок появится здесь.</span></div></section>
-<aside class="panel sample-panel"><h3>OBJECT LIBRARY</h3><div class="library" id="sounds"></div><hr style="border-color:var(--line);margin:14px 0"><h3>SELECTED OBJECT</h3><div id="selectedName">Ничего не выбрано</div><div class="knobs" style="margin-top:12px"><label>VOLUME<input id="vol" type="range" min="0" max="1" step=".01" value=".7"></label><label>PITCH<input id="pitch" type="range" min="-12" max="12" value="0"></label><label>DECAY<input id="decay" type="range" min=".05" max="1" step=".05" value=".3"></label></div><button id="preview" style="width:100%;margin-top:10px">▶ PREVIEW SOUND</button></aside>
+<aside class="panel sample-panel"><h3>OBJECT LIBRARY</h3><div class="library" id="sounds"></div><hr style="border-color:var(--line);margin:14px 0"><h3>SELECTED OBJECT</h3><div id="selectedName">Ничего не выбрано</div><div class="knobs" style="margin-top:12px"><label>VOLUME<input id="vol" type="range" min="0" max="1" step=".01" value=".7"></label><label>PITCH<input id="pitch" type="range" min="-12" max="12" value="0"></label><label>DECAY<input id="decay" type="range" min=".05" max="1" step=".05" value=".3"></label></div><button id="preview" style="width:100%;margin-top:10px">▶ PREVIEW SOUND</button><button id="loadSamples" style="width:100%;margin-top:8px;border-color:var(--cyan);color:var(--cyan)">↓ LOAD REAL CC0 SAMPLE PACK</button><p id="sampleStatus" class="notice">REAL WAV SAMPLES · CC0-1.0 · NOT LOADED</p><button id="cycleSample" style="width:100%;margin-top:4px">↻ CHANGE SAMPLE VARIANT</button></aside>
 <div class="right-stack wide"><section class="panel"><div class="panel-head"><h3 style="margin-right:auto">SCENES</h3><span class="muted">PATTERN SNAPSHOTS</span></div><div class="scenes" id="scenes"></div></section><section class="panel"><h3>OPEN SAMPLE LIBRARIES</h3><div class="categories">
-<a href="https://github.com/octalmusic/octal-samples" target="_blank" rel="noreferrer">Octal Samples · CC0 drum sounds</a>
+<a href="https://github.com/octalmusic/octal-samples" target="_blank" rel="noreferrer">Octal Samples · connected CC0 WAV kit</a>
 <a href="https://github.com/Boochi44/free-drum-samples" target="_blank" rel="noreferrer">Free Drum Samples · CC0</a>
 <a href="https://github.com/gdamdam/mpump" target="_blank" rel="noreferrer">mpump · groovebox source</a>
 <a href="https://freesound.org/" target="_blank" rel="noreferrer">Freesound · check each asset license</a>
@@ -33,6 +33,15 @@ const TYPES=[
 {id:'fx',name:'FX / RISER',icon:'✳',c:'#ff38bb',kind:'fx'}
 ];
 let selected=TYPES[0], pattern={}, scenes={}, currentScene='A', audio=null, timer=null, step=0, nodes=[];
+const SAMPLE_BASE='https://raw.githubusercontent.com/octalmusic/octal-samples/main/';
+const SAMPLE_SETS={
+kick:['samples/kicks/deep-01.wav','samples/kicks/punch-01.wav','samples/kicks/sub-01.wav','samples/kicks/tight-01.wav'],
+snare:['samples/snares/snap-01.wav','samples/snares/body-01.wav','samples/claps/classic-01.wav'],
+hat:['samples/hats/closed-01.wav','samples/hats/closed-03.wav','samples/hats/closed-06.wav','samples/hats/open-01.wav'],
+perc:['samples/percs/blip-01.wav','samples/percs/shaker-01.wav','samples/percs/tom-01.wav','samples/percs/tick-01.wav'],
+bass:[],synth:[],fx:['samples/fx/riser-01.wav','samples/fx/noise-01.wav']
+};
+const sampleBuffers=new Map();let sampleVariant={kick:0,snare:0,hat:0,perc:0,fx:0};let sampleLoadPromise=null;
 const $=id=>document.getElementById(id);
 function key(t,s){return t+'-'+s}
 function initPattern(){TYPES.forEach(t=>{if(!pattern[t.id])pattern[t.id]=Array(16).fill(false)});pattern.kick=[true,false,false,false,true,false,false,false,true,false,false,false,true,false,false,false];pattern.snare=[false,false,false,false,true,false,false,false,false,false,false,false,true,false,false,false];pattern.hat=Array.from({length:16},(_,i)=>i%2===0);pattern.bass=[true,false,false,true,false,false,true,false,true,false,false,true,false,true,false,false]}
@@ -43,7 +52,11 @@ function selectType(id){selected=TYPES.find(t=>t.id===id)||TYPES[0];$('selectedN
 function addBlock(){let arr=pattern[selected.id];let i=arr.findIndex(v=>!v);arr[i<0?0:i]=true;renderTimeline();renderBlocks()}
 function renderBlocks(){let blocks=[];TYPES.forEach(t=>pattern[t.id].forEach((on,i)=>{if(on)blocks.push({t,i})}));$('blocks').innerHTML=blocks.length?blocks.map(({t,i})=>'<div class="block" draggable="true" data-t="'+t.id+'" data-s="'+i+'" style="--c:'+t.c+'"><b>'+t.name+'</b> · '+(i+1)+' <span style="opacity:.65">⠿</span></div>').join(''):'<span class="muted">Пустая дорожка — добавь звуковые блоки.</span>';$('blocks').querySelectorAll('.block').forEach(el=>{el.ondragstart=e=>e.dataTransfer.setData('type',el.dataset.t);el.onclick=()=>{selectType(el.dataset.t);pattern[el.dataset.t][+el.dataset.s]=false;renderTimeline();renderBlocks()}})}
 function ctx(){if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();return audio}
-function tone(t,when=0){const c=ctx(),now=c.currentTime+when,vol=+$('vol').value,dec=+$('decay').value,semi=+$('pitch').value;let osc=c.createOscillator(),gain=c.createGain(),filter=c.createBiquadFilter();osc.connect(filter);filter.connect(gain);gain.connect(c.destination);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.001,vol*.5),now+.005);gain.gain.exponentialRampToValueAtTime(.0001,now+dec);filter.type='lowpass';filter.frequency.value=t.kind==='hat'?9000:t.kind==='bass'?260:1800;
+function tone(t,when=0){
+const c=ctx(),now=c.currentTime+when,vol=+$('vol').value,dec=+$('decay').value,semi=+$('pitch').value;
+const paths=SAMPLE_SETS[t.id]||[];const chosen=paths.length?paths[sampleVariant[t.id]||0]:null;const buffer=chosen?sampleBuffers.get(chosen):null;
+if(buffer){const source=c.createBufferSource(),gain=c.createGain(),filter=c.createBiquadFilter();source.buffer=buffer;source.playbackRate.setValueAtTime(Math.pow(2,semi/12),now);source.connect(filter);filter.connect(gain);gain.connect(c.destination);filter.type='lowpass';filter.frequency.setValueAtTime(t.id==='hat'?11000:t.id==='kick'||t.id==='bass'?700:14000,now);gain.gain.setValueAtTime(Math.max(.0001,vol),now);gain.gain.setValueAtTime(Math.max(.0001,vol),now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+Math.max(.05,dec));source.start(now);source.stop(now+Math.min(buffer.duration,Math.max(.06,dec)+.02));nodes.push(source);source.onended=()=>{nodes=nodes.filter(n=>n!==source);gain.disconnect();filter.disconnect()};return}
+let osc=c.createOscillator(),gain=c.createGain(),filter=c.createBiquadFilter();osc.connect(filter);filter.connect(gain);gain.connect(c.destination);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.001,vol*.5),now+.005);gain.gain.exponentialRampToValueAtTime(.0001,now+dec);filter.type='lowpass';filter.frequency.value=t.kind==='hat'?9000:t.kind==='bass'?260:1800;
 if(t.kind==='kick'){osc.type='sine';osc.frequency.setValueAtTime(150,now);osc.frequency.exponentialRampToValueAtTime(42,now+.12)}
 else if(t.kind==='hat'||t.kind==='snare'||t.kind==='perc'||t.kind==='fx'){osc.type='square';osc.frequency.value=t.kind==='hat'?8500:t.kind==='snare'?190:t.kind==='perc'?420:1100;filter.type='highpass';filter.frequency.value=t.kind==='hat'?6500:t.kind==='snare'?700:250}
 else {osc.type=t.kind==='bass'?'sawtooth':'triangle';osc.frequency.value=(t.kind==='bass'?55:t.kind==='synth'?220:440)*Math.pow(2,semi/12)}
@@ -51,7 +64,21 @@ osc.start(now);osc.stop(now+dec+.03);nodes.push(osc);osc.onended=()=>{nodes=node
 function renderScenes(){const names=['A','B','C','D','E'];$('scenes').innerHTML=names.map((n,i)=>'<button class="scene '+(currentScene===n?'active':'')+'" data-scene="'+n+'">'+['INTRO','BUILD UP','DROP','BREAK','OUTRO'][i]+'<br><small class="muted">SCENE '+n+'</small></button>').join('');$('scenes').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(currentScene)scenes[currentScene]=JSON.parse(JSON.stringify(pattern));currentScene=b.dataset.scene;if(scenes[currentScene])pattern=JSON.parse(JSON.stringify(scenes[currentScene]));else scenes[currentScene]=JSON.parse(JSON.stringify(pattern));renderScenes();renderTimeline();renderBlocks()})}
 function stop(){if(timer)clearInterval(timer);timer=null;step=0;$('play').textContent='▶ PLAY';$('status').textContent='STOPPED';document.querySelectorAll('.step').forEach(b=>b.classList.remove('playhead'))}
 function play(){if(timer){stop();return}ctx();$('play').textContent='Ⅱ PAUSE';let bpm=Math.max(60,Math.min(180,+$('bpm').value||130));$('status').textContent='PLAYING · '+bpm+' BPM';let tick=()=>{document.querySelectorAll('.step').forEach(b=>b.classList.toggle('playhead',+b.dataset.s===step));TYPES.forEach(t=>{if(pattern[t.id][step])tone(t)});step=(step+1)%16};tick();timer=setInterval(tick,60000/bpm/4)}
-$('play').onclick=play;$('stop').onclick=stop;$('clear').onclick=()=>{TYPES.forEach(t=>pattern[t.id].fill(false));renderTimeline();renderBlocks()};$('preview').onclick=()=>tone(selected);$('bpm').onchange=()=>{if(timer){stop();play()}$('status').textContent='READY · '+$('bpm').value+' BPM'};
+$('play').onclick=play;$('stop').onclick=stop;$('clear').onclick=()=>{TYPES.forEach(t=>pattern[t.id].fill(false));renderTimeline();renderBlocks()};$('preview').onclick=()=>tone(selected);
+async function loadSamples(){
+ if(sampleLoadPromise){return sampleLoadPromise}
+ const tasks=Object.entries(SAMPLE_SETS).flatMap(([type,paths])=>paths.map(async path=>{
+  if(sampleBuffers.has(path))return;
+  const response=await fetch(SAMPLE_BASE+path,{mode:'cors',cache:'force-cache'});
+  if(!response.ok)throw new Error('HTTP '+response.status+' · '+path);
+  const bytes=await response.arrayBuffer();const decoded=await ctx().decodeAudioData(bytes);sampleBuffers.set(path,decoded);
+ }));
+ $('sampleStatus').textContent='Загрузка WAV-сэмплов…';
+ sampleLoadPromise=Promise.all(tasks).then(()=>{$('sampleStatus').textContent='ГОТОВО · '+sampleBuffers.size+' REAL WAV SAMPLES · CC0-1.0';$('loadSamples').textContent='✓ SAMPLE PACK LOADED';renderSounds()}).catch(err=>{$('sampleStatus').textContent='Не удалось загрузить сэмплы: '+String(err.message||err);sampleLoadPromise=null});
+ return sampleLoadPromise;
+}
+$('loadSamples').onclick=()=>void loadSamples();
+$('cycleSample').onclick=()=>{const paths=SAMPLE_SETS[selected.id]||[];if(!paths.length){$('sampleStatus').textContent='Для '+selected.name+' пока используется встроенный синтезатор.';return}sampleVariant[selected.id]=((sampleVariant[selected.id]||0)+1)%paths.length;$('sampleStatus').textContent='SAMPLE: '+paths[sampleVariant[selected.id]].split('/').pop();if(!sampleBuffers.has(paths[sampleVariant[selected.id]]))void loadSamples();else tone(selected)};$('bpm').onchange=()=>{if(timer){stop();play()}$('status').textContent='READY · '+$('bpm').value+' BPM'};
 $('save').onclick=()=>{scenes[currentScene]=JSON.parse(JSON.stringify(pattern));localStorage.setItem('freezzz-studio-v1',JSON.stringify({pattern,scenes,bpm:$('bpm').value}));$('status').textContent='SAVED LOCALLY'};
 $('load').onclick=()=>{try{let d=JSON.parse(localStorage.getItem('freezzz-studio-v1'));if(d){pattern=d.pattern;scenes=d.scenes||{};$('bpm').value=d.bpm||130;renderTimeline();renderBlocks();renderScenes();$('status').textContent='PROJECT LOADED'}}catch{$('status').textContent='NO VALID SAVE'}};
 initPattern();renderCategories();renderSounds();renderTimeline();renderBlocks();renderScenes();
