@@ -82,4 +82,5 @@ $('cycleSample').onclick=()=>{const paths=SAMPLE_SETS[selected.id]||[];if(!paths
 $('save').onclick=()=>{scenes[currentScene]=JSON.parse(JSON.stringify(pattern));localStorage.setItem('freezzz-studio-v1',JSON.stringify({pattern,scenes,bpm:$('bpm').value}));$('status').textContent='SAVED LOCALLY'};
 $('load').onclick=()=>{try{let d=JSON.parse(localStorage.getItem('freezzz-studio-v1'));if(d){pattern=d.pattern;scenes=d.scenes||{};$('bpm').value=d.bpm||130;renderTimeline();renderBlocks();renderScenes();$('status').textContent='PROJECT LOADED'}}catch{$('status').textContent='NO VALID SAVE'}};
 initPattern();renderCategories();renderSounds();renderTimeline();renderBlocks();renderScenes();
+void loadSamples();
 </script></body></html>
