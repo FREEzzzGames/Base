@@ -37,6 +37,7 @@ class FakeElement {
     for (const fn of this.listeners.get(type) || []) fn({ preventDefault() {}, pointerId: 1, clientX: 240, clientY: 420, ...event });
   }
   appendChild(child) { this.children.push(child); return child; }
+  insertAdjacentHTML(_position, html) { this.innerHTML += html; }
   setPointerCapture() {}
   getBoundingClientRect() {
     return { left: 0, top: 0, width: this.id === "moveArea" ? 100 : 360, height: this.id === "moveArea" ? 100 : 540, right: 360, bottom: 540 };
