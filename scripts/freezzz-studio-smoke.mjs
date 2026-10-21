@@ -36,7 +36,7 @@ for (const removed of ["id=\"loadSamples\"", "id=\"userSampleFiles\"", "id=\"loa
 
 assert.match(js, /\$\('generate'\)\.onclick/);
 assert.match(js, /\$\('generatePlay'\)\.onclick/);
-assert.match(js, /\$\('play'\)\.onclick=play/);
+assert.match(js, /\$\('play'\)\.onclick=async\(\)=>\{await play\(\)\}/);
 assert.match(js, /\$\('stop'\)\.onclick=stop/);
 
 // Deterministic, genre-aware composition engine regression tests.
