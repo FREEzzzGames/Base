@@ -71,6 +71,11 @@ assert.ok(html.includes("harleyCard:true"), "Harley Poker Trick must use card pr
 assert.ok(html.includes("harleyHat"), "Harley Space Escape must support return-to-hat recast");
 assert.ok(html.includes("harleyRingTimer=4"), "Harley Deadly Magic must use a four-second ring timer");
 assert.ok(html.includes("(t.harleyRingDamage||0)*.5"), "Harley ring explosion must include half of accumulated damage");
+assert.ok(html.includes("vexanaGrasp:true"), "Vexana Deathly Grasp must have a line projectile and impact burst");
+assert.ok(html.includes("vexanaCurse:true"), "Vexana Cursed Blast must have a delayed area impact");
+assert.ok(html.includes("vexanaGuard:true"), "Vexana Eternal Guard must attack repeatedly for 15 seconds");
+assert.ok(html.includes("t.netherCurse=5"), "Vexana passive curse must last five seconds");
+assert.ok(html.includes("const passiveDamage=108+38*10+state.magicPower*.6"), "Vexana cursed death must explode with area damage");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
