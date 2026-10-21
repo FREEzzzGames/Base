@@ -24,16 +24,19 @@ const duplicateFunctions = [...new Set(functionNames.filter((name, index) => fun
 assert.deepEqual(duplicateFunctions, [], "Named functions must not be duplicated");
 
 for (const required of [
-  "function smartRandomize()", "function generateUniquePattern()", "function buildUniqueVariation()",
-  "const STYLE_CANONS", "Array(80).fill(false)", "repeat(80,minmax(16px,1fr))",
-  "function renderTimeline()", "function renderScenes()", "function loadSamples()",
-  "function loadLibraryCatalog()", "userSampleFiles", "randTempoMode", "randStructure",
-  "@media(max-width:850px)", "overflow:auto"
-]) assert.ok(html.includes(required), "Missing expected studio capability/layout marker: " + required);
+  "const STYLE_CANONS", "const CANON_MOTIFS", "function makeSixteen()", "function buildUniqueVariation()",
+  "function generate()", "function setupAudio()", "function ensureTrack(", "createStereoPanner",
+  "createDynamicsCompressor", "function renderTimeline()", "function buildPans()", "randTempoMode",
+  "randStructure", "id=\"master\"", "id=\"width\"", "id=\"generatePlay\"", "id=\"play\"", "id=\"stop\""
+]) assert.ok(html.includes(required), "Missing generator or stereo playback capability: " + required);
 
-assert.match(js, /\$\('smartRandom'\)\.onclick=generateUniquePattern/);
-assert.match(js, /\$\('generateCustom'\)\.onclick=generateUniquePattern/);
-assert.match(js, /\$\('generateVariation'\)\.onclick=generateUniquePattern/);
+for (const removed of ["id=\"loadSamples\"", "id=\"userSampleFiles\"", "id=\"loadLibrarySound\"", "id=\"save\"", "id=\"scenes\""])
+  assert.ok(!html.includes(removed), "Non-core feature should be removed: " + removed);
+
+assert.match(js, /\$\('generate'\)\.onclick/);
+assert.match(js, /\$\('generatePlay'\)\.onclick/);
+assert.match(js, /\$\('play'\)\.onclick=play/);
+assert.match(js, /\$\('stop'\)\.onclick=stop/);
 
 console.log("FREEZZ_STUDIO_SMOKE_OK");
 console.log("HTML IDs:", ids.length, "| event bindings:", boundIds.length, "| functions:", functionNames.length);
