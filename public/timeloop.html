@@ -158,29 +158,29 @@ async function searchCommons(q){
  const data=await res.json();return Object.values(data.query?.pages||{}).map(p=>{const ii=p.imageinfo?.[0]||{},meta=ii.extmetadata||{},title=(p.title||'Архивный материал').replace(/^File:/,'').replaceAll('_',' ');return {key:'commons:'+p.pageid,title,meta,mime:ii.mime||'',large:ii.url||ii.thumburl||'',thumb:ii.thumburl||ii.url||'',preview:ii.thumburl||'',source:p.fullurl||'https://commons.wikimedia.org/',date:stripHtml(meta.DateTimeOriginal?.value||meta.DateTime?.value||''),license:stripHtml(meta.LicenseShortName?.value||''),provider:'WIKIMEDIA COMMONS'};});
 }
 async function searchLibraryOfCongress(q){
- const url='https://www.loc.gov/photos/?q='+encodeURIComponent(q)+'&fo=json&c=30';
- const res=await fetch(url);if(!res.ok)throw Error('Library of Congress HTTP '+res.status);
- const data=await res.json();return (data.results||[]).map((p,i)=>{const img=Array.isArray(p.image_url)?p.image_url[p.image_url.length-1]:p.image_url;const thumb=Array.isArray(p.image_url)?(p.image_url[0]||img):img;const title=p.title||p.description||'Library of Congress item';const desc=Array.isArray(p.description)?p.description.join(' '):(p.description||'');const date=p.date||p.created_published||'';return {key:'loc:'+(p.id||p.url||i),title,meta:{ImageDescription:{value:desc},DateTimeOriginal:{value:date},LicenseShortName:{value:'Права проверяются на странице источника'}},mime:'image/jpeg',large:img||'',thumb:thumb||'',preview:img||'',source:p.id||p.url||'https://www.loc.gov/',date,license:'проверить у источника',provider:'LIBRARY OF CONGRESS'};}).filter(x=>x.title);
+ const url='https://www.loc.gov/photos/?q='+encodeURIComponent(q)+'&fo=json&c=30';const res=await fetch(url);if(!res.ok)throw Error('Library of Congress HTTP '+res.status);const data=await res.json();
+ return (data.results||[]).map((p,i)=>{const img=Array.isArray(p.image_url)?p.image_url[p.image_url.length-1]:p.image_url;const thumb=Array.isArray(p.image_url)?(p.image_url[0]||img):img;const title=p.title||p.description||'Library of Congress item';const desc=Array.isArray(p.description)?p.description.join(' '):(p.description||'');const date=p.date||p.created_published||'';return {key:'loc:'+(p.id||p.url||i),title,meta:{ImageDescription:{value:desc},DateTimeOriginal:{value:date},LicenseShortName:{value:'Права проверяются на странице источника'}},mime:'image/jpeg',large:img||'',thumb:thumb||'',preview:img||'',source:p.id||p.url||'https://www.loc.gov/',date,license:'проверить у источника',provider:'LIBRARY OF CONGRESS'};}).filter(x=>x.title);
+}
+async function searchMet(q){
+ const res=await fetch('https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q='+encodeURIComponent(q));if(!res.ok)throw Error('The Met HTTP '+res.status);const data=await res.json();const ids=(data.objectIDs||[]).slice(0,24);if(!ids.length)return [];
+ const objects=await Promise.allSettled(ids.map(async id=>{const r=await fetch('https://collectionapi.metmuseum.org/public/collection/v1/objects/'+id);if(!r.ok)throw Error('Met object HTTP '+r.status);return r.json();}));
+ return objects.filter(x=>x.status==='fulfilled').map(x=>x.value).filter(p=>p.primaryImage||p.primaryImageSmall).map(p=>({key:'met:'+p.objectID,title:p.title||'The Met object',meta:{ImageDescription:{value:[p.artistDisplayName,p.medium,p.dimensions].filter(Boolean).join(' · ')},DateTimeOriginal:{value:p.objectDate||''},LicenseShortName:{value:p.isPublicDomain?'Public Domain / Open Access':'Права уточняйте у музея'}},mime:'image/jpeg',large:p.primaryImage||p.primaryImageSmall,thumb:p.primaryImageSmall||p.primaryImage,preview:p.primaryImageSmall||p.primaryImage,source:p.objectURL||'https://www.metmuseum.org/',date:p.objectDate||'',license:p.isPublicDomain?'Public Domain / Open Access':'проверить у источника',provider:'THE MET'}));
+}
+async function searchInternetArchive(q){
+ const url='https://archive.org/advancedsearch.php?q='+encodeURIComponent('('+q+') AND mediatype:(image)')+'&fl[]=identifier,title,description,date,year&sort[]=downloads+desc&rows=30&page=1&output=json';const res=await fetch(url);if(!res.ok)throw Error('Internet Archive HTTP '+res.status);const data=await res.json();
+ return (data.response?.docs||[]).map(p=>{const id=p.identifier;if(!id)return null;const title=Array.isArray(p.title)?p.title[0]:p.title||id;const desc=Array.isArray(p.description)?p.description.join(' '):(p.description||'');const date=String(p.date||p.year||'');const image='https://archive.org/services/img/'+encodeURIComponent(id);return {key:'ia:'+id,title,meta:{ImageDescription:{value:desc},DateTimeOriginal:{value:date},LicenseShortName:{value:'Права уточняйте на странице объекта'}},mime:'image/jpeg',large:image,thumb:image,preview:image,source:'https://archive.org/details/'+encodeURIComponent(id),date,license:'проверить у источника',provider:'INTERNET ARCHIVE'};}).filter(Boolean);
 }
 async function loadArchive(){
- const token=++requestToken,q=query();
- $('resultcaption').textContent='Поиск по нескольким архивам: '+q;
- state('Ищем материалы в Wikimedia Commons и Library of Congress…',true);
- $('results').replaceChildren();
- $('commons').href='https://commons.wikimedia.org/w/index.php?search='+encodeURIComponent(q)+'&title=Special:MediaSearch&type=image';
- const jobs=await Promise.allSettled([searchCommons(q),searchLibraryOfCongress(q)]);
- if(token!==requestToken)return;
- const all=jobs.flatMap(x=>x.status==='fulfilled'?x.value:[]);
- const seen=new Set(),items=[];
- for(const item of all){const key=(item.title||'').toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,' ').trim();if(seen.has(item.key)||(!item.thumb&&!item.large))continue;seen.add(item.key);items.push(item);}
- if(!items.length){state('Материалы не найдены или архивы временно недоступны. '+jobs.map((x,i)=>(i?'Library of Congress':'Wikimedia Commons')+': '+(x.status==='rejected'?(x.reason?.message||'ошибка'):'0 результатов')).join(' · '));return;}
- $('state').hidden=true;
- let status=$('resultsStatus');if(!status){status=document.createElement('div');status.id='resultsStatus';status.className='results-status';$('results').before(status);}
- const ok=jobs.filter(x=>x.status==='fulfilled').length;
- status.textContent='Найдено '+items.length+' материалов · источников ответило '+ok+'/2 · Commons '+(jobs[0].status==='fulfilled'?jobs[0].value.length:'ошибка')+' · Library of Congress '+(jobs[1].status==='fulfilled'?jobs[1].value.length:'ошибка');
- const frag=document.createDocumentFragment();for(const item of items)frag.append(buildArchiveCard(item));if(token===requestToken)$('results').append(frag);
+ const token=++requestToken,q=query();$('resultcaption').textContent='Поиск по четырём архивным источникам: '+q;state('Ищем материалы в нескольких архивах…',true);$('results').replaceChildren();$('commons').href='https://commons.wikimedia.org/w/index.php?search='+encodeURIComponent(q)+'&title=Special:MediaSearch&type=image';
+ const providers=[['Wikimedia Commons',searchCommons],['Library of Congress',searchLibraryOfCongress],['The Met',searchMet],['Internet Archive',searchInternetArchive]];
+ const jobs=await Promise.allSettled(providers.map(([,fn])=>fn(q)));if(token!==requestToken)return;
+ const all=jobs.flatMap(x=>x.status==='fulfilled'?x.value:[]),seen=new Set(),items=[];
+ for(const item of all){const normalized=(item.title||'').toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,' ').trim();if(seen.has(item.key)||(!item.thumb&&!item.large))continue;seen.add(item.key);if(normalized&&items.some(x=>(x.title||'').toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,' ').trim()===normalized&&(x.date||'').slice(0,4)===(item.date||'').slice(0,4)))continue;items.push(item);}
+ let status=$('resultsStatus');if(!status){status=document.createElement('div');status.id='resultsStatus';status.className='results-status';$('results').before(status);}const ok=jobs.filter(x=>x.status==='fulfilled').length;
+ status.textContent='Источники: '+ok+'/'+providers.length+' · '+providers.map(([name],i)=>name+': '+(jobs[i].status==='fulfilled'?jobs[i].value.length:'временно недоступен')).join(' · ');
+ if(!items.length){state('Материалы пока не найдены. Повтори поиск позже — сбой одного архива не влияет на остальные.',true);return;}
+ $('state').hidden=true;const frag=document.createDocumentFragment();for(const item of items)frag.append(buildArchiveCard(item));if(token===requestToken)$('results').append(frag);
 }
-
 document.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>setYear(b.dataset.year)));$('range').addEventListener('input',e=>setYear(e.target.value));document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>setPlace(b.dataset.place,b.dataset.lat,b.dataset.lon)));$('searchForm').addEventListener('submit',searchPlace);$('explore').addEventListener('click',loadArchive);$('loadCities').addEventListener('click',loadGermanCities);$('cityFilter').addEventListener('input',renderCities);$('stateFilter').addEventListener('change',renderCities);
 const random=[['Rome',41.9028,12.4964],['London',51.5072,-.1276],['Cairo',30.0444,31.2357],['Kyiv',50.4501,30.5234],['Pforzheim',48.8922,8.6946],['San Francisco',37.7749,-122.4194],['Istanbul',41.0082,28.9784]];$('random').addEventListener('click',()=>{const p=random[Math.floor(Math.random()*random.length)];setPlace(...p);});
 function close(){ $('modal').hidden=true;}$('about').addEventListener('click',()=>$('modal').hidden=false);$('close').addEventListener('click',close);$('ok').addEventListener('click',close);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))close();});
