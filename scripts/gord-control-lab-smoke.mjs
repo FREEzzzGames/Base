@@ -79,7 +79,7 @@ assert.ok(html.includes("const passiveDamage=108+38*10+state.magicPower*.6"), "V
 assert.ok(html.includes("valirFireball:true"), "Valir Burst Fireball must have a dedicated impact handler");
 assert.ok(html.includes("s.valirUltBuff=3"), "Valir Vengeance Flame must enhance three subsequent skills");
 assert.ok(html.includes("t.valirStacks>=3"), "Valir passive must trigger on the third stack");
-assert.ok(html.includes("state.cooldowns[0]=0"), "Valir fireball hits must refresh its charge");
+assert.ok(html.includes("s.cooldowns[0]=0"), "Valir fireball hits must refresh its charge");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
