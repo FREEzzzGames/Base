@@ -50,8 +50,8 @@ function renderCities(){
 }
 function selectCity(city){
  selectedCity=city.name;setPlace(city.name,city.lat,city.lon,true);if(map)map.setZoom(11,{animate:true});
- cityMarkers.forEach((m,name)=>{m.setStyle({fillColor:cityColor(name),color:name===selectedCity?'#fff0e8':'#071018',radius:name===selectedCity?9:5,weight:name===selectedCity?2:1});});
- const m=cityMarkers.get(city.name);if(m)m.openPopup();
+ cityMarkers.forEach((m,key)=>{const active=key===city.name+'|'+city.country;m.setStyle({fillColor:active?'#ffb703':'#67e8f9',color:active?'#fff0e8':'#071018',radius:active?9:4,weight:active?2:1});});
+ const m=cityMarkers.get(city.name+'|'+city.country);if(m)m.openPopup();
  $('cityHint').textContent=city.name+' · '+city.population.toLocaleString('ru-RU')+' жителей · '+city.state+'. Выбранный город подсвечен на карте. Нажми «Исследовать архив», чтобы загрузить реальные материалы.';
  renderCities();$('map').scrollIntoView({behavior:'smooth',block:'center'});
 }
