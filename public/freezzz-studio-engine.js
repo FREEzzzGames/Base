@@ -103,3 +103,56 @@ export function scorePattern({ style = 'detroit', kick = [], snare = [], hats = 
     total: Math.round(clamp(anchorScore * 100 - densityPenalty * 35, 0, 100)),
   };
 }
+
+/** Genre canon data: abstract constraints, not claims of a single universal techno theory. */
+export const TECHNO_THEORY = Object.freeze({
+  meter: { numerator: 4, denominator: 4, subdivisionsPerBar: 16, kickRole: "pulse anchor", phraseBars: [4, 8, 16, 32] },
+  production: { targetPeakDbfs: -1, defaultHeadroomDb: 6, monoLowBelowHz: 120, recommendedSampleRate: [44100, 48000] },
+  genres: {
+    detroit: { bpm: [128,138], swing: [0,12], kickDensity: [4,4], notes: "Machine pulse, syncopated secondary motifs, restrained layers." },
+    minimal: { bpm: [124,134], swing: [0,12], kickDensity: [4,4], notes: "Sparse, repetition-led, small changes, strong negative space." },
+    rave: { bpm: [136,145], swing: [0,8], kickDensity: [4,4], notes: "Driving four-on-floor, bright repeating synth motifs, controlled fills." },
+    industrial: { bpm: [138,150], swing: [0,6], kickDensity: [4,6], notes: "Hard transient focus, metallic secondary rhythm, limited tonal clutter." },
+    schranz: { bpm: [150,165], swing: [0,4], kickDensity: [8,8], notes: "Fast persistent kick, dense offbeat energy, sparse tonal lead." },
+    hard: { bpm: [145,160], swing: [0,8], kickDensity: [4,6], notes: "Heavy pulse, short motifs, strong section contrast." },
+    acid: { bpm: [132,148], swing: [0,10], kickDensity: [4,4], notes: "Repeating resonant-sequence contour, small cutoff/resonance movement." },
+    dub: { bpm: [118,132], swing: [4,18], kickDensity: [2,2], notes: "Space, offbeat accents, long decays, restrained low-end." },
+    melodic: { bpm: [120,132], swing: [0,8], kickDensity: [4,4], notes: "Motif and harmonic arc, controlled dissonance and resolution." },
+  },
+});
+
+export function makeChordProgression({ style = "melodic", scale = "minor", rootMidi = 48, seed = 1, bars = 8 } = {}) {
+  const random = seededRandom(seed);
+  const notes = chooseScale(scale);
+  const progressions = style === "melodic" || style === "rave"
+    ? [[0,5,2,6],[0,3,5,4],[0,6,3,4]]
+    : style === "dub" || style === "minimal"
+      ? [[0,0,3,0],[0,5,0,4],[0,0,4,3]]
+      : style === "acid"
+        ? [[0,0,0,5],[0,3,0,6],[0,0,5,0]]
+        : [[0,0,5,0],[0,3,0,4],[0,0,3,0]];
+  const chosen = progressions[Math.floor(random() * progressions.length)];
+  const count = clamp(Math.round(bars), 1, 32);
+  return Array.from({length: count}, (_, bar) => {
+    const degree = chosen[bar % chosen.length] % notes.length;
+    const third = notes[(degree + 2) % notes.length];
+    const fifth = notes[(degree + 4) % notes.length];
+    return [rootMidi + notes[degree], rootMidi + third, rootMidi + fifth];
+  });
+}
+
+export function validateArrangement({ bpm = 130, style = "detroit", steps = 80, swing = 0 } = {}) {
+  const canon = TECHNO_THEORY.genres[style] || TECHNO_THEORY.genres.detroit;
+  const issues = [];
+  if (bpm < canon.bpm[0] || bpm > canon.bpm[1]) issues.push("tempo-outside-style-range");
+  if (steps % 16 !== 0) issues.push("phrase-not-bar-aligned");
+  if (swing < canon.swing[0] || swing > canon.swing[1]) issues.push("swing-outside-style-range");
+  return { valid: issues.length === 0, issues, bars: steps / 16, meter: "4/4" };
+}
+
+/** Equal-power stereo panning coefficients. pan is normalized to [-1, 1]. */
+export function equalPowerPan(pan = 0) {
+  const p = clamp(pan, -1, 1);
+  const angle = (p + 1) * Math.PI / 4;
+  return { left: Math.cos(angle), right: Math.sin(angle) };
+}
