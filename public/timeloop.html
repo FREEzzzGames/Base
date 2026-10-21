@@ -22,6 +22,11 @@
 .archive-folder{font:10px var(--mono);color:#89a4b0;letter-spacing:.04em;margin:18px 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line)}
 .archive-folder strong{color:var(--cyan);font-weight:400}
 @media(max-width:540px){.archive-tools{padding:10px}.archive-tools-row{flex-direction:column;align-items:stretch}.archive-tools input,.archive-tools select{width:100%}.archive-category{padding:8px 9px}}
+
+.archive-library-actions{display:flex;gap:8px;flex-wrap:wrap}
+.archive-library-actions button{border:1px solid #31505d;background:#0c202a;color:var(--text);padding:9px 12px;font:9px var(--mono);cursor:pointer}
+.archive-library-actions button:hover{border-color:var(--cyan);color:var(--cyan)}
+.archive-library-actions button.primary{border-color:var(--cyan);color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -37,6 +42,7 @@
  <div class="archive-tools-row"><input id="archiveFilter" type="search" placeholder="Поиск по названию, автору, месту…"><select id="sourceFilter"><option value="">Все источники</option></select><select id="sortFilter"><option value="relevance">Порядок источников</option><option value="date">Сначала по дате</option><option value="title">По названию</option></select></div>
  <div class="archive-categories" id="archiveCategories" aria-label="Каталоги изображений"></div>
  <div class="cityhint" id="archiveCount">Каталоги появятся после поиска</div>
+ <div class="archive-library-actions"><button type="button" class="primary" id="saveArchiveResults">СОХРАНИТЬ В КАТАЛОГ</button><button type="button" id="showArchiveLibrary">МОЯ БИБЛИОТЕКА</button><button type="button" id="showCurrentSearch">РЕЗУЛЬТАТЫ ПОИСКА</button></div>
  </div><div class="grid" id="results"></div></section>
 <section class="bottom"><div><span class="stripicon">⌁</span><div><b>Каждый кадр — след времени</b><small>Фото · документы · фильмы · цифровые коллекции</small></div></div><span class="stripnote">TIMELOOP / BASE MODULE</span></section>
 </main><footer><span>TIMELOOP — VISUAL HISTORY ENGINE</span><span>КАРТА © OPENSTREETMAP · МЕДИА WIKIMEDIA COMMONS</span></footer>
@@ -114,6 +120,7 @@ async function loadGermanCities(){
  finally{button.disabled=false;button.textContent=cityLoaded?'МИРОВЫЕ ГОРОДА ГОТОВЫ ✓':'ПОВТОРИТЬ ЗАГРУЗКУ ↻';}
 }
 function setYear(v){year=Number(v);$('year').textContent=year;$('range').value=year;$('archiveFilter')?.addEventListener('input',renderArchiveCatalog);$('sourceFilter')?.addEventListener('change',renderArchiveCatalog);$('sortFilter')?.addEventListener('change',renderArchiveCatalog);
+$('saveArchiveResults')?.addEventListener('click',saveCurrentArchiveResults);$('showArchiveLibrary')?.addEventListener('click',showSavedArchive);$('showCurrentSearch')?.addEventListener('click',showCurrentArchiveResults);
 document.querySelectorAll('[data-year]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.year)===year));const e=eras.reduce((a,b)=>Math.abs(b[0]-year)<Math.abs(a[0]-year)?b:a,eras[0]);$('eratitle').textContent=e[1];$('eratext').textContent=e[2];$('period').textContent=e[3];}
 function setPlace(name,a,b,zoom=true){place=name;lat=Number(a);lon=Number(b);$('place').value=name;$('mapcaption').textContent=name.toUpperCase()+' · '+lat.toFixed(4)+'° / '+lon.toFixed(4)+'°';if(map){if(zoom)map.flyTo([lat,lon],5,{duration:.6});marker.setLatLng([lat,lon]);marker.setPopupContent('<b>'+escapeHtml(name)+'</b><br>Выбранная точка исследования');}}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -199,6 +206,26 @@ const archiveCategories=[
 ];
 let archiveItems=[],activeArchiveCategory='all';
 function archiveDescription(item){const m=item.meta||{};return [item.title,m.ImageDescription?.value,m.Artist?.value,m.ObjectName?.value,item.date,item.provider].map(x=>stripHtml(String(x||''))).join(' ');}
+const archiveLibraryKey='timeloop-photo-library-v1';
+function readArchiveLibrary(){try{const data=JSON.parse(localStorage.getItem(archiveLibraryKey)||'[]');return Array.isArray(data)?data:[];}catch(_){return [];}}
+function persistArchiveLibrary(items){try{localStorage.setItem(archiveLibraryKey,JSON.stringify(items));return true;}catch(_){return false;}}
+function saveCurrentArchiveResults(){
+ if(!archiveItems.length){$('archiveCount').textContent='Сначала выполни поиск архивных материалов.';return;}
+ const library=readArchiveLibrary(),known=new Set(library.map(x=>x.key)),city=selectedCity||$('place')?.value||'Общий каталог';
+ let added=0;
+ for(const item of archiveItems){if(known.has(item.key))continue;const category=archiveCategories.find(x=>x.id===activeArchiveCategory)||archiveCategories[0];library.push({key:item.key,title:item.title,meta:item.meta||{},mime:item.mime||'',large:item.large||'',thumb:item.thumb||'',preview:item.preview||'',source:item.source||'',date:item.date||'',license:item.license||'',provider:item.provider||'Архив',description:item.description||archiveDescription(item),savedAt:new Date().toISOString(),city,categoryId:category.id,categoryLabel:category.label});known.add(item.key);added++;}
+ if(!persistArchiveLibrary(library)){$('archiveCount').textContent='Не удалось сохранить: хранилище браузера заполнено. Удали часть материалов или сохрани меньше изображений.';return;}
+ $('archiveCount').textContent='В библиотеку добавлено '+added+' материалов. Всего сохранено: '+library.length+'. Город: '+city+'. Данные доступны в этом браузере.';
+}
+function showSavedArchive(){
+ const library=readArchiveLibrary();archiveItems=library.map(x=>({...x,description:x.description||archiveDescription(x)}));activeArchiveCategory='all';
+ const sf=$('sourceFilter');sf.replaceChildren(new Option('Все источники',''));[...new Set(archiveItems.map(x=>x.provider).filter(Boolean))].sort().forEach(p=>sf.add(new Option(p,p)));
+ $('archiveFilter').value='';$('resultcaption').textContent='МОЯ БИБЛИОТЕКА · '+library.length+' сохранённых материалов';
+ $('archiveCategories').replaceChildren();
+ for(const category of archiveCategories){const count=category.id==='all'?archiveItems.length:archiveItems.filter(category.test).length;const btn=document.createElement('button');btn.type='button';btn.className='archive-category'+(activeArchiveCategory===category.id?' active':'');btn.textContent=category.label+' · '+count;btn.addEventListener('click',()=>{activeArchiveCategory=category.id;showSavedArchive();});$('archiveCategories').append(btn);}
+ renderArchiveCatalog();$('archiveCount').textContent='Постоянная локальная библиотека: '+library.length+' материалов. Хранится в этом браузере.';
+}
+function showCurrentArchiveResults(){ $('archiveFilter').value='';if(!archiveItems.length){$('archiveCount').textContent='Сначала выполни поиск архивных материалов.';return;}renderArchiveCatalog();}
 function setupArchiveFolders(items,jobs,providers){
  archiveItems=items.map(item=>({...item,description:archiveDescription(item)}));
  const sf=$('sourceFilter'),current=sf.value;sf.replaceChildren(new Option('Все источники',''));
