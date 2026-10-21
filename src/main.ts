@@ -494,6 +494,7 @@ function render(){
         ${homeCard("radio")}
         ${homeCard("library")}
         ${homeCard("earth")}
+        <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
       </div>`;
   }
 
