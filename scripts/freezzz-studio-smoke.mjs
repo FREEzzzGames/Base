@@ -27,10 +27,10 @@ for (const required of [
   "const STYLE_CANONS", "const CANON_MOTIFS", "function makeSixteen()", "function buildUniqueVariation()",
   "function generate()", "function setupAudio()", "function ensureTrack(", "createStereoPanner",
   "createDynamicsCompressor", "function renderTimeline()", "function buildPans()", "randTempoMode",
-  "randStructure", "id=\"master\"", "id=\"width\"", "id=\"generatePlay\"", "id=\"play\"", "id=\"stop\""
+  "randStructure", "const SONG_REFERENCES", "function makeOriginalMelody(", "function populateSongCatalog()", "id=\"songRef\"", "id=\"songSearch\"", "id=\"voiceTone\"", "createStereoPanner", "id=\"master\"", "id=\"width\"", "id=\"generatePlay\"", "id=\"play\"", "id=\"stop\""
 ]) assert.ok(html.includes(required), "Missing generator or stereo playback capability: " + required);
 
-for (const removed of ["id=\"loadSamples\"", "id=\"userSampleFiles\"", "id=\"loadLibrarySound\"", "id=\"save\"", "id=\"scenes\""])
+for (const removed of ["id=\"loadSamples\"", "id=\"userSampleFiles\"", "id=\"loadLibrarySound\"", "id=\"save\"", "id=\"scenes\"", "id=\"userSampleFiles\""])
   assert.ok(!html.includes(removed), "Non-core feature should be removed: " + removed);
 
 assert.match(js, /\$\('generate'\)\.onclick/);
