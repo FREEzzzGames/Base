@@ -632,7 +632,7 @@ function homeCard(v:Exclude<View,"home">){
     library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
-  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",earth:T("earth")};
+  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",};
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
