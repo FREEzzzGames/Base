@@ -73,6 +73,7 @@ function closestTarget(p){let best=null,bd=Infinity;for(const t of state.targets
 function addFx(x,y,color,life=.28,r=12){state.effects.push({x,y,color,life,max:life,r});}
 const MAGES=[
 {id:"alice",name:"Alice",role:"Вампиризм",skills:["Flowing Blood","Blood Awe","Blood Ode"],types:["bolt","zone","burst"],damage:[30,12,8]},
+{id:"bane",name:"Bane",role:"Магический залп",skills:["Shark Bite","Ale","Deadly Catch"],types:["burst","zone","summon"],damage:[24,14,20]},
 {id:"aurora",name:"Aurora",role:"Заморозка",skills:["Frost Shock","Bitter Frost","Cold Destruction"],types:["bolt","zone","burst"],damage:[34,14,9]},
 {id:"cecilion",name:"Cecilion",role:"Дальний урон",skills:["Bat Impact","Sanguine Claws","Bats Feast"],types:["bolt","zone","orb"],damage:[38,11,12]},
 {id:"chang-e",name:"Chang'e",role:"Залп",skills:["Starmoon Shockwave","Crescent Moon","Meteor Shower"],types:["bolt","summon","beam"],damage:[22,10,5]},
@@ -80,10 +81,12 @@ const MAGES=[
 {id:"eudora",name:"Eudora",role:"Взрывной урон",skills:["Forked Lightning","Ball Lightning","Thunder's Wrath"],types:["burst","bolt","burst"],damage:[25,35,62]},
 {id:"gord",name:"Gord",role:"Луч и зоны",skills:["Mystic Projectile","Mystic Injunction","Mystic Gush"],types:["bolt","zone","beam"],damage:[35,8,7]},
 {id:"harith",name:"Harith",role:"Мобильность",skills:["Synchro Fission","Chrono Dash","Zaman Force"],types:["burst","dash","zone"],damage:[26,24,8]},
+{id:"guinevere",name:"Guinevere",role:"Магический контроль",skills:["Energy Wave","Spatial Migration","Violet Requiem"],types:["bolt","dash","burst"],damage:[28,24,46]},
 {id:"harley",name:"Harley",role:"Комбо",skills:["Poker Trick","Space Escape","Deadly Magic"],types:["bolt","dash","orb"],damage:[22,18,45]},
 {id:"kadita",name:"Kadita",role:"Рывок и волны",skills:["Ocean Oddity","Breath of the Ocean","Rough Waves"],types:["dash","zone","burst"],damage:[30,22,48]},
 {id:"kagura",name:"Kagura",role:"Зонтик",skills:["Seimei Umbrella Open","Rasho Umbrella Flee","Yin Yang Overturn"],types:["bolt","dash","burst"],damage:[31,18,42]},
 {id:"kimmy",name:"Kimmy",role:"Поток выстрелов",skills:["Energy Transformation","Chemical Refinement","Maximum Charge"],types:["bolt","zone","bolt"],damage:[16,9,45]},
+{id:"julian",name:"Julian",role:"Комбо навыков",skills:["Scythe","Sword","Chain"],types:["bolt","dash","zone"],damage:[32,26,18]},
 {id:"lunox",name:"Lunox",role:"Свет и хаос",skills:["Starlight Pulse","Chaos Assault","Order & Chaos"],types:["orb","bolt","burst"],damage:[12,38,48]},
 {id:"lylia",name:"Lylia",role:"Мины",skills:["Magic Shockwave","Shadow Energy","Black Shoes"],types:["bolt","zone","burst"],damage:[28,16,38]},
 {id:"luo-yi",name:"Luo Yi",role:"Инь-ян",skills:["Dispersion","Rotation","Diversion"],types:["bolt","zone","summon"],damage:[34,14,10]},
