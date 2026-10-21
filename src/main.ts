@@ -860,7 +860,6 @@ function bind(){
   });
 
 
-  document.querySelectorAll<HTMLElement>('.earth-module [data-view="home"]').forEach(button=>button.addEventListener("click",()=>portalEvents.emit("navigation:changed",{view:"home"})));
   document.querySelectorAll<HTMLElement>(".portal-toolbar [data-view]").forEach(function(x){
     x.onclick=function(e){
           e.preventDefault();
