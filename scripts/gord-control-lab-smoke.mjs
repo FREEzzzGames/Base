@@ -40,6 +40,11 @@ assert.ok(html.includes("auroraFrozenZone:true"), "Aurora's second skill must cr
 assert.ok(html.includes("auroraGlacier:true"), "Aurora's ultimate must grow and detonate a glacier");
 assert.ok(html.includes("state.auroraPassiveCooldown=150"), "Aurora's fatal-damage passive must have a 150-second cooldown");
 assert.ok(html.includes('id="testPassive"'), "Aurora's survival passive must be manually testable in the lab");
+assert.ok(html.includes("cecilionBat:true"), "Cecilion's Bat Impact must travel along a path and detonate at its destination");
+assert.ok(html.includes("cecilionClaws:true"), "Cecilion's Sanguine Claws must pull and immobilize targets");
+assert.ok(html.includes("cecilionFeast:true"), "Cecilion's ultimate must fire repeated nearby-target bolts");
+assert.ok(html.includes("state.cecilionMaxMana+=10"), "Cecilion's Overflowing passive must increase maximum mana on skill hits");
+assert.ok(html.includes('id="cecilionMana"'), "Cecilion's mana growth must be visible in the HUD");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
