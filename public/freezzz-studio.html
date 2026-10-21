@@ -10,7 +10,7 @@
 .tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;position:sticky;top:0;z-index:50;padding:8px;background:#070b12;border-bottom:1px solid var(--line)}
 .tabbar button{padding:11px 4px;font-size:12px;border-radius:8px}
 .tabbar button.active{background:#063f39;border-color:var(--cyan);color:var(--cyan);font-weight:800}
-.tab-view{display:none;min-width:0}.tab-view.active{display:grid;gap:10px}
+.tab-view{display:none;min-width:0;grid-column:1/-1}.tab-view.active{display:grid;gap:10px}
 .app{padding-bottom:94px}
 .sticky-transport{position:fixed;z-index:60;bottom:0;left:0;right:0;background:#101923f5;border-top:1px solid #31515e;padding:9px 12px calc(9px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;box-shadow:0 -6px 24px #0008}
 .sticky-transport button{min-width:88px}.sticky-transport #status{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -284,10 +284,10 @@ function setupStudioTabs(){
   Object.entries(views).forEach(([key,el])=>el.classList.toggle('active',key===btn.dataset.tab));
   if(btn.dataset.tab==='playview')renderTimeline();
  }));
- $('globalPlay').onclick=()=>{if(!timer)play();else{stop();play()}};
+ $('globalPlay').onclick=play;
  $('globalStop').onclick=stop;
  const originalStatus=$('status');
- const sync=()=>{if($('globalStatus'))$('globalStatus').textContent=originalStatus.textContent};
+ const sync=()=>{if($('globalStatus'))$('globalStatus').textContent=originalStatus.textContent;if($('globalPlay'))$('globalPlay').textContent=timer?'Ⅱ PAUSE':'▶ PLAY'};
  const observer=new MutationObserver(sync);observer.observe(originalStatus,{childList:true,characterData:true,subtree:true});sync();
 }
 
