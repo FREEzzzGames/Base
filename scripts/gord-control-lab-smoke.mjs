@@ -58,6 +58,11 @@ assert.ok(html.includes("cyclopsDisk:true"), "Cyclops Stardust Shock must fire t
 assert.ok(html.includes("cyclopsSphere:true"), "Cyclops Planets Attack must use homing spheres");
 assert.ok(html.includes("cyclopsUlt:true"), "Cyclops ultimate must lock and track its selected target");
 assert.ok(html.includes("state.cooldowns[i]=Math.max(0,state.cooldowns[i]-.5)"), "Cyclops passive must reduce all skill cooldowns on hits");
+assert.ok(html.includes("nanaBoomerang:true"), "Nana Magic Boomerang must return to its caster");
+assert.ok(html.includes("nanaMolina:true"), "Nana Molina Smooch must chase and transform a target");
+assert.ok(html.includes("nanaUlt:true"), "Nana ultimate must strike the same area three times");
+assert.ok(html.includes("state.nanaCooldown=150"), "Nana's survival passive must use a 150-second cooldown");
+assert.ok(html.includes("state.nanaTransform=2"), "Nana must become invulnerable and unable to cast after fatal damage");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
