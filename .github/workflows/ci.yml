@@ -179,6 +179,9 @@ jobs:
           echo "LOCAL_PORTAL_VIDEOS_OK"
           ls -lh dist/videos/*.mp4
 
+      - name: TIMELOOP tabs and inline JavaScript smoke
+        run: node scripts/timeloop-smoke.mjs
+
       - name: Release smoke
         env:
           EXPECTED_BUILD: ${{ github.sha }}
