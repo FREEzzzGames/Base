@@ -133,7 +133,7 @@ function resize(){const r=canvas.getBoundingClientRect();state.dpr=Math.min(wind
 function spawnTargets(){state.targets=[];const w=state.w,h=state.h;for(let i=0;i<4;i++)state.targets.push({x:w*(.2+i*.2),y:h*(.22+(i%2)*.14),r:13,hp:100,max:100,phase:i*1.8,alive:true,respawn:0,statuses:{},marks:{}});}
 function say(t){ui.toast.textContent=t;}
 function takePlayerDamage(amount){
- const p=state.player;if(state.auroraInvuln>0)return 0;if(currentMage().id==='chang-e'&&state.changEShield>0){state.changEShield=Math.max(0,state.changEShield-amount);if(state.changEShield>0){say('Crescent Moon · щит '+Math.round(state.changEShield));updateStats();return amount;}state.changEAttackBuff=0;say('Crescent Moon · щит разрушен');amount=Math.max(0,amount-(state.changEShieldMax||0));}
+ const p=state.player;if(state.auroraInvuln>0)return 0;if(currentMage().id==='chang-e'&&state.changEShield>0){const shieldBefore=state.changEShield;state.changEShield=Math.max(0,shieldBefore-amount);if(state.changEShield>0){say('Crescent Moon · щит '+Math.round(state.changEShield));updateStats();return amount;}state.changEAttackBuff=0;say('Crescent Moon · щит разрушен');amount=Math.max(0,amount-shieldBefore);}
  if(currentMage().id==='aurora'&&amount>=p.hp&&state.auroraPassiveCooldown<=0){state.auroraPassiveCooldown=150;state.auroraInvuln=1.5;p.hp=1;addFx(p.x,p.y,'#b7f4ff',1.5,68);sparkBurst(p.x,p.y,'#b7f4ff',26,120);say('Pride of Ice · неуязвимость и восстановление 30% HP');updateStats();return amount;}
  p.hp=Math.max(0,p.hp-amount);updateStats();return amount;
 }
