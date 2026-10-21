@@ -45,6 +45,11 @@ assert.ok(html.includes("cecilionClaws:true"), "Cecilion's Sanguine Claws must p
 assert.ok(html.includes("cecilionFeast:true"), "Cecilion's ultimate must fire repeated nearby-target bolts");
 assert.ok(html.includes("state.cecilionMaxMana+=10"), "Cecilion's Overflowing passive must increase maximum mana on skill hits");
 assert.ok(html.includes('id="cecilionMana"'), "Cecilion's mana growth must be visible in the HUD");
+assert.ok(html.includes("changEWave:true"), "Chang'e S1 must use shield-dependent multi-sphere projectiles");
+assert.ok(html.includes("changEMeteorShower:true"), "Chang'e ultimate must fire timed meteor projectiles");
+assert.ok(html.includes("t.changEMarks=Math.min(20"), "Chang'e passive marks must stack to 20");
+assert.ok(html.includes("state.changEShield=300+state.magicPower*1.5"), "Chang'e Crescent Moon must grant a shield");
+assert.ok(html.includes("id==='chang-e'&&state.changEShield>0"), "Chang'e shield must absorb incoming damage");
 
 const heroIds = [...script.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map((match) => match[1]);
 assert.ok(heroIds.length >= 30, `Expected at least 30 hero profiles, found ${heroIds.length}`);
