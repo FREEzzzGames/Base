@@ -264,4 +264,26 @@ assert.ok(lab.state.nanaTransform > 0, "Nana Molina's Gift must prevent fatal da
 step(2);
 assert.ok(lab.state.player.hp >= 100, "Nana passive must restore 10% max HP over two seconds");
 
+lab.selectMage("harith");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(1, 0, { x: 300, y: 420 });
+step(0.5);
+assert.ok(t.hp < 10000, "Harith Synchro Fission must damage the line and collision area");
+lab.selectMage("harith");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(2, 0, { x: 260, y: 420 });
+assert.ok(lab.state.harithShield > 0, "Harith Chrono Dash must grant a shield");
+assert.equal(lab.state.harithEnhancedAttack, 1, "Harith Chrono Dash must arm an enhanced basic attack");
+lab.basicAttack();
+assert.equal(lab.state.harithEnhancedAttack, 0, "Harith enhanced basic attack must be consumed");
+assert.ok(lab.state.cooldowns[1] < lab.state.cdMax[1], "Harith enhanced attack must refund Chrono Dash cooldown");
+lab.selectMage("harith");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(3, 0, { x: 230, y: 420 });
+assert.ok(lab.state.harithUltTimer > 0, "Harith Zaman Force must create a timed rift");
+assert.ok(t.statuses.slow, "Harith Zaman Force must slow targets in its rift");
+
 console.log("GORD_CONTROL_LAB_RUNTIME_OK Gord/Alice/Bane/Aurora/Cecilion mechanics passed");
