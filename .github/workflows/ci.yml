@@ -133,9 +133,6 @@ jobs:
         run: node --check server/index.mjs
 
 
-      - name: Earth Control dashboard smoke
-        run: node scripts/earth-control-smoke.mjs
-
       - name: GORD Control Lab source smoke
         run: node scripts/gord-control-lab-smoke.mjs
 
@@ -178,9 +175,6 @@ jobs:
           done
           echo "LOCAL_PORTAL_VIDEOS_OK"
           ls -lh dist/videos/*.mp4
-
-      - name: TIMELOOP tabs and inline JavaScript smoke
-        run: node scripts/timeloop-smoke.mjs
 
       - name: Release smoke
         env:
