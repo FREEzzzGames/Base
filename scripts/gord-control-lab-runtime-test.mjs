@@ -220,4 +220,24 @@ const beforeThunderburst = t.hp;
 step(0.9);
 assert.ok(t.hp < beforeThunderburst, "Eudora Thunder's Wrath must trigger delayed Thunderburst on a marked target");
 
+lab.selectMage("cyclops");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(1, 0, { x: 300, y: 420 });
+step(0.12);
+assert.ok(t.hp < 10000, "Cyclops Stardust Shock must hit with its disks");
+assert.ok(lab.state.cooldowns[0] < lab.state.cdMax[0], "Cyclops passive must refund cooldown on skill hits");
+lab.selectMage("cyclops");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(2, 0, { x: 230, y: 420 });
+step(0.5);
+assert.ok(t.hp < 10000, "Cyclops Planets Attack spheres must home onto a target");
+lab.selectMage("cyclops");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(3, 0, { x: 230, y: 420 });
+step(0.5);
+assert.ok(t.statuses.root, "Cyclops ultimate must immobilize its locked target");
+
 console.log("GORD_CONTROL_LAB_RUNTIME_OK Gord/Alice/Bane/Aurora/Cecilion mechanics passed");
