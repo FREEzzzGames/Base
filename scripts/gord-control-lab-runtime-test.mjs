@@ -286,4 +286,28 @@ lab.castSkill(3, 0, { x: 230, y: 420 });
 assert.ok(lab.state.harithUltTimer > 0, "Harith Zaman Force must create a timed rift");
 assert.ok(t.statuses.slow, "Harith Zaman Force must slow targets in its rift");
 
+lab.selectMage("harley");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(1, 0, { x: 300, y: 420 });
+assert.equal(lab.state.shots.filter((shot) => shot.harleyCard).length, 9, "Harley Poker Trick must throw nine cards across three waves");
+step(0.2);
+assert.ok(t.hp < 10000, "Harley Poker Trick cards must damage the first target hit");
+lab.selectMage("harley");
+resetTargets(target(230, 420));
+const hatX = lab.state.player.x;
+lab.castSkill(2, 0, { x: 260, y: 420 });
+assert.equal(lab.state.harleyHat.x, hatX, "Harley Space Escape must leave a hat at the starting position");
+lab.castSkill(2, 0, { x: 300, y: 420 });
+assert.equal(lab.state.player.x, hatX, "Harley Space Escape recast must return to the hat");
+lab.selectMage("harley");
+t = target(230, 420);
+resetTargets(t);
+lab.castSkill(3, 0, { x: 230, y: 420 });
+assert.ok(t.harleyRingTimer > 0, "Harley Deadly Magic must attach a timed damage ring");
+const hpBeforeRing = t.hp;
+lab.hitTarget(t, 100, 1);
+step(4.1);
+assert.ok(t.hp < hpBeforeRing - 100, "Harley ring must detonate with accumulated damage");
+
 console.log("GORD_CONTROL_LAB_RUNTIME_OK Gord/Alice/Bane/Aurora/Cecilion mechanics passed");
