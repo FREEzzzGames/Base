@@ -101,6 +101,7 @@ const lab = window.__labTest;
 assert.ok(lab, "test hook must expose runtime");
 const target = (x, y, hp = 10000) => ({ x, y, r: 13, hp, max: hp, phase: 0, alive: true, respawn: 0, statuses: {}, marks: {} });
 const resetTargets = (...targets) => { lab.state.targets = targets; lab.state.movingTargets = false; lab.state.player.x = 180; lab.state.player.y = 420; lab.state.player.face = 0; };
+const step = (seconds) => { const frames = Math.ceil(seconds / 0.033); for (let i = 0; i < frames; i++) lab.update(seconds / frames); };
 
 lab.selectMage("gord");
 let t = target(230, 420), t2 = target(255, 420);
@@ -128,7 +129,7 @@ t = target(220, 420);
 resetTargets(t);
 lab.castSkill(3, 0, { x: 220, y: 420 });
 assert.equal(lab.state.aliceUltCharge.life, 1.5, "Alice ultimate must begin with a 1.5s charge");
-lab.update(1.6);
+step(1.6);
 assert.ok(t.statuses.root, "Alice ultimate must immobilize targets on impact");
 
 lab.selectMage("bane");
@@ -157,7 +158,7 @@ assert.ok(t.hp < 10000, "Aurora Hailstone Blast must impact the target area");
 lab.selectMage("aurora");
 lab.takePlayerDamage(lab.state.player.hp + 1);
 assert.ok(lab.state.auroraInvuln > 0, "Aurora passive must prevent fatal damage");
-lab.update(1.5);
+step(1.5);
 assert.ok(lab.state.player.hp >= 300, "Aurora passive must restore 30% max HP");
 
 lab.selectMage("cecilion");
