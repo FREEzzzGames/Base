@@ -171,3 +171,13 @@ This document is project context, not a replacement for the actual implementatio
 - Mobile layout uses a single-column panel stack at phone widths; the portal navigation has seven destinations and the stylesheet reserves seven tab columns.
 - The coordinates displayed are Pforzheim-area coordinates and align with the weather query. The globe is illustrative, not a live satellite image. Satellite positions/count remain explicitly unavailable until a validated live orbital feed is integrated.
 - The astronomical values are approximate visual estimates, not precision ephemerides. Device-level Telegram WebView behavior and external Open-Meteo reachability require runtime verification.
+
+## 16. GORD CONTROL LAB fidelity standard (2026-10-21)
+
+- Treat original Mobile Legends: Bang Bang skill demonstrations and current in-game behavior as the reference of truth for the standalone `public/gord-control-lab.html` simulator.
+- Before implementing or changing a hero skill, inspect current official hero information and patch notes, then compare against original gameplay/skill showcase footage when available. Community guides may corroborate numeric values, but must not replace original footage for animation timing, trajectories, hit areas, or cast behavior.
+- Record per skill: cast/charge time, projectile path and speed, bounce/targeting rules, area and hit timing, duration/tick count, steering/recast behavior, crowd control, cooldown, damage formula, and visual/audio cues where observable.
+- Separate verified behavior from approximation. Do not describe a hero or skill as 99% faithful until its mechanics and animation have been compared against references and validated in the simulator; report gaps explicitly.
+- Implement skill-specific visuals rather than applying one generic burst to every ability. Preserve per-hero palettes only as a fallback; projectile trails, impact flashes, sparks, area telegraphs, beam width/steering, and animation timing should follow the reference skill.
+- Validate each change in this order: reference comparison → mechanic implementation → visual timing/effects → JavaScript syntax → automated build/CI → published URL and Android/Telegram runtime. CI success alone does not prove touch behavior or visual fidelity.
+- Current source links to start with: official MLBB hero database `https://www.mobilelegends.com/en/hero`, official patch notes `https://www.mobilelegends.com/news/patch-notes`; use official hero videos where available and cross-check current stats against a dated specialist guide.
