@@ -182,29 +182,6 @@ function generateUniquePattern(){
  $('status').textContent='DJ GROOVE · '+result.style.toUpperCase()+' · '+key.toUpperCase();
 }
 
-function buildUniqueVariation(){
- let base,key,tries=0;do{base=makeSixteen();key=patternHash(base);tries++}while(key===generatedPatternKey&&tries<20);
- generatedPatternKey=key;const out={};TYPES.forEach(t=>out[t.id]=Array.from({length:80},(_,i)=>base[t.id][i%16]));
- const style=$('randStyle').value,mood=$('randMood').value,structure=$('randStructure').value,v=+$('randVariation').value;
- for(let phrase=1;phrase<5;phrase++)for(let b=0;b<16;b++){
-  const i=phrase*16+b,mutate=(id,prob)=>{if(Math.random()<prob)out[id][i]=!out[id][i]},amount=(v-1)*.035;
-  mutate('hat',amount);mutate('perc',amount*1.4);mutate('bass',amount);mutate('synth',amount*.8);
-  if(structure==='evolving'&&phrase===1&&b%4===3)out.perc[i]=out.perc[i]||Math.random()<.22;
-  if(structure==='evolving'&&phrase===2&&b%8===7)out.fx[i]=true;
-  if(structure==='breaks'&&phrase===3){if(b<8){out.kick[i]=false;if(Math.random()<.5)out.hat[i]=false}if(b===7||b===15)out.fx[i]=true}
-  if(structure!=='steady'&&phrase===4&&b%4===3&&Math.random()<.4)out.perc[i]=true;
-  if(style==='schranz'&&b%2===0&&Math.random()<.12)out.kick[i]=true;
-  if(style==='acid'&&[2,6,10,14].includes(b)&&Math.random()<.25)out.synth[i]=true;
-  if(mood==='hypnotic'&&Math.random()<.12)out.perc[i]=false;
- }
- return {out,key};
-}
-function generateUniquePattern(){
- const {out,key}=buildUniqueVariation();TYPES.forEach(t=>pattern[t.id]=out[t.id].slice());
- scenes[currentScene]=JSON.parse(JSON.stringify(pattern));renderTimeline();renderBlocks();renderScenes();
- $('randomizerSummary').textContent='VARIATION '+key.toUpperCase()+' · 12 GROOVE FAMILIES · 80 STEPS';
- $('status').textContent='NEW VARIATION · '+key.toUpperCase();
-}
 function smartRandomize(){
  const style=$('randStyle').value, moodValue=$('randMood').value;
  const profile=style==='auto'?Object.values(RANDOM_PROFILES)[randInt(0,Object.keys(RANDOM_PROFILES).length-1)]:RANDOM_PROFILES[style];
