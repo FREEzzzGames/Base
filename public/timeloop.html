@@ -103,7 +103,7 @@ workspace.remove();hero.after(tabNav,tabViews);
 function activateTab(id,opts={}) {
   if(!panels[id])return;
   tabs.forEach(([key])=>{const b=$('tl-tab-'+key);b.setAttribute('aria-selected',String(key===id));b.tabIndex=key===id?0:-1;panels[key].hidden=key!==id;});
-  if(id==='map'&&window.map&&typeof window.map.invalidateSize==='function')setTimeout(()=>window.map.invalidateSize(),80);
+  if(id==='map'&&map&&typeof map.invalidateSize==='function')setTimeout(()=>map.invalidateSize(),80);
   if(opts.scroll!==false)tabNav.scrollIntoView({behavior:'smooth',block:'start'});
 }
 tabNav.addEventListener('click',e=>{const b=e.target.closest('[role="tab"]');if(b)activateTab(b.id.replace('tl-tab-',''));});
