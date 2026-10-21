@@ -138,3 +138,10 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added RU/DE/EN localization for the dashboard and its portal entry; weather labels now use Open-Meteo weather codes rather than only showing day/night.
 - Expanded the bottom navigation grid to seven destinations so EARTH is not clipped on narrow devices.
 - The GitHub Actions run for the latest commit must pass typecheck, lint, architecture/interaction smoke, build and release smoke before this change is treated as released. Telegram-device visual and API checks are still required.
+
+## 2026-10-21 GORD CONTROL LAB fidelity requirement
+
+- Established a source-first standard for hero mechanics and skill animation: official MLBB hero data/patch notes first, original skill showcase/gameplay footage for trajectories, timing, hit areas and visual cues, with dated specialist guides used only for corroboration.
+- The latest generic flash/spark pass is a visual foundation, **not** proof of high-fidelity implementation. Per-skill mechanics and visuals still require reference-by-reference work and verification.
+- Do not claim “99% similarity” until each skill has been compared and remaining differences are documented. JavaScript syntax and CI success do not establish runtime or animation fidelity.
+- Reference starting points: [official hero database](https://www.mobilelegends.com/en/hero), [official patch notes](https://www.mobilelegends.com/news/patch-notes), and specialist current-data guide pages linked from the simulator.
