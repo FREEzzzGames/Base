@@ -6,6 +6,7 @@ import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
+import { handleEconomyRoute } from "./economy-api.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
