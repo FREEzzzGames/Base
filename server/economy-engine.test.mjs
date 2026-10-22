@@ -10,12 +10,12 @@ test("buy and sell transactions balance player credits, inventory and treasury",
   assert.equal(buy.total, 60);
   assert.equal(player.credits, before - 60);
   assert.equal(player.inventory.food, 5);
-  assert.equal(world.treasury, 60);
+  assert.equal(world.treasury, 1_000_060);
   const sell = trade(world, { playerId: "p1", good: "food", side: "sell", quantity: 2 });
   assert.equal(sell.total, 24);
   assert.equal(player.inventory.food, 3);
   assert.equal(player.credits, before - 36);
-  assert.equal(world.treasury, 36);
+  assert.equal(world.treasury, 1_000_036);
 });
 
 test("invalid or unaffordable trades fail without mutating state", () => {
