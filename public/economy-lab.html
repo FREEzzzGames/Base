@@ -39,7 +39,9 @@ const GOODS=[
 {id:"materials",name:"Материалы",base:13,need:.6,sector:"Сырьё",color:"#b8a0ff",energy:.25,material:.15}
 ];
 const $=id=>document.getElementById(id);
-let state,timer=null,seed=314159;\nconst SAVE_KEY="freezzz:economy-lab:save:v1";\nlet saveNotice="";
+let state,timer=null,seed=314159;
+const SAVE_KEY="freezzz:economy-lab:save:v1";
+let saveNotice="";
 function rng(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
 function makeState(scenario="balanced"){
  seed=314159;
