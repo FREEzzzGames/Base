@@ -141,3 +141,51 @@ export async function handleEconomyRoute(req, url, playerId, sendJson, origin) {
     return sendJson(null, status, { ok: false, error: code }, origin);
   }
 }
+
+
+let economyTimer = null;
+export function startEconomyScheduler() {
+  if (!pool || economyTimer) return;
+  const runTick = async () => {
+    try {
+      await ensureSchema();
+      const worlds = await pool.query("SELECT id FROM economy_worlds ORDER BY id");
+      for (const item of worlds.rows) {
+        const client = await pool.connect();
+        try {
+          await client.query("BEGIN");
+          const selected = await client.query("SELECT state FROM economy_worlds WHERE id=$1 FOR UPDATE", [item.id]);
+          if (!selected.rowCount) { await client.query("COMMIT"); continue; }
+          const world = selected.rows[0].state;
+          const players = await client.query(
+            "SELECT telegram_user_id,display_name,credits,inventory FROM economy_players WHERE world_id=$1",
+            [item.id]
+          );
+          for (const row of players.rows) {
+            const player = registerPlayer(world, { id: row.telegram_user_id, name: row.display_name, credits: Number(row.credits) });
+            player.inventory = { ...player.inventory, ...row.inventory };
+          }
+          const tickResult = advanceWorld(world);
+          await client.query(
+            "UPDATE economy_worlds SET tick=$2,seed=$3,treasury=$4,state=$5::jsonb,updated_at=now() WHERE id=$1",
+            [item.id, world.tick, world.seed, world.treasury, JSON.stringify(world)]
+          );
+          await client.query(
+            "INSERT INTO economy_transactions(world_id,telegram_user_id,tick,side,details) VALUES($1,'system',$2,'tick',$3::jsonb)",
+            [item.id, world.tick, JSON.stringify(tickResult)]
+          );
+          await client.query("COMMIT");
+        } catch (error) {
+          await client.query("ROLLBACK").catch(() => {});
+          console.error("economy world tick failed", item.id, error?.message || error);
+        } finally {
+          client.release();
+        }
+      }
+    } catch (error) {
+      console.error("economy scheduler failed", error?.message || error);
+    }
+  };
+  economyTimer = setInterval(runTick, 60_000);
+  economyTimer.unref?.();
+}
