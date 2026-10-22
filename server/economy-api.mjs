@@ -69,7 +69,14 @@ async function withWorld(worldId, playerId, callback) {
         [worldId, playerId, player.name, player.credits, JSON.stringify(player.inventory)]
       );
     }
+    const ledgerStart = world.ledger.length;
     const result = await callback(world, client);
+    for (const entry of world.ledger.slice(ledgerStart)) {
+      await client.query(
+        "INSERT INTO economy_transactions(world_id,telegram_user_id,tick,side,good,quantity,unit_price,total,details) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)",
+        [worldId, String(entry.playerId || playerId), entry.tick, ["buy","sell","tick","tax"].includes(entry.type) ? entry.type : "tick", entry.good || null, entry.quantity || null, entry.unitPrice || null, entry.total || null, JSON.stringify(entry)]
+      );
+    }
     const player = world.players[playerId];
     await client.query(
       "UPDATE economy_players SET credits=$3,inventory=$4::jsonb,updated_at=now() WHERE world_id=$1 AND telegram_user_id=$2",
