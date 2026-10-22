@@ -492,6 +492,13 @@ function render(){
         ${homeCard("game")}
         ${homeCard("radio")}
         ${homeCard("library")}
+        <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
+          ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
+          <span class="home-card-background-overlay" aria-hidden="true"></span>
+          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(24px,5vw,44px)!important;letter-spacing:.12em">OSIRIS</span>
+          <span style="position:absolute;left:13px;bottom:13px;z-index:3;color:#8ceeff;font-size:11px;letter-spacing:1.5px">AI LIVE · GLOBAL SITUATIONAL MONITOR</span>
+          <span style="position:absolute;right:13px;bottom:11px;z-index:3;color:#fff;font-size:12px">OPEN ↗</span>
+        </a>
         <a class="card home-card portal-block home-studio" href="./freezzz-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">BLOCK SEQUENCER · AUDIO LAB</span></a>
         <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
       </div>`;
