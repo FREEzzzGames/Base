@@ -1,44 +1,185 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080d12"><title>ECONOMY LAB · FREEzzz</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d12">
+<title>ECONOMY LAB · FREEzzz</title>
 <style>
-:root{color-scheme:dark;--bg:#080d12;--panel:#0d171f;--line:#203540;--cyan:#66fcf1;--green:#9dff75;--amber:#ffbf69;--muted:#9bb0bb}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#102832 0,transparent 45%),var(--bg);color:#eaf5f7;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:920px;margin:auto;padding:20px 14px 44px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.back{border:1px solid var(--line);padding:8px 12px;border-radius:9px;color:#eaf5f7}.eyebrow{font:11px ui-monospace,monospace;letter-spacing:.18em;color:var(--cyan)}h1{font-size:clamp(28px,6vw,48px);line-height:1.04;margin:9px 0 12px;letter-spacing:-.04em}h2{font-size:18px;margin:0 0 12px}p{color:var(--muted);margin:8px 0}.lead{max-width:700px;font-size:15px}.status{display:inline-flex;gap:7px;align-items:center;border:1px solid #27533e;background:#10271d;color:var(--green);padding:5px 9px;border-radius:99px;font-size:11px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.panel,.repo{border:1px solid var(--line);background:linear-gradient(145deg,rgba(14,27,35,.96),rgba(8,14,20,.96));border-radius:13px;padding:15px;min-width:0}.panel h2{color:var(--cyan)}.repo{display:flex;flex-direction:column;gap:7px}.repo-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.repo h3{font-size:15px;margin:0}.license{white-space:nowrap;font:10px ui-monospace,monospace;border:1px solid #39505a;border-radius:5px;padding:3px 5px;color:var(--amber)}.tags{display:flex;flex-wrap:wrap;gap:5px}.tag{font-size:10px;color:#c0d4db;border:1px solid #29404b;border-radius:5px;padding:3px 6px}.section{margin-top:26px}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:590px;font-size:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--cyan);background:#0e1b23}td{color:#c5d5da}tr:last-child td{border-bottom:0}.note{border-left:3px solid var(--amber);padding:10px 12px;background:#201a12;color:#d7c7ad;border-radius:0 8px 8px 0}.steps{counter-reset:step;display:grid;gap:9px}.step{counter-increment:step;display:grid;grid-template-columns:30px 1fr;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0b141b}.step:before{content:counter(step,decimal-leading-zero);font:12px ui-monospace,monospace;color:var(--cyan);padding-top:2px}.foot{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:#6f8994}@media(max-width:620px){.grid{grid-template-columns:1fr}.wrap{padding:14px 11px 34px}.repo-head{align-items:flex-start}}
+:root{color-scheme:dark;--bg:#080d12;--panel:#0e1921;--line:#263c47;--cyan:#66fcf1;--green:#a6ff83;--amber:#ffc36e;--red:#ff7474;--muted:#9db1bb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#102832 0,transparent 48%),var(--bg);color:#eaf5f7;font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,select{font:inherit}button{cursor:pointer}.wrap{max-width:1120px;margin:auto;padding:16px 12px 42px}.top,.row,.metrics,.controls,.tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.top{justify-content:space-between;margin-bottom:22px}.back,.btn,.select{border:1px solid var(--line);border-radius:8px;background:#101d26;color:#eaf5f7;padding:9px 12px;text-decoration:none}.btn.primary{background:#12312f;border-color:#2b817b;color:var(--cyan)}.btn:disabled{opacity:.4;cursor:default}.eyebrow{font:11px ui-monospace,monospace;letter-spacing:.17em;color:var(--cyan)}h1{font-size:clamp(28px,5vw,44px);line-height:1.05;margin:8px 0;letter-spacing:-.035em}h2{font-size:17px;margin:0 0 12px}h3{font-size:14px;margin:0}p{color:var(--muted);margin:6px 0}.lead{max-width:780px;font-size:14px}.status{font:11px ui-monospace,monospace;border:1px solid #27533e;background:#10271d;color:var(--green);padding:5px 9px;border-radius:99px}.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:18px 0}.metric,.panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(14,27,35,.97),rgba(8,14,20,.97));border-radius:12px;padding:13px;min-width:0}.metric small{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;font-size:clamp(18px,3vw,25px);margin-top:4px}.metric .delta{font-size:10px;color:var(--green)}.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.8fr);gap:10px}.panel h2{color:var(--cyan)}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.market{border:1px solid var(--line);border-radius:9px;padding:10px;background:#0a131a}.market-top{display:flex;justify-content:space-between;gap:6px}.price{font-size:20px;font-weight:700}.up{color:var(--green)}.down{color:var(--red)}.bar{height:5px;background:#1b2b34;border-radius:9px;overflow:hidden;margin:9px 0 4px}.bar span{display:block;height:100%;background:var(--cyan)}.muted{color:var(--muted)}.small{font-size:11px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:9px}table{border-collapse:collapse;width:100%;min-width:530px;font-size:12px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{color:var(--cyan);background:#101e27;font-weight:600}td{color:#c9d9de}tr:last-child td{border-bottom:0}.badge{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:2px 5px;font-size:10px}.log{display:grid;gap:6px;max-height:250px;overflow:auto}.log-item{border-left:2px solid #31535e;padding:5px 8px;background:#0a131a;font-size:11px;color:#c2d4da}.log-item.warn{border-color:var(--amber)}.log-item.good{border-color:var(--green)}canvas{display:block;width:100%;height:180px}.chart-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.controls{margin-top:14px}.footer{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:#78909a}.full{grid-column:1/-1}.tabs{margin:14px 0}.tab{background:transparent;border:1px solid var(--line);border-radius:7px;padding:7px 10px;color:var(--muted)}.tab.active{border-color:var(--cyan);color:var(--cyan);background:#10252a}.section-hidden{display:none}.notice{padding:10px 12px;border-left:3px solid var(--amber);background:#211b12;color:#d8c9af;border-radius:0 7px 7px 0;font-size:12px;margin-top:10px}
+@media(max-width:760px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric:last-child{grid-column:span 2}.layout{grid-template-columns:1fr}.full{grid-column:auto}.market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:12px 10px 32px}}@media(max-width:390px){.market-grid{grid-template-columns:1fr}.metric strong{font-size:19px}}
 </style></head>
 <body><main class="wrap">
-<div class="top"><a class="back" href="./index.html">← FREEzzz Base</a><span class="eyebrow">RESEARCH MODULE / 01</span></div>
-<div class="eyebrow">FREEzzz · ECONOMY LAB</div><h1>Экономический<br>движок</h1>
-<p class="lead">Исследовательский блок для создания экономической симуляции на базе уже существующих открытых моделей. Сначала аудит исходников и лицензий, затем адаптация и проверяемое расширение — без переписывания готовых алгоритмов без необходимости.</p>
-<div class="status">● РЕЖИМ: ИССЛЕДОВАНИЕ И АУДИТ</div>
-<div class="grid">
-<section class="panel"><h2>01 / Агентная экономика</h2><p>Компании, домохозяйства, работники, банки и государство. Сравниваем правила поведения и взаимодействия, а не только итоговые формулы.</p></section>
-<section class="panel"><h2>02 / Производство и рынок</h2><p>Рецептуры, ограничения ресурсов, спрос и предложение, сделки, запасы, цены и логистика. Отдельно проверяем баланс каждого ресурса.</p></section>
-<section class="panel"><h2>03 / Макроэкономика</h2><p>Инфляция, кредит, инвестиции, занятость, рост и кризисы как результаты взаимодействия микроэкономических агентов.</p></section>
-<section class="panel"><h2>04 / Проверяемость</h2><p>Тесты инвариантов, воспроизводимые сценарии, журнал решений и измерения производительности. Ни одна механика не принимается только потому, что выглядит правдоподобно.</p></section>
-</div>
-<div class="section"><h2>Кандидаты для повторного использования</h2><p>Предварительный отбор по назначению и публичным метаданным GitHub. Это ещё не полный построчный аудит кода.</p>
-<div class="grid">
-<article class="repo"><div class="repo-head"><h3><a href="https://github.com/kganitis/bam-engine" target="_blank" rel="noopener">BAM Engine ↗</a></h3><span class="license">MIT</span></div><p>Python · агентная макроэкономика · ECS и векторизация NumPy.</p><div class="tags"><span class="tag">компании</span><span class="tag">рынки</span><span class="tag">производительность</span></div><p><b>Проверить:</b> жизненный цикл агентов, торговые правила, тесты, скорость и переносимость логики в браузерный стек.</p></article>
-<article class="repo"><div class="repo-head"><h3><a href="https://github.com/uwol/computational-economy" target="_blank" rel="noopener">Computational Economy ↗</a></h3><span class="license">GPL-3.0</span></div><p>Java · агентная вычислительная экономика с макроравновесием из микроэкономического поведения.</p><div class="tags"><span class="tag">фабрики</span><span class="tag">домохозяйства</span><span class="tag">финансы</span></div><p><b>Проверить:</b> реализацию рынков и равновесия. GPL требует отдельной оценки совместимости до включения кода в распространяемый продукт.</p></article>
-<article class="repo"><div class="repo-head"><h3><a href="https://github.com/mesa/mesa" target="_blank" rel="noopener">Mesa ↗</a></h3><span class="license">Apache-2.0</span></div><p>Python · инструментарий агентного моделирования, расписание, сбор метрик и эксперименты.</p><div class="tags"><span class="tag">прототипы</span><span class="tag">эксперименты</span><span class="tag">метрики</span></div><p><b>Роль:</b> исследовательский стенд и сравнительное тестирование моделей, а не автоматически готовое ядро браузерной игры.</p></article>
-<article class="repo"><div class="repo-head"><h3><a href="https://github.com/google/or-tools" target="_blank" rel="noopener">Google OR-Tools ↗</a></h3><span class="license">Apache-2.0</span></div><p>C++ и языковые API · оптимизация ограниченных задач.</p><div class="tags"><span class="tag">производство</span><span class="tag">поставки</span><span class="tag">распределение</span></div><p><b>Роль:</b> проверенный оптимизатор для планирования. Не подменяет модель рынка и требует оценки интеграции в целевую среду.</p></article>
-</div></div>
-<div class="section"><h2>Матрица технического аудита</h2><div class="tablewrap"><table><thead><tr><th>Подсистема</th><th>Что найти в исходниках</th><th>Критерий приёмки</th></tr></thead><tbody>
-<tr><td>Агенты</td><td>Состояния компаний, домохозяйств, банков; правила принятия решений</td><td>Явные переходы состояний, воспроизводимость</td></tr>
-<tr><td>Производство</td><td>Рецептуры, ресурсы, мощность, брак и издержки</td><td>Нельзя произвести больше, чем позволяют ресурсы и мощность</td></tr>
-<tr><td>Рынок</td><td>Заявки, сопоставление, цены, дефицит и конкуренция</td><td>Нет двойной продажи и отрицательных запасов</td></tr>
-<tr><td>Финансы</td><td>Доходы, долги, проценты, налоги и банкротства</td><td>Балансируемый реестр и объяснимые изменения денег</td></tr>
-<tr><td>Время</td><td>Порядок ходов, события, случайность, сохранение состояния</td><td>Повторный прогон даёт тот же результат при том же seed</td></tr>
-<tr><td>Тестирование</td><td>Unit-тесты, сценарии, CI, профилирование</td><td>Тесты ловят экономические нарушения, а не только ошибки типов</td></tr>
-</tbody></table></div></div>
-<div class="section"><h2>Порядок интеграции</h2><div class="steps">
-<div class="step"><div><b>Аудит репозиториев</b><p>Проверить LICENSE, зависимости, структуру, последние изменения, тесты и реальные алгоритмы в исходниках.</p></div></div>
-<div class="step"><div><b>Сравнение реализаций</b><p>Для каждой механики указать файл и функцию, алгоритм, тесты, ограничения и решение: переиспользовать, адаптировать или исключить.</p></div></div>
-<div class="step"><div><b>Изолированный прототип</b><p>Сначала проверить производство, торговлю и финансовый реестр на искусственном рынке; не подключать экспериментальный код к критическим функциям портала.</p></div></div>
-<div class="step"><div><b>Интеграция в Base</b><p>Добавлять в основной проект только проверенные компоненты через адаптеры и отдельные тесты. Интерфейс портала не должен зависеть от вычислительного ядра.</p></div></div>
-</div></div>
-<p class="note" style="margin-top:18px">Лицензия и открытость репозитория проверяются отдельно для каждой зависимости. До завершения аудита этот экран не заявляет, что алгоритмы уже перенесены или что симулятор готов.</p>
-<div class="foot">FREEzzz ECONOMY LAB · Research first · Reuse responsibly · Test every model</div>
-</main></body></html>
+<div class="top"><a class="back" href="./index.html">← FREEzzz Base</a><span class="eyebrow">ECONOMY LAB / SIMULATOR 0.1</span></div>
+<div class="eyebrow">AGENT-BASED ECONOMIC SANDBOX</div><h1>Экономический симулятор</h1>
+<p class="lead">Запускай экономику, наблюдай за рынками, управляй налогами и ставкой, сравнивай сценарии. Модель работает локально в браузере: компании производят товары, нанимают работников, платят зарплаты и налоги, покупатели формируют спрос, а цены реагируют на дефицит и избыток.</p>
+<div class="row" style="margin-top:12px"><span class="status" id="run-status">● ПАУЗА</span><span class="muted small">Время модели: <b id="clock">Месяц 0</b></span><span class="muted small">Seed: <b id="seed-label">314159</b></span></div>
+<div class="metrics" id="metrics"></div>
+<div class="panel" style="margin-bottom:10px"><div class="panel-head"><h2>Управление экономикой</h2><span class="small muted">Изменения вступают в силу со следующего месяца</span></div>
+<div class="controls"><button class="btn primary" id="run">▶ Запустить</button><button class="btn" id="step">+ 1 месяц</button><button class="btn" id="reset">↺ Сбросить</button><label class="small muted">Скорость <select id="speed" class="select"><option value="1200">Медленно</option><option value="650" selected>Нормально</option><option value="250">Быстро</option></select></label>
+<label class="small muted">Сценарий <select id="scenario" class="select"><option value="balanced">Сбалансированная экономика</option><option value="boom">Инвестиционный бум</option><option value="crisis">Кредитный кризис</option><option value="shortage">Дефицит энергии</option></select></label></div>
+<div class="controls"><label class="small muted">Налог на прибыль <b id="tax-value">18%</b><br><input id="tax" type="range" min="0" max="45" value="18"></label><label class="small muted">Ключевая ставка <b id="rate-value">4%</b><br><input id="rate" type="range" min="0" max="20" value="4"></label><label class="small muted">Госрасходы <b id="spend-value">100</b><br><input id="spend" type="range" min="0" max="250" value="100"></label></div></div>
+<div class="tabs"><button class="tab active" data-tab="overview">Обзор</button><button class="tab" data-tab="firms">Компании</button><button class="tab" data-tab="ledger">Бюджет и правила</button></div>
+<section id="overview" class="layout">
+<div class="panel"><div class="panel-head"><h2>Рынки товаров</h2><span class="small muted">Цена · спрос · предложение</span></div><div id="markets" class="market-grid"></div></div>
+<div class="panel"><div class="panel-head"><h2>Динамика экономики</h2><span class="small muted">История модели</span></div><canvas id="chart" width="700" height="250" aria-label="График динамики экономики"></canvas><div class="chart-legend"><span><i class="dot" style="background:#66fcf1"></i>Выпуск</span><span><i class="dot" style="background:#a6ff83"></i>Занятость</span><span><i class="dot" style="background:#ffc36e"></i>Индекс цен</span></div></div>
+<div class="panel"><div class="panel-head"><h2>Последние события</h2><span class="small muted">Журнал решений</span></div><div id="log" class="log"></div></div>
+<div class="panel"><div class="panel-head"><h2>Ключевые показатели</h2></div><div id="indicators"></div></div>
+</section>
+<section id="firms" class="section-hidden"><div class="panel"><div class="panel-head"><h2>Компании и производство</h2><span class="small muted">Состояние на текущий месяц</span></div><div class="table-wrap"><table><thead><tr><th>Компания</th><th>Сектор</th><th>Выпуск</th><th>Работники</th><th>Деньги</th><th>Долг</th><th>Статус</th></tr></thead><tbody id="firms-body"></tbody></table></div></div></section>
+<section id="ledger" class="section-hidden"><div class="layout"><div class="panel"><h2>Государственный бюджет</h2><div id="budget"></div></div><div class="panel"><h2>Правила модели</h2><p>• Компании планируют выпуск с учётом денег, цены ресурсов и спроса.</p><p>• Зарплаты и сырьё оплачиваются до продажи готового товара.</p><p>• Покупатели распределяют бюджет по товарам с учётом цены.</p><p>• Цены изменяются по разнице спроса и предложения с ограничением скачка за период.</p><p>• Проценты по долгу зависят от ключевой ставки; убытки уменьшают капитал и могут привести к закрытию фирмы.</p><p>• Государство собирает налог на прибыль и расходует бюджет на общественные закупки.</p><p class="small muted">Упрощённая игровая модель, не прогноз реальной экономики и не финансовый совет.</p></div></div></section>
+<div class="notice">Симулятор — самостоятельная игровая модель, а не исходный код Virtonomics. Показатели предназначены для экспериментов с экономическими правилами, а не для прогнозирования реальных рынков.</div>
+<div class="footer">FREEzzz ECONOMY LAB · Local simulation · Data stays in this browser session</div>
+</main>
+<script>
+(()=>{"use strict";
+const GOODS=[
+{id:"food",name:"Продукты",base:10,need:1.2,sector:"Агропром",color:"#66fcf1",energy:.15,material:.1},
+{id:"energy",name:"Энергия",base:8,need:1.0,sector:"Энергетика",color:"#a6ff83",energy:.05,material:.1},
+{id:"tools",name:"Оборудование",base:22,need:.38,sector:"Машиностроение",color:"#ffc36e",energy:.35,material:.4},
+{id:"materials",name:"Материалы",base:13,need:.6,sector:"Сырьё",color:"#b8a0ff",energy:.25,material:.15}
+];
+const $=id=>document.getElementById(id);
+let state,timer=null,seed=314159;
+function rng(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
+function makeState(scenario="balanced"){
+ seed=314159;
+ const firms=[
+ {name:"NordFarm",g:0,workers:18,cash:440,debt:60,eff:1.12,alive:true},
+ {name:"GreenFields",g:0,workers:14,cash:320,debt:25,eff:.96,alive:true},
+ {name:"VoltWorks",g:1,workers:17,cash:460,debt:80,eff:1.05,alive:true},
+ {name:"HelioGrid",g:1,workers:12,cash:280,debt:20,eff:1.15,alive:true},
+ {name:"IronPeak",g:2,workers:15,cash:420,debt:120,eff:1.08,alive:true},
+ {name:"MechNova",g:2,workers:13,cash:330,debt:70,eff:.92,alive:true},
+ {name:"StoneBridge",g:3,workers:19,cash:390,debt:90,eff:1.02,alive:true},
+ {name:"RawMatter",g:3,workers:11,cash:250,debt:15,eff:.94,alive:true}
+ ];
+ const prices=GOODS.map(x=>x.base);
+ const inventory=GOODS.map((g,i)=>firms.filter(f=>f.g===i).reduce((n,f)=>n+f.workers*f.eff*.8,0));
+ const s={month:0,scenario,firms,prices,inventory,demand:[0,0,0,0],supply:[0,0,0,0],gdp:0,prevGdp:0,employment:100,priceIndex:100,inflation:0,unemployment:0,treasury:700,debt:0,tax:18,rate:4,spend:100,history:[],logs:[],trade:0,closed:0};
+ if(scenario==="boom"){s.spend=150;firms.forEach(f=>f.cash*=1.25)}
+ if(scenario==="crisis"){s.rate=12;firms.forEach(f=>f.debt*=1.8);s.treasury=450}
+ if(scenario==="shortage"){s.prices[1]*=1.7;s.inventory[1]*=.45}
+ return s;
+}
+function log(msg,type=""){state.logs.unshift({month:state.month,msg,type});state.logs=state.logs.slice(0,28)}
+function money(n){return Math.round(n).toLocaleString("ru-RU")+" ¤"}
+function pct(n){return (n>=0?"+":"")+n.toFixed(1)+"%"}
+function step(){
+ const s=state,prevPrices=s.prices.slice(),oldGdp=s.gdp;
+ const supply=[0,0,0,0],produced=[0,0,0,0];let employed=0,profit=0,interestPaid=0,closedNow=0;
+ const interest=s.rate/1200;
+ // Production decisions: inputs and payroll are paid before output enters the market.
+ for(const f of s.firms){
+  if(!f.alive)continue;
+  const g=GOODS[f.g],price=s.prices[f.g],expectedDemand=Math.max(2,s.demand[f.g]||f.workers*1.15);
+  const stock=s.inventory[f.g]/Math.max(1,s.firms.filter(x=>x.alive&&x.g===f.g).length);
+  const target=Math.max(2,expectedDemand/(s.firms.filter(x=>x.alive&&x.g===f.g).length||1)*.9);
+  const cap=f.workers*f.eff*(s.scenario==="boom"?1.05:1);
+  let q=Math.max(0,Math.min(cap,target-stock*.18));
+  const inputCost=q*(g.energy*s.prices[1]+g.material*s.prices[3]);
+  const payroll=f.workers*(1.8+s.priceIndex/160);
+  const debtCost=f.debt*interest;
+  const totalCost=inputCost+payroll+debtCost;
+  if(f.cash<totalCost){q*=Math.max(.15,f.cash/Math.max(1,totalCost));f.workers=Math.max(2,Math.floor(f.workers*.93))}
+  f.cash-=Math.min(f.cash,inputCost+payroll+debtCost);
+  f.debt=Math.max(0,f.debt+debtCost*.12);interestPaid+=debtCost;
+  f.cash=Math.max(-80,f.cash);
+  produced[f.g]+=q;supply[f.g]+=q;s.inventory[f.g]+=q;employed+=f.workers;
+  const revenue=q*price*.92;
+  f.cash+=revenue;
+  const p=revenue-inputCost-payroll-debtCost;
+  profit+=p;
+  f.lastProfit=p;f.lastOutput=q;
+  if(f.cash < -65 && f.debt>f.workers*20){f.alive=false;s.closed++;closedNow++;s.treasury+=Math.max(0,f.cash+65);log(f.name+" закрылась: кассовый разрыв и долговая нагрузка.","warn")}
+  else if(p>0&&f.cash>payroll*2&&f.workers<30&&rng()<.12)f.workers++;
+  else if(p< -price*3&&f.workers>5&&rng()<.18)f.workers--;
+ }
+ // Household demand follows employment, wages, relative prices and public purchases.
+ const demand=[];
+ for(let i=0;i<GOODS.length;i++){
+  const g=GOODS[i],relative=s.prices[i]/g.base;
+  const publicDemand=i===1?s.spend*.08:i===0?s.spend*.18:s.spend*.025;
+  const baseNeed=(employed*.72+18)*g.need;
+  demand[i]=Math.max(1,baseNeed/Math.pow(Math.max(.35,relative),.68)+publicDemand+(s.scenario==="boom"?2:0));
+ }
+ // Market clearing: transactions are constrained by available stock and buyers' budgets.
+ let soldTotal=0;
+ for(let i=0;i<4;i++){
+  const sold=Math.min(s.inventory[i],demand[i]);s.inventory[i]=Math.max(0,s.inventory[i]-sold);soldTotal+=sold;
+  const imbalance=(demand[i]-supply[i])/Math.max(1,demand[i]+supply[i]);
+  let shock=0;
+  if(s.scenario==="shortage"&&i===1)shock=.035;
+  const change=Math.max(-.12,Math.min(.12,imbalance*.22+shock+(rng()-.5)*.018));
+  s.prices[i]=Math.max(GOODS[i].base*.25,Math.min(GOODS[i].base*4,s.prices[i]*(1+change)));
+ }
+ s.demand=demand;s.supply=supply;
+ // Fiscal accounting: profit tax, public spending and interest on sovereign debt.
+ const taxBase=Math.max(0,profit);
+ const taxRevenue=taxBase*s.tax/100;
+ const govInterest=s.debt*s.rate/1200;
+ s.treasury+=taxRevenue-s.spend-govInterest;
+ if(s.treasury<0){s.debt+=Math.abs(s.treasury)*.12;s.treasury=Math.max(-250,s.treasury)}
+ else if(s.debt>0){const repay=Math.min(s.debt,Math.max(0,s.treasury-350)*.08);s.debt-=repay;s.treasury-=repay}
+ s.prevGdp=oldGdp;s.gdp=produced.reduce((a,b,i)=>a+b*s.prices[i],0);
+ const oldIndex=s.priceIndex;
+ s.priceIndex=s.prices.reduce((a,p,i)=>a+p/GOODS[i].base*25,0);
+ s.inflation=(s.priceIndex-oldIndex)/Math.max(1,oldIndex)*100;
+ const totalWorkers=s.firms.reduce((a,f)=>a+(f.alive?f.workers:0),0);
+ s.employment=totalWorkers/119*100;s.unemployment=Math.max(0,100-s.employment);
+ s.trade=soldTotal;s.month++;
+ s.history.push({gdp:s.gdp,employment:s.employment,price:s.priceIndex});if(s.history.length>60)s.history.shift();
+ if(s.month===1)log("Рынки открылись. Компании получили первые производственные планы.","good");
+ if(s.inflation>4)log("Ускорение роста цен: "+pct(s.inflation)+". Проверьте дефицит и расходы.","warn");
+ if(s.inflation< -3)log("Общее снижение цен. Возможен избыток предложения.","warn");
+ if(closedNow)log("За месяц закрыто компаний: "+closedNow,"warn");
+ if(s.treasury<0)log("Бюджет дефицитный; государственный долг увеличивается.","warn");
+ if(s.month%6===0)log("Сводка месяца "+s.month+": выпуск "+money(s.gdp)+", занятость "+s.employment.toFixed(1)+"%.","good");
+ render();
+}
+function render(){
+ const s=state,avgPrice=s.priceIndex/100;
+ $("clock").textContent="Месяц "+s.month;
+ $("run-status").textContent=timer?"● СИМУЛЯЦИЯ ИДЁТ":"● ПАУЗА";
+ const gdpChange=s.prevGdp?((s.gdp-s.prevGdp)/s.prevGdp*100):0;
+ const active=s.firms.filter(f=>f.alive).length;
+ const cash=s.firms.filter(f=>f.alive).reduce((a,f)=>a+f.cash,0);
+ $("metrics").innerHTML=[
+ ["Выпуск / GDP",money(s.gdp),pct(gdpChange)],
+ ["Занятость",s.employment.toFixed(1)+"%","безработица "+s.unemployment.toFixed(1)+"%"],
+ ["Индекс цен",s.priceIndex.toFixed(1),pct(s.inflation)+" за месяц"],
+ ["Активные компании",active+" / "+s.firms.length,"закрыто "+s.closed],
+ ["Бюджет",money(s.treasury),"госдолг "+money(s.debt)]
+ ].map((x,i)=>'<div class="metric"><small>'+x[0]+'</small><strong>'+x[1]+'</strong><span class="delta">'+x[2]+'</span></div>').join("");
+ $("markets").innerHTML=GOODS.map((g,i)=>{
+  const ratio=s.demand[i]/Math.max(.1,s.supply[i]);const width=Math.max(4,Math.min(100,ratio*50));
+  return '<article class="market"><div class="market-top"><h3>'+g.name+'</h3><span class="badge">'+g.sector+'</span></div><div class="price">'+s.prices[i].toFixed(2)+' ¤</div><div class="bar"><span style="width:'+width+'%;background:'+g.color+'"></span></div><div class="row small"><span class="muted">Спрос '+s.demand[i].toFixed(1)+'</span><span class="muted">Запас '+s.inventory[i].toFixed(1)+'</span></div><div class="small '+(ratio>1.08?'up':ratio<.9?'down':'muted')+'">'+(ratio>1.08?'Дефицит':ratio<.9?'Избыток':'Рынок близок к балансу')+'</div></article>';
+ }).join("");
+ $("log").innerHTML=s.logs.slice(0,12).map(x=>'<div class="log-item '+x.type+'"><span class="muted">М'+x.month+'</span> · '+x.msg+'</div>').join("")||'<p>События появятся после первого шага.</p>';
+ $("indicators").innerHTML='<p>Суммарные деньги компаний <b>'+money(cash)+'</b></p><p>Объём сделок <b>'+s.trade.toFixed(1)+' ед.</b></p><p>Средняя цена <b>'+avgPrice.toFixed(2)+'×</b> от базового уровня</p><p>Ставка <b>'+s.rate+'%</b> · налог на прибыль <b>'+s.tax+'%</b></p><p>Суммарная прибыль/убыток компаний <b>'+money(s.firms.filter(f=>f.alive).reduce((a,f)=>a+(f.lastProfit||0),0))+'</b></p>';
+ $("firms-body").innerHTML=s.firms.map(f=>'<tr><td>'+f.name+'</td><td>'+GOODS[f.g].sector+'</td><td>'+(f.alive?(f.lastOutput||0).toFixed(1):'—')+'</td><td>'+(f.alive?f.workers:'0')+'</td><td>'+money(f.cash)+'</td><td>'+money(f.debt)+'</td><td><span class="badge" style="color:'+(f.alive?'#a6ff83':'#ff7474')+'">'+(f.alive?'Работает':'Закрыта')+'</span></td></tr>').join("");
+ $("budget").innerHTML='<p>Налоговые поступления за период <b>'+money(Math.max(0,s.firms.filter(f=>f.alive).reduce((a,f)=>a+(f.lastProfit||0),0))*s.tax/100)+'</b></p><p>Госрасходы за месяц <b>'+money(s.spend)+'</b></p><p>Процентные расходы (приблизительно) <b>'+money(s.debt*s.rate/1200)+'</b></p><p>Бюджетный баланс <b style="color:'+(s.treasury>=0?'#a6ff83':'#ff7474')+'">'+money(s.treasury)+'</b></p><p>Государственный долг <b>'+money(s.debt)+'</b></p><p>Фирмы с положительным денежным остатком <b>'+s.firms.filter(f=>f.alive&&f.cash>0).length+'</b> из '+s.firms.length+'</p>';
+ drawChart();
+}
+function drawChart(){
+ const c=$("chart"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.fillStyle="#0b141b";ctx.fillRect(0,0,w,h);
+ const hist=state.history;if(hist.length<2){ctx.fillStyle="#78909a";ctx.font="14px system-ui";ctx.fillText("Сделай первый шаг симуляции",18,35);return}
+ const series=[{key:"gdp",color:"#66fcf1"},{key:"employment",color:"#a6ff83"},{key:"price",color:"#ffc36e"}];
+ const vals=series.map(o=>hist.map(x=>x[o.key]));const ranges=vals.map(v=>[Math.min(...v),Math.max(...v)]);
+ ctx.strokeStyle="#203540";ctx.lineWidth=1;for(let j=1;j<5;j++){const y=j*h/5;ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(w-10,y);ctx.stroke()}
+ series.forEach((o,i)=>{const v=vals[i],lo=ranges[i][0],hi=ranges[i][1],range=hi-lo||1;ctx.strokeStyle=o.color;ctx.lineWidth=2;ctx.beginPath();v.forEach((n,k)=>{const x=30+k*(w-45)/(v.length-1),y=h-15-(n-lo)/range*(h-35);if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke()});
+}
+function stop(){if(timer){clearInterval(timer);timer=null} $("run").textContent="▶ Запустить";$("run-status").textContent="● ПАУЗА"}
+function start(){if(timer)return;timer=setInterval(step,Number($("speed").value));$("run").textContent="Ⅱ Пауза";$("run-status").textContent="● СИМУЛЯЦИЯ ИДЁТ"}
+$("run").addEventListener("click",()=>timer?stop():start());
+$("step").addEventListener("click",()=>{stop();step()});
+$("reset").addEventListener("click",()=>{stop();state=makeState($("scenario").value);state.tax=Number($("tax").value);state.rate=Number($("rate").value);state.spend=Number($("spend").value);log("Сценарий и начальные условия загружены.");render()});
+$("speed").addEventListener("change",()=>{if(timer){stop();start()}});
+$("scenario").addEventListener("change",()=>{$("reset").click()});
+$("tax").addEventListener("input",e=>{$("tax-value").textContent=e.target.value+"%";state.tax=Number(e.target.value);render()});
+$("rate").addEventListener("input",e=>{$("rate-value").textContent=e.target.value+"%";state.rate=Number(e.target.value);render()});
+$("spend").addEventListener("input",e=>{$("spend-value").textContent=e.target.value;state.spend=Number(e.target.value);render()});
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));["overview","firms","ledger"].forEach(id=>$(id).classList.toggle("section-hidden",id!==b.dataset.tab));if(b.dataset.tab==="overview")drawChart()}));
+state=makeState();state.tax=18;state.rate=4;state.spend=100;log("Модель инициализирована. Нажми «Запустить» или «+ 1 месяц».");render();
+window.addEventListener("beforeunload",stop);
+})();
+</script></body></html>
