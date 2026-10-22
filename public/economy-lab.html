@@ -9,13 +9,13 @@
 @media(max-width:760px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric:last-child{grid-column:span 2}.layout{grid-template-columns:1fr}.full{grid-column:auto}.market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:12px 10px 32px}}@media(max-width:390px){.market-grid{grid-template-columns:1fr}.metric strong{font-size:19px}}
 </style></head>
 <body><main class="wrap">
-<div class="top"><a class="back" href="./index.html">← FREEzzz Base</a><span class="eyebrow">ECONOMY LAB / SIMULATOR 0.1</span></div>
+<div class="top"><a class="back" href="./index.html">← FREEzzz Base</a><span class="eyebrow">ECONOMY LAB / SIMULATOR 0.2</span></div>
 <div class="eyebrow">AGENT-BASED ECONOMIC SANDBOX</div><h1>Экономический симулятор</h1>
 <p class="lead">Запускай экономику, наблюдай за рынками, управляй налогами и ставкой, сравнивай сценарии. Модель работает локально в браузере: компании производят товары, нанимают работников, платят зарплаты и налоги, покупатели формируют спрос, а цены реагируют на дефицит и избыток.</p>
 <div class="row" style="margin-top:12px"><span class="status" id="run-status">● ПАУЗА</span><span class="muted small">Время модели: <b id="clock">Месяц 0</b></span><span class="muted small">Seed: <b id="seed-label">314159</b></span></div>
 <div class="metrics" id="metrics"></div>
 <div class="panel" style="margin-bottom:10px"><div class="panel-head"><h2>Управление экономикой</h2><span class="small muted">Изменения вступают в силу со следующего месяца</span></div>
-<div class="controls"><button class="btn primary" id="run">▶ Запустить</button><button class="btn" id="step">+ 1 месяц</button><button class="btn" id="reset">↺ Сбросить</button><label class="small muted">Скорость <select id="speed" class="select"><option value="1200">Медленно</option><option value="650" selected>Нормально</option><option value="250">Быстро</option></select></label>
+<div class="controls"><button class="btn primary" id="run">▶ Запустить</button><button class="btn" id="step">+ 1 месяц</button><button class="btn" id="reset">↺ Сбросить</button><button class="btn" id="save">Сохранить</button><button class="btn" id="export">Экспорт JSON</button><button class="btn" id="import">Импорт JSON</button><input id="import-file" type="file" accept="application/json,.json" hidden><label class="small muted">Скорость <select id="speed" class="select"><option value="1200">Медленно</option><option value="650" selected>Нормально</option><option value="250">Быстро</option></select></label>
 <label class="small muted">Сценарий <select id="scenario" class="select"><option value="balanced">Сбалансированная экономика</option><option value="boom">Инвестиционный бум</option><option value="crisis">Кредитный кризис</option><option value="shortage">Дефицит энергии</option></select></label></div>
 <div class="controls"><label class="small muted">Налог на прибыль <b id="tax-value">18%</b><br><input id="tax" type="range" min="0" max="45" value="18"></label><label class="small muted">Ключевая ставка <b id="rate-value">4%</b><br><input id="rate" type="range" min="0" max="20" value="4"></label><label class="small muted">Госрасходы <b id="spend-value">100</b><br><input id="spend" type="range" min="0" max="250" value="100"></label></div></div>
 <div class="tabs"><button class="tab active" data-tab="overview">Обзор</button><button class="tab" data-tab="firms">Компании</button><button class="tab" data-tab="ledger">Бюджет и правила</button></div>
@@ -39,7 +39,7 @@ const GOODS=[
 {id:"materials",name:"Материалы",base:13,need:.6,sector:"Сырьё",color:"#b8a0ff",energy:.25,material:.15}
 ];
 const $=id=>document.getElementById(id);
-let state,timer=null,seed=314159;
+let state,timer=null,seed=314159;\nconst SAVE_KEY="freezzz:economy-lab:save:v1";\nlet saveNotice="";
 function rng(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
 function makeState(scenario="balanced"){
  seed=314159;
@@ -62,6 +62,38 @@ function makeState(scenario="balanced"){
  return s;
 }
 function log(msg,type=""){state.logs.unshift({month:state.month,msg,type});state.logs=state.logs.slice(0,28)}
+function serializableState(){return {schema:1,seed,exportedAt:new Date().toISOString(),state};}
+function saveState(showMessage=true){
+ try{localStorage.setItem(SAVE_KEY,JSON.stringify(serializableState()));saveNotice="Состояние сохранено в этом браузере.";if(showMessage)log(saveNotice,"good");return true}
+ catch(e){saveNotice="Не удалось сохранить: хранилище браузера недоступно.";if(showMessage)log(saveNotice,"warn");return false}
+}
+function validImportedState(v){
+ if(!v||v.schema!==1||!v.state||!Array.isArray(v.state.firms)||!Array.isArray(v.state.prices)||!Array.isArray(v.state.inventory))return false;
+ const s=v.state;
+ if(s.firms.length>200||s.prices.length!==GOODS.length||s.inventory.length!==GOODS.length)return false;
+ if(!Number.isFinite(s.month)||s.month<0||!s.firms.every(f=>typeof f.name==="string"&&Number.isInteger(f.g)&&f.g>=0&&f.g<GOODS.length&&Number.isFinite(f.cash)&&Number.isFinite(f.debt)))return false;
+ if(![...s.prices,...s.inventory].every(Number.isFinite))return false;
+ return true;
+}
+function restoreState(v){
+ if(!validImportedState(v))throw new Error("Файл не соответствует схеме сохранения Economy Lab.");
+ state=v.state;seed=Number.isInteger(v.seed)?v.seed>>>0:314159;
+ state.logs=Array.isArray(state.logs)?state.logs.slice(0,28):[];
+ state.history=Array.isArray(state.history)?state.history.slice(-60):[];
+ state.firms=state.firms.map(f=>({...f}));
+ $("tax").value=state.tax;$("tax-value").textContent=state.tax+"%";
+ $("rate").value=state.rate;$("rate-value").textContent=state.rate+"%";
+ $("spend").value=state.spend;$("spend-value").textContent=state.spend;
+ $("scenario").value=state.scenario||"balanced";$("seed-label").textContent=seed;
+ render();
+}
+function downloadJSON(){
+ const blob=new Blob([JSON.stringify(serializableState(),null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="freezzz-economy-save-m"+state.month+".json";a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ log("Сохранение экспортировано в JSON.","good");render();
+}
 function money(n){return Math.round(n).toLocaleString("ru-RU")+" ¤"}
 function pct(n){return (n>=0?"+":"")+n.toFixed(1)+"%"}
 function step(){
@@ -172,14 +204,28 @@ function stop(){if(timer){clearInterval(timer);timer=null} $("run").textContent=
 function start(){if(timer)return;timer=setInterval(step,Number($("speed").value));$("run").textContent="Ⅱ Пауза";$("run-status").textContent="● СИМУЛЯЦИЯ ИДЁТ"}
 $("run").addEventListener("click",()=>timer?stop():start());
 $("step").addEventListener("click",()=>{stop();step()});
-$("reset").addEventListener("click",()=>{stop();state=makeState($("scenario").value);state.tax=Number($("tax").value);state.rate=Number($("rate").value);state.spend=Number($("spend").value);log("Сценарий и начальные условия загружены.");render()});
+$("reset").addEventListener("click",()=>{stop();state=makeState($("scenario").value);state.tax=Number($("tax").value);state.rate=Number($("rate").value);state.spend=Number($("spend").value);log("Сценарий и начальные условия загружены.");saveState(false);render()});
+$("save").addEventListener("click",()=>{saveState(true);render()});
+$("export").addEventListener("click",downloadJSON);
+$("import").addEventListener("click",()=>$("import-file").click());
+$("import-file").addEventListener("change",async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;stop();
+ try{const parsed=JSON.parse(await file.text());restoreState(parsed);saveState(false);log("Сохранение импортировано.","good");render()}
+ catch(err){log("Импорт отклонён: "+(err instanceof Error?err.message:"неверный файл"),"warn");render()}
+ e.target.value="";
+});
+window.addEventListener("pagehide",()=>saveState(false));
 $("speed").addEventListener("change",()=>{if(timer){stop();start()}});
 $("scenario").addEventListener("change",()=>{$("reset").click()});
 $("tax").addEventListener("input",e=>{$("tax-value").textContent=e.target.value+"%";state.tax=Number(e.target.value);render()});
 $("rate").addEventListener("input",e=>{$("rate-value").textContent=e.target.value+"%";state.rate=Number(e.target.value);render()});
 $("spend").addEventListener("input",e=>{$("spend-value").textContent=e.target.value;state.spend=Number(e.target.value);render()});
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));["overview","firms","ledger"].forEach(id=>$(id).classList.toggle("section-hidden",id!==b.dataset.tab));if(b.dataset.tab==="overview")drawChart()}));
-state=makeState();state.tax=18;state.rate=4;state.spend=100;log("Модель инициализирована. Нажми «Запустить» или «+ 1 месяц».");render();
+state=makeState();state.tax=18;state.rate=4;state.spend=100;
+try{const saved=localStorage.getItem(SAVE_KEY);if(saved){const parsed=JSON.parse(saved);if(validImportedState(parsed)){restoreState(parsed);log("Автосохранение восстановлено.","good")}else log("Найдено повреждённое сохранение; загружены начальные условия.","warn")}}
+catch{log("Автосохранение недоступно; загружены начальные условия.","warn")}
+if(!state.month&&!state.logs.length)log("Модель инициализирована. Нажми «Запустить» или «+ 1 месяц».");
+$("seed-label").textContent=seed;render();
 window.addEventListener("beforeunload",stop);
 })();
 </script></body></html>
