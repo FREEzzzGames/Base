@@ -3,7 +3,7 @@ import vm from "node:vm";
 import assert from "node:assert/strict";
 
 const html = readFileSync("public/economy-lab.html", "utf8");
-const scripts = [...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/gi)];
+const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)];
 assert.equal(scripts.length, 1, "Economy Lab must have exactly one inline application script");
 const source = scripts[0][1];
 new vm.Script(source, { filename: "economy-lab.inline.js" });
