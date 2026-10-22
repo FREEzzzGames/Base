@@ -139,6 +139,9 @@ jobs:
       - name: FREEzzz Studio syntax and UI integrity smoke
         run: node scripts/freezzz-studio-smoke.mjs
 
+      - name: Economy Lab syntax and capability smoke
+        run: node scripts/economy-lab-smoke.mjs
+
       - name: GORD Control Lab runtime mechanics tests
         run: node scripts/gord-control-lab-runtime-test.mjs
 
