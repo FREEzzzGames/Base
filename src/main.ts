@@ -495,8 +495,8 @@ function render(){
           ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
           <span class="home-card-background-overlay" aria-hidden="true"></span>
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(24px,5vw,44px)!important;letter-spacing:.12em">OSIRIS</span>
-          <span style="position:absolute;left:13px;bottom:13px;z-index:3;color:#8ceeff;font-size:11px;letter-spacing:1.5px">AI LIVE · GLOBAL SITUATIONAL MONITOR</span>
-          <span style="position:absolute;right:13px;bottom:11px;z-index:3;color:#fff;font-size:12px">OPEN ↗</span>
+          <span class="osiris-card-label">GLOBAL MONITOR</span>
+          <span class="osiris-card-open">OPEN ↗</span>
         </a>
         ${homeCard("library")}
 
