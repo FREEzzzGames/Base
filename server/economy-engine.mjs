@@ -13,7 +13,7 @@ export function createWorld({ id = "prime", seed = 9137, startingCredits = 1000 
   if (!Number.isSafeInteger(seed) || seed < 0) throw new Error("INVALID_SEED");
   if (!Number.isSafeInteger(startingCredits) || startingCredits < 0) throw new Error("INVALID_STARTING_CREDITS");
   return {
-    id, tick: 0, seed: seed >>> 0, treasury: 0,
+    id, tick: 0, seed: seed >>> 0, treasury: 1_000_000,
     players: {},
     market: Object.fromEntries(Object.entries(GOODS).map(([good, spec]) => [good, {
       price: spec.basePrice, supply: 100, demand: 100, volume: 0
