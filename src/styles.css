@@ -10055,3 +10055,84 @@ button:disabled,[aria-disabled="true"]{
 @media(max-width:430px){.portal-toolbar-nav{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:1px!important}.portal-toolbar-item{min-width:0!important;padding-left:1px!important;padding-right:1px!important}.portal-toolbar-label{font-size:8px!important;letter-spacing:0!important}}
 /* The selected module, not a fixed first/legacy tab, controls active styling. */
 .portal-toolbar > .portal-toolbar-main .portal-toolbar-item:first-child:not(.active){background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+
+
+/* OSIRIS HOME CARD — responsive first-class portal block.
+   It shares the final row with LIBRARY so it remains visible without
+   forcing the home workspace beyond the viewport. */
+.home-portal > .home-osiris{
+  grid-area:osiris!important;
+  display:block!important;
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  padding:0!important;
+  border:1px solid rgba(99,234,255,.78)!important;
+  border-radius:10px!important;
+  background:#030711!important;
+  color:#fff!important;
+  text-decoration:none!important;
+  contain:paint!important;
+}
+.home-portal > .home-osiris .home-card-title{
+  top:clamp(8px,2.2cqh,16px)!important;
+  left:clamp(8px,2.2cqw,16px)!important;
+  right:auto!important;
+  bottom:auto!important;
+  max-width:calc(100% - 16px)!important;
+  font-size:clamp(20px,7cqh,42px)!important;
+  letter-spacing:.1em!important;
+}
+.home-portal > .home-osiris [aria-hidden="true"]{
+  pointer-events:none!important;
+}
+.home-portal > .home-osiris > span:not(.home-card-title){
+  max-width:calc(100% - 16px)!important;
+  overflow-wrap:anywhere!important;
+  font-size:clamp(8px,1.7cqh,11px)!important;
+}
+.home-portal > .home-osiris:focus-visible{
+  outline:2px solid #8ceeff!important;
+  outline-offset:-4px!important;
+}
+.home-portal{
+  grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+  grid-template-areas:"hero hero" "live chat" "game radio" "osiris library"!important;
+}
+.home-portal > .home-library{
+  grid-area:library!important;
+  min-height:0!important;
+  height:100%!important;
+}
+@media(max-width:699px){
+  .home-portal{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:minmax(0,12fr) minmax(0,30fr) minmax(0,21fr) minmax(0,37fr)!important;
+    grid-template-areas:"hero hero" "live chat" "game radio" "osiris library"!important;
+    min-height:0!important;
+    height:100%!important;
+    max-height:100%!important;
+    gap:1px!important;
+  }
+  .home-portal > .home-osiris,
+  .home-portal > .home-library{
+    min-height:0!important;
+    height:100%!important;
+  }
+  .home-portal > .home-osiris > span:not(.home-card-title){
+    letter-spacing:.04em!important;
+  }
+}
+@media(max-width:360px){
+  .home-portal > .home-osiris .home-card-title{
+    font-size:clamp(18px,6cqh,30px)!important;
+  }
+  .home-portal > .home-osiris > span:not(.home-card-title){
+    font-size:8px!important;
+  }
+}
