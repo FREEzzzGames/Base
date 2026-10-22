@@ -498,6 +498,10 @@ function render(){
           <span class="osiris-card-label">GLOBAL MONITOR</span>
           <span class="osiris-card-open">OPEN ↗</span>
         </a>
+        <a class="card home-card portal-block home-phet-lab" href="./phet-lab.html" data-portal-card="phet-lab" data-portal-block="phet-lab" aria-label="PHET LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#071a24,#111d2b 68%,#193b3b);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
+          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">PhET LAB</span>
+          <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:10px ui-monospace,monospace;letter-spacing:1.2px">112 SCIENCE SIMULATIONS · HTML5</span>
+        </a>
         <a class="card home-card portal-block home-economy-lab" href="./economy-lab.html" data-portal-card="economy-lab" data-portal-block="economy-lab" aria-label="ECONOMY LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#07191f,#10151e 68%,#142c2b);border:1px solid #66fcf1;text-decoration:none;min-height:150px">
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">ECONOMY LAB</span>
           <span style="position:absolute;left:13px;bottom:12px;color:#66fcf1;font:10px ui-monospace,monospace;letter-spacing:1.2px">OPEN MODELS · ECONOMIC SIMULATION</span>
