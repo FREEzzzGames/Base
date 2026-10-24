@@ -355,7 +355,6 @@ function renderTelegramChat(){
 }
 
 let radioStations:readonly RadioBrowserStation[]=[];
-let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
@@ -632,8 +631,8 @@ function playRadioStation(id:string){
   setRadioPlaybackStatus("loading");
   radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);render();},{once:true});
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");});
-  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");radioError=T("playError");render();},{once:true});
-  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");radioError=T("autoplayError");}).finally(()=>render());
+  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");render();},{once:true});
+  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");}).finally(()=>render());
 }
   window.addEventListener("freezzz:chat-send",async event=>{
     const detail=(event as CustomEvent<{chatId?:string;text?:string}>).detail;
