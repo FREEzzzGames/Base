@@ -531,24 +531,12 @@ function render(){
   }
   if(view==="radio"){
     const radioGardenUrl="https://radio.garden/";
-    const radioCopy=lang==="DE"
-      ? {subtitle:"Weltweites Radio · direkt zu Radio Garden",description:"Entdecke Live-Radiosender auf der interaktiven Weltkarte.",open:"Radio Garden öffnen",fallback:"Falls die eingebettete Ansicht nicht lädt, öffne Radio Garden direkt."}
-      : lang==="EN"
-        ? {subtitle:"Global radio · direct Radio Garden access",description:"Explore live radio stations on the interactive world map.",open:"Open Radio Garden",fallback:"If the embedded view does not load, open Radio Garden directly."}
-        : {subtitle:"Радио со всего мира · прямой доступ к Radio Garden",description:"Исследуй радиостанции на интерактивной карте мира.",open:"Открыть Radio Garden",fallback:"Если встроенный просмотр не загрузится, открой Radio Garden напрямую."};
     body=`
-      <div class="content portal-layout radio-portal" data-portal-layout="radio">
-        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>${radioCopy.subtitle}</p></div></div>
-        <section class="radio-panel radio-garden-panel">
-          <div class="radio-heading">
-            <div><span class="radio-kicker">RADIO GARDEN</span><h3>Radio Garden</h3><p>${radioCopy.description}</p></div>
-            <button id="radio-garden-open" class="tg-button" type="button">${radioCopy.open}</button>
-          </div>
-          <div class="radio-garden-frame-wrap">
-            <iframe class="radio-garden-frame" src="${radioGardenUrl}" title="Radio Garden" loading="eager" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-          </div>
-          <p class="radio-garden-fallback">${radioCopy.fallback} <a href="${radioGardenUrl}" target="_blank" rel="noopener noreferrer">${radioGardenUrl}</a></p>
-        </section>
+      <div class="content portal-layout radio-portal radio-map-only" data-portal-layout="radio">
+        <div class="radio-garden-map">
+          <iframe class="radio-garden-frame" src="${radioGardenUrl}" title="Radio Garden — интерактивная карта радиостанций" loading="eager" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          <a class="radio-garden-open-fallback" href="${radioGardenUrl}" target="_blank" rel="noopener noreferrer" aria-label="Открыть Radio Garden в отдельном окне">↗</a>
+        </div>
       </div>`;
   }
 
