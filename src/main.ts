@@ -18,6 +18,7 @@ import { bindUniversalPortalPress } from "./portal-interactions";
 import { createTelegramChatClient, type TelegramChat, type TelegramMessage } from "./chat/telegram-client";
 import { renderLibrary, bindLibraryView, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
 import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
+import { mountRadioMap } from "./radio-map";
 
 initTelegramBridge();
 initPerformanceLayer();
@@ -530,14 +531,16 @@ function render(){
     body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang));
   }
   if(view==="radio"){
-    const radioGardenUrl="https://radio.garden/";
     body=`
-      <div class="content portal-layout radio-portal radio-map-only" data-portal-layout="radio">
-        <div class="radio-garden-map">
-          <iframe class="radio-garden-frame" src="${radioGardenUrl}" title="Radio Garden — интерактивная карта радиостанций" loading="eager" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-          <a class="radio-garden-open-fallback" href="${radioGardenUrl}" target="_blank" rel="noopener noreferrer" aria-label="Открыть Radio Garden в отдельном окне">↗</a>
+      <section class="content portal-layout radio-portal radio-map-only" data-portal-layout="radio" data-radio-map-root aria-label="World radio map">
+        <div class="radio-map-canvas" id="radio-world-map"></div>
+        <div class="radio-map-top"><input class="radio-map-search" data-radio-search type="search" placeholder="Search station or country" aria-label="Search station or country" autocomplete="off"><span class="radio-map-count" data-radio-count>LOADING</span></div>
+        <div class="radio-map-player" role="region" aria-label="Radio player">
+          <div class="radio-map-player-info"><span class="radio-map-live-dot"></span><div class="radio-map-station-text"><strong data-radio-station>Choose a station</strong><small data-radio-country>WORLDWIDE</small></div></div>
+          <span class="radio-map-status" data-radio-status>LOADING WORLD RADIO…</span>
+          <div class="radio-map-player-controls"><button type="button" data-radio-play aria-label="Play or pause">▶</button><button type="button" data-radio-stop aria-label="Stop radio">■</button></div>
         </div>
-      </div>`;
+      </section>`;
   }
 
   if(view==="library"){
@@ -767,9 +770,7 @@ function windowsCloseChatPopup(){
   window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
 }
 function bind(){
-  if(view==="radio"){
-    document.querySelector<HTMLButtonElement>("#radio-garden-open")?.addEventListener("click",()=>openExternalUrl("https://radio.garden/"));
-  }
+  if(view==="radio")mountRadioMap();
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
 
@@ -789,8 +790,6 @@ function bind(){
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
-      // Radio Garden explicitly blocks iframe embedding. Open the official site directly.
-      if(next==="radio"){openExternalUrl("https://radio.garden/");return;}
       // Tapping the already-open module closes it back to HOME.
       const target=next===view&&next!=="home"?"home":next;
       portalEvents.emit("navigation:changed",{view:target});
@@ -811,8 +810,6 @@ function bind(){
     const navigate=()=>{
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
-      // Radio Garden denies iframe embedding; use its official standalone page.
-      if(next==="radio"){openExternalUrl("https://radio.garden/");return;}
       portalEvents.emit("navigation:changed",{view:next});
     };
     x.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();navigate();});
