@@ -74,12 +74,6 @@ function featureCollection(rows: RadioStation[]) {
 }
 
 function playStation(station: RadioStation, root: HTMLElement) {
-  if (!activeAudio) {
-    activeAudio = new Audio();
-    activeAudio.preload = "none";
-    activeAudio.addEventListener("playing", () => root.querySelector("[data-radio-status]")?.replaceChildren(document.createTextNode("LIVE")));
-    activeAudio.addEventListener("error", () => root.querySelector("[data-radio-status]")?.replaceChildren(document.createTextNode("STREAM UNAVAILABLE")));
-  }
   activeStation = station;
   const name = root.querySelector<HTMLElement>("[data-radio-station]");
   const country = root.querySelector<HTMLElement>("[data-radio-country]");
@@ -89,15 +83,30 @@ function playStation(station: RadioStation, root: HTMLElement) {
   if (country) country.textContent = station.country || "Worldwide";
   if (status) status.textContent = "CONNECTING…";
   if (play) play.textContent = "Ⅱ";
-  if (activeAudio.src !== (station.url_resolved || station.url)) {
-    activeAudio.src = station.url_resolved || station.url;
-  }
-  void activeAudio.play().then(() => { if (status) status.textContent = "LIVE"; }).catch(() => {
-    if (status) status.textContent = "TAP PLAY TO RETRY";
-    if (play) play.textContent = "▶";
-  });
-  try { localStorage.setItem("freezzz:radio:selected", station.stationuuid); } catch {}
+  try {
+    localStorage.setItem("freezzz:radio:selected", station.stationuuid);
+    localStorage.setItem("freezzz:radio:selected-station", JSON.stringify({
+      stationuuid: station.stationuuid, name: station.name, url: station.url,
+      url_resolved: station.url_resolved || station.url, country: station.country || ""
+    }));
+  } catch {}
+  window.dispatchEvent(new CustomEvent("freezzz:radio-select", { detail: {
+    stationuuid: station.stationuuid, name: station.name, url: station.url,
+    url_resolved: station.url_resolved || station.url, country: station.country || ""
+  }}));
 }
+
+window.addEventListener("freezzz:radio-status", event => {
+  const detail = (event as CustomEvent<{status?: string; station?: string}>).detail;
+  const root = activeRoot;
+  if (!root) return;
+  const status = root.querySelector<HTMLElement>("[data-radio-status]");
+  const name = root.querySelector<HTMLElement>("[data-radio-station]");
+  const play = root.querySelector<HTMLButtonElement>("[data-radio-play]");
+  if (status) status.textContent = (detail?.status || "idle").toUpperCase();
+  if (detail?.station && name) name.textContent = detail.station;
+  if (play) play.textContent = detail?.status === "playing" || detail?.status === "loading" ? "Ⅱ" : "▶";
+});
 
 export function mountRadioMap(): void {
   const root = document.querySelector<HTMLElement>("[data-radio-map-root]");
@@ -200,15 +209,10 @@ export function mountRadioMap(): void {
             playStation(station, root);
           });
           play?.addEventListener("click", () => {
-            if (activeAudio && !activeAudio.paused) {
-              activeAudio.pause(); play.textContent = "▶"; emptyState("PAUSED");
-            } else if (activeStation) playStation(activeStation, root);
+            window.dispatchEvent(new CustomEvent("freezzz:radio-mini", { detail: { action: "play" } }));
           });
           mute?.addEventListener("click", () => {
-            activeAudio?.pause();
-            if (activeAudio) activeAudio.currentTime = 0;
-            if (play) play.textContent = "▶";
-            emptyState("STOPPED");
+            window.dispatchEvent(new CustomEvent("freezzz:radio-mini", { detail: { action: "stop" } }));
           });
           map.resize();
         } catch (error) {
