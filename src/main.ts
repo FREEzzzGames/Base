@@ -359,6 +359,7 @@ let radioStations:readonly RadioBrowserStation[]=[];
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
+let radioHomePopupOpen=false;
 
 /* Keep one HTMLVideoElement per portal background across render() calls. */
 const persistentBackgroundVideos=new Map<string,HTMLVideoElement>();
@@ -461,6 +462,18 @@ function renderPortalToolbar(){
   </nav>`;
 }
 let lastRenderedView:View|null=null;
+
+function renderRadioHomePopup():string{
+  if(!radioHomePopupOpen)return "";
+  return `<div class="radio-home-popup-backdrop" data-radio-popup-backdrop role="presentation">
+    <section class="radio-home-popup" role="dialog" aria-modal="true" aria-label="Radio world map" data-radio-map-root>
+      <header class="radio-home-popup-header"><span class="radio-home-popup-brand"><i></i> WORLD RADIO</span><button type="button" data-radio-popup-close aria-label="Close radio">×</button></header>
+      <div class="radio-map-canvas" id="radio-world-map"></div>
+      <div class="radio-map-top"><input class="radio-map-search" data-radio-search type="search" placeholder="Search station or country" aria-label="Search station or country" autocomplete="off"><span class="radio-map-count" data-radio-count>LOADING</span></div>
+      <div class="radio-map-player" role="region" aria-label="Radio player"><div class="radio-map-player-info"><span class="radio-map-live-dot"></span><div class="radio-map-station-text"><strong data-radio-station>Choose a station</strong><small data-radio-country>WORLDWIDE</small></div></div><span class="radio-map-status" data-radio-status>LOADING WORLD RADIO…</span><div class="radio-map-player-controls"><button type="button" data-radio-play aria-label="Play or pause">▶</button><button type="button" data-radio-stop aria-label="Stop radio">■</button></div></div>
+    </section></div>`;
+}
+
 function render(){
   const previousRenderedView=lastRenderedView;
   let body="";
@@ -559,6 +572,7 @@ function render(){
       </div>
       
       ${profileOpen?renderProfileCard():""}
+      ${renderRadioHomePopup()}
     </div>`;
 
   lastRenderedView=view;
@@ -770,7 +784,7 @@ function windowsCloseChatPopup(){
   window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
 }
 function bind(){
-  if(view==="radio")mountRadioMap();
+  if(view==="radio"||radioHomePopupOpen)mountRadioMap();
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
 
@@ -810,11 +824,15 @@ function bind(){
     const navigate=()=>{
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
+      if(next==="radio"){radioHomePopupOpen=true;render();return;}
       portalEvents.emit("navigation:changed",{view:next});
     };
     x.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();navigate();});
     x.addEventListener("keydown",function(e){if(e.key!=="Enter"&&e.key!==" ")return;e.preventDefault();e.stopPropagation();navigate();});
   });
+  document.querySelectorAll<HTMLElement>("[data-radio-popup-close]").forEach(x=>x.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();radioHomePopupOpen=false;render();}));
+  document.querySelector<HTMLElement>("[data-radio-popup-backdrop]")?.addEventListener("click",e=>{if(e.target===e.currentTarget){radioHomePopupOpen=false;render();}});
+  if(radioHomePopupOpen)document.addEventListener("keydown",function radioPopupEscape(e){if(e.key!=="Escape")return;document.removeEventListener("keydown",radioPopupEscape);radioHomePopupOpen=false;render();},{once:true});
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;zenithKernel.patchSystemState({profileOpen});portalEvents.emit("profile:toggled",{open:profileOpen});render();};
     if(x.getAttribute("role")==="button"){
