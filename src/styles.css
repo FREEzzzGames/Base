@@ -10104,3 +10104,14 @@ button:disabled,[aria-disabled="true"]{
   .home-portal > .home-osiris .osiris-card-label{max-width:calc(100% - 70px)!important;font-size:8px!important}
   .home-portal > .home-osiris .osiris-card-open{right:8px!important;font-size:9px!important}
 }
+
+
+/* RADIO Garden direct integration — embedded view with an official-site fallback. */
+.portal-layout[data-portal-layout="radio"] .radio-garden-panel{display:flex;flex-direction:column;gap:14px;min-height:0}
+.radio-garden-panel .radio-heading{align-items:center;flex-wrap:wrap}
+.radio-garden-panel .radio-heading>div{min-width:0;flex:1}
+.radio-garden-frame-wrap{width:100%;height:min(68dvh,760px);min-height:360px;overflow:hidden;border:1px solid var(--tg-theme-section-separator-color);border-radius:10px;background:#101820}
+.radio-garden-frame{display:block;width:100%;height:100%;border:0;background:#101820}
+.radio-garden-fallback{margin:0;color:var(--tg-theme-hint-color);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.radio-garden-fallback a{color:var(--tg-theme-link-color);text-decoration:underline}
+@media(max-width:520px){.radio-garden-frame-wrap{height:65dvh;min-height:320px}.radio-garden-panel .radio-heading .tg-button{width:100%;min-height:44px}}
