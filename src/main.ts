@@ -1,4 +1,4 @@
-import type { RadioBrowserStation } from "./radio-browser";
+import { RadioBrowserClient, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 import "./zenith-os.css";
 import { initPerformanceLayer } from "./performance-layer";
@@ -356,6 +356,8 @@ function renderTelegramChat(){
 }
 
 let radioStations:readonly RadioBrowserStation[]=[];
+const radioBrowserClient=new RadioBrowserClient();
+let radioRandomLoading=false;
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
@@ -644,13 +646,30 @@ function playRadioStream(station:SharedRadioStation){
   radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");},{once:true});
   void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");});
 }
+async function playRandomRadioStation(){
+  if(radioRandomLoading||liveAudioPriority)return;
+  radioRandomLoading=true;
+  setRadioPlaybackStatus("loading");
+  try{
+    const stations=await radioBrowserClient.searchStations("","",100);
+    if(!stations.length)throw new Error("NO_RADIO_STATIONS");
+    radioStations=stations;
+    const station=stations[Math.floor(Math.random()*stations.length)];
+    playRadioStream({stationuuid:station.stationuuid,name:station.name,url:station.url,url_resolved:station.url_resolved,country:station.country});
+  }catch{
+    setRadioPlaybackStatus("failed");
+  }finally{
+    radioRandomLoading=false;
+  }
+}
 function playRadioStation(id:string){
   const station=radioStations.find(s=>s.stationuuid===id)|| (radioExternalStation?.stationuuid===id?radioExternalStation:null);
   if(station){playRadioStream(station);return;}
   try{
     const saved=JSON.parse(localStorage.getItem("freezzz:radio:selected-station")||"null") as SharedRadioStation|null;
-    if(saved?.stationuuid===id&&saved.url)playRadioStream(saved);
+    if(saved?.stationuuid===id&&saved.url){playRadioStream(saved);return;}
   }catch{}
+  void playRandomRadioStation();
 }
 window.addEventListener("freezzz:radio-select",event=>{
   const station=(event as CustomEvent<SharedRadioStation>).detail;
@@ -696,7 +715,8 @@ window.addEventListener("freezzz:radio-mini",event=>{
   if(action==="play"){
     if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
       void radioAudio.play().then(()=>setRadioPlaybackStatus("playing")).catch(()=>setRadioPlaybackStatus("failed"));
-    }else playRadioStation(radioSelectedId);
+    }else if(radioSelectedId)playRadioStation(radioSelectedId);
+    else void playRandomRadioStation();
   }
   if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");}
   if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");}
