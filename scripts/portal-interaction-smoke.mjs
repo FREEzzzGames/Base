@@ -140,3 +140,16 @@ assert.ok(ruleContains(".open-games-portal .open-game-frame,", "min-height:0!imp
   "Embedded games must fit the remaining portal viewport");
 assert.ok(ruleContains(".open-games-portal .open-game-categories button,", "background:#000!important"),
   "GAME controls must follow the portal black/white/red theme");
+
+
+const portalCards = readFileSync("src/electronics-lab-entry.ts", "utf8");
+const cardIds = [...portalCards.matchAll(/id: "([a-z0-9-]+)"/g)].map(match => match[1]);
+const embedBlock = portalCards.slice(portalCards.indexOf("const EMBED_TARGETS"), portalCards.indexOf("let activeWorkspace"));
+const embedIds = [...embedBlock.matchAll(/^  "([a-z0-9-]+)": \{/gm)].map(match => match[1]);
+for (const id of cardIds) assert.ok(embedIds.includes(id), "Portal card " + id + " must have a workspace target");
+assert.ok(portalCards.includes('"old-maps-online": { src: "https://www.oldmapsonline.org/"'), "OLD MAPS ONLINE must load the website, not its JSON API");
+assert.ok(portalCards.includes('"watabou": { src: "https://watabou.github.io/"'), "WATABOU must have a configured workspace target");
+assert.ok(portalCards.includes("previousBodyOverflow = document.body.style.overflow") && portalCards.includes("document.body.style.overflow = previousBodyOverflow"), "Workspace close must restore body overflow");
+assert.ok(portalCards.includes("last.focus()") && portalCards.includes("first.focus()"), "Workspace dialog must trap keyboard focus");
+assert.ok(portalCards.includes("if (focusTarget?.isConnected) focusTarget.focus()"), "Workspace close must restore focus to its launching control");
+console.log("PORTAL_WORKSPACE_REGRESSION_SMOKE_OK");
