@@ -72,11 +72,13 @@ const telegramAuth=await Promise.race<TelegramAuthResult>([
   new Promise<TelegramAuthResult>(resolve=>window.setTimeout(()=>resolve({ok:false,error:"AUTH_TIMEOUT"}),2500))
 ]);
 const verifiedTelegramIdentity:TelegramVerifiedIdentity|undefined=telegramAuth.ok&&telegramAuth.user?telegramAuth.user:undefined;
-if(!localStorage.getItem("freezzz:language")){
-  const code=verifiedTelegramIdentity?.languageCode?.toUpperCase()||"";
-  if(code.startsWith("DE"))lang="DE";
-  else if(code.startsWith("EN"))lang="EN";
-}
+try{
+  if(!localStorage.getItem("freezzz:language")){
+    const code=verifiedTelegramIdentity?.languageCode?.toUpperCase()||"";
+    if(code.startsWith("DE"))lang="DE";
+    else if(code.startsWith("EN"))lang="EN";
+  }
+}catch{ /* WebView storage may be disabled; keep the default language. */ }
 let portalProfile:PortalProfile=loadPortalProfile(verifiedTelegramIdentity);
 syncPortalIdentity(portalProfile,verifiedTelegramIdentity);
 startPortalSession(portalProfile);
