@@ -789,6 +789,8 @@ function bind(){
       e.stopPropagation();
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
+      // Radio Garden explicitly blocks iframe embedding. Open the official site directly.
+      if(next==="radio"){openExternalUrl("https://radio.garden/");return;}
       // Tapping the already-open module closes it back to HOME.
       const target=next===view&&next!=="home"?"home":next;
       portalEvents.emit("navigation:changed",{view:target});
@@ -809,6 +811,8 @@ function bind(){
     const navigate=()=>{
       const next=x.dataset.view as View;
       if(!next||!moduleManager.has(next))return;
+      // Radio Garden denies iframe embedding; use its official standalone page.
+      if(next==="radio"){openExternalUrl("https://radio.garden/");return;}
       portalEvents.emit("navigation:changed",{view:next});
     };
     x.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();navigate();});
