@@ -19,16 +19,18 @@ function installPortalCardStyles() {
   const style = document.createElement("style");
   style.id = PORTAL_CARD_STYLE_ID;
   style.textContent = `
-    .home-portal .home-extra-card { min-width:0!important; min-height:112px!important; height:auto!important; }
-    .home-portal .home-extra-card .home-card-title { white-space:normal!important; overflow-wrap:anywhere!important; }
+    .home-portal .home-extra-card { min-width:0!important; min-height:104px!important; height:auto!important; padding:12px!important; display:flex!important; flex-direction:column!important; justify-content:center!important; align-items:stretch!important; gap:7px!important; box-sizing:border-box!important; }
+    .home-portal .home-extra-card > .portal-extra-symbol { position:absolute!important; inset:8px 10px auto auto!important; display:block!important; font-size:28px!important; line-height:1!important; opacity:.28!important; pointer-events:none!important; }
+    .home-portal .home-extra-card > .portal-extra-title { position:relative!important; inset:auto!important; display:block!important; width:100%!important; max-width:100%!important; margin:0!important; padding:0 22px 0 0!important; color:#f5f7f8!important; font:700 clamp(15px,3.8vw,21px)/1.18 'Space Mono',monospace!important; letter-spacing:0!important; white-space:normal!important; overflow-wrap:anywhere!important; z-index:1!important; }
+    .home-portal .home-extra-card > .portal-extra-caption { position:relative!important; inset:auto!important; display:block!important; width:100%!important; max-width:100%!important; margin:0!important; padding:0!important; color:var(--portal-extra-accent,#a6ff83)!important; font:9px/1.35 'Space Mono',monospace!important; letter-spacing:.2px!important; white-space:normal!important; overflow-wrap:anywhere!important; z-index:1!important; }
     @media (max-width:699px) {
-      .home-portal .home-extra-card { min-height:100px!important; padding:12px 10px!important; gap:7px!important; }
-      .home-portal .home-extra-card .home-card-title { font-size:clamp(14px,3.7vw,18px)!important; line-height:1.2!important; }
-      .home-portal .home-extra-card > span:last-child { font-size:9px!important; letter-spacing:.25px!important; }
+      .home-portal .home-extra-card { min-height:100px!important; padding:10px!important; gap:8px!important; }
+      .home-portal .home-extra-card > .portal-extra-title { font-size:clamp(14px,3.6vw,18px)!important; }
+      .home-portal .home-extra-card > .portal-extra-caption { font-size:9px!important; }
     }
     @media (max-width:360px) {
       .home-portal .home-extra-card { min-height:96px!important; }
-      .home-portal .home-extra-card .home-card-title { font-size:14px!important; }
+      .home-portal .home-extra-card > .portal-extra-title { font-size:14px!important; }
     }
   `;
   document.head.append(style);
@@ -44,9 +46,10 @@ function mountPortalCards() {
     card.className = "card home-card portal-block home-extra-card";
     card.href = config.href;
     card.dataset.portalCard = config.id;
+    card.style.setProperty("--portal-extra-accent", config.accent);
     card.setAttribute("aria-label", config.title);
     card.style.cssText = `position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:center;gap:8px;box-sizing:border-box;overflow:hidden;background:${config.bg};border:1px solid ${config.accent};text-decoration:none;min-height:112px;height:auto;padding:16px 14px 14px;`;
-    card.innerHTML = `<span aria-hidden="true" style="position:absolute;right:10px;top:8px;font-size:30px;line-height:1;opacity:.38;pointer-events:none">${config.symbol}</span><span class="home-card-title" style="position:relative;inset:auto;display:block;max-width:100%;padding-right:24px;font-size:clamp(16px,4vw,22px)!important;line-height:1.18;letter-spacing:.025em;overflow-wrap:anywhere;z-index:1">${config.title}</span><span style="position:relative;display:-webkit-box;inset:auto;max-width:100%;color:${config.accent};font:10px/1.35 ui-monospace,monospace;letter-spacing:.5px;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;z-index:1">${config.caption}</span>`;
+    card.innerHTML = `<div class="portal-extra-symbol" aria-hidden="true">${config.symbol}</div><div class="portal-extra-title">${config.title}</div><div class="portal-extra-caption">${config.caption}</div>`;
     card.addEventListener("click", event => {
       event.preventDefault();
       event.stopPropagation();
