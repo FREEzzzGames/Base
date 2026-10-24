@@ -19,7 +19,7 @@ for (const id of ["generate", "newVariation", "reroll", "stop", "play", "pause",
 for (const required of [
   "async function generate(", "async function audioInit(", "async function exportWav(",
   "async function autoLoadLibrarySamples(", "async function warmSoundLibrary(",
-  "async function apply(", "await Tone.loaded()", "new OfflineAudioContext",
+  "async function apply(", "Tone.loaded()", "new OfflineAudioContext",
   "indexedDB.open(SOUND_DB", "window.addEventListener(\"online\"",
   "for(const url of allSampleUrls())", "await start();return"
 ]) assert.ok(js.includes(required), "Missing expected audio/project capability: " + required);

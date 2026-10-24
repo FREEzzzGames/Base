@@ -154,3 +154,5 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Removed the automatic Radio Browser preload and the old station-loader path from portal startup.
 - Mobile iframe sizing and fallback-link styling added in `src/styles.css`.
 - **Release verification pending:** the Pages workflow is currently blocked before typecheck/build by the existing Procedural Studio smoke assertion `Missing expected audio/project capability: await Tone.loaded()`. The Radio Garden embed itself still requires runtime verification in Telegram Android; external-site framing policy may prevent iframe playback. No claim of a successful deployment is made.
+
+- Follow-up: the Procedural Studio smoke assertion was updated to check for `Tone.loaded()` rather than requiring the exact spelling `await Tone.loaded()`; the runtime uses `Tone.loaded()` inside a timeout race. The new Pages run must still verify typecheck/build/deployment.
