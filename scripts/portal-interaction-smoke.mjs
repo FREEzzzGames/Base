@@ -101,6 +101,18 @@ assert.ok(visualStyles.includes(".home-portal > .home-phet-lab .home-card-title"
 assert.ok(visualStyles.includes(".home-portal > .home-phet-lab > span:not(.home-card-title)") &&
   visualStyles.includes("bottom:12px!important") && visualStyles.includes("overflow-wrap:anywhere!important"),
   "HOME card descriptions must stay anchored at the bottom and wrap instead of overlapping headings");
+assert.ok(multiWindow.includes('window.visualViewport?.addEventListener("resize",clampWindows'),
+  "Floating windows must clamp to Telegram WebView visual viewport changes");
+assert.ok(multiWindow.includes("w.x=Math.max(4,Math.min") && multiWindow.includes("w.y=Math.max(4,Math.min"),
+  "Restored window geometry must be clamped back inside the visible viewport");
+assert.ok(visualStyles.includes("inset: auto 10px calc(76px + env(safe-area-inset-bottom, 0px)) 10px !important;") &&
+  visualStyles.includes("height: 112px !important;"),
+  "Mobile RADIO mini-player must use a compact dock above the safe-area-aware bottom navigation");
+assert.ok(mw.includes('aria-label="Открыть полный экран RADIO"') && mw.includes('title="Открыть полноценный раздел RADIO"'),
+  "RADIO expand control must describe its actual navigation action accessibly");
+assert.ok(visualStyles.includes("@media(max-width:430px)") &&
+  visualStyles.includes("max-width:calc(100% - 20px)!important"),
+  "HOME information cards must retain horizontal padding on narrow phones");
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
 
