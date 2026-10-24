@@ -628,25 +628,56 @@ function homeCard(v:Exclude<View,"home">){
 }
 type SharedRadioStation={stationuuid:string;name:string;url:string;url_resolved?:string;country?:string};
 let radioExternalStation:SharedRadioStation|null=null;
-function playRadioStream(station:SharedRadioStation){
-  if(liveAudioPriority){radioAudio?.pause();endRadioActivity();return;}
+let radioRandomStationId="";
+function shuffleRadioStations(stations:readonly RadioBrowserStation[],excludeId=""):RadioBrowserStation[]{
+  const candidates=stations.filter(station=>station.stationuuid!==excludeId);
+  for(let i=candidates.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [candidates[i],candidates[j]]=[candidates[j],candidates[i]];
+  }
+  return candidates;
+}
+async function playRadioStream(station:SharedRadioStation,isRandom=false):Promise<boolean>{
+  if(liveAudioPriority){radioAudio?.pause();endRadioActivity();return false;}
   radioSelectedId=station.stationuuid;
   radioExternalStation=station;
+  radioRandomStationId=isRandom?station.stationuuid:"";
   try{
     localStorage.setItem("freezzz:radio:selected",radioSelectedId);
     localStorage.setItem("freezzz:radio:selected-station",JSON.stringify(station));
   }catch{}
   endRadioActivity();
-  radioAudio?.pause();
-  radioAudio=new Audio(station.url_resolved||station.url);
-  radioAudio.dataset.station=station.name;
+  const previous=radioAudio;
+  if(previous){previous.pause();previous.removeAttribute("src");previous.load();}
+  const audio=new Audio(station.url_resolved||station.url);
+  radioAudio=audio;
+  audio.preload="none";
+  audio.dataset.station=station.name;
   setRadioPlaybackStatus("loading");
-  radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);},{once:true});
-  radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");});
-  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");},{once:true});
-  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");});
+  audio.addEventListener("playing",()=>{
+    if(radioAudio!==audio)return;
+    setRadioPlaybackStatus("playing");
+    beginRadioActivity(station.name);
+  });
+  audio.addEventListener("pause",()=>{
+    if(radioAudio===audio&&radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");
+  });
+  audio.addEventListener("error",()=>{
+    if(radioAudio!==audio)return;
+    setRadioPlaybackStatus("failed");
+    if(isRandom&&!radioRandomLoading)void playRandomRadioStation(station.stationuuid);
+  },{once:true});
+  try{
+    await audio.play();
+    if(radioAudio!==audio)return false;
+    setRadioPlaybackStatus("playing");
+    return true;
+  }catch{
+    if(radioAudio===audio)setRadioPlaybackStatus("failed");
+    return false;
+  }
 }
-async function playRandomRadioStation(){
+async function playRandomRadioStation(excludeId=""){
   if(radioRandomLoading||liveAudioPriority)return;
   radioRandomLoading=true;
   setRadioPlaybackStatus("loading");
@@ -654,8 +685,16 @@ async function playRandomRadioStation(){
     const stations=await radioBrowserClient.searchStations("","",100);
     if(!stations.length)throw new Error("NO_RADIO_STATIONS");
     radioStations=stations;
-    const station=stations[Math.floor(Math.random()*stations.length)];
-    playRadioStream({stationuuid:station.stationuuid,name:station.name,url:station.url,url_resolved:station.url_resolved,country:station.country});
+    const candidates=shuffleRadioStations(stations,excludeId);
+    if(!candidates.length)throw new Error("NO_ALTERNATE_RADIO_STATIONS");
+    for(const station of candidates){
+      const started=await playRadioStream({
+        stationuuid:station.stationuuid,name:station.name,url:station.url,
+        url_resolved:station.url_resolved,country:station.country
+      },true);
+      if(started)return;
+    }
+    setRadioPlaybackStatus("failed");
   }catch{
     setRadioPlaybackStatus("failed");
   }finally{
@@ -674,7 +713,7 @@ function playRadioStation(id:string){
 window.addEventListener("freezzz:radio-select",event=>{
   const station=(event as CustomEvent<SharedRadioStation>).detail;
   if(!station?.stationuuid||!station.name||!(station.url_resolved||station.url))return;
-  playRadioStream(station);
+  void playRadioStream(station);
 });
 
   window.addEventListener("freezzz:chat-send",async event=>{

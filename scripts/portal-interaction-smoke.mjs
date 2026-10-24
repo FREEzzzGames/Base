@@ -4,6 +4,21 @@ import { readFileSync } from "node:fs";
 const main = readFileSync("src/main.ts", "utf8");
 const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 
+const radioMap = readFileSync("src/radio-map.ts", "utf8");
+const radioBrowser = readFileSync("src/radio-browser.ts", "utf8");
+assert.ok(main.includes("async function playRandomRadioStation(excludeId=\"\" )") || main.includes('async function playRandomRadioStation(excludeId="")'),
+  "RADIO widget must load a random station when no station is selected");
+assert.ok(main.includes("shuffleRadioStations") && main.includes("for(const station of candidates)"),
+  "RADIO random playback must try alternate stations rather than fail after one broken stream");
+assert.ok(main.includes("if(radioAudio!==audio)return") && main.includes("if(isRandom&&!radioRandomLoading)void playRandomRadioStation(station.stationuuid)"),
+  "RADIO audio events must ignore stale streams and retry a failed random stream");
+assert.ok(main.includes('window.addEventListener("freezzz:radio-mini"') && main.includes('else void playRandomRadioStation()'),
+  "RADIO widget Play must start a random station when no saved selection exists");
+assert.ok(radioMap.includes('new CustomEvent("freezzz:radio-select"') && radioMap.includes('new CustomEvent("freezzz:radio-mini"'),
+  "RADIO map and floating widget must control the shared player");
+assert.ok(radioBrowser.includes('is_https:"true"') && radioBrowser.includes("lastcheckok!==0"),
+  "RADIO station discovery must prefer HTTPS and filter stations marked broken");
+
 const chatSendListener = 'window.addEventListener("freezzz:chat-send"';
 const chatSendOccurrences = main.split(chatSendListener).length - 1;
 assert.equal(chatSendOccurrences, 1, "CHAT send listener must be registered exactly once");
