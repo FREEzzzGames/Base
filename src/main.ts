@@ -360,6 +360,7 @@ let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
 let radioPlaybackStatus:"idle"|"loading"|"playing"|"paused"|"stopped"|"failed"="idle";
 let radioHomePopupOpen=false;
+window.addEventListener("keydown",event=>{if(event.key==="Escape"&&radioHomePopupOpen){radioHomePopupOpen=false;render();}});
 
 /* Keep one HTMLVideoElement per portal background across render() calls. */
 const persistentBackgroundVideos=new Map<string,HTMLVideoElement>();
@@ -832,7 +833,6 @@ function bind(){
   });
   document.querySelectorAll<HTMLElement>("[data-radio-popup-close]").forEach(x=>x.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();radioHomePopupOpen=false;render();}));
   document.querySelector<HTMLElement>("[data-radio-popup-backdrop]")?.addEventListener("click",e=>{if(e.target===e.currentTarget){radioHomePopupOpen=false;render();}});
-  if(radioHomePopupOpen)document.addEventListener("keydown",function radioPopupEscape(e){if(e.key!=="Escape")return;document.removeEventListener("keydown",radioPopupEscape);radioHomePopupOpen=false;render();},{once:true});
   document.querySelectorAll<HTMLElement>("[data-profile-toggle]").forEach(function(x){
     x.onclick=function(e){e.preventDefault();e.stopPropagation();profileOpen=!profileOpen;zenithKernel.patchSystemState({profileOpen});portalEvents.emit("profile:toggled",{open:profileOpen});render();};
     if(x.getAttribute("role")==="button"){
