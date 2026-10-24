@@ -1,5 +1,6 @@
 import { RadioBrowserClient, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
+import { initFreezzzyDroid } from "./freezzzy-droid";
 import "./zenith-os.css";
 import { initPerformanceLayer } from "./performance-layer";
 import "./multi-window-portal";
@@ -21,6 +22,7 @@ import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } fr
 import { mountRadioMap } from "./radio-map";
 
 initTelegramBridge();
+initFreezzzyDroid();
 initPerformanceLayer();
 
 async function checkForPortalUpdate(){
