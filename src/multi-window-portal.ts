@@ -176,7 +176,19 @@ function bind(){
   layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-opacity]").forEach(input=>input.oninput=()=>{workspaceSettings.windowOpacity=Number(input.value)/100;const label=layer?.querySelector<HTMLElement>("[data-mw-opacity-value]");if(label)label.textContent=input.value+"%";saveWorkspaceSettings();});
   layer?.querySelectorAll<HTMLElement>("[data-mw-settings-reset]").forEach(b=>b.onclick=e=>{e.preventDefault();workspaceSettings={reduceMotion:false,windowOpacity:.92};saveWorkspaceSettings();render();});
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
-  layer?.querySelectorAll<HTMLElement>("[data-mw-focus]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFocus(b.dataset.mwFocus as MiniId);});
+  layer?.querySelectorAll<HTMLElement>("[data-mw-focus]").forEach(b=>b.onclick=e=>{
+    e.preventDefault();e.stopPropagation();
+    const id=b.dataset.mwFocus as MiniId;
+    if(id==="radio"){
+      windows.radio.open=false;
+      if(focusedWindow==="radio")focusedWindow=null;
+      saveWindowLayout();
+      render();
+      window.dispatchEvent(new CustomEvent("freezzz:radio-open-fullscreen"));
+      return;
+    }
+    toggleFocus(id);
+  });
   layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.addEventListener("pointerdown",()=>{const id=el.dataset.mw as MiniId;if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}}));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();

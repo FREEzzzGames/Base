@@ -749,6 +749,10 @@ window.addEventListener("freezzz:navigate",event=>{
   if(next!=="game"&&next!=="library")return;
   portalEvents.emit("navigation:changed",{view:next});
 });
+window.addEventListener("freezzz:radio-open-fullscreen",()=>{
+  radioHomePopupOpen=false;
+  portalEvents.emit("navigation:changed",{view:"radio"});
+});
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
   if(action==="play"){

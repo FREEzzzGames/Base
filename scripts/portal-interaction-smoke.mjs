@@ -88,6 +88,11 @@ assert.ok(emulator.includes('emulatorMetric("rom-read"') && emulator.includes('e
 assert.ok(emulator.includes("URL.revokeObjectURL(activeRomUrl)") && emulator.includes("activeRomUrl = null"), "Emulator ROM object URLs must be released on exit and shutdown");
 assert.ok(emulator.includes("async function isMegaDriveRom(blob: Blob)") && emulator.includes('return { system: "md", blob: file, fileName: file.name }'), "Genesis .bin ROMs must be detected by cartridge header instead of being misrouted to the PlayStation core");
 assert.ok(emulator.includes('if (ext === "bin" && await isMegaDriveRom(blob))') && emulator.includes('game.system = "md";'), "Legacy Genesis .bin entries must be repaired in the existing library");
+assert.ok(main.includes('window.addEventListener("freezzz:radio-open-fullscreen"') && main.includes('portalEvents.emit("navigation:changed",{view:"radio"})'),
+  "RADIO widget expansion must open the full RADIO workspace through the portal router");
+assert.ok(mw.includes('if(id==="radio")') && mw.includes('new CustomEvent("freezzz:radio-open-fullscreen")'),
+  "RADIO widget expand control must not merely enlarge an empty player window");
+assert.ok(mw.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
 
