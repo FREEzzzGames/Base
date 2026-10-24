@@ -3,7 +3,14 @@ const CARD_HREFS = [
   { id: "old-maps-online", title: "OLD MAPS ONLINE", href: "./old-maps-online.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#172317,#101a17 68%,#35452a)", symbol: "⌖", caption: "HISTORICAL MAPS · GEOSearch" },
   { id: "animagraffs", title: "ANIMAGRAFFS", href: "./animagraffs.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#3b3020)", symbol: "◉", caption: "ANIMATED EXPLAINERS · HOW IT WORKS" },
   { id: "emupedia", title: "EMUPEDIA", href: "./emupedia.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#17291d,#101a17 68%,#2b4b35)", symbol: "▣", caption: "RETRO GAMES · EMULATORS · EMUOS" },
-  { id: "retro-tv", title: "RETRO TV", href: "./retro-tv.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#4b3020)", symbol: "▰", caption: "VINTAGE CHANNELS · 50s–2000s" }] as const;
+  { id: "retro-tv", title: "RETRO TV", href: "./retro-tv.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#4b3020)", symbol: "▰", caption: "VINTAGE CHANNELS · 50s–2000s",
+  { id: "demo-formula", title: "DEMO FORMULA", href: "./demo-formula.html", accent: "#ff4d4d", bg: "linear-gradient(135deg,#301516,#17191f 68%,#4b2020)", symbol: "🏎", caption: "FORMULA · WEBGL · INTERACTIVE" },
+  { id: "drive-and-listen", title: "DRIVE & LISTEN", href: "./drive-and-listen.html", accent: "#66fcf1", bg: "linear-gradient(135deg,#10272b,#111d2b 68%,#19414a)", symbol: "♫", caption: "VIRTUAL CITIES · LOCAL RADIO" },
+  { id: "notable-people", title: "NOTABLE PEOPLE", href: "./notable-people.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#17291d,#101a17 68%,#2b4b35)", symbol: "◎", caption: "PEOPLE · BIRTHPLACES · WORLD MAP" },
+  { id: "townscaper", title: "TOWNSCAPER", href: "./townscaper.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#4b3020)", symbol: "▦", caption: "BUILD A QUIET ISLAND TOWN" },
+  { id: "3d-svg-designer", title: "3D SVG DESIGNER", href: "./3d-svg-designer.html", accent: "#66fcf1", bg: "linear-gradient(135deg,#071a24,#111d2b 68%,#193b3b)", symbol: "◇", caption: "VECTOR → 3D · EXPORT MODELS" },
+  { id: "photext-shop", title: "PHOTEXT SHOP", href: "./photext-shop.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#3b3020)", symbol: "▧", caption: "PHOTO TEXT EDITOR · IMAGE TOOLS" }
+] as const;
 
 function mountPortalCards() {
   const home = document.querySelector<HTMLElement>(".home-portal");
