@@ -108,7 +108,7 @@ assert.ok(multiWindow.includes("w.x=Math.max(4,Math.min") && multiWindow.include
 assert.ok(visualStyles.includes("inset: auto 10px calc(76px + env(safe-area-inset-bottom, 0px)) 10px !important;") &&
   visualStyles.includes("height: 112px !important;"),
   "Mobile RADIO mini-player must use a compact dock above the safe-area-aware bottom navigation");
-assert.ok(mw.includes('aria-label="Открыть полный экран RADIO"') && mw.includes('title="Открыть полноценный раздел RADIO"'),
+assert.ok(multiWindow.includes('aria-label="Открыть полный экран RADIO"') && multiWindow.includes('title="Открыть полноценный раздел RADIO"'),
   "RADIO expand control must describe its actual navigation action accessibly");
 assert.ok(visualStyles.includes("@media(max-width:430px)") &&
   visualStyles.includes("max-width:calc(100% - 20px)!important"),
