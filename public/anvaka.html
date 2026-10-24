@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d12">
+<title>ANVAKA · Map of GitHub | FREEzzzPortal</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#080d12;color:#edf7f7;font:14px/1.45 system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:0}.bar{display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 12px;background:#101820;border-bottom:1px solid #263640}.back{min-height:40px;border:1px solid #66fcf1;border-radius:7px;background:#66fcf1;color:#071316;font-weight:800;padding:0 13px}.title{min-width:0;flex:1;font:700 12px/1.4 ui-monospace,monospace;letter-spacing:.05em}.original{color:#66fcf1;white-space:nowrap;font:700 11px ui-monospace,monospace}.note{padding:6px 12px;color:#b6c5cc;background:#0b1117;font:10px ui-monospace,monospace}.frame{flex:1;min-height:0;width:100%;border:0;background:#080d12}
+</style>
+</head>
+<body>
+<header class="bar"><button class="back" id="back" type="button">← HOME</button><div class="title">ANVAKA · MAP OF GITHUB</div><a class="original" href="https://anvaka.org/map-of-github/" target="_blank" rel="noopener noreferrer">ORIGINAL ↗</a></header>
+<div class="note">INTERACTIVE OPEN-SOURCE GALAXY · If embedding is blocked by the source, use ORIGINAL ↗.</div>
+<iframe class="frame" title="Anvaka Map of GitHub" src="https://anvaka.org/map-of-github/" allow="fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<script>
+document.getElementById("back").addEventListener("click",()=>{if(history.length>1)history.back();else location.href="./index.html";});
+</script>
+</body>
+</html>
