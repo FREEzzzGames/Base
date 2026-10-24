@@ -72,7 +72,8 @@ if (document.readyState === "loading") {
 // Cross-origin iframe restrictions are respected; no proxy or security-header bypass is used.
 const EMBED_TARGETS: Record<string, { src: string; original: string; description: string }> = {
   "electronics-lab": { src: "./electronics-lab.html", original: "https://wokwi.com/", description: "Virtual electronics lab" },
-  "old-maps-online": { src: "https://community.oldmapsonline.org/api/v1/geosearch", original: "https://www.oldmapsonline.org/", description: "Historical maps and geosearch" },
+  "old-maps-online": { src: "https://www.oldmapsonline.org/", original: "https://www.oldmapsonline.org/", description: "Historical maps and geosearch" },
+  "watabou": { src: "https://watabou.github.io/", original: "https://watabou.github.io/", description: "Procedural cities, dungeons and worlds" },
   "animagraffs": { src: "https://animagraffs.com/", original: "https://animagraffs.com/", description: "Animated explainers" },
   "emupedia": { src: "https://emupedia.net/beta/emuos/", original: "https://emupedia.net/", description: "Retro software and EmuOS" },
   "retro-tv": { src: "https://www.theretrotvs.com/", original: "https://www.theretrotvs.com/", description: "Retro television" },
@@ -85,10 +86,16 @@ const EMBED_TARGETS: Record<string, { src: string; original: string; description
   "anvaka": { src: "https://anvaka.org/map-of-github/", original: "https://anvaka.org/map-of-github/", description: "Interactive map of open-source GitHub projects" }
 };
 let activeWorkspace: HTMLElement | null = null;
+let previousWorkspaceFocus: HTMLElement | null = null;
+let previousBodyOverflow = "";
 function closePortalWorkspace() {
-  activeWorkspace?.remove();
+  if (!activeWorkspace) return;
+  activeWorkspace.remove();
   activeWorkspace = null;
-  document.body.style.overflow = "";
+  document.body.style.overflow = previousBodyOverflow;
+  const focusTarget = previousWorkspaceFocus;
+  previousWorkspaceFocus = null;
+  if (focusTarget?.isConnected) focusTarget.focus();
 }
 function openPortalWorkspace(id: string, title: string) {
   closePortalWorkspace();
@@ -131,11 +138,28 @@ function openPortalWorkspace(id: string, title: string) {
     status.textContent = target.description + " · FRAME RESPONSE RECEIVED; CONTENT NOT VERIFIED";
   }, { once: true });
   overlay.append(header, status, frame);
+  previousWorkspaceFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  previousBodyOverflow = document.body.style.overflow;
   document.body.append(overlay);
   document.body.style.overflow = "hidden";
   activeWorkspace = overlay;
   back.focus();
 }
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && activeWorkspace) closePortalWorkspace();
+  if (!activeWorkspace) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closePortalWorkspace();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = [...activeWorkspace.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])')].filter(element => element.offsetParent !== null);
+  if (!focusable.length) { event.preventDefault(); return; }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && (document.activeElement === first || !activeWorkspace.contains(document.activeElement))) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && (document.activeElement === last || !activeWorkspace.contains(document.activeElement))) {
+    event.preventDefault(); first.focus();
+  }
 });
