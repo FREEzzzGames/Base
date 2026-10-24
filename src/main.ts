@@ -639,10 +639,10 @@ function playRadioStream(station:SharedRadioStation){
   radioAudio=new Audio(station.url_resolved||station.url);
   radioAudio.dataset.station=station.name;
   setRadioPlaybackStatus("loading");
-  radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);render();},{once:true});
+  radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);},{once:true});
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");});
-  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");render();},{once:true});
-  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");}).finally(()=>render());
+  radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");},{once:true});
+  void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");});
 }
 function playRadioStation(id:string){
   const station=radioStations.find(s=>s.stationuuid===id)|| (radioExternalStation?.stationuuid===id?radioExternalStation:null);
@@ -698,8 +698,8 @@ window.addEventListener("freezzz:radio-mini",event=>{
       void radioAudio.play().then(()=>setRadioPlaybackStatus("playing")).catch(()=>setRadioPlaybackStatus("failed"));
     }else playRadioStation(radioSelectedId);
   }
-  if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();}
-  if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();}
+  if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");}
+  if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");}
 });
 moduleManager.registerAdapter("game",{
   onActivate:()=>beginGameActivity(),
