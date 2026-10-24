@@ -1,5 +1,4 @@
-import type { RadioBrowserClient, RadioBrowserStation } from "./radio-browser";
-import { RADIO_GENRES } from "./radio-config";
+import type { RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 import "./zenith-os.css";
 import { initPerformanceLayer } from "./performance-layer";
@@ -355,12 +354,7 @@ function renderTelegramChat(){
   return '<div class="chat-telegram-shell"><aside class="chat-dialogs '+(telegramDialogsOpen?"is-open":"")+'"><div class="chat-dialogs-head"><b>Диалоги</b><div><button type="button" class="chat-refresh-button" data-chat-refresh aria-label="Обновить чаты" title="Обновить чаты" '+(telegramChatRefreshing?'disabled':'')+'>'+(telegramChatRefreshing?'…':'↻')+'</button><button type="button" class="chat-dialogs-close" data-chat-dialogs-close aria-label="Закрыть список чатов" title="Закрыть">×</button></div></div><div class="chat-dialog-list">'+chatRows+'</div></aside><section class="chat-conversation"><header><button type="button" class="chat-dialogs-toggle" data-chat-dialogs aria-label="Открыть список чатов" title="Чаты">☰</button><div class="chat-conversation-title"><b>'+escapeHtml(selected?.title||"Telegram")+'</b><small>'+escapeHtml(selected?.kind||"")+'</small></div></header><div class="chat-history" id="telegram-chat-history">'+messages+'<span class="chat-bottom-sentinel" data-chat-bottom-sentinel aria-hidden="true"></span><button class="chat-scroll-bottom" data-chat-bottom type="button" aria-label="Перейти вниз диалога" title="Перейти вниз диалога">↓</button></div><form id="telegram-message-form" class="chat-message-form"><input id="telegram-message-input" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Сообщение"><button type="submit" aria-label="Отправить" title="Отправить">↗</button></form></section></div>';
 }
 
-let radioBrowser:RadioBrowserClient|null=null;
-let radioBrowserLoading:Promise<RadioBrowserClient>|null=null;
 let radioStations:readonly RadioBrowserStation[]=[];
-let radioGenre="pop";
-let radioQuery="";
-let radioLoading=false;
 let radioError="";
 let radioAudio:HTMLAudioElement|null=null;
 let radioSelectedId=(()=>{try{return localStorage.getItem("freezzz:radio:selected")||"";}catch{return "";}})();
@@ -624,30 +618,6 @@ function homeCard(v:Exclude<View,"home">){
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
     <span class="home-card-title">${title}</span>
   </div>`;
-}
-async function getRadioBrowser():Promise<RadioBrowserClient>{
-  if(radioBrowser)return radioBrowser;
-  if(!radioBrowserLoading){
-    radioBrowserLoading=import("./radio-browser").then(module=>{
-      radioBrowser=new module.RadioBrowserClient();
-      return radioBrowser;
-    });
-  }
-  return radioBrowserLoading;
-}
-async function loadRadioStations(){
-  radioLoading=true; radioError=""; render();
-  try{
-    const client=await getRadioBrowser();
-    radioStations=await client.searchStations(radioGenre,radioQuery,30);
-    if(radioSelectedId&&radioStations.some(s=>s.stationuuid===radioSelectedId)){
-      // keep the saved station when it is still present
-    }else if(radioStations[0]){
-      radioSelectedId=radioStations[0].stationuuid;
-      try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
-    }
-  }catch(error){radioStations=[];radioError=error instanceof Error?error.message:String(error);}
-  finally{radioLoading=false;render();}
 }
 function playRadioStation(id:string){
   if(liveAudioPriority){radioAudio?.pause();endRadioActivity();return;}
@@ -1041,4 +1011,3 @@ function escapeHtml(s:string){
 
 
 render();
-if(view==="home"&&!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
