@@ -13,7 +13,29 @@ const CARD_HREFS = [
   { id: "watabou", title: "WATABOU PROCGEN", href: "./watabou.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#17291d,#101a17 68%,#2b4b35)", symbol: "⌖", caption: "PROCEDURAL CITIES · DUNGEONS · WORLDS" }
 ] as const;
 
+const PORTAL_CARD_STYLE_ID = "freezzz-mobile-card-ergonomics";
+function installPortalCardStyles() {
+  if (document.getElementById(PORTAL_CARD_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = PORTAL_CARD_STYLE_ID;
+  style.textContent = `
+    .home-portal .home-extra-card { min-width:0!important; min-height:112px!important; height:auto!important; }
+    .home-portal .home-extra-card .home-card-title { white-space:normal!important; overflow-wrap:anywhere!important; }
+    @media (max-width:699px) {
+      .home-portal .home-extra-card { min-height:100px!important; padding:12px 10px!important; gap:7px!important; }
+      .home-portal .home-extra-card .home-card-title { font-size:clamp(14px,3.7vw,18px)!important; line-height:1.2!important; }
+      .home-portal .home-extra-card > span:last-child { font-size:9px!important; letter-spacing:.25px!important; }
+    }
+    @media (max-width:360px) {
+      .home-portal .home-extra-card { min-height:96px!important; }
+      .home-portal .home-extra-card .home-card-title { font-size:14px!important; }
+    }
+  `;
+  document.head.append(style);
+}
+
 function mountPortalCards() {
+  installPortalCardStyles();
   const home = document.querySelector<HTMLElement>(".home-portal");
   if (!home) return;
   for (const config of CARD_HREFS) {
@@ -23,8 +45,8 @@ function mountPortalCards() {
     card.href = config.href;
     card.dataset.portalCard = config.id;
     card.setAttribute("aria-label", config.title);
-    card.style.cssText = `position:relative;overflow:hidden;background:${config.bg};border:1px solid ${config.accent};text-decoration:none;min-height:150px`;
-    card.innerHTML = `<span aria-hidden="true" style="position:absolute;right:12px;top:8px;font-size:42px;opacity:.85">${config.symbol}</span><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(19px,4.2vw,34px)!important;letter-spacing:.05em">${config.title}</span><span style="position:absolute;left:13px;bottom:12px;right:10px;color:${config.accent};font:10px ui-monospace,monospace;letter-spacing:1px">${config.caption}</span>`;
+    card.style.cssText = `position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:center;gap:8px;box-sizing:border-box;overflow:hidden;background:${config.bg};border:1px solid ${config.accent};text-decoration:none;min-height:112px;height:auto;padding:16px 14px 14px;`;
+    card.innerHTML = `<span aria-hidden="true" style="position:absolute;right:10px;top:8px;font-size:30px;line-height:1;opacity:.38;pointer-events:none">${config.symbol}</span><span class="home-card-title" style="position:relative;inset:auto;display:block;max-width:100%;padding-right:24px;font-size:clamp(16px,4vw,22px)!important;line-height:1.18;letter-spacing:.025em;overflow-wrap:anywhere;z-index:1">${config.title}</span><span style="position:relative;display:-webkit-box;inset:auto;max-width:100%;color:${config.accent};font:10px/1.35 ui-monospace,monospace;letter-spacing:.5px;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;z-index:1">${config.caption}</span>`;
     card.addEventListener("click", event => {
       event.preventDefault();
       event.stopPropagation();
