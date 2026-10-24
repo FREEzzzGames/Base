@@ -10,7 +10,8 @@ const CARD_HREFS = [
   { id: "townscaper", title: "TOWNSCAPER", href: "./townscaper.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#4b3020)", symbol: "▦", caption: "BUILD A QUIET ISLAND TOWN" },
   { id: "3d-svg-designer", title: "3D SVG DESIGNER", href: "./3d-svg-designer.html", accent: "#66fcf1", bg: "linear-gradient(135deg,#071a24,#111d2b 68%,#193b3b)", symbol: "◇", caption: "VECTOR → 3D · EXPORT MODELS" },
   { id: "photext-shop", title: "PHOTEXT SHOP", href: "./photext-shop.html", accent: "#ffb703", bg: "linear-gradient(135deg,#292014,#17191f 68%,#3b3020)", symbol: "▧", caption: "PHOTO TEXT EDITOR · IMAGE TOOLS" },
-  { id: "watabou", title: "WATABOU PROCGEN", href: "./watabou.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#17291d,#101a17 68%,#2b4b35)", symbol: "⌖", caption: "PROCEDURAL CITIES · DUNGEONS · WORLDS" }
+  { id: "watabou", title: "WATABOU PROCGEN", href: "./watabou.html", accent: "#a6ff83", bg: "linear-gradient(135deg,#17291d,#101a17 68%,#2b4b35)", symbol: "⌖", caption: "PROCEDURAL CITIES · DUNGEONS · WORLDS" },
+  { id: "anvaka", title: "ANVAKA · MAP OF GITHUB", href: "./anvaka.html", accent: "#66fcf1", bg: "linear-gradient(135deg,#071a24,#10131e 68%,#193b3b)", symbol: "✳", caption: "GITHUB GALAXY · OPEN SOURCE MAP" }
 ] as const;
 
 const PORTAL_CARD_STYLE_ID = "freezzz-mobile-card-ergonomics";
@@ -19,17 +20,17 @@ function installPortalCardStyles() {
   const style = document.createElement("style");
   style.id = PORTAL_CARD_STYLE_ID;
   style.textContent = `
-    .home-portal .home-extra-card { min-width:0!important; min-height:104px!important; height:auto!important; padding:12px!important; display:flex!important; flex-direction:column!important; justify-content:center!important; align-items:stretch!important; gap:7px!important; box-sizing:border-box!important; }
+    .home-portal .home-extra-card { min-width:0!important; min-height:0!important; height:auto!important; aspect-ratio:1 / 1!important; align-self:start!important; padding:12px!important; display:flex!important; flex-direction:column!important; justify-content:center!important; align-items:stretch!important; gap:7px!important; box-sizing:border-box!important; }
     .home-portal .home-extra-card > .portal-extra-symbol { position:absolute!important; inset:8px 10px auto auto!important; display:block!important; font-size:28px!important; line-height:1!important; opacity:.28!important; pointer-events:none!important; }
     .home-portal .home-extra-card > .portal-extra-title { position:relative!important; inset:auto!important; display:block!important; width:100%!important; max-width:100%!important; margin:0!important; padding:0 22px 0 0!important; color:#f5f7f8!important; font:700 clamp(15px,3.8vw,21px)/1.18 'Space Mono',monospace!important; letter-spacing:0!important; white-space:normal!important; overflow-wrap:anywhere!important; z-index:1!important; }
     .home-portal .home-extra-card > .portal-extra-caption { position:relative!important; inset:auto!important; display:block!important; width:100%!important; max-width:100%!important; margin:0!important; padding:0!important; color:var(--portal-extra-accent,#a6ff83)!important; font:9px/1.35 'Space Mono',monospace!important; letter-spacing:.2px!important; white-space:normal!important; overflow-wrap:anywhere!important; z-index:1!important; }
     @media (max-width:699px) {
-      .home-portal .home-extra-card { min-height:100px!important; padding:10px!important; gap:8px!important; }
+      .home-portal .home-extra-card { min-height:0!important; aspect-ratio:1 / 1!important; padding:10px!important; gap:8px!important; }
       .home-portal .home-extra-card > .portal-extra-title { font-size:clamp(14px,3.6vw,18px)!important; }
       .home-portal .home-extra-card > .portal-extra-caption { font-size:9px!important; }
     }
     @media (max-width:360px) {
-      .home-portal .home-extra-card { min-height:96px!important; }
+      .home-portal .home-extra-card { min-height:0!important; aspect-ratio:1 / 1!important; }
       .home-portal .home-extra-card > .portal-extra-title { font-size:14px!important; }
     }
   `;
@@ -80,7 +81,8 @@ const EMBED_TARGETS: Record<string, { src: string; original: string; description
   "notable-people": { src: "https://tjukanovt.github.io/notable-people/", original: "https://tjukanovt.github.io/", description: "Notable people map" },
   "townscaper": { src: "https://www.townscapergame.com/", original: "https://www.townscapergame.com/", description: "Townscaper" },
   "3d-svg-designer": { src: "https://3dsvgdesign.com/", original: "https://3dsvgdesign.com/", description: "3D SVG designer" },
-  "photext-shop": { src: "https://photextshop.com/", original: "https://photextshop.com/", description: "Photo text editor" }
+  "photext-shop": { src: "https://photextshop.com/", original: "https://photextshop.com/", description: "Photo text editor" },
+  "anvaka": { src: "https://anvaka.org/map-of-github/", original: "https://anvaka.org/map-of-github/", description: "Interactive map of open-source GitHub projects" }
 };
 let activeWorkspace: HTMLElement | null = null;
 function closePortalWorkspace() {
