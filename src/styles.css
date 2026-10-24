@@ -10123,7 +10123,7 @@ button:disabled,[aria-disabled="true"]{
     left:12px!important;
     right:12px!important;
     top:auto!important;
-    bottom:calc(var(--portal-toolbar-height, 92px) + env(safe-area-inset-bottom, 0px) + 14px)!important;
+    bottom:calc(max(150px,var(--portal-toolbar-height,150px)) + env(safe-area-inset-bottom, 0px) + 12px)!important;
     width:auto!important;
     height:auto!important;
     min-width:0!important;
