@@ -13,8 +13,6 @@ const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
 let loadPromise: Promise<void> | null = null;
 let activeMap: MapLibreMap | null = null;
 let activeRoot: HTMLElement | null = null;
-let activeAudio: HTMLAudioElement | null = null;
-let activeStation: RadioStation | null = null;
 let stationCache: RadioStation[] = [];
 
 function loadMapLibre(): Promise<void> {
@@ -74,7 +72,6 @@ function featureCollection(rows: RadioStation[]) {
 }
 
 function playStation(station: RadioStation, root: HTMLElement) {
-  activeStation = station;
   const name = root.querySelector<HTMLElement>("[data-radio-station]");
   const country = root.querySelector<HTMLElement>("[data-radio-country]");
   const status = root.querySelector<HTMLElement>("[data-radio-status]");
