@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const main = readFileSync("src/main.ts", "utf8");
+const multiWindow = readFileSync("src/multi-window-portal.ts", "utf8");
 const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 
 const radioMap = readFileSync("src/radio-map.ts", "utf8");
@@ -90,9 +91,9 @@ assert.ok(emulator.includes("async function isMegaDriveRom(blob: Blob)") && emul
 assert.ok(emulator.includes('if (ext === "bin" && await isMegaDriveRom(blob))') && emulator.includes('game.system = "md";'), "Legacy Genesis .bin entries must be repaired in the existing library");
 assert.ok(main.includes('window.addEventListener("freezzz:radio-open-fullscreen"') && main.includes('portalEvents.emit("navigation:changed",{view:"radio"})'),
   "RADIO widget expansion must open the full RADIO workspace through the portal router");
-assert.ok(mw.includes('if(id==="radio")') && mw.includes('new CustomEvent("freezzz:radio-open-fullscreen")'),
+assert.ok(multiWindow.includes('if(id==="radio")') && multiWindow.includes('new CustomEvent("freezzz:radio-open-fullscreen")'),
   "RADIO widget expand control must not merely enlarge an empty player window");
-assert.ok(mw.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
+assert.ok(multiWindow.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
 
