@@ -10307,3 +10307,55 @@ button:disabled,[aria-disabled="true"]{
   .portal-mw-layer .portal-mw.portal-mw-radio .portal-mw-radio-controls { gap: 3px !important; }
   .portal-mw-layer .portal-mw.portal-mw-radio .portal-mw-radio-controls button { width: 32px !important; min-width: 32px !important; }
 }
+
+
+/* HOME information cards: separate heading and metadata so they never collide on phones. */
+.home-portal > .home-phet-lab .home-card-title,
+.home-portal > .home-economy-lab .home-card-title,
+.home-portal > .home-studio .home-card-title{
+  top:12px!important;
+  bottom:auto!important;
+  left:12px!important;
+  right:12px!important;
+  max-width:calc(100% - 24px)!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.08!important;
+  text-wrap:balance;
+}
+.home-portal > .home-phet-lab > span:not(.home-card-title),
+.home-portal > .home-economy-lab > span:not(.home-card-title),
+.home-portal > .home-studio > span:not(.home-card-title){
+  position:absolute!important;
+  left:12px!important;
+  right:12px!important;
+  top:auto!important;
+  bottom:12px!important;
+  max-width:calc(100% - 24px)!important;
+  font-size:9px!important;
+  line-height:1.3!important;
+  letter-spacing:.08em!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.9)!important;
+}
+@media(max-width:430px){
+  .home-portal > .home-phet-lab .home-card-title,
+  .home-portal > .home-economy-lab .home-card-title,
+  .home-portal > .home-studio .home-card-title{
+    left:10px!important;
+    right:10px!important;
+    top:10px!important;
+    max-width:calc(100% - 20px)!important;
+  }
+  .home-portal > .home-phet-lab > span:not(.home-card-title),
+  .home-portal > .home-economy-lab > span:not(.home-card-title),
+  .home-portal > .home-studio > span:not(.home-card-title){
+    left:10px!important;
+    right:10px!important;
+    bottom:10px!important;
+    max-width:calc(100% - 20px)!important;
+    font-size:8px!important;
+    letter-spacing:.04em!important;
+  }
+}

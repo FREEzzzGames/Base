@@ -94,6 +94,13 @@ assert.ok(main.includes('window.addEventListener("freezzz:radio-open-fullscreen"
 assert.ok(multiWindow.includes('if(id==="radio")') && multiWindow.includes('new CustomEvent("freezzz:radio-open-fullscreen")'),
   "RADIO widget expand control must not merely enlarge an empty player window");
 assert.ok(multiWindow.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
+const visualStyles = readFileSync("src/styles.css", "utf8");
+assert.ok(visualStyles.includes(".home-portal > .home-phet-lab .home-card-title") &&
+  visualStyles.includes("bottom:auto!important") && visualStyles.includes("white-space:normal!important"),
+  "HOME PHET, Economy and Studio headings must stay in a separate top-aligned region");
+assert.ok(visualStyles.includes(".home-portal > .home-phet-lab > span:not(.home-card-title)") &&
+  visualStyles.includes("bottom:12px!important") && visualStyles.includes("overflow-wrap:anywhere!important"),
+  "HOME card descriptions must stay anchored at the bottom and wrap instead of overlapping headings");
 console.log("PORTAL_INTERACTION_SMOKE_OK");
 console.log(`CHAT listener registered once; ${entries.length} unique HTTPS catalog entries and all category keys validated.`);
 
