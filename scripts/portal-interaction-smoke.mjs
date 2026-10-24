@@ -153,3 +153,6 @@ assert.ok(portalCards.includes("previousBodyOverflow = document.body.style.overf
 assert.ok(portalCards.includes("last.focus()") && portalCards.includes("first.focus()"), "Workspace dialog must trap keyboard focus");
 assert.ok(portalCards.includes("if (focusTarget?.isConnected) focusTarget.focus()"), "Workspace close must restore focus to its launching control");
 console.log("PORTAL_WORKSPACE_REGRESSION_SMOKE_OK");
+
+const languageInit = main.slice(main.indexOf("try{\n  if(!localStorage.getItem(\"freezzz:language\"))"), main.indexOf("let portalProfile"));
+assert.ok(languageInit.includes("catch{ /* WebView storage may be disabled; keep the default language. */ }"), "Language auto-detection must not crash when WebView storage is unavailable");
