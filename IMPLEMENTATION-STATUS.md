@@ -145,3 +145,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - The latest generic flash/spark pass is a visual foundation, **not** proof of high-fidelity implementation. Per-skill mechanics and visuals still require reference-by-reference work and verification.
 - Do not claim “99% similarity” until each skill has been compared and remaining differences are documented. JavaScript syntax and CI success do not establish runtime or animation fidelity.
 - Reference starting points: [official hero database](https://www.mobilelegends.com/en/hero), [official patch notes](https://www.mobilelegends.com/news/patch-notes), and specialist current-data guide pages linked from the simulator.
+
+
+## 2026-10-24 RADIO Garden integration
+
+- Replaced the RADIO route's Radio Browser station search/carousel/player UI with a direct Radio Garden entry and embedded view at `https://radio.garden/`.
+- Added a prominent external-open action using the portal's external-link bridge and a plain official URL fallback for browsers/WebViews that block embedding.
+- Removed the automatic Radio Browser preload and the old station-loader path from portal startup.
+- Mobile iframe sizing and fallback-link styling added in `src/styles.css`.
+- **Release verification pending:** the Pages workflow is currently blocked before typecheck/build by the existing Procedural Studio smoke assertion `Missing expected audio/project capability: await Tone.loaded()`. The Radio Garden embed itself still requires runtime verification in Telegram Android; external-site framing policy may prevent iframe playback. No claim of a successful deployment is made.

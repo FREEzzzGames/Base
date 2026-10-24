@@ -181,3 +181,12 @@ This document is project context, not a replacement for the actual implementatio
 - Implement skill-specific visuals rather than applying one generic burst to every ability. Preserve per-hero palettes only as a fallback; projectile trails, impact flashes, sparks, area telegraphs, beam width/steering, and animation timing should follow the reference skill.
 - Validate each change in this order: reference comparison → mechanic implementation → visual timing/effects → JavaScript syntax → automated build/CI → published URL and Android/Telegram runtime. CI success alone does not prove touch behavior or visual fidelity.
 - Current source links to start with: official MLBB hero database `https://www.mobilelegends.com/en/hero`, official patch notes `https://www.mobilelegends.com/news/patch-notes`; use official hero videos where available and cross-check current stats against a dated specialist guide.
+
+
+## 17. 2026-10-24 RADIO Garden replacement
+
+- The RADIO route now presents Radio Garden at `https://radio.garden/` instead of the portal's Radio Browser genre/search/carousel interface.
+- The route contains an embedded view, a direct external-open button routed through `openExternalUrl`, and a visible official URL fallback. If Radio Garden refuses iframe embedding, the external link remains available.
+- Portal-owned ads are not added. The portal cannot guarantee the absence of advertising or commercial UI served by Radio Garden itself.
+- The Radio Browser station loader and automatic HOME preload were removed from the active route.
+- Deployment acceptance is pending: current GitHub Actions runs fail earlier at the existing Procedural Studio smoke assertion `Missing expected audio/project capability: await Tone.loaded()`, before typecheck/build/deployment steps. Verify that independent blocker, then re-run the full release chain. Test actual iframe and external-link behavior in Telegram Android before claiming runtime compatibility.
