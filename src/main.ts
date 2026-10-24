@@ -624,22 +624,40 @@ function homeCard(v:Exclude<View,"home">){
     <span class="home-card-title">${title}</span>
   </div>`;
 }
-function playRadioStation(id:string){
+type SharedRadioStation={stationuuid:string;name:string;url:string;url_resolved?:string;country?:string};
+let radioExternalStation:SharedRadioStation|null=null;
+function playRadioStream(station:SharedRadioStation){
   if(liveAudioPriority){radioAudio?.pause();endRadioActivity();return;}
-  const station=radioStations.find(s=>s.stationuuid===id); if(!station)return;
   radioSelectedId=station.stationuuid;
-  try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
+  radioExternalStation=station;
+  try{
+    localStorage.setItem("freezzz:radio:selected",radioSelectedId);
+    localStorage.setItem("freezzz:radio:selected-station",JSON.stringify(station));
+  }catch{}
   endRadioActivity();
   radioAudio?.pause();
   radioAudio=new Audio(station.url_resolved||station.url);
   radioAudio.dataset.station=station.name;
-  radioAudio.controls=true;
   setRadioPlaybackStatus("loading");
   radioAudio.addEventListener("playing",()=>{setRadioPlaybackStatus("playing");beginRadioActivity(station.name);render();},{once:true});
   radioAudio.addEventListener("pause",()=>{if(radioPlaybackStatus==="playing")setRadioPlaybackStatus("paused");});
   radioAudio.addEventListener("error",()=>{setRadioPlaybackStatus("failed");render();},{once:true});
   void radioAudio.play().then(()=>{setRadioPlaybackStatus("playing");}).catch(()=>{setRadioPlaybackStatus("failed");}).finally(()=>render());
 }
+function playRadioStation(id:string){
+  const station=radioStations.find(s=>s.stationuuid===id)|| (radioExternalStation?.stationuuid===id?radioExternalStation:null);
+  if(station){playRadioStream(station);return;}
+  try{
+    const saved=JSON.parse(localStorage.getItem("freezzz:radio:selected-station")||"null") as SharedRadioStation|null;
+    if(saved?.stationuuid===id&&saved.url)playRadioStream(saved);
+  }catch{}
+}
+window.addEventListener("freezzz:radio-select",event=>{
+  const station=(event as CustomEvent<SharedRadioStation>).detail;
+  if(!station?.stationuuid||!station.name||!(station.url_resolved||station.url))return;
+  playRadioStream(station);
+});
+
   window.addEventListener("freezzz:chat-send",async event=>{
     const detail=(event as CustomEvent<{chatId?:string;text?:string}>).detail;
     const chatId=String(detail?.chatId||"");
@@ -675,7 +693,11 @@ window.addEventListener("freezzz:navigate",event=>{
 });
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
-  if(action==="play")playRadioStation(radioSelectedId);
+  if(action==="play"){
+    if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
+      void radioAudio.play().then(()=>setRadioPlaybackStatus("playing")).catch(()=>setRadioPlaybackStatus("failed"));
+    }else playRadioStation(radioSelectedId);
+  }
   if(action==="pause"){endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();}
   if(action==="stop"){endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();}
 });
