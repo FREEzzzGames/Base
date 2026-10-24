@@ -537,54 +537,24 @@ function render(){
     body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang));
   }
   if(view==="radio"){
-    const selectedStation=radioStations.find(s=>s.stationuuid===radioSelectedId)||radioStations[0];
-    const selectedIndex=selectedStation?radioStations.findIndex(s=>s.stationuuid===selectedStation.stationuuid):-1;
-    const count=Math.min(3,radioStations.length);
-    const carouselCards=selectedStation&&selectedIndex>=0
-      ? Array.from({length:count},(_,offset)=>{
-          const half=Math.floor(count/2);
-          return radioStations[(selectedIndex+offset-half+radioStations.length)%radioStations.length];
-        })
-      : [];
+    const radioGardenUrl="https://radio.garden/";
+    const radioCopy=lang==="DE"
+      ? {subtitle:"Weltweites Radio · direkt zu Radio Garden",description:"Entdecke Live-Radiosender auf der interaktiven Weltkarte.",open:"Radio Garden öffnen",fallback:"Falls die eingebettete Ansicht nicht lädt, öffne Radio Garden direkt."}
+      : lang==="EN"
+        ? {subtitle:"Global radio · direct Radio Garden access",description:"Explore live radio stations on the interactive world map.",open:"Open Radio Garden",fallback:"If the embedded view does not load, open Radio Garden directly."}
+        : {subtitle:"Радио со всего мира · прямой доступ к Radio Garden",description:"Исследуй радиостанции на интерактивной карте мира.",open:"Открыть Radio Garden",fallback:"Если встроенный просмотр не загрузится, открой Radio Garden напрямую."};
     body=`
       <div class="content portal-layout radio-portal" data-portal-layout="radio">
-        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>Internet Radio · FREEzzz Audio Lab</p></div></div>
-        <section class="radio-panel">
+        <div class="section-head portal-block" data-portal-block="header"><div><h2>RADIO</h2><p>${radioCopy.subtitle}</p></div></div>
+        <section class="radio-panel radio-garden-panel">
           <div class="radio-heading">
-            <div><span class="radio-kicker">FREEzzz RADIO</span><h3>${T("internetRadio")}</h3><p>${T("radioChoose")}</p></div>
+            <div><span class="radio-kicker">RADIO GARDEN</span><h3>Radio Garden</h3><p>${radioCopy.description}</p></div>
+            <button id="radio-garden-open" class="tg-button" type="button">${radioCopy.open}</button>
           </div>
-          <div class="radio-carousel portal-block" data-portal-block="carousel" id="radio-carousel" aria-label="Radio station carousel">
-            <div class="radio-carousel-track" id="radio-carousel-track">
-              ${carouselCards.map(station=>{
-                const active=station.stationuuid===selectedStation?.stationuuid;
-                const logo=station.favicon?.trim()||"";
-                return `<button class="radio-carousel-card ${active?"active":""}" data-radio-carousel-id="${escapeHtml(station.stationuuid)}" type="button" title="${escapeHtml(station.name)}" aria-label="${escapeHtml(station.name)}">
-                  ${logo
-                    ? `<img class="radio-card-logo" src="${escapeHtml(logo)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
-                    : `${icon("radio","radio-card-logo-fallback-icon")}`}
-                </button>`;
-              }).join("")}
-            </div>
+          <div class="radio-garden-frame-wrap">
+            <iframe class="radio-garden-frame" src="${radioGardenUrl}" title="Radio Garden" loading="eager" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
           </div>
-          <div class="radio-now-playing portal-block" data-portal-block="nowplaying">
-            <div>
-              <span class="radio-kicker">NOW PLAYING</span>
-              <h3>${selectedStation?escapeHtml(selectedStation.name):T("chooseStation")}</h3>
-              <p>${selectedStation
-                ? [selectedStation.country||"International",selectedStation.tags||"radio",selectedStation.language||"",selectedStation.codec?`${selectedStation.codec} · ${selectedStation.bitrate||0} kbps`:""].filter(Boolean).map(escapeHtml).join(" · ")
-                : T("radioLoading")}</p>
-              </p>
-            </div>
-            <div class="radio-player-controls">
-              <button id="radio-play" class="tg-button" type="button" ${selectedStation?"":"disabled"}>${radioPlaybackStatus==="playing"?T("playing"):T("play")}</button>
-              <button id="radio-pause" class="tg-button secondary" type="button" ${radioPlaybackStatus==="playing"?"":"disabled"}>${T("pause")}</button>
-              <button id="radio-stop" class="tg-button secondary" type="button" ${radioPlaybackStatus!=="idle"&&radioPlaybackStatus!=="stopped"?"":"disabled"}>${T("stop")}</button>
-            </div>
-          </div>
-          <div id="radio-audio-host" class="radio-audio-host"></div>
-          <form id="radio-search-form" class="inline-form portal-block" data-portal-block="search"><input id="radio-search-input" value="${escapeHtml(radioQuery)}" maxlength="80" placeholder="${T("searchStation")}"><button class="tg-button" type="submit">${T("search")}</button></form>
-          <div class="radio-genres portal-block" data-portal-block="genres">${RADIO_GENRES.map(g=>`<button type="button" data-radio-genre="${escapeHtml(g)}" class="${radioGenre===g?"active":""}">${escapeHtml(g)}</button>`).join("")}</div>
-          ${radioError?`<div class="radio-status">${escapeHtml(radioError)}</div>`:""}
+          <p class="radio-garden-fallback">${radioCopy.fallback} <a href="${radioGardenUrl}" target="_blank" rel="noopener noreferrer">${radioGardenUrl}</a></p>
         </section>
       </div>`;
   }
@@ -841,27 +811,7 @@ function windowsCloseChatPopup(){
 }
 function bind(){
   if(view==="radio"){
-    document.querySelector("#radio-search-form")?.addEventListener("submit",e=>{e.preventDefault();radioQuery=(document.querySelector<HTMLInputElement>("#radio-search-input")?.value||"").trim();void loadRadioStations();});
-    document.querySelectorAll<HTMLElement>("[data-radio-genre]").forEach(x=>x.onclick=()=>{radioGenre=x.dataset.radioGenre||"pop";radioQuery="";void loadRadioStations();});
-    document.querySelectorAll<HTMLButtonElement>("[data-radio-carousel-id]").forEach(x=>x.onclick=()=>{radioSelectedId=x.dataset.radioCarouselId||"";try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{};render();});
-    document.querySelector("#radio-play")?.addEventListener("click",()=>void playRadioStation(radioSelectedId));
-    document.querySelector("#radio-pause")?.addEventListener("click",()=>{endRadioActivity();radioAudio?.pause();setRadioPlaybackStatus("paused");render();});
-    document.querySelector("#radio-stop")?.addEventListener("click",()=>{endRadioActivity();if(radioAudio){radioAudio.pause();radioAudio.currentTime=0;}setRadioPlaybackStatus("stopped");render();});
-    const carousel=document.querySelector<HTMLElement>("#radio-carousel-track");
-    let startX=0;
-    carousel?.addEventListener("pointerdown",e=>{startX=e.clientX;});
-    carousel?.addEventListener("pointerup",e=>{
-      const dx=e.clientX-startX;
-      if(Math.abs(dx)<45||radioStations.length<2)return;
-      const current=Math.max(0,radioStations.findIndex(s=>s.stationuuid===radioSelectedId));
-      const next=(current+(dx<0?1:-1)+radioStations.length)%radioStations.length;
-      radioSelectedId=radioStations[next].stationuuid;
-      try{localStorage.setItem("freezzz:radio:selected",radioSelectedId);}catch{}
-      render();
-    });
-    if(!radioStations.length&&!radioLoading&&!radioError)void loadRadioStations();
-    const host=document.querySelector("#radio-audio-host");
-    if(host&&radioAudio){host.append(radioAudio);radioAudio.style.width="100%";radioAudio.style.height="38px";}
+    document.querySelector<HTMLButtonElement>("#radio-garden-open")?.addEventListener("click",()=>openExternalUrl("https://radio.garden/"));
   }
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
