@@ -10106,12 +10106,10 @@ button:disabled,[aria-disabled="true"]{
 }
 
 
-/* RADIO Garden direct integration — embedded view with an official-site fallback. */
-.portal-layout[data-portal-layout="radio"] .radio-garden-panel{display:flex;flex-direction:column;gap:14px;min-height:0}
-.radio-garden-panel .radio-heading{align-items:center;flex-wrap:wrap}
-.radio-garden-panel .radio-heading>div{min-width:0;flex:1}
-.radio-garden-frame-wrap{width:100%;height:min(68dvh,760px);min-height:360px;overflow:hidden;border:1px solid var(--tg-theme-section-separator-color);border-radius:10px;background:#101820}
-.radio-garden-frame{display:block;width:100%;height:100%;border:0;background:#101820}
-.radio-garden-fallback{margin:0;color:var(--tg-theme-hint-color);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-.radio-garden-fallback a{color:var(--tg-theme-link-color);text-decoration:underline}
-@media(max-width:520px){.radio-garden-frame-wrap{height:65dvh;min-height:320px}.radio-garden-panel .radio-heading .tg-button{width:100%;min-height:44px}}
+/* RADIO: one edge-to-edge embedded map; no extra card, copy, or blank panel. */
+.portal-layout[data-portal-layout="radio"].radio-map-only{width:100%;height:100%;min-height:0;margin:0;padding:0}
+.radio-map-only .radio-garden-map{position:relative;width:100%;height:calc(100dvh - var(--portal-toolbar-height, 150px) - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:280px;overflow:hidden;background:#080a0b}
+.radio-map-only .radio-garden-frame{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#080a0b}
+.radio-garden-open-fallback{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:38px;height:38px;border:1px solid rgba(102,252,241,.75);border-radius:50%;background:rgba(8,12,16,.82);color:#66fcf1;text-decoration:none;font-size:23px;line-height:1}
+@media(max-width:520px){.radio-map-only .radio-garden-map{height:calc(100dvh - 154px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:260px}}
+
