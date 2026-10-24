@@ -2,7 +2,7 @@ const CARD_ID = "electronics-lab";
 const CARD_HREF = "./electronics-lab.html";
 
 function mountElectronicsLabCard() {
-  const grid = document.querySelector<HTMLElement>(".home-portal .home-grid");
+  const grid = document.querySelector<HTMLElement>(".home-portal");
   if (!grid || grid.querySelector('[data-portal-card="electronics-lab"]')) return;
   const card = document.createElement("a");
   card.className = "card home-card portal-block home-electronics-lab";
