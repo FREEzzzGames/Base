@@ -38,7 +38,7 @@ const entriesStart = catalog.indexOf(entriesPrefix);
 const entriesEnd = catalog.indexOf("];\n\ntype CatalogLanguage", entriesStart);
 assert.ok(entriesStart >= 0 && entriesEnd > entriesStart, "GAME catalog registry must be present");
 const entries = JSON.parse(catalog.slice(entriesStart + entriesPrefix.length, entriesEnd + 1));
-assert.equal(entries.length, 152, "Expected 142 game entries and 10 project/resource entries");
+assert.equal(entries.length, 153, "Expected 143 game entries and 10 project/resource entries");
 assert.equal(new Set(entries.map(entry => entry.id)).size, entries.length, "GAME catalog IDs must be unique");
 
 const categoryPrefix = "const CATEGORY_KEYS = ";
