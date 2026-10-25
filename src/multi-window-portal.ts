@@ -45,14 +45,15 @@ function restoreWindowLayout(){
       if(Number.isFinite(value.height))w.height=Number(value.height);
       if(Number.isFinite(value.z))w.z=Number(value.z);
       if(typeof value.minimized==="boolean")w.minimized=value.minimized;
+      if(typeof value.open==="boolean")w.open=value.open;
     });
   }catch{}
 }
 function saveWindowLayout(){
   try{
     const layout=Object.fromEntries((Object.keys(windows) as MiniId[]).map(id=>{
-      const {x,y,width,height,z,minimized}=windows[id];
-      return [id,{x,y,width,height,z,minimized}];
+      const {x,y,width,height,z,minimized,open}=windows[id];
+      return [id,{x,y,width,height,z,minimized,open}];
     }));
     localStorage.setItem(WINDOW_LAYOUT_KEY,JSON.stringify(layout));
   }catch{}
@@ -115,7 +116,7 @@ function open(id:MiniId){
   render();
 }
 function minimize(id:MiniId){windows[id].minimized=true;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
-function restore(id:MiniId){windows[id].open=true;windows[id].minimized=false;focus(id);saveWindowLayout();render();}
+function restore(id:MiniId){windows[id].open=true;windows[id].minimized=false;focusedWindow=id;focus(id);saveWindowLayout();render();}
 function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;windows[id].minimized=false;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandle(id:MiniId){
