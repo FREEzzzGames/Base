@@ -33,7 +33,7 @@
 "use strict";
 /* ShadowOS prototype: one source of truth for world state, events, decisions and save data. */
 const SAVE_KEY="shadowos-save-v1";
-const INITIAL={year:2007,mission:0,stability:80,economy:80,defcon:1,shadow:90,funds:100,agents:3,intel:0,flags:{},history:[],news:[],lastOutcome:null,gameOver:null};
+const INITIAL={year:2007,mission:0,stability:80,economy:80,defcon:1,shadow:90,funds:100,agents:3,intel:0,flags:{},history:[],news:[],lastOutcome:null,gameOver:null,campaignComplete:false};
 const missionTypes=[
  {name:"РАЗВЕДКА",tag:"INSIDER INTELLIGENCE",objective:"Выберите источник финансирования и определите, кому можно доверять."},
  {name:"КРИЗИС",tag:"GLOBAL CRISIS",objective:"Решите, как вмешаться в кризис, не потеряв контроль над мировой системой."},
@@ -141,12 +141,12 @@ function loadState(){
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch{notify("Сохранение недоступно в этом режиме браузера.",true);}}
 function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function dateText(){return state.year+" · Q"+(Math.floor(state.mission/2)+1);}
+function dateText(){return state.year+" · Q"+(Math.floor(state.mission*4/5)+1);}
 function notify(message,danger=false){const t=document.getElementById("toast");t.textContent=message;t.classList.toggle("danger",danger);t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,2600);}
 function pulseRender(){
  const defs=[["🌍","STABILITY",state.stability,100],["📈","ECONOMY",state.economy,100],["⚠","DEFCON",state.defcon,5],["◉","SHADOW",state.shadow,100]];
  document.getElementById("pulse").innerHTML=defs.map(([ico,label,value,max])=>{const percent=label==="DEFCON"?Number(value)/5*100:Number(value);return '<div class="pulse-item"><div class="pulse-label">'+ico+" "+label+'</div><div class="pulse-value '+(label==="DEFCON"&&value>=4?"warn":"")+'">'+(label==="DEFCON"?value+"/5":Math.round(value)+"%")+'</div><div class="pulse-bar"><i style="width:'+clamp(percent,0,100)+'%;'+(label==="DEFCON"&&value>=4?"background:var(--red)":"")+'"></i></div></div>';}).join("");
- document.getElementById("date-widget").innerHTML=state.year+" · Q"+(Math.floor(state.mission/2)+1)+"<br>MISSION "+(state.mission+1)+"/5";
+ document.getElementById("date-widget").innerHTML=state.year+" · Q"+(Math.floor(state.mission*4/5)+1)+"<br>MISSION "+(state.mission+1)+"/5";
 }
 function appHead(title,subtitle,badge="LOCAL NODE"){return '<div class="app-head"><div><div class="app-title">'+title+'</div><div class="app-subtitle">'+subtitle+'</div></div><span class="badge">'+badge+'</span></div>';}
 function renderWhisper(){
@@ -177,7 +177,7 @@ function render(){
  view.innerHTML=activeApp==="whisper"?renderWhisper():activeApp==="pulse"?renderPulseFeed():activeApp==="vault"?renderVault():activeApp==="geomap"?renderGeoMap():renderDossier();
  document.querySelectorAll("[data-app]").forEach(b=>{if(b.tagName==="BUTTON")b.addEventListener("click",()=>{activeApp=b.dataset.app;document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n.dataset.app===activeApp));render();});});
  view.querySelectorAll("[data-choice]").forEach(b=>b.addEventListener("click",()=>choose(Number(b.dataset.choice))));
- view.querySelector("[data-next]")?.addEventListener("click",advanceMission);
+ const nextButton=view.querySelector("[data-next]");if(nextButton){nextButton.disabled=!selectedChoice;nextButton.addEventListener("click",advanceMission);}
  view.querySelectorAll("[data-vault]").forEach(b=>b.addEventListener("click",()=>vaultAction(b.dataset.vault)));
  view.querySelector("[data-export]")?.addEventListener("click",exportSave);
  view.querySelector("[data-reset]")?.addEventListener("click",resetGame);
@@ -199,24 +199,28 @@ function advanceMission(){
  state.stability=clamp(state.stability+(choice.stability||0),0,100);
  state.economy=clamp(state.economy+(choice.economy||0),0,100);
  state.shadow=clamp(state.shadow+(choice.shadow||0),0,100);
+ /* DEFCON is modeled here as threat level: 1 = low, 5 = catastrophic. */
+ if((choice.stability||0)<=-5||(choice.economy||0)<=-7)state.defcon=clamp(state.defcon+1,1,5);
+ else if((choice.stability||0)>=4&&(choice.shadow||0)>=-3)state.defcon=clamp(state.defcon-1,1,5);
  state.funds=Math.max(0,state.funds+(choice.funds||0));
  state.agents=clamp(state.agents+(choice.agents||0),0,10);
  if(choice.flag)state.flags[choice.flag]={note:choice.note,year:state.year,mission:state.mission};
  if(state.flags.trusted_intel&&state.flags.transparency&&state.mission===4)state.stability=clamp(state.stability+2,0,100);
  if(state.flags.censorship&&state.flags.verified_updates)state.shadow=clamp(state.shadow+1,0,100);
  if(state.flags.proxy_network&&state.flags.institutional_checks)state.stability=clamp(state.stability+1,0,100);
- const spike=Math.abs(state.stability-old.stability)>=5||Math.abs(state.economy-old.economy)>=5||Math.abs(state.shadow-old.shadow)>=6;
+ const spike=Math.abs(state.stability-old.stability)>=5||Math.abs(state.economy-old.economy)>=5||Math.abs(state.shadow-old.shadow)>=6||state.defcon!==old.defcon;
  const note=choice.note+(state.flags.crisis_reserve&&state.year===2008?" Crisis reserve improved response capacity.":"")+(state.flags.trusted_intel&&state.year===2008?" Trusted intelligence channel remains available.":"");
- state.history.push({year:state.year,mission:state.mission,title:event.title,choice:choice.label,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow},flag:choice.flag||null});
+ state.history.push({year:state.year,mission:state.mission,title:event.title,choice:choice.label,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow,defcon:state.defcon-old.defcon},flag:choice.flag||null});
  state.news.push({year:state.year,title:event.title,text:note,kind:"DECISION"});
- state.lastOutcome={title:event.title,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow}};
+ state.lastOutcome={title:event.title,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow,defcon:state.defcon-old.defcon}};
  selectedChoice=null;
  if(state.stability<=0)state.gameOver="Stability reached 0%";
  else if(state.economy<=0)state.gameOver="Economy reached 0%";
  else if(state.shadow<=0)state.gameOver="Shadow Index reached 0%";
  else if(state.defcon>=5)state.gameOver="DEFCON reached 5";
+ if(!state.gameOver){if(state.mission<4)state.mission++;else if(state.year<2027){state.year++;state.mission=0;}else state.campaignComplete=true;}
  save();render();
- if(state.gameOver){showGameOver();return;}
+ if(state.gameOver){showGameOver();return;}if(state.campaignComplete){showGameOver();notify("CAMPAIGN COMPLETE · 2027");return;}
  if(spike)notify("GLOBAL PULSE UPDATED · Резкое изменение показателей");
  else notify("МИССИЯ ЗАФИКСИРОВАНА · "+state.year);
 }
@@ -228,7 +232,7 @@ function vaultAction(kind){
  save();render();notify("VAULT UPDATED · Ресурсы и параметры пересчитаны.");
 }
 function showGameOver(){
- const g=document.getElementById("gameover");g.innerHTML='<div class="eyebrow">SHADOWOS · SESSION TERMINATED</div><h2 id="over-title">GAME OVER</h2><p>Причина поражения: <b>'+esc(state.gameOver)+'</b>.</p><p>Кампания завершена в '+state.year+', миссия '+(state.mission+1)+'. История решений и скрытые флаги сохранены до перезапуска.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
+ const g=document.getElementById("gameover"),won=!!state.campaignComplete;g.innerHTML='<div class="eyebrow">SHADOWOS · '+(won?"CAMPAIGN ARCHIVED":"SESSION TERMINATED")+'</div><h2 id="over-title" style="color:'+(won?"var(--green)":"var(--red"))+'">'+(won?"CAMPAIGN COMPLETE":"GAME OVER")+'</h2><p>'+(won?"Вы прошли все пять миссий каждого года с 2007 по 2027. Итоговые показатели и история решений сохранены.":"Причина поражения: <b>"+esc(state.gameOver)+"</b>.")+'</p><p>Год: '+state.year+'. История решений и скрытые флаги сохранены.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
 }
 function resetGame(){
  if(!confirm("Сбросить кампанию ShadowOS и начать заново?"))return;
@@ -239,9 +243,8 @@ document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",(
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&activeApp!=="whisper"){activeApp="whisper";document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n.dataset.app===activeApp));render();}});
 function updateDeviceTime(){const d=new Date();document.getElementById("device-time").textContent=d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});}
 updateDeviceTime();setInterval(updateDeviceTime,30000);
-document.querySelector("[data-next]").disabled=true;
 render();
-if(state.gameOver)showGameOver();
+if(state.gameOver||state.campaignComplete)showGameOver();
 </script>
 </body>
 </html>
