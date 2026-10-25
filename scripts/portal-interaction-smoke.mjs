@@ -10,7 +10,7 @@ assert.ok(multiWindow.includes("function minimize(id:MiniId)"), "Portal app wind
 assert.ok(multiWindow.includes("function restore(id:MiniId)"), "Portal app windows must support restoring");
 assert.ok(multiWindow.includes("portal-os-taskbar") && multiWindow.includes("data-os-restore"), "OS taskbar must expose open windows for restoration");
 assert.ok(multiWindow.includes("minimized") && multiWindow.includes("WINDOW_LAYOUT_KEY"), "Minimized window state must be persisted with window layout");
-assert.ok(f.result.content.includes("open, minimized") || multiWindow.includes("minimized,open") || multiWindow.includes("open,minimized"), "Open app state must be persisted and restored after reload");
+assert.ok(multiWindow.includes("z,minimized,open}=windows[id]") && multiWindow.includes("if(typeof value.open===\"boolean\")w.open=value.open;"), "Open app state must be persisted and restored after reload");
 assert.ok(multiWindow.includes('data-mw-minimize="live"') && multiWindow.includes('data-mw-minimize="chat"') && multiWindow.includes('data-mw-minimize="radio"'), "LIVE, CHAT, and RADIO must expose minimize controls");
 
 
