@@ -131,7 +131,7 @@ function buildLaterYear(year){
   return {sender:["SABLE-7","MORROW","MIRROR","NORTHSTAR","ARCHIVIST"][i],role:type.tag,title:theme[0],text:year+": "+theme[1]+"\n\nКанал ShadowOS предлагает три курса действий. Их последствия складываются с решениями прошлых лет и накопленными скрытыми флагами.",choices:base.map((b,j)=>({0:{stability:2,economy:0,shadow:-2},1:{stability:-1,economy:2,shadow:-5},2:{stability:-2,economy:0,shadow:2}}[j]&&({label:b.label,stability:b.delta.stability,economy:b.delta.economy,shadow:b.delta.shadow,funds:b.delta.funds,flag:b.flag,note:b.note})).map(ch=>[ch.label,ch])};
  });
 }
-function getEvent(){return (events[state.year]||buildLaterYear(state.year))[state.mission];}
+function getEvent(){const raw=(events[state.year]||buildLaterYear(state.year))[state.mission];return {...raw,choices:raw.choices.map(choice=>Array.isArray(choice)?{label:choice[0],...choice[1]}:choice)};}
 let state=loadState();
 let activeApp="whisper",toastTimer=0;
 function loadState(){
@@ -229,7 +229,8 @@ function vaultAction(kind){
  else if(kind==="intel"){if(state.funds<8){notify("Недостаточно средств в Vault.",true);return;}state.funds-=8;state.shadow=clamp(state.shadow-2,0,100);state.intel++;}
  else if(kind==="reserve"){state.funds+=5;state.economy=clamp(state.economy-1,0,100);state.shadow=clamp(state.shadow+1,0,100);}
  state.news.push({year:state.year,title:"Vault operation",text:"Операция ресурсов: "+kind+". Изменения сохранены в состоянии мира.",kind:"VAULT"});
- save();render();notify("VAULT UPDATED · Ресурсы и параметры пересчитаны.");
+ if(state.stability<=0)state.gameOver="Stability reached 0%";else if(state.economy<=0)state.gameOver="Economy reached 0%";else if(state.shadow<=0)state.gameOver="Shadow Index reached 0%";else if(state.defcon>=5)state.gameOver="DEFCON reached 5";
+ save();render();if(state.gameOver)showGameOver();else notify("VAULT UPDATED · Ресурсы и параметры пересчитаны.");
 }
 function showGameOver(){
  const g=document.getElementById("gameover"),won=!!state.campaignComplete;g.innerHTML='<div class="eyebrow">SHADOWOS · '+(won?"CAMPAIGN ARCHIVED":"SESSION TERMINATED")+'</div><h2 id="over-title" style="color:'+(won?"var(--green)":"var(--red"))+'">'+(won?"CAMPAIGN COMPLETE":"GAME OVER")+'</h2><p>'+(won?"Вы прошли все пять миссий каждого года с 2007 по 2027. Итоговые показатели и история решений сохранены.":"Причина поражения: <b>"+esc(state.gameOver)+"</b>.")+'</p><p>Год: '+state.year+'. История решений и скрытые флаги сохранены.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
