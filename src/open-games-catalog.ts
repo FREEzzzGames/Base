@@ -102,7 +102,7 @@ const COPY: Record<CatalogLanguage, Record<string, string>> = {
   }
 };
 
-const CATEGORY_KEYS = ["arcade", "shooter", "puzzle", "platformer", "racing", "sports", "board", "casual", "3d", "word-quiz", "projects"];
+const CATEGORY_KEYS = ["arcade", "shooter", "puzzle", "platformer", "racing", "sports", "board", "casual", "3d", "word-quiz", "strategy", "projects"];
 let activeCategory = "all";
 let searchQuery = "";
 let selectedId = "";
