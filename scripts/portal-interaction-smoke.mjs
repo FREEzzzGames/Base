@@ -19,6 +19,9 @@ assert.ok(campaignScript, "SHADOW DIPLOMACY campaign script block must be discov
 assert.equal((campaignScript[1].match(/\{year:"/g) || []).length, 20, "SHADOW DIPLOMACY must define exactly 20 campaign missions");
 assert.ok(campaignScript[1].includes("s.index++;"), "SHADOW DIPLOMACY must advance to the next mission after a choice");
 assert.equal((campaignScript[1].match(/ending:"(?:multipolar|cold|scorched|ash|dollar)"/g) || []).length, 5, "SHADOW DIPLOMACY final mission must offer five global endings");
+assert.ok(shadowDiplomacy.includes("function renderSystems()") && shadowDiplomacy.includes("shadow-systems-panel"), "SHADOW DIPLOMACY must render the systemic risk dashboard");
+assert.ok(shadowDiplomacy.includes("if(s.supply<35)") && shadowDiplomacy.includes("if(s.shadowTrade>45)"), "Logistics shortages and shadow trade must have cascading economic consequences");
+assert.ok(shadowDiplomacy.includes("s.deadhand=true") && shadowDiplomacy.includes("s.loyalty<30"), "Late-game autonomous retaliation and loyalty/leak risks must be represented");
 console.log("SHADOW_DIPLOMACY_CAMPAIGN_SYNTAX_OK");
 
 const radioMap = readFileSync("src/radio-map.ts", "utf8");
