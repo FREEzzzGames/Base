@@ -4,20 +4,20 @@ import vm from "node:vm";
 
 const main = readFileSync("src/main.ts", "utf8");
 const multiWindow = readFileSync("src/multi-window-portal.ts", "utf8");
-const visualStyles = readFileSync("src/zenith-os.css", "utf8");
+const zenithStyles = readFileSync("src/zenith-os.css", "utf8");
 const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 
 assert.ok(multiWindow.includes("function minimize(id:MiniId)"), "Portal app windows must support minimizing");
 assert.ok(multiWindow.includes("function restore(id:MiniId)"), "Portal app windows must support restoring");
-assert.ok(visualStyles.includes("calc(58px + env(safe-area-inset-bottom,0px))") && visualStyles.includes(".portal-os-taskbar"), "Focused mobile windows must reserve dock space and avoid covering taskbar");
+assert.ok(zenithStyles.includes("calc(58px + env(safe-area-inset-bottom,0px))") && zenithStyles.includes(".portal-os-taskbar"), "Focused mobile windows must reserve dock space and avoid covering taskbar");
 assert.ok(multiWindow.includes("portal-os-taskbar") && multiWindow.includes("data-os-restore"), "OS taskbar must expose open windows for restoration");
 assert.ok(multiWindow.includes("minimized") && multiWindow.includes("WINDOW_LAYOUT_KEY"), "Minimized window state must be persisted with window layout");
 assert.ok(multiWindow.includes("z,minimized,open}=windows[id]") && multiWindow.includes("if(typeof value.open===\"boolean\")w.open=value.open;"), "Open app state must be persisted and restored after reload");
 assert.ok(multiWindow.includes('data-mw-minimize="live"') && multiWindow.includes('data-mw-minimize="chat"') && multiWindow.includes('data-mw-minimize="radio"'), "LIVE, CHAT, and RADIO must expose minimize controls");
 
 
-const shadowOS = readFileSync("public/games/shadow-os/index.html", "utf8");
-assert.ok(shadowOS.includes(".gameover[hidden]{display:none!important}"), "Hidden ShadowOS game-over overlay must not dim the active game");
+const shadowOSOverlayCheck = readFileSync("public/games/shadow-os/index.html", "utf8");
+assert.ok(shadowOSOverlayCheck.includes(".gameover[hidden]{display:none!important}"), "Hidden ShadowOS game-over overlay must not dim the active game");
 
 const shadowDiplomacy = readFileSync("public/games/shadow-diplomacy/index.html", "utf8");
 assert.ok(shadowDiplomacy.includes('id="shadow-campaign-expansion"'), "SHADOW DIPLOMACY campaign expansion script must exist");
