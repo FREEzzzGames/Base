@@ -128,7 +128,7 @@ function buildLaterYear(year){
   if(i===2)base[0].delta={stability:4,economy:0,shadow:-4,funds:-4};
   if(i===3)base[0].delta={stability:2,economy:3,shadow:-4,funds:-10};
   if(i===4)base[0].delta={stability:4,economy:2,shadow:-2,funds:-5};
-  return {sender:["SABLE-7","MORROW","MIRROR","NORTHSTAR","ARCHIVIST"][i],role:type.tag,title:theme[0],text:year+": "+theme[1]+"\n\nКанал ShadowOS предлагает три курса действий. Их последствия складываются с решениями прошлых лет и накопленными скрытыми флагами.",choices:base.map((b,j)=>({0:{stability:2,economy:0,shadow:-2},1:{stability:-1,economy:2,shadow:-5},2:{stability:-2,economy:0,shadow:2}}[j]&&({label:b.label,stability:b.delta.stability,economy:b.delta.economy,shadow:b.delta.shadow,funds:b.delta.funds,flag:b.flag,note:b.note})).map(ch=>[ch.label,ch])};
+  return {sender:["SABLE-7","MORROW","MIRROR","NORTHSTAR","ARCHIVIST"][i],role:type.tag,title:theme[0],text:year+": "+theme[1]+"\n\nКанал ShadowOS предлагает три курса действий. Их последствия складываются с решениями прошлых лет и накопленными скрытыми флагами.",choices:base.map(b=>[b.label,{label:b.label,stability:b.delta.stability,economy:b.delta.economy,shadow:b.delta.shadow,funds:b.delta.funds,flag:b.flag,note:b.note}])};
  });
 }
 function getEvent(){const raw=(events[state.year]||buildLaterYear(state.year))[state.mission];return {...raw,choices:raw.choices.map(choice=>Array.isArray(choice)?{label:choice[0],...choice[1]}:choice)};}
