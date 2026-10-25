@@ -18,6 +18,8 @@ assert.ok(multiWindow.includes('data-mw-minimize="live"') && multiWindow.include
 
 const shadowOSOverlayCheck = readFileSync("public/games/shadow-os/index.html", "utf8");
 assert.ok(shadowOSOverlayCheck.includes(".gameover[hidden]{display:none!important}"), "Hidden ShadowOS game-over overlay must not dim the active game");
+assert.ok(shadowOSOverlayCheck.includes("overflow:hidden!important") && shadowOSOverlayCheck.includes("height:100dvh"), "ShadowOS mobile layout must fit the viewport without app-pane scrolling");
+assert.ok(shadowOSOverlayCheck.includes('src="./shadowos-logo.svg"'), "ShadowOS must render the official logo asset in the header");
 
 const shadowDiplomacy = readFileSync("public/games/shadow-diplomacy/index.html", "utf8");
 assert.ok(shadowDiplomacy.includes('id="shadow-campaign-expansion"'), "SHADOW DIPLOMACY campaign expansion script must exist");
