@@ -302,3 +302,11 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
   .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal>.grid-shift-panel button{min-height:32px!important;padding:0 8px!important;font-size:10px!important}
 }
 @media(prefers-reduced-motion:reduce){.grid-shift-dragging{transform:none!important}}
+
+
+/* OS taskbar: restore minimized portal apps without losing their state. */
+.portal-os-taskbar{position:fixed!important;left:50%!important;bottom:max(8px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:10010!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;max-width:calc(100vw - 16px)!important;padding:6px!important;border:1px solid #444!important;border-radius:10px!important;background:rgba(7,9,12,.96)!important;box-shadow:0 8px 28px #0009!important;pointer-events:auto!important}
+.portal-os-taskbar[hidden]{display:none!important}
+.portal-os-task{min-height:36px!important;max-width:34vw!important;padding:0 12px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;border:1px solid #3b555a!important;border-radius:6px!important;background:#121b20!important;color:#e7ffff!important;font:10px "Space Mono",monospace!important;touch-action:manipulation!important}
+.portal-os-task:focus-visible{outline:2px solid #66fcf1!important;outline-offset:2px!important}
+@media(max-width:520px){.portal-os-taskbar{bottom:max(8px,env(safe-area-inset-bottom))!important;gap:4px!important;padding:5px!important}.portal-os-task{min-height:40px!important;padding:0 9px!important;font-size:9px!important}}
