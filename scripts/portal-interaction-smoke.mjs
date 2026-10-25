@@ -6,6 +6,13 @@ const main = readFileSync("src/main.ts", "utf8");
 const multiWindow = readFileSync("src/multi-window-portal.ts", "utf8");
 const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 
+assert.ok(multiWindow.includes("function minimize(id:MiniId)"), "Portal app windows must support minimizing");
+assert.ok(multiWindow.includes("function restore(id:MiniId)"), "Portal app windows must support restoring");
+assert.ok(multiWindow.includes("portal-os-taskbar") && multiWindow.includes("data-os-restore"), "OS taskbar must expose open windows for restoration");
+assert.ok(multiWindow.includes("minimized") && multiWindow.includes("WINDOW_LAYOUT_KEY"), "Minimized window state must be persisted with window layout");
+assert.ok(multiWindow.includes('data-mw-minimize="live"') && multiWindow.includes('data-mw-minimize="chat"') && multiWindow.includes('data-mw-minimize="radio"'), "LIVE, CHAT, and RADIO must expose minimize controls");
+
+
 const shadowDiplomacy = readFileSync("public/games/shadow-diplomacy/index.html", "utf8");
 assert.ok(shadowDiplomacy.includes('id="shadow-campaign-expansion"'), "SHADOW DIPLOMACY campaign expansion script must exist");
 assert.ok(!shadowDiplomacy.includes("\\nscorched:"), "SHADOW DIPLOMACY endings must not contain a literal newline escape that breaks script parsing");
