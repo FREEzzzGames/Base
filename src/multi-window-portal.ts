@@ -3,12 +3,12 @@ import { getLiveStreams } from "./live-catalog";
 import { liveEmbedUrl } from "./live-runtime";
 
 type MiniId = "live" | "chat" | "radio";
-type MiniWindow = { open:boolean; x:number; y:number; width:number; height:number; z:number; minWidth:number; minHeight:number };
+type MiniWindow = { open:boolean; minimized:boolean; x:number; y:number; width:number; height:number; z:number; minWidth:number; minHeight:number };
 
 const windows:Record<MiniId,MiniWindow> = {
-  live:{open:false,x:60,y:70,width:300,height:205,z:30,minWidth:220,minHeight:150},
-  chat:{open:false,x:48,y:250,width:340,height:360,z:40,minWidth:250,minHeight:220},
-  radio:{open:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64}
+  live:{open:false,minimized:false,x:60,y:70,width:300,height:205,z:30,minWidth:220,minHeight:150},
+  chat:{open:false,minimized:false,x:48,y:250,width:340,height:360,z:40,minWidth:250,minHeight:220},
+  radio:{open:false,minimized:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64}
 };
 let nextZ=60;
 let focusedWindow:MiniId|null=null;
@@ -44,14 +44,15 @@ function restoreWindowLayout(){
       if(Number.isFinite(value.width))w.width=Number(value.width);
       if(Number.isFinite(value.height))w.height=Number(value.height);
       if(Number.isFinite(value.z))w.z=Number(value.z);
+      if(typeof value.minimized==="boolean")w.minimized=value.minimized;
     });
   }catch{}
 }
 function saveWindowLayout(){
   try{
     const layout=Object.fromEntries((Object.keys(windows) as MiniId[]).map(id=>{
-      const {x,y,width,height,z}=windows[id];
-      return [id,{x,y,width,height,z}];
+      const {x,y,width,height,z,minimized}=windows[id];
+      return [id,{x,y,width,height,z,minimized}];
     }));
     localStorage.setItem(WINDOW_LAYOUT_KEY,JSON.stringify(layout));
   }catch{}
@@ -107,12 +108,15 @@ function fitWindow(id:MiniId){
 function open(id:MiniId){
   fitWindow(id);
   windows[id].open=true;
+  windows[id].minimized=false;
   focus(id);
   saveWindowLayout();
   if(id==="chat")window.dispatchEvent(new CustomEvent("freezzz:telegram-chat-request",{detail:{chatId:loadLastChatId()}}));
   render();
 }
-function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
+function minimize(id:MiniId){windows[id].minimized=true;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
+function restore(id:MiniId){windows[id].open=true;windows[id].minimized=false;focus(id);saveWindowLayout();render();}
+function close(id:MiniId){if(id==="live"&&windows.live.open)window.dispatchEvent(new CustomEvent("freezzz:live-window-closed",{detail:{name:liveName}}));windows[id].open=false;windows[id].minimized=false;if(focusedWindow===id)focusedWindow=null;saveWindowLayout();render();}
 function toggle(id:MiniId){windows[id].open?close(id):open(id);}
 function resizeHandle(id:MiniId){
   return '<span class="portal-mw-resize portal-mw-resize-se" data-mw-resize="'+id+'" aria-hidden="true"></span>';
@@ -139,7 +143,7 @@ function resizeWindow(id:MiniId,startX:number,startY:number,startW:number,startH
 function render(){
   if(!layer)return;
   const out:string[]=[];
-  if(windows.live.open){
+  if(windows.live.open&&!windows.live.minimized){
     const candidates=getLiveStreams();
     const s=candidates.find(x=>x.name===liveName)||candidates[0]||streams[0];
     if(s){
@@ -148,23 +152,25 @@ function render(){
         '<header class="portal-mw-head" data-mw-drag="live"><strong>📺 '+esc(s.name)+'</strong><div>'+
         '<button data-mw-source="twitch" class="'+(!liveReplay&&liveSource==="twitch"?"active":"")+'">T</button>'+
         '<button data-mw-source="youtube" class="'+(!liveReplay&&liveSource==="youtube"?"active":"")+'">Y</button>'+
-        '<button data-mw-replay type="button" class="'+(liveReplay?"active":"")+'" '+(!s.lastRecordingUrl?"disabled":"")+' title="Последняя запись">↻</button><label class="portal-mw-opacity" title="Прозрачность окна">◐<input data-mw-opacity type="range" min="20" max="100" step="5" value="'+Math.round(liveOpacity*100)+'" aria-label="Прозрачность окна"></label><button data-mw-focus="live" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="live"?"↙":"⛶")+'</button><button data-mw-close="live" type="button">×</button></div></header>'+
+        '<button data-mw-replay type="button" class="'+(liveReplay?"active":"")+'" '+(!s.lastRecordingUrl?"disabled":"")+' title="Последняя запись">↻</button><label class="portal-mw-opacity" title="Прозрачность окна">◐<input data-mw-opacity type="range" min="20" max="100" step="5" value="'+Math.round(liveOpacity*100)+'" aria-label="Прозрачность окна"></label><button data-mw-minimize="live" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="live" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="live"?"↙":"⛶")+'</button><button data-mw-close="live" type="button">×</button></div></header>'+
         '<div class="portal-mw-live-body">'+(src?'<iframe src="'+esc(src)+'" title="'+esc(s.name)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>':'LIVE unavailable')+'</div>'+resizeHandle("live")+'</section>');
     }
   }
-  if(windows.chat.open){
+  if(windows.chat.open&&!windows.chat.minimized){
     out.push('<section class="portal-mw portal-mw-chat '+(focusedWindow==="chat"?"portal-mw-focused":"") + '" data-mw="chat" style="left:'+windows.chat.x+'px;top:'+windows.chat.y+'px;width:'+windows.chat.width+'px;height:'+windows.chat.height+'px;z-index:'+windows.chat.z+'">'+
-      '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 '+esc(telegramPopupChat?.title||"CHAT")+'</strong><div><button data-mw-chat-open type="button" title="Открыть CHAT">↗</button><button data-mw-focus="chat" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="chat"?"↙":"⛶")+'</button><button data-mw-close="chat">×</button></div></header>'+
+      '<header class="portal-mw-head" data-mw-drag="chat"><strong>💬 '+esc(telegramPopupChat?.title||"CHAT")+'</strong><div><button data-mw-chat-open type="button" title="Открыть CHAT">↗</button><button data-mw-minimize="chat" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="chat" type="button" aria-label="Режим фокуса" title="Развернуть / восстановить">'+(focusedWindow==="chat"?"↙":"⛶")+'</button><button data-mw-close="chat">×</button></div></header>'+
       '<div class="portal-mw-chat-list">'+(telegramPopupMessages.length
         ? telegramPopupMessages.map(m=>'<p class="'+(m.outgoing?"outgoing":"")+'" data-mw-chat-message-key="'+esc(m.id)+'"><b>'+esc(m.senderName)+'</b><span>'+popupMessageText(m)+'</span>'+popupMessageExpandControl(m)+'</p>').join("")
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
       '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandle("chat")+'</section>');
   }
-  if(windows.radio.open){
+  if(windows.radio.open&&!windows.radio.minimized){
     out.push('<section class="portal-mw portal-mw-radio '+(focusedWindow==="radio"?"portal-mw-focused":"") + '" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
-      '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-settings-open type="button" aria-label="Настройки рабочего пространства" title="Настройки">⚙</button><button data-mw-focus="radio" type="button" aria-label="Открыть полный экран RADIO" title="Открыть полноценный раздел RADIO">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
+      '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-settings-open type="button" aria-label="Настройки рабочего пространства" title="Настройки">⚙</button><button data-mw-minimize="radio" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="radio" type="button" aria-label="Открыть полный экран RADIO" title="Открыть полноценный раздел RADIO">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
       '<div class="portal-mw-radio-body"><div class="portal-mw-radio-now"><span class="portal-mw-radio-title">'+esc(radioStationName||"INTERNET RADIO")+'</span><span class="portal-mw-radio-state">'+esc(radioStatus.toUpperCase())+'</span></div><div class="portal-mw-wave" data-playing="'+(radioStatus==="playing"?"true":"false")+'" aria-label="Audio playback visualization">'+Array.from({length:18},(_,i)=>'<i style="--bar:'+(i%5+2)+'"></i>').join("")+'</div><div class="portal-mw-radio-controls"><button data-mw-radio="play" aria-label="Play">▶</button><button data-mw-radio="pause" aria-label="Pause">Ⅱ</button><button data-mw-radio="stop" aria-label="Stop">■</button></div></div></section>');
   }
+  const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":"♫ RADIO")+'</button>').join("");
+  out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
   layer.innerHTML=out.join("");
   bind();
 }
@@ -175,6 +181,8 @@ function bind(){
   layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-motion]").forEach(input=>input.onchange=()=>{workspaceSettings.reduceMotion=input.checked;saveWorkspaceSettings();});
   layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-opacity]").forEach(input=>input.oninput=()=>{workspaceSettings.windowOpacity=Number(input.value)/100;const label=layer?.querySelector<HTMLElement>("[data-mw-opacity-value]");if(label)label.textContent=input.value+"%";saveWorkspaceSettings();});
   layer?.querySelectorAll<HTMLElement>("[data-mw-settings-reset]").forEach(b=>b.onclick=e=>{e.preventDefault();workspaceSettings={reduceMotion:false,windowOpacity:.92};saveWorkspaceSettings();render();});
+  layer?.querySelectorAll<HTMLElement>("[data-mw-minimize]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();minimize(b.dataset.mwMinimize as MiniId);});
+  layer?.querySelectorAll<HTMLElement>("[data-os-restore]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();restore(b.dataset.osRestore as MiniId);});
   layer?.querySelectorAll<HTMLElement>("[data-mw-close]").forEach(b=>b.onclick=()=>close(b.dataset.mwClose as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-focus]").forEach(b=>b.onclick=e=>{
     e.preventDefault();e.stopPropagation();
