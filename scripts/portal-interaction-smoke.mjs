@@ -24,6 +24,19 @@ assert.ok(shadowDiplomacy.includes("if(s.supply<35)") && shadowDiplomacy.include
 assert.ok(shadowDiplomacy.includes("s.deadhand=true") && shadowDiplomacy.includes("s.loyalty<30"), "Late-game autonomous retaliation and loyalty/leak risks must be represented");
 console.log("SHADOW_DIPLOMACY_CAMPAIGN_SYNTAX_OK");
 
+const shadowOS = readFileSync("public/games/shadow-os/index.html", "utf8");
+assert.ok(main.includes('data-portal-card="shadowos"') && main.includes('./games/shadow-os/index.html'), "ShadowOS must be available as a HOME block");
+assert.ok(shadowOS.includes('id="pulse"') && ["whisper","pulse","vault","geomap","dossier"].every(app => shadowOS.includes('data-app="'+app+'"')), "ShadowOS must expose all five apps and global pulse");
+const shadowOSScripts = [...shadowOS.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
+assert.equal(shadowOSScripts.length, 1, "ShadowOS must have one standalone game script");
+for (const [index, match] of shadowOSScripts.entries()) new vm.Script(match[1], { filename: `shadow-os-inline-${index + 1}.js` });
+assert.ok(shadowOS.includes('2007:[') && shadowOS.includes('2008:[') && shadowOS.includes('2009:['), "ShadowOS must define detailed events for 2007–2009");
+assert.ok(shadowOS.includes('function buildLaterYear(year)'), "ShadowOS must generate events for later years through 2027");
+assert.ok(shadowOS.includes('state.mission<4') && shadowOS.includes('state.year<2027'), "ShadowOS must advance missions and years through 2027");
+assert.ok(shadowOS.includes('state.defcon>=5') && shadowOS.includes('state.stability<=0') && shadowOS.includes('state.economy<=0') && shadowOS.includes('state.shadow<=0'), "ShadowOS must enforce all requested game-over conditions");
+assert.ok(shadowOS.includes('localStorage.setItem(SAVE_KEY') && shadowOS.includes('state.flags[choice.flag]'), "ShadowOS must persist saves and butterfly flags");
+console.log("SHADOWOS_SYNTAX_AND_CAMPAIGN_SMOKE_OK");
+
 const radioMap = readFileSync("src/radio-map.ts", "utf8");
 const radioBrowser = readFileSync("src/radio-browser.ts", "utf8");
 assert.ok(main.includes("async function playRandomRadioStation(excludeId=\"\" )") || main.includes('async function playRandomRadioStation(excludeId="")'),
