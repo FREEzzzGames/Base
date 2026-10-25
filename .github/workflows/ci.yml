@@ -253,9 +253,16 @@ jobs:
               build="$(node -e 'const fs=require("fs"); const s=fs.readFileSync(0,"utf8"); try { const j=JSON.parse(s); process.stdout.write(j.build || ""); } catch { process.stdout.write(""); }' <<<"${published}")"
               if [ "${build}" = "${expected}" ]; then
                 echo "PUBLISHED_BUILD_OK: ${build}"
-                exit 0
+                game_html="$(curl -fsSL --connect-timeout 10 --max-time 20 \
+                  "${base_url}/games/shadow-diplomacy/index.html?verify=${expected}" 2>/dev/null || true)"
+                if printf '%s' "${game_html}" | grep -Fq '<title>SHADOW DIPLOMACY — Terminal Edition</title>'; then
+                  echo "PUBLISHED_SHADOW_DIPLOMACY_OK: ${base_url}/games/shadow-diplomacy/index.html"
+                  exit 0
+                fi
+                echo "Published game page not ready or title mismatch; retrying (${attempt}/24)."
+              else
+                echo "Published build is ${build:-<missing>}; expected ${expected}; retrying (${attempt}/24)."
               fi
-              echo "Published build is ${build:-<missing>}; expected ${expected}; retrying (${attempt}/24)."
             else
               echo "version.json not reachable yet; retrying (${attempt}/24)."
             fi
