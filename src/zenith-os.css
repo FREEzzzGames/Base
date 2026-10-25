@@ -357,3 +357,31 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
     grid-column:1/-1!important;min-height:112px!important;
   }
 }
+
+
+/* Mobile app-window dock clearance: focused windows must not cover the taskbar or composer. */
+@media(max-width:520px){
+  .portal-mw.portal-mw-focused{
+    inset:max(6px,env(safe-area-inset-top)) 6px calc(58px + env(safe-area-inset-bottom,0px)) 6px!important;
+    width:auto!important;height:auto!important;max-height:none!important;
+    display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;
+  }
+  .portal-mw.portal-mw-focused .portal-mw-head{
+    min-height:46px!important;max-height:54px!important;padding:4px 6px!important;gap:4px!important;
+    display:flex!important;align-items:center!important;overflow:hidden!important;
+  }
+  .portal-mw.portal-mw-focused .portal-mw-head strong{
+    flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+  }
+  .portal-mw.portal-mw-focused .portal-mw-head button{
+    flex:0 0 40px!important;min-width:36px!important;min-height:38px!important;padding:0 4px!important;
+  }
+  .portal-mw.portal-mw-focused .portal-mw-chat-list,
+  .portal-mw.portal-mw-focused .portal-mw-live-body{
+    min-height:0!important;overflow:auto!important;
+  }
+  .portal-os-taskbar{
+    bottom:max(6px,env(safe-area-inset-bottom,0px))!important;
+    z-index:10001!important;max-width:calc(100vw - 24px)!important;
+  }
+}
