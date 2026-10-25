@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b0b">
+<title>ShadowOS: Теневая Дипломатия</title>
+<style>
+:root{--bg:#070909;--panel:#101514;--panel2:#151c19;--line:#28332d;--green:#a6ff83;--mint:#52e6a0;--dim:#84968b;--text:#e0e9e2;--red:#ff6666;--amber:#f2c66d;--mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#040606;color:var(--text);font-family:var(--mono)}body{padding:clamp(0px,3vw,22px);display:flex;justify-content:center}button{font:inherit;touch-action:manipulation;cursor:pointer}button:focus-visible{outline:2px solid var(--green);outline-offset:3px}.phone{width:min(100%,460px);min-height:min(920px,calc(100dvh - 16px));background:var(--bg);border:1px solid #29352e;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 50px #0009;position:relative}.statusbar{height:29px;display:flex;align-items:center;justify-content:space-between;padding:0 17px;color:#a6b5aa;font-size:10px;border-bottom:1px solid #18201b;letter-spacing:.06em}.statusbar .secure{color:var(--green)}header{padding:13px 15px 12px;border-bottom:1px solid var(--line);background:linear-gradient(120deg,#101714,#0a0d0b)}.brandrow{display:flex;justify-content:space-between;align-items:center;gap:8px}.brand{font-size:17px;font-weight:800;letter-spacing:.08em;color:var(--green)}.brand small{display:block;font-size:9px;color:var(--dim);font-weight:400;letter-spacing:.18em;margin-top:4px}.clock{font-size:11px;color:var(--amber);text-align:right}.pulse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:13px}.pulse-item{border:1px solid var(--line);background:#080c0a;padding:7px 6px;min-width:0}.pulse-label{font-size:9px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pulse-value{font-size:16px;color:var(--green);margin-top:5px;font-weight:700}.pulse-value.warn{color:var(--amber)}.pulse-bar{height:3px;background:#202a23;margin-top:6px}.pulse-bar i{display:block;height:100%;background:var(--green);width:80%;transition:width .2s}.appview{flex:1;min-height:350px;padding:13px;overflow:auto;overscroll-behavior:contain}.app-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.app-title{font-size:12px;letter-spacing:.12em;color:var(--green);font-weight:700}.app-subtitle{font-size:10px;color:var(--dim);margin-top:5px}.badge{font-size:9px;border:1px solid #385040;color:var(--mint);padding:4px 6px;white-space:nowrap}.mission-card,.surface{border:1px solid var(--line);background:var(--panel);padding:12px;margin-bottom:10px}.eyebrow{font-size:9px;color:var(--amber);letter-spacing:.1em;margin-bottom:8px}.message-head{display:flex;gap:9px;align-items:center;margin-bottom:10px}.avatar{width:34px;height:34px;border:1px solid #44644d;background:#132019;color:var(--green);display:grid;place-items:center;font-size:11px;flex-shrink:0}.sender{font-size:11px;color:var(--green);font-weight:700}.sender-meta{font-size:9px;color:var(--dim);margin-top:4px}.message{font-size:12px;line-height:1.65;color:#dce6de;white-space:pre-wrap}.objective{border-left:2px solid var(--amber);padding:8px 10px;margin:12px 0;color:#c8d4ca;font-size:10px;line-height:1.5;background:#17160f}.section-label{font-size:10px;color:var(--dim);letter-spacing:.1em;margin:14px 0 8px}.choices{display:grid;gap:8px}.choice{width:100%;text-align:left;background:linear-gradient(110deg,#131a16,#0e1310);border:1px solid #2a3930;padding:11px;color:var(--text);font-size:11px;line-height:1.5;display:block;min-height:54px}.choice:hover,.choice:active{border-color:var(--green);background:#17251b}.choice:disabled{opacity:.5;cursor:default}.choice b{display:block;color:var(--green);font-size:11px;margin-bottom:4px}.choice .impact{display:block;color:var(--dim);font-size:9px}.actionrow{display:flex;gap:8px;margin-top:10px}.primary,.secondary{border:1px solid var(--green);padding:11px;background:var(--green);color:#081009;font-size:10px;font-weight:800;flex:1;min-height:42px}.secondary{background:transparent;color:var(--green);border-color:var(--line)}.primary:disabled{opacity:.35}.notice{border:1px solid #4c603e;background:#111b12;color:#c9e5c3;padding:9px;font-size:10px;line-height:1.5;margin:10px 0}.toast{position:absolute;z-index:10;top:35px;left:12px;right:12px;padding:11px 12px;background:#15251a;border:1px solid var(--green);color:var(--green);font-size:11px;line-height:1.4;box-shadow:0 8px 24px #000b;animation:toastin .2s ease-out}.toast.danger{border-color:var(--red);color:var(--red)}@keyframes toastin{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}.nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px 7px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#0c100e}.nav button{border:1px solid transparent;background:transparent;color:var(--dim);font-size:8px;padding:7px 1px 5px;min-width:0;min-height:54px}.nav .ico{display:block;font-size:18px;margin-bottom:5px;filter:grayscale(.7)}.nav button.active{color:var(--green);border-color:#314535;background:#111b14}.nav button.active .ico{filter:none}.metric-row{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:var(--dim);margin-bottom:7px}.meter{height:6px;background:#202a23;margin-bottom:12px}.meter i{display:block;height:100%;background:var(--mint)}.news-item,.dossier-item,.map-region{padding:10px 0;border-bottom:1px solid var(--line)}.news-item:last-child,.dossier-item:last-child{border-bottom:0}.news-date{font-size:9px;color:var(--amber);margin-bottom:5px}.news-title{font-size:11px;color:var(--green);margin-bottom:5px}.news-copy{font-size:10px;color:#b5c4b8;line-height:1.5}.resource-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.resource-row span{color:var(--dim)}.resource-row strong{color:var(--green)}.map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.map-region{border:1px solid var(--line);padding:10px;background:#0a100c}.map-region strong{display:block;font-size:10px;color:var(--green);margin-bottom:7px}.map-region span{font-size:9px;color:var(--dim);line-height:1.5}.empty{padding:18px 8px;text-align:center;color:var(--dim);font-size:10px;line-height:1.6}.gameover{position:absolute;inset:0;z-index:20;background:#050707f5;display:flex;flex-direction:column;justify-content:center;padding:24px}.gameover h2{color:var(--red);font-size:20px;letter-spacing:.12em}.gameover p{font-size:12px;line-height:1.7;color:#c4d0c7}.gameover .primary{margin-top:12px}.footer-note{text-align:center;font-size:8px;color:#506055;padding:4px 0 7px;background:#0c100e}@media(min-width:650px){.phone{min-height:min(920px,calc(100dvh - 44px))}.appview{padding:17px}}@media(max-width:360px){body{padding:0}.phone{border-radius:0;min-height:100dvh;border:0}.pulse{gap:4px}.pulse-item{padding:6px 4px}.pulse-value{font-size:14px}.brand{font-size:15px}.nav button{font-size:7px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar"><span id="device-time">09:41</span><span class="secure">▣ ENCRYPTED · SECURE NODE</span><span>▮▮▮  ▰</span></div>
+  <header>
+    <div class="brandrow"><div class="brand">SHADOWOS<small>ТЕНЕВАЯ ДИПЛОМАТИЯ // 2007—2027</small></div><div class="clock" id="date-widget">2007 · Q1<br>MISSION 1/5</div></div>
+    <div class="pulse" id="pulse"></div>
+  </header>
+  <section class="appview" id="appview" aria-live="polite"></section>
+  <nav class="nav" aria-label="Приложения ShadowOS">
+    <button type="button" data-app="whisper" class="active"><span class="ico">💬</span>Whisper</button>
+    <button type="button" data-app="pulse"><span class="ico">📰</span>Pulse Feed</button>
+    <button type="button" data-app="vault"><span class="ico">▣</span>Vault</button>
+    <button type="button" data-app="geomap"><span class="ico">🛰️</span>GeoMap</button>
+    <button type="button" data-app="dossier"><span class="ico">📂</span>Dossier</button>
+  </nav>
+  <div class="footer-note">LOCAL SAVE ENABLED · SHADOWOS PROTOTYPE</div>
+  <div id="toast" class="toast" hidden role="status"></div>
+  <div id="gameover" class="gameover" hidden role="dialog" aria-modal="true" aria-labelledby="over-title"></div>
+</div>
+<script>
+"use strict";
+/* ShadowOS prototype: one source of truth for world state, events, decisions and save data. */
+const SAVE_KEY="shadowos-save-v1";
+const INITIAL={year:2007,mission:0,stability:80,economy:80,defcon:1,shadow:90,funds:100,agents:3,intel:0,flags:{},history:[],news:[],lastOutcome:null,gameOver:null};
+const missionTypes=[
+ {name:"РАЗВЕДКА",tag:"INSIDER INTELLIGENCE",objective:"Выберите источник финансирования и определите, кому можно доверять."},
+ {name:"КРИЗИС",tag:"GLOBAL CRISIS",objective:"Решите, как вмешаться в кризис, не потеряв контроль над мировой системой."},
+ {name:"ИНФОРМАЦИОННАЯ ВОЙНА",tag:"MEDIA OPERATIONS",objective:"Определите, что общественность узнает о происходящем."},
+ {name:"ТЕНЕВАЯ ИНТЕРВЕНЦИЯ",tag:"COVERT INTERVENTION",objective:"Используйте ресурсы и связи, чтобы повлиять на ход событий."},
+ {name:"РЕЗОНАНС ГОДА",tag:"YEAR-END RESONANCE",objective:"Закрепите результат года и оцените последствия принятых решений."}
+];
+const events={
+2007:[
+ {sender:"SABLE-7",role:"ИНСАЙДЕР · ФИНАНСОВЫЕ РЫНКИ",title:"Сигнал с ипотечного рынка",text:"Закрытый канал: региональные кредиторы начали скрывать просрочки. Публичные отчёты выглядят спокойнее реального положения. Нужно профинансировать независимую проверку.",choices:[
+ ["Оплатить независимую разведсеть",{stability:2,economy:-2,shadow:-3,funds:-12,flag:"trusted_intel",note:"Данные проверены независимым источником."}],
+ ["Купить доступ через банковского посредника",{stability:-1,economy:3,shadow:-7,funds:-8,flag:"bank_channel",note:"Доступ получен быстро, но посредник оставил след."}],
+ ["Не тратить средства до подтверждения",{stability:-3,economy:0,shadow:2,funds:0,flag:"delayed_intel",note:"Скрытность сохранена, но окно для раннего вмешательства сужается."}]]},
+ {sender:"MORROW",role:"АНАЛИТИК · КРЕДИТНЫЕ РИСКИ",title:"Предвестник ипотечного кризиса",text:"Пакеты рискованных ипотечных активов перепродаются между фондами. Если начать публичное спасение сейчас, паника может начаться раньше; если ждать, ущерб будет глубже.",choices:[
+ ["Создать тихий стабилизационный фонд",{stability:5,economy:4,shadow:-4,funds:-18,flag:"quiet_fund",note:"Часть потерь поглощена резервом."}],
+ ["Публично потребовать раскрытия рисков",{stability:2,economy:-4,shadow:3,funds:-3,flag:"transparency",note:"Доверие растёт, рынки реагируют нервно."}],
+ ["Скупить проблемные активы через прокси",{stability:-2,economy:7,shadow:-8,funds:-15,flag:"proxy_assets",note:"Доходность потенциально выше, но следы посредников сохраняются."}]]},
+ {sender:"MIRROR",role:"МЕДИА-КОНТУР",title:"Первые заголовки",text:"Редакции готовят материалы о рисках на рынке жилья. Три конкурирующие линии уже готовы к публикации.",choices:[
+ ["Успокоить аудиторию фактами и оговорками",{stability:4,economy:1,shadow:-2,funds:-4,flag:"calm_media",note:"Паника сдержана без обещания, что риска нет."}],
+ ["Перевести внимание на политический конфликт",{stability:-4,economy:0,shadow:-3,funds:-5,flag:"distraction_media",note:"Повестка смещена, но доверие к источникам падает."}],
+ ["Слить точные данные через независимых журналистов",{stability:1,economy:-2,shadow:-6,funds:-2,flag:"leak_truth",note:"Рынок встревожен, зато появляется проверяемая информация."}]]},
+ {sender:"NORTHSTAR",role:"ОПЕРАТИВНЫЙ КУРАТОР",title:"Теневая интервенция",text:"Есть возможность направить агентов к трём узлам: регулятору, банковскому консорциуму или общественной организации.",choices:[
+ ["Задействовать агента в регуляторе",{stability:3,economy:1,shadow:-5,funds:-8,agents:-1,flag:"regulator_contact",note:"Ранний доступ к решениям регулятора."}],
+ ["Направить капитал через консорциум",{stability:-1,economy:5,shadow:-7,funds:-14,flag:"consortium",note:"Ликвидность увеличена, цепочка владения усложнилась."}],
+ ["Поддержать независимый аудит",{stability:4,economy:-1,shadow:2,funds:-10,flag:"audit_network",note:"Надёжность информации выросла."}]]},
+ {sender:"ARCHIVIST",role:"ГОДОВОЙ СИНТЕЗ",title:"Резонанс 2007",text:"Год заканчивается на фоне растущего напряжения. Решения определят, какие каналы влияния останутся доступны в следующем цикле.",choices:[
+ ["Опубликовать ограниченный отчёт о рисках",{stability:4,economy:-1,shadow:-2,funds:-3,flag:"public_warning",note:"Часть риска признана до кризиса."}],
+ ["Сохранить всё в закрытом архиве",{stability:-2,economy:2,shadow:4,funds:0,flag:"sealed_archive",note:"Секретность сохранена, предупреждение не услышано."}],
+ ["Сформировать резерв для кризисного вмешательства",{stability:1,economy:3,shadow:-3,funds:-10,flag:"crisis_reserve",note:"В следующем году появится дополнительный финансовый манёвр."}]]}
+],
+2008:[
+ {sender:"SABLE-7",role:"ИНСАЙДЕР · БАНКОВСКИЙ СЕКТОР",title:"Ликвидность исчезает",text:"Межбанковское кредитование замерзает. Контрагенты перестали доверять балансовым отчётам. Ваши источники предлагают три способа получить картину происходящего.",choices:[
+ ["Финансировать независимую проверку балансов",{stability:3,economy:1,shadow:-3,funds:-12,flag:"balance_audit",note:"Достоверность данных повышена."}],
+ ["Купить конфиденциальные данные у трейдера",{stability:-1,economy:3,shadow:-8,funds:-9,flag:"trader_leak",note:"Данные получены, источник может быть скомпрометирован."}],
+ ["Использовать прошлогоднюю сеть контактов",{stability:2,economy:0,shadow:1,funds:-4,flag:"trusted_intel",note:"Сеть надёжнее при наличии прошлогоднего флага доверия."}]]},
+ {sender:"MORROW",role:"АНАЛИТИК · СИСТЕМНЫЙ РИСК",title:"Крах Lehman Brothers",text:"Банкротство Lehman Brothers обрушило доверие на рынках. Следующее решение определит, будет ли приоритетом ликвидность, прозрачность или контроль над активами.",choices:[
+ ["Поддержать экстренный механизм ликвидности",{stability:5,economy:5,shadow:-4,funds:-20,flag:"liquidity_backstop",note:"Системный риск снижен ценой резервов."}],
+ ["Потребовать условного спасения и аудита",{stability:4,economy:1,shadow:-2,funds:-13,flag:"conditional_bailout",note:"Поддержка привязана к раскрытию данных."}],
+ ["Дать рынку очиститься без вмешательства",{stability:-7,economy:-8,shadow:4,funds:0,flag:"market_purge",note:"Скрытность сохранена, кризис углубился."}]]},
+ {sender:"MIRROR",role:"МЕДИА-КОНТУР",title:"Паника на лентах",text:"Кадры очередей у банков распространяются быстрее официальных комментариев. Ложные слухи и реальные проблемы смешались.",choices:[
+ ["Публиковать подтверждённые данные каждый час",{stability:5,economy:0,shadow:-4,funds:-5,flag:"verified_updates",note:"Общественная реакция становится управляемее."}],
+ ["Заглушить тревожные сообщения",{stability:-2,economy:1,shadow:-1,funds:-4,flag:"censorship",note:"Охват слухов временно падает, доверие повреждено."}],
+ ["Использовать панику для давления на регулятора",{stability:-5,economy:2,shadow:-5,funds:-6,flag:"panic_leverage",note:"Политический рычаг усилен ценой нестабильности."}]]},
+ {sender:"NORTHSTAR",role:"ОПЕРАТИВНЫЙ КУРАТОР",title:"Интервенция через Vault",text:"На выбор — финансировать спасательный мост, скупить активы или сохранить резервы для следующего кризиса.",choices:[
+ ["Открыть ограниченный кредитный мост",{stability:4,economy:4,shadow:-3,funds:-18,flag:"bridge_funding",note:"Кредитование частично восстановлено."}],
+ ["Скупить активы через несколько фондов",{stability:-1,economy:6,shadow:-9,funds:-16,flag:"distressed_assets",note:"Позиция усилена, риск обнаружения вырос."}],
+ ["Сохранить резервы и не вмешиваться",{stability:-3,economy:-2,shadow:3,funds:0,flag:"reserve_hold",note:"Средства сохранены, кризисные потери продолжаются."}]]},
+ {sender:"ARCHIVIST",role:"ГОДОВОЙ СИНТЕЗ",title:"Резонанс 2008",text:"Кризис стал глобальным. Важен не только размер потерь, но и то, какие институты сохранили доверие и какие скрытые сети раскрылись.",choices:[
+ ["Поддержать международную координацию",{stability:5,economy:3,shadow:-4,funds:-12,flag:"multilateral_coordination",note:"Координация облегчает будущие переговоры."}],
+ ["Закрепить контроль над ключевыми активами",{stability:-1,economy:4,shadow:-6,funds:-10,flag:"asset_control",note:"Влияние растёт, публичное доверие неоднозначно."}],
+ ["Перенести ресурсы в долгосрочную разведку",{stability:0,economy:-1,shadow:2,funds:-8,flag:"deep_intel",note:"Больше сведений станет доступно в последующих кризисах."}]]}
+],
+2009:[
+ {sender:"SABLE-7",role:"ИНСАЙДЕР · МАКРОЭКОНОМИКА",title:"Карта токсичных активов",text:"После экстренных мер остаются непрозрачные активы и спорные оценки убытков. Источник предлагает собрать карту рисков до следующего раунда решений.",choices:[
+ ["Свести данные регуляторов и аудиторов",{stability:3,economy:2,shadow:-3,funds:-9,flag:"risk_map",note:"Карта рисков повышает качество будущих решений."}],
+ ["Получить закрытый список через посредника",{stability:0,economy:3,shadow:-7,funds:-7,flag:"private_list",note:"Список получен, но его точность не гарантирована."}],
+ ["Сосредоточиться на восстановлении доверия",{stability:4,economy:1,shadow:1,funds:-5,flag:"trust_rebuild",note:"Скрытность немного уступает устойчивости."}]]},
+ {sender:"MORROW",role:"АНАЛИТИК · ВОССТАНОВЛЕНИЕ",title:"Стимулы или долговая нагрузка",text:"Экономика начинает стабилизироваться, но государственные стимулы увеличивают долг. Решение задаст характер восстановления.",choices:[
+ ["Поддержать адресные стимулы и аудит",{stability:4,economy:5,shadow:-3,funds:-16,flag:"targeted_stimulus",note:"Восстановление поддержано с контролем расходов."}],
+ ["Сделать ставку на экспорт и инфраструктуру",{stability:2,economy:6,shadow:-2,funds:-18,flag:"infrastructure",note:"Рост ускорен, результат проявится постепенно."}],
+ ["Сократить вмешательство ради резервов",{stability:-3,economy:-2,shadow:3,funds:2,flag:"austerity",note:"Резервы растут, социальное напряжение усиливается."}]]},
+ {sender:"MIRROR",role:"МЕДИА-КОНТУР",title:"Кому принадлежит восстановление",text:"Политические группы пытаются присвоить себе заслуги за стабилизацию. Публика ждёт понятного ответа, кто заплатил за кризис.",choices:[
+ ["Публиковать проверяемые отчёты о расходах",{stability:4,economy:1,shadow:-4,funds:-4,flag:"open_spending",note:"Подотчётность укреплена."}],
+ ["Сфокусировать эфир на признаках роста",{stability:1,economy:2,shadow:-2,funds:-3,flag:"growth_narrative",note:"Оптимизм усилился, но вопросы не исчезли."}],
+ ["Разделить аудиторию конкурирующими темами",{stability:-4,economy:0,shadow:-5,funds:-4,flag:"fragmented_attention",note:"Контроль повестки краткосрочный."}]]},
+ {sender:"NORTHSTAR",role:"ОПЕРАТИВНЫЙ КУРАТОР",title:"Перенаправление капитала",text:"Открывается короткое окно, чтобы вложить ресурсы в инфраструктуру, независимые институты или закрытые сети влияния.",choices:[
+ ["Финансировать инфраструктурный узел",{stability:3,economy:5,shadow:-3,funds:-16,flag:"infra_node",note:"Долгосрочная экономика получает импульс."}],
+ ["Укрепить независимые институты проверки",{stability:5,economy:1,shadow:1,funds:-10,flag:"institutional_checks",note:"Система устойчивее к манипуляциям."}],
+ ["Расширить сеть закрытых посредников",{stability:-2,economy:3,shadow:-8,funds:-12,flag:"proxy_network",note:"Скрытый охват увеличен, риск утечек вырос."}]]},
+ {sender:"ARCHIVIST",role:"ГОДОВОЙ СИНТЕЗ",title:"Резонанс 2009",text:"Первая фаза кризиса позади. Сохраните то, что работает, и определите, какой тип влияния будет доминировать в следующем десятилетии.",choices:[
+ ["Закрепить прозрачные правила вмешательства",{stability:5,economy:2,shadow:-2,funds:-6,flag:"rules_based",note:"Устойчивость укреплена, часть скрытности потеряна."}],
+ ["Сохранить гибкость закрытой сети",{stability:0,economy:2,shadow:3,funds:-4,flag:"adaptive_network",note:"Манёвр сохранён."}],
+ ["Направить средства в разведку долгого цикла",{stability:1,economy:0,shadow:-1,funds:-10,flag:"long_cycle_intel",note:"Подготовка к будущим кризисам усилена."}]]}
+]};
+const genericThemes=[
+ ["Цифровая инфраструктура и новые рынки","Технологические платформы концентрируют влияние, а регуляторы не успевают за изменениями."],
+ ["Энергетическая и логистическая уязвимость","Сбой в цепочках поставок начинает влиять на цены и политические решения."],
+ ["Информационный кризис","Слухи, утечки и поддельные материалы распространяются быстрее официальной проверки."],
+ ["Региональная напряжённость","Локальный конфликт угрожает перерасти в международный кризис."],
+ ["Доверие к институтам","Общество требует объяснений, а закрытые структуры опасаются раскрытия своих связей."]
+];
+function buildLaterYear(year){
+ const themes=genericThemes;
+ return missionTypes.map((type,i)=>{
+  const theme=themes[(year+i)%themes.length];
+  const base=[
+   {label:"Провести независимую проверку",delta:{stability:3,economy:1,shadow:-3,funds:-8},flag:"audit_"+year+"_"+i,note:"Надёжность данных повышена."},
+   {label:"Использовать закрытого посредника",delta:{stability:-1,economy:3,shadow:-6,funds:-7},flag:"proxy_"+year+"_"+i,note:"Влияние усилено, риск обнаружения вырос."},
+   {label:"Сохранить ресурсы и выждать",delta:{stability:-2,economy:0,shadow:2,funds:1},flag:"wait_"+year+"_"+i,note:"Резервы сохранены, кризис остаётся открытым."}
+  ];
+  if(i===1)base[0].delta={stability:4,economy:4,shadow:-3,funds:-14};
+  if(i===2)base[0].delta={stability:4,economy:0,shadow:-4,funds:-4};
+  if(i===3)base[0].delta={stability:2,economy:3,shadow:-4,funds:-10};
+  if(i===4)base[0].delta={stability:4,economy:2,shadow:-2,funds:-5};
+  return {sender:["SABLE-7","MORROW","MIRROR","NORTHSTAR","ARCHIVIST"][i],role:type.tag,title:theme[0],text:year+": "+theme[1]+"\n\nКанал ShadowOS предлагает три курса действий. Их последствия складываются с решениями прошлых лет и накопленными скрытыми флагами.",choices:base.map((b,j)=>({0:{stability:2,economy:0,shadow:-2},1:{stability:-1,economy:2,shadow:-5},2:{stability:-2,economy:0,shadow:2}}[j]&&({label:b.label,stability:b.delta.stability,economy:b.delta.economy,shadow:b.delta.shadow,funds:b.delta.funds,flag:b.flag,note:b.note})).map(ch=>[ch.label,ch])};
+ });
+}
+function getEvent(){return (events[state.year]||buildLaterYear(state.year))[state.mission];}
+let state=loadState();
+let activeApp="whisper",toastTimer=0;
+function loadState(){
+ try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const parsed=JSON.parse(raw);if(parsed&&Number.isInteger(parsed.year)&&parsed.year>=2007&&parsed.year<=2027&&Number.isInteger(parsed.mission)&&parsed.mission>=0&&parsed.mission<5)return {...structuredClone(INITIAL),...parsed,flags:parsed.flags||{},history:Array.isArray(parsed.history)?parsed.history:[],news:Array.isArray(parsed.news)?parsed.news:[]};}}catch{}
+ return structuredClone(INITIAL);
+}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch{notify("Сохранение недоступно в этом режиме браузера.",true);}}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function dateText(){return state.year+" · Q"+(Math.floor(state.mission/2)+1);}
+function notify(message,danger=false){const t=document.getElementById("toast");t.textContent=message;t.classList.toggle("danger",danger);t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,2600);}
+function pulseRender(){
+ const defs=[["🌍","STABILITY",state.stability,100],["📈","ECONOMY",state.economy,100],["⚠","DEFCON",state.defcon,5],["◉","SHADOW",state.shadow,100]];
+ document.getElementById("pulse").innerHTML=defs.map(([ico,label,value,max])=>{const percent=label==="DEFCON"?Number(value)/5*100:Number(value);return '<div class="pulse-item"><div class="pulse-label">'+ico+" "+label+'</div><div class="pulse-value '+(label==="DEFCON"&&value>=4?"warn":"")+'">'+(label==="DEFCON"?value+"/5":Math.round(value)+"%")+'</div><div class="pulse-bar"><i style="width:'+clamp(percent,0,100)+'%;'+(label==="DEFCON"&&value>=4?"background:var(--red)":"")+'"></i></div></div>';}).join("");
+ document.getElementById("date-widget").innerHTML=state.year+" · Q"+(Math.floor(state.mission/2)+1)+"<br>MISSION "+(state.mission+1)+"/5";
+}
+function appHead(title,subtitle,badge="LOCAL NODE"){return '<div class="app-head"><div><div class="app-title">'+title+'</div><div class="app-subtitle">'+subtitle+'</div></div><span class="badge">'+badge+'</span></div>';}
+function renderWhisper(){
+ const e=getEvent(),type=missionTypes[state.mission];
+ return appHead("💬 WHISPER",type.name+" · "+type.tag,"ENCRYPTED")+
+ '<div class="mission-card"><div class="eyebrow">INCOMING MESSAGE · '+state.year+' / '+(state.mission+1)+'</div><div class="message-head"><div class="avatar">'+esc(e.sender.slice(0,2))+'</div><div><div class="sender">'+esc(e.sender)+'</div><div class="sender-meta">'+esc(e.role)+" · "+esc(e.title)+'</div></div></div><div class="message">'+esc(e.text)+'</div><div class="objective"><b>ЗАДАЧА</b><br>'+esc(type.objective)+'</div></div><div class="section-label">ВЫБЕРИТЕ ОТВЕТ · ОДИН ХОД</div><div class="choices">'+e.choices.map((c,i)=>'<button class="choice" type="button" data-choice="'+i+'"><b>'+String.fromCharCode(65+i)+'. '+esc(c.label)+'</b><span class="impact">Stability '+signed(c.stability||0)+' · Economy '+signed(c.economy||0)+' · Shadow '+signed(c.shadow||0)+(c.funds!==undefined?' · Funds '+signed(c.funds):'')+'</span></button>').join("")+'</div><div class="actionrow"><button class="secondary" data-app="dossier">ОТКРЫТЬ ДОСЬЕ</button><button class="primary" data-next>ЗАВЕРШИТЬ МИССИЮ →</button></div><div class="notice">Выберите один ответ. Затем завершите миссию, чтобы зафиксировать ход и перейти дальше. Скрытые флаги сохраняются.</div>';
+}
+function signed(n){return (n>0?"+":"")+n;}
+function renderPulseFeed(){
+ const feed=[...(state.news||[])].reverse().slice(0,8);
+ if(!feed.length)feed.push({year:state.year,title:"Мониторинг активен",text:"Ожидается первое решение. Лента будет отражать ваши действия и реакцию мировых систем.",kind:"SYSTEM"});
+ return appHead("📰 PULSE FEED","Медиа · события · последствия","LIVE")+'<div class="surface">'+feed.map(n=>'<div class="news-item"><div class="news-date">'+esc(n.year||state.year)+' · '+esc(n.kind||"INTEL")+'</div><div class="news-title">'+esc(n.title)+'</div><div class="news-copy">'+esc(n.text)+'</div></div>').join("")+'</div>';
+}
+function renderVault(){
+ return appHead("▣ VAULT","Ресурсы теневого синдиката","PRIVATE")+'<div class="surface"><div class="eyebrow">AVAILABLE CAPITAL</div><div class="resource-row"><span>Ликвидные средства</span><strong>'+Math.round(state.funds)+' CR</strong></div><div class="resource-row"><span>Активные агенты</span><strong>'+state.agents+'</strong></div><div class="resource-row"><span>Разведывательные пакеты</span><strong>'+state.intel+'</strong></div><div class="resource-row"><span>Накопленные флаги</span><strong>'+Object.keys(state.flags).length+'</strong></div><div class="section-label">РЕЗЕРВНЫЕ ОПЕРАЦИИ</div><button class="choice" data-vault="stabilize"><b>01 · Стабилизационный пакет</b><span class="impact">−12 CR · Stability +3 · Economy +1</span></button><button class="choice" data-vault="intel"><b>02 · Финансировать разведку</b><span class="impact">−8 CR · Shadow −2 · +1 разведпакет</span></button><button class="choice" data-vault="reserve"><b>03 · Консервировать активы</b><span class="impact">+5 CR · Economy −1 · Shadow +1</span></button></div><div class="notice">Vault-операция использует ход ресурсов, но не заменяет ответ Whisper.</div>';
+}
+function renderGeoMap(){
+ const regions=[["СЕВЕРНАЯ АТЛАНТИКА","Финансовые потоки · риск "+(state.economy<40?"ВЫСОКИЙ":"СРЕДНИЙ")],["ВОСТОЧНАЯ ЕВРОПА","Политическая напряжённость · DEFCON "+state.defcon],["ВОСТОЧНАЯ АЗИЯ","Технологические цепочки · стабильность "+Math.round(state.stability)+"%"],["ГЛОБАЛЬНЫЕ РЫНКИ","Экономика "+Math.round(state.economy)+"% · Shadow "+Math.round(state.shadow)+"%"]];
+ return appHead("🛰️ GEOMAP","Условная карта кризисных узлов","STRATEGIC")+'<div class="surface"><div class="map-grid">'+regions.map(r=>'<div class="map-region"><strong>'+r[0]+'</strong><span>'+r[1]+'</span></div>').join("")+'</div><div class="section-label">АКТИВНЫЕ СИГНАЛЫ</div><div class="news-copy">Карта концептуальная: отображает игровые риски, а не реальные оперативные данные.</div></div>';
+}
+function renderDossier(){
+ const flags=Object.entries(state.flags);
+ return appHead("📂 DOSSIER","Досье · скрытые флаги · история","CLASSIFIED")+'<div class="surface"><div class="eyebrow">BUTTERFLY EFFECTS · '+flags.length+' FLAGS</div>'+(flags.length?flags.slice().reverse().map(([k,v])=>'<div class="dossier-item"><div class="news-title">'+esc(k.replaceAll("_"," ").toUpperCase())+'</div><div class="news-copy">'+esc(v.note||"Последствие сохранено")+' · '+esc(v.year||"")+'</div></div>').join(""):'<div class="empty">Досье пока пусто.<br>Примите решение в Whisper, чтобы создать первый след.</div>')+'<div class="section-label">ИСТОРИЯ РЕШЕНИЙ</div>'+(state.history.length?state.history.slice().reverse().slice(0,12).map(h=>'<div class="dossier-item"><div class="news-date">'+h.year+' · MISSION '+(h.mission+1)+'</div><div class="news-title">'+esc(h.title)+'</div><div class="news-copy">'+esc(h.choice)+'<br>'+esc(h.note)+'</div></div>').join(""):'<div class="empty">Решений пока нет.</div>')+'</div><div class="actionrow"><button class="secondary" data-export>ЭКСПОРТ SAVE</button><button class="secondary" data-reset>СБРОСИТЬ КАМПАНИЮ</button></div>';
+}
+function render(){
+ pulseRender();
+ const view=document.getElementById("appview");
+ view.innerHTML=activeApp==="whisper"?renderWhisper():activeApp==="pulse"?renderPulseFeed():activeApp==="vault"?renderVault():activeApp==="geomap"?renderGeoMap():renderDossier();
+ document.querySelectorAll("[data-app]").forEach(b=>{if(b.tagName==="BUTTON")b.addEventListener("click",()=>{activeApp=b.dataset.app;document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n.dataset.app===activeApp));render();});});
+ view.querySelectorAll("[data-choice]").forEach(b=>b.addEventListener("click",()=>choose(Number(b.dataset.choice))));
+ view.querySelector("[data-next]")?.addEventListener("click",advanceMission);
+ view.querySelectorAll("[data-vault]").forEach(b=>b.addEventListener("click",()=>vaultAction(b.dataset.vault)));
+ view.querySelector("[data-export]")?.addEventListener("click",exportSave);
+ view.querySelector("[data-reset]")?.addEventListener("click",resetGame);
+}
+let selectedChoice=null;
+function choose(index){
+ if(state.gameOver)return;
+ const event=getEvent(),choice=event.choices[index];if(!choice)return;
+ selectedChoice={index,choice};
+ document.querySelectorAll("[data-choice]").forEach((b,i)=>{b.style.borderColor=i===index?"var(--green)":"#2a3930";b.style.background=i===index?"#1b2b1d":"";b.setAttribute("aria-pressed",String(i===index));});
+ document.querySelector("[data-next]").disabled=false;
+ notify("Ответ выбран. Завершите миссию, чтобы применить последствия.");
+}
+function advanceMission(){
+ if(state.gameOver)return;
+ if(!selectedChoice){notify("Сначала выберите один из трёх ответов.",true);return;}
+ const event=getEvent(),choice=event.choices[selectedChoice.index];
+ const old={stability:state.stability,economy:state.economy,shadow:state.shadow,defcon:state.defcon};
+ state.stability=clamp(state.stability+(choice.stability||0),0,100);
+ state.economy=clamp(state.economy+(choice.economy||0),0,100);
+ state.shadow=clamp(state.shadow+(choice.shadow||0),0,100);
+ state.funds=Math.max(0,state.funds+(choice.funds||0));
+ state.agents=clamp(state.agents+(choice.agents||0),0,10);
+ if(choice.flag)state.flags[choice.flag]={note:choice.note,year:state.year,mission:state.mission};
+ if(state.flags.trusted_intel&&state.flags.transparency&&state.mission===4)state.stability=clamp(state.stability+2,0,100);
+ if(state.flags.censorship&&state.flags.verified_updates)state.shadow=clamp(state.shadow+1,0,100);
+ if(state.flags.proxy_network&&state.flags.institutional_checks)state.stability=clamp(state.stability+1,0,100);
+ const spike=Math.abs(state.stability-old.stability)>=5||Math.abs(state.economy-old.economy)>=5||Math.abs(state.shadow-old.shadow)>=6;
+ const note=choice.note+(state.flags.crisis_reserve&&state.year===2008?" Crisis reserve improved response capacity.":"")+(state.flags.trusted_intel&&state.year===2008?" Trusted intelligence channel remains available.":"");
+ state.history.push({year:state.year,mission:state.mission,title:event.title,choice:choice.label,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow},flag:choice.flag||null});
+ state.news.push({year:state.year,title:event.title,text:note,kind:"DECISION"});
+ state.lastOutcome={title:event.title,note,delta:{stability:state.stability-old.stability,economy:state.economy-old.economy,shadow:state.shadow-old.shadow}};
+ selectedChoice=null;
+ if(state.stability<=0)state.gameOver="Stability reached 0%";
+ else if(state.economy<=0)state.gameOver="Economy reached 0%";
+ else if(state.shadow<=0)state.gameOver="Shadow Index reached 0%";
+ else if(state.defcon>=5)state.gameOver="DEFCON reached 5";
+ save();render();
+ if(state.gameOver){showGameOver();return;}
+ if(spike)notify("GLOBAL PULSE UPDATED · Резкое изменение показателей");
+ else notify("МИССИЯ ЗАФИКСИРОВАНА · "+state.year);
+}
+function vaultAction(kind){
+ if(kind==="stabilize"){if(state.funds<12){notify("Недостаточно средств в Vault.",true);return;}state.funds-=12;state.stability=clamp(state.stability+3,0,100);state.economy=clamp(state.economy+1,0,100);}
+ else if(kind==="intel"){if(state.funds<8){notify("Недостаточно средств в Vault.",true);return;}state.funds-=8;state.shadow=clamp(state.shadow-2,0,100);state.intel++;}
+ else if(kind==="reserve"){state.funds+=5;state.economy=clamp(state.economy-1,0,100);state.shadow=clamp(state.shadow+1,0,100);}
+ state.news.push({year:state.year,title:"Vault operation",text:"Операция ресурсов: "+kind+". Изменения сохранены в состоянии мира.",kind:"VAULT"});
+ save();render();notify("VAULT UPDATED · Ресурсы и параметры пересчитаны.");
+}
+function showGameOver(){
+ const g=document.getElementById("gameover");g.innerHTML='<div class="eyebrow">SHADOWOS · SESSION TERMINATED</div><h2 id="over-title">GAME OVER</h2><p>Причина поражения: <b>'+esc(state.gameOver)+'</b>.</p><p>Кампания завершена в '+state.year+', миссия '+(state.mission+1)+'. История решений и скрытые флаги сохранены до перезапуска.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
+}
+function resetGame(){
+ if(!confirm("Сбросить кампанию ShadowOS и начать заново?"))return;
+ state=structuredClone(INITIAL);selectedChoice=null;activeApp="whisper";document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n.dataset.app===activeApp));document.getElementById("gameover").hidden=true;save();render();notify("НОВАЯ КАМПАНИЯ · 2007");
+}
+function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="shadowos-save-"+state.year+".json";a.click();URL.revokeObjectURL(url);notify("SAVE EXPORTED");}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{activeApp=b.dataset.app;document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n===b));render();}));
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&activeApp!=="whisper"){activeApp="whisper";document.querySelectorAll(".nav button").forEach(n=>n.classList.toggle("active",n.dataset.app===activeApp));render();}});
+function updateDeviceTime(){const d=new Date();document.getElementById("device-time").textContent=d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});}
+updateDeviceTime();setInterval(updateDeviceTime,30000);
+document.querySelector("[data-next]").disabled=true;
+render();
+if(state.gameOver)showGameOver();
+</script>
+</body>
+</html>
