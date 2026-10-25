@@ -14,10 +14,25 @@ main{display:grid;grid-template-columns:minmax(205px,280px) minmax(0,1fr) minmax
 @media(max-width:900px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}.intel{grid-column:1/-1;max-height:160px}.intel .log{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.intel .log li{border-bottom:0}.metrics{grid-row:1}.center{grid-column:2;grid-row:1/3}}
 .systems-panel{border:1px solid var(--border);background:#090d14;padding:9px;margin-top:10px}.systems-title{color:var(--cyan);font-size:11px;font-weight:bold;margin-bottom:7px}.systems-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}.sys-item{font-size:10px;color:var(--dim)}.sys-item strong{display:block;color:var(--amber);font-size:11px;margin-top:2px}.sys-track{height:4px;background:#1b2432;margin-top:3px}.sys-track span{display:block;height:100%;background:var(--cyan)}.systems-note{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.4}
 @media(max-width:620px){header{padding:9px;align-items:flex-start}.brand{font-size:13px}.status{font-size:10px;gap:7px}main{display:flex;flex-direction:column;overflow:visible;padding:7px;gap:7px}.metrics{order:2}.center{order:1;min-height:58dvh}.intel{order:3;max-height:none}.intel .log{display:block}.terminal{min-height:190px;max-height:34dvh}.ph{font-size:11px}.metric{margin-bottom:9px}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.options{margin-top:8px}.opt{padding:11px;font-size:11px}footer{padding:8px 10px}}
+
+/* Campaign UX: make objectives, state changes and decision history visible. */
+.campaign-hud{border:1px solid var(--border);background:#080c12;padding:10px;margin-bottom:10px}
+.campaign-hud .hud-row{display:flex;justify-content:space-between;gap:8px;color:var(--dim);font-size:11px;margin-bottom:6px}
+.campaign-hud strong{color:var(--cyan)}
+.campaign-track{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:3px;margin:8px 0}
+.campaign-step{height:7px;background:#202a3a;border:0;padding:0;min-width:0}
+.campaign-step.done{background:var(--green)}.campaign-step.current{background:var(--amber);box-shadow:0 0 6px #ffb00088}
+.history-list{list-style:none;display:flex;flex-direction:column;gap:7px;overflow:auto;max-height:230px}
+.history-list li{border-left:2px solid var(--border);padding:5px 7px;color:var(--dim);font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.history-list li strong{display:block;color:var(--amber);font-size:10px}
+.log li{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.outcome-note{border-left:2px solid var(--cyan);padding:8px 10px;background:#07131a;color:#cbd7e7;font-size:11px;line-height:1.5;margin:8px 0}
+@media(max-width:620px){.campaign-hud{padding:8px}.campaign-track{gap:2px}.campaign-step{height:6px}.history-list{max-height:160px}.intel .ph{margin-bottom:7px}.systems-grid{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
-<header><div class="brand">SHADOW DIPLOMACY v4.2 // SITUATION ROOM</div><div class="status"><div>ДЕРЖАВА: <span>ОРЕГОН</span></div><div>ГОД: <span>2007.03</span></div><div>DOOMSDAY: <span id="doomsday-val" style="color:var(--red)">22%</span></div></div></header>
+<header><div class="brand">SHADOW DIPLOMACY v4.2 // SITUATION ROOM</div><div class="status"><div>ДЕРЖАВА: <span>ОРЕГОН</span></div><div>ГОД: <span id="campaign-year">2007.03</span></div><div>DOOMSDAY: <span id="doomsday-val" style="color:var(--red)">22%</span></div></div></header>
 <main>
 <section class="panel metrics"><div class="ph"><span>ЭКОНОМИКА И ШТАТ</span><span>[F1]</span></div><div class="metric-grid">
 <div class="metric"><div class="ml"><span>ВВП ($3.2T)</span><span>+1.8%</span></div><div class="bar"><div class="fill cyan" style="width:75%"></div></div></div>
@@ -28,8 +43,8 @@ main{display:grid;grid-template-columns:minmax(205px,280px) minmax(0,1fr) minmax
 <div class="metric"><div class="ml"><span>ПАРАНОЙЯ</span><span id="paranoia-val">35%</span></div><div class="bar"><div class="fill red" id="paranoia-bar" style="width:35%"></div></div></div>
 <div class="metric"><div class="ml"><span>УСТУПЧИВОСТЬ</span><span id="leverage-val">15%</span></div><div class="bar"><div class="fill cyan" id="leverage-bar" style="width:15%"></div></div></div>
 </section>
-<section class="panel center"><div class="ph"><span>ЗАКРЫТЫЙ САММИТ: ВЕЛЕН 2007</span><span style="color:var(--green)">[СВЯЗЬ АКТИВНА]</span></div><div class="terminal" id="dialogue-box" aria-live="polite"></div><div class="options" id="options-box"></div></section>
-<section class="panel intel"><div class="ph"><span>СВОДКА РАЗВЕДКИ</span><span>[SHADOW-LOG]</span></div><ul class="log"><li><div class="time">14:22:01 UTC</div>Разведка Орегона: Зафиксированы передвижения танковых колонн Бореалии у границы.</li><li><div class="time">13:05:40 UTC</div>Агент SABLE-7: Внешние счета элиты Бореалии переведены под юрисдикцию Аль-Хиджаза.</li><li><div class="time">11:15:22 UTC</div>Анализ ВПК: Ракетные комплексы Бореалии заступили на дежурство.</li></ul></section>
+<section class="panel center"><div id="campaign-hud" class="campaign-hud" aria-label="Прогресс кампании"></div><div class="ph"><span>ЗАКРЫТЫЙ САММИТ: ВЕЛЕН 2007</span><span style="color:var(--green)">[СВЯЗЬ АКТИВНА]</span></div><div class="terminal" id="dialogue-box" aria-live="polite"></div><div class="options" id="options-box"></div></section>
+<section class="panel intel"><div class="ph"><span>СВОДКА РАЗВЕДКИ</span><span>[SHADOW-LOG]</span></div><ul class="log" id="intel-log"><li><div class="time">14:22:01 UTC</div>Разведка Орегона: Зафиксированы передвижения танковых колонн Бореалии у границы.</li><li><div class="time">13:05:40 UTC</div>Агент SABLE-7: Внешние счета элиты Бореалии переведены под юрисдикцию Аль-Хиджаза.</li><li><div class="time">11:15:22 UTC</div>Анализ ВПК: Ракетные комплексы Бореалии заступили на дежурство.</li></ul><div class="ph" style="margin-top:12px"><span>ЖУРНАЛ РЕШЕНИЙ</span><span id="history-count">0</span></div><ol id="decision-history" class="history-list"></ol></section>
 </main><footer><span class="cmd">COMMAND_&gt;</span><span style="flex:1">Выберите дипломатическое решение в меню выше.</span><button class="reset" id="reset-btn" type="button">ПЕРЕЗАПУСК</button></footer>
 <script>
 "use strict";
@@ -124,10 +139,28 @@ if(s.shadowTrade>45){s.inf+=1.5;s.leaks=clamp(s.leaks+3);}
 if(s.loyalty<30){s.leaks=clamp(s.leaks+5);s.supply=clamp(s.supply-3);}
 if(s.media>80&&s.d>=70)s.un=clamp(s.un+10);
 if(s.index>=14&&s.d>=65)s.deadhand=true;
-s.history.push({mission:s.index+1,choice:e.label||"",d:s.d,p:s.p,l:s.l,inf:s.inf,res:s.res,supply:s.supply,loyalty:s.loyalty,leaks:s.leaks});
+s.history.push({mission:s.index+1,choice:e.label||"",d:s.d,p:s.p,l:s.l,inf:s.inf,res:s.res,supply:s.supply,loyalty:s.loyalty,leaks:s.leaks,ending:e.ending||null});
 }
-function resolveEnding(requested){if(s.d>=100)return "doom";if(s.inf>=40||s.res<=0)return "economic";if(requested==="multipolar"&&(s.d>45||s.l<25))return "cold";return requested;}
-function render(){refresh();persist();box.replaceChildren();opts.replaceChildren();const m=missions[s.index];const ending=s.ending?endings[s.ending]:null;const node=ending||m;const wrap=document.createElement("div"),sp=document.createElement("div"),tx=document.createElement("div");sp.className="speaker";sp.textContent=node.speaker;tx.className="text";tx.textContent=node.text;wrap.append(sp,tx);box.append(wrap);(node.voices||[]).forEach(v=>{const el=document.createElement("div"),b=document.createElement("b");el.className="voice";b.textContent="["+v[0]+"]: ";el.append(b,document.createTextNode('"'+v[1]+'"'));box.append(el);});box.scrollTop=box.scrollHeight;
+function resolveEnding(requested){
+ if(s.d>=100)return "doom";
+ if(s.inf>=40||s.res<=0)return "economic";
+ if((requested==="multipolar"||requested==="cold")&&s.d>65)return "scorched";
+ if(requested==="multipolar"&&(s.d>45||s.l<25))return "cold";
+ if((requested==="ash"||requested==="silicon")&&(s.supply<25||s.shadowTrade>65||s.attrition>75))return "silicon";
+ if(requested==="ash"&&s.leaks<25&&s.attribution>65)return "ash";
+ return requested;
+}
+function renderCampaignHud(){
+ const hud=document.getElementById("campaign-hud");if(!hud)return;
+ const idx=s.ending?missions.length:s.index;
+ hud.innerHTML='<div class="hud-row"><span>КАМПАНИЯ <strong>'+(s.ending?'ЗАВЕРШЕНА':(idx+1)+' / '+missions.length)+'</strong></span><span>АКТ <strong>'+(s.ending?4:(Math.floor(idx/5)+1))+' / 4</strong></span></div><div class="campaign-track" role="img" aria-label="Прогресс миссий">'+missions.map((m,i)=>'<span class="campaign-step '+(i<idx?'done':i===idx&&!s.ending?'current':'')+'" title="'+(i+1)+'. '+m.act.replace(/"/g,'&quot;')+'"></span>').join('')+'</div><div class="hud-row"><span>DOOMSDAY <strong>'+Math.round(s.d)+'%</strong></span><span>РЕЗЕРВЫ <strong>'+Math.round(s.res)+'%</strong></span><span>УТЕЧКИ <strong>'+Math.round(s.leaks)+'%</strong></span></div>';
+ const year=document.getElementById("campaign-year");if(year){const m=missions[Math.min(s.index,missions.length-1)];year.textContent=s.ending?'2027':(m.year+'.03');}
+ const list=document.getElementById("decision-history"),count=document.getElementById("history-count");
+ if(list){list.replaceChildren();(s.history||[]).slice().reverse().forEach(h=>{const li=document.createElement("li"),strong=document.createElement("strong");strong.textContent='МИССИЯ '+h.mission+' • DOOMSDAY '+Math.round(h.d)+'%';li.append(strong,document.createTextNode(h.choice+' — инфляция '+Number(h.inf||0).toFixed(1)+'%, резервы '+Math.round(h.res||0)+'%.'));list.append(li);});if(!s.history.length){const li=document.createElement("li");li.textContent='Решения появятся здесь после первого выбора.';list.append(li);} }
+ if(count)count.textContent=(s.history||[]).length;
+ const log=document.getElementById("intel-log");if(log&&s.history&&s.history.length){const latest=s.history[s.history.length-1];const li=document.createElement("li"),time=document.createElement("div");time.className="time";time.textContent="ПОСЛЕ МИССИИ "+latest.mission;li.append(time,document.createTextNode("Оценка последствий: "+latest.choice+". DOOMSDAY "+Math.round(s.d)+"%, лояльность аппарата "+Math.round(s.loyalty)+"%, логистика "+Math.round(s.supply)+"%."));log.prepend(li);while(log.children.length>6)log.lastElementChild.remove();}
+}
+function render(){refresh();persist();renderCampaignHud();box.replaceChildren();opts.replaceChildren();const m=missions[s.index];const ending=s.ending?endings[s.ending]:null;const node=ending||m;const wrap=document.createElement("div"),sp=document.createElement("div"),tx=document.createElement("div");sp.className="speaker";sp.textContent=node.speaker;tx.className="text";tx.textContent=node.text;wrap.append(sp,tx);box.append(wrap);(node.voices||[]).forEach(v=>{const el=document.createElement("div"),b=document.createElement("b");el.className="voice";b.textContent="["+v[0]+"]: ";el.append(b,document.createTextNode('"'+v[1]+'"'));box.append(el);});box.scrollTop=box.scrollHeight;
 if(s.ending){const summary=document.createElement("div");summary.className="voice";summary.textContent="ИТОГ: DOOMSDAY "+Math.round(s.d)+"% • ИНФЛЯЦИЯ "+s.inf.toFixed(1)+"% • НЕДОВОЛЬСТВО "+Math.round(s.un)+"% • LEVERAGE "+Math.round(s.l)+"%";box.append(summary);const again=document.createElement("button");again.className="opt";again.textContent="↻ НОВАЯ КАМПАНИЯ";again.onclick=reset;opts.append(again);return;}
 const progress=document.createElement("div");progress.className="voice";progress.textContent="ОПЕРАЦИЯ "+(s.index+1)+"/"+missions.length+" • АКТ "+(Math.floor(s.index/5)+1)+"/4";opts.append(progress);
 m.choices.forEach((c,i)=>{const b=document.createElement("button");b.className="opt";b.type="button";b.textContent=c[0];b.onclick=()=>{if(s.ending)return;const e=Object.assign({},c[1],{label:c[0]});apply(e);if(m.final){s.ending=resolveEnding(e.ending);}else{s.index++;if(s.d>=100)s.ending="doom";else if(s.inf>=40||s.res<=0)s.ending="economic";}render();};opts.append(b);});
