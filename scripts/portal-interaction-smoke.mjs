@@ -27,7 +27,7 @@ console.log("SHADOW_DIPLOMACY_CAMPAIGN_SYNTAX_OK");
 const shadowOS = readFileSync("public/games/shadow-os/index.html", "utf8");
 assert.ok(main.includes('data-portal-card="shadowos"') && main.includes('./games/shadow-os/index.html'), "ShadowOS must be available as a HOME block");
 assert.ok(shadowOS.includes('id="pulse"') && ["whisper","pulse","vault","geomap","dossier"].every(app => shadowOS.includes('data-app="'+app+'"')), "ShadowOS must expose all five apps and global pulse");
-const shadowOSScripts = [...shadowOS.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
+const shadowOSScripts = [...shadowOS.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 assert.equal(shadowOSScripts.length, 1, "ShadowOS must have one standalone game script");
 for (const [index, match] of shadowOSScripts.entries()) new vm.Script(match[1], { filename: `shadow-os-inline-${index + 1}.js` });
 assert.ok(shadowOS.includes('2007:[') && shadowOS.includes('2008:[') && shadowOS.includes('2009:['), "ShadowOS must define detailed events for 2007–2009");
