@@ -255,7 +255,7 @@ jobs:
                 echo "PUBLISHED_BUILD_OK: ${build}"
                 game_html="$(curl -fsSL --connect-timeout 10 --max-time 20 \
                   "${base_url}/games/shadow-diplomacy/index.html?verify=${expected}" 2>/dev/null || true)"
-                if printf '%s' "${game_html}" | grep -Fq '<title>SHADOW DIPLOMACY — Terminal Edition</title>'; then
+                if [[ "${game_html}" == *'<title>SHADOW DIPLOMACY — Terminal Edition</title>'* ]]; then
                   echo "PUBLISHED_SHADOW_DIPLOMACY_OK: ${base_url}/games/shadow-diplomacy/index.html"
                   exit 0
                 fi
