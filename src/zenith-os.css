@@ -310,3 +310,50 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
 .portal-os-task{min-height:36px!important;max-width:34vw!important;padding:0 12px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;border:1px solid #3b555a!important;border-radius:6px!important;background:#121b20!important;color:#e7ffff!important;font:10px "Space Mono",monospace!important;touch-action:manipulation!important}
 .portal-os-task:focus-visible{outline:2px solid #66fcf1!important;outline-offset:2px!important}
 @media(max-width:520px){.portal-os-taskbar{bottom:max(8px,env(safe-area-inset-bottom))!important;gap:4px!important;padding:5px!important}.portal-os-task{min-height:40px!important;padding:0 9px!important;font-size:9px!important}}
+
+
+/* Mobile HOME correction: content must scroll; never compress every module into eight rows. */
+@media(max-width:520px){
+  .portal-workspace.portal-home-workspace>main{
+    top:0!important;bottom:calc(61px + var(--safe-bottom,env(safe-area-inset-bottom,0px)))!important;
+    height:auto!important;overflow-x:hidden!important;overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;-webkit-overflow-scrolling:touch!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]{
+    display:grid!important;position:relative!important;inset:auto!important;
+    height:auto!important;min-height:100%!important;max-height:none!important;
+    overflow:visible!important;align-content:start!important;align-items:stretch!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:none!important;grid-auto-rows:minmax(84px,auto)!important;
+    grid-auto-flow:row!important;gap:6px!important;padding:6px 6px 18px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block]{
+    min-height:84px!important;height:auto!important;max-height:none!important;
+    overflow:hidden!important;align-self:stretch!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="s"]{
+    grid-column:span 1!important;grid-row:auto!important;min-height:84px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-grid-autofill-wide="true"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="hero"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="chat"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="game"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="radio"],
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block="library"]{
+    grid-column:1/-1!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="m"]{
+    grid-column:span 1!important;grid-row:auto!important;min-height:110px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"]>[data-portal-block][data-grid-size="l"]{
+    grid-column:1/-1!important;grid-row:auto!important;min-height:100px!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-card-title{
+    left:9px!important;right:9px!important;bottom:8px!important;
+    font-size:clamp(14px,4.2vw,20px)!important;line-height:1.12!important;
+    white-space:normal!important;overflow-wrap:anywhere!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"] .home-hero{
+    grid-column:1/-1!important;min-height:112px!important;
+  }
+}
