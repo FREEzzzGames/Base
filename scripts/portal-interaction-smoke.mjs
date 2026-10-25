@@ -9,14 +9,14 @@ const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 const shadowDiplomacy = readFileSync("public/games/shadow-diplomacy/index.html", "utf8");
 assert.ok(shadowDiplomacy.includes('id="shadow-campaign-expansion"'), "SHADOW DIPLOMACY campaign expansion script must exist");
 assert.ok(!shadowDiplomacy.includes("\\nscorched:"), "SHADOW DIPLOMACY endings must not contain a literal newline escape that breaks script parsing");
-const inlineScripts = [...shadowDiplomacy.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
+const inlineScripts = [...shadowDiplomacy.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 assert.ok(inlineScripts.length >= 2, "SHADOW DIPLOMACY must contain both legacy and campaign script blocks");
 for (const [index, match] of inlineScripts.entries()) {
   new vm.Script(match[1], { filename: `shadow-diplomacy-inline-${index + 1}.js` });
 }
 const campaignScript = inlineScripts.find(([, match]) => match.includes('id="shadow-campaign-expansion"'));
 assert.ok(campaignScript, "SHADOW DIPLOMACY campaign script block must be discoverable");
-assert.equal((campaignScript[1].match(/\\{year:"/g) || []).length, 20, "SHADOW DIPLOMACY must define exactly 20 campaign missions");
+assert.equal((campaignScript[1].match(/\{year:"/g) || []).length, 20, "SHADOW DIPLOMACY must define exactly 20 campaign missions");
 assert.ok(campaignScript[1].includes("s.index++;"), "SHADOW DIPLOMACY must advance to the next mission after a choice");
 assert.equal((campaignScript[1].match(/ending:"(?:multipolar|cold|scorched|ash|dollar)"/g) || []).length, 5, "SHADOW DIPLOMACY final mission must offer five global endings");
 console.log("SHADOW_DIPLOMACY_CAMPAIGN_SYNTAX_OK");
