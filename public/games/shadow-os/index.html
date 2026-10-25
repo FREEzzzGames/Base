@@ -233,7 +233,7 @@ function vaultAction(kind){
  save();render();if(state.gameOver)showGameOver();else notify("VAULT UPDATED · Ресурсы и параметры пересчитаны.");
 }
 function showGameOver(){
- const g=document.getElementById("gameover"),won=!!state.campaignComplete;g.innerHTML='<div class="eyebrow">SHADOWOS · '+(won?"CAMPAIGN ARCHIVED":"SESSION TERMINATED")+'</div><h2 id="over-title" style="color:'+(won?"var(--green)":"var(--red"))+'">'+(won?"CAMPAIGN COMPLETE":"GAME OVER")+'</h2><p>'+(won?"Вы прошли все пять миссий каждого года с 2007 по 2027. Итоговые показатели и история решений сохранены.":"Причина поражения: <b>"+esc(state.gameOver)+"</b>.")+'</p><p>Год: '+state.year+'. История решений и скрытые флаги сохранены.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
+ const g=document.getElementById("gameover"),won=!!state.campaignComplete;g.innerHTML='<div class="eyebrow">SHADOWOS · '+(won?"CAMPAIGN ARCHIVED":"SESSION TERMINATED")+'</div><h2 id="over-title" style="color:'+(won?"var(--green)":"var(--red)")+'">'+(won?"CAMPAIGN COMPLETE":"GAME OVER")+'</h2><p>'+(won?"Вы прошли все пять миссий каждого года с 2007 по 2027. Итоговые показатели и история решений сохранены.":"Причина поражения: <b>"+esc(state.gameOver)+"</b>.")+'</p><p>Год: '+state.year+'. История решений и скрытые флаги сохранены.</p><button class="primary" id="restart-over">НАЧАТЬ НОВУЮ КАМПАНИЮ</button>';g.hidden=false;g.querySelector("#restart-over").addEventListener("click",resetGame);
 }
 function resetGame(){
  if(!confirm("Сбросить кампанию ShadowOS и начать заново?"))return;
