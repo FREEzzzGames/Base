@@ -14,7 +14,7 @@ assert.ok(inlineScripts.length >= 2, "SHADOW DIPLOMACY must contain both legacy 
 for (const [index, match] of inlineScripts.entries()) {
   new vm.Script(match[1], { filename: `shadow-diplomacy-inline-${index + 1}.js` });
 }
-const campaignScript = inlineScripts.find(([, match]) => match.includes('id="shadow-campaign-expansion"'));
+const campaignScript = inlineScripts.find(([, match]) => match.includes('const STORAGE_KEY="shadow-diplomacy-campaign-v2"') && match.includes("const missions=["));
 assert.ok(campaignScript, "SHADOW DIPLOMACY campaign script block must be discoverable");
 assert.equal((campaignScript[1].match(/\{year:"/g) || []).length, 20, "SHADOW DIPLOMACY must define exactly 20 campaign missions");
 assert.ok(campaignScript[1].includes("s.index++;"), "SHADOW DIPLOMACY must advance to the next mission after a choice");
