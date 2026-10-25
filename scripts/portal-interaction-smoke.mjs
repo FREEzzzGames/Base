@@ -8,6 +8,7 @@ const catalog = readFileSync("src/open-games-catalog.ts", "utf8");
 
 assert.ok(multiWindow.includes("function minimize(id:MiniId)"), "Portal app windows must support minimizing");
 assert.ok(multiWindow.includes("function restore(id:MiniId)"), "Portal app windows must support restoring");
+assert.ok(visualStyles.includes("calc(58px + env(safe-area-inset-bottom,0px))") && visualStyles.includes(".portal-os-taskbar"), "Focused mobile windows must reserve dock space and avoid covering taskbar");
 assert.ok(multiWindow.includes("portal-os-taskbar") && multiWindow.includes("data-os-restore"), "OS taskbar must expose open windows for restoration");
 assert.ok(multiWindow.includes("minimized") && multiWindow.includes("WINDOW_LAYOUT_KEY"), "Minimized window state must be persisted with window layout");
 assert.ok(multiWindow.includes("z,minimized,open}=windows[id]") && multiWindow.includes("if(typeof value.open===\"boolean\")w.open=value.open;"), "Open app state must be persisted and restored after reload");
