@@ -503,6 +503,11 @@ function render(){
         </section>
         ${homeCard("live")}
         ${homeCard("chat")}
+        <a class="card home-card portal-block home-shadowos" href="./games/shadow-os/index.html" data-portal-card="shadowos" data-portal-block="shadowos" aria-label="ShadowOS: Теневая Дипломатия" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#070c09,#101a13 62%,#18261a);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
+          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em;color:#a6ff83">SHADOWOS</span>
+          <span style="position:absolute;left:13px;bottom:31px;color:#c4d6c8;font:10px ui-monospace,monospace;letter-spacing:1px">ТЕНЕВАЯ ДИПЛОМАТИЯ</span>
+          <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:9px ui-monospace,monospace;letter-spacing:1.2px">2007—2027 · SECURE NODE ↗</span>
+        </a>
         ${homeCard("game")}
         ${homeCard("radio")}
         <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
