@@ -197,10 +197,13 @@ function render(){
 
 function bind(){
   const zaycevInput=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
-  zaycevInput?.addEventListener("pointerdown",event=>{event.stopPropagation();zaycevInput.focus();});
-  zaycevInput?.addEventListener("touchstart",event=>{event.stopPropagation();zaycevInput.focus();},{passive:true});
-  zaycevInput?.addEventListener("click",event=>{event.stopPropagation();zaycevInput.focus();});
+  // Let Android's native input activation open the IME. Calling focus()
+  // from multiple synthetic/touch events can immediately dismiss the keyboard
+  // in mobile browsers and WebViews.
+  zaycevInput?.addEventListener("pointerdown",event=>event.stopPropagation());
+  zaycevInput?.addEventListener("click",event=>event.stopPropagation());
   zaycevInput?.addEventListener("keydown",event=>event.stopPropagation());
+  zaycevInput?.addEventListener("input",()=>{if(zaycevInput)zaycevQuery=zaycevInput.value;});
   layer?.querySelector<HTMLFormElement>("[data-mw-zaycev-form]")?.addEventListener("submit",event=>{
     event.preventDefault();event.stopPropagation();
     const input=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
