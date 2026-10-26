@@ -56,7 +56,27 @@ function addBullet(source:Bullet){
 }
 const obsCache:HsObstacle[]=[...OBS,...Array.from({length:6},()=>({x:-10000,y:-10000,w:0,h:0}))];
 function def():Save{return{version:2,loadout:"ASSAULT",weapon:0,inventory:[0,1,3],bestWave:0,bestKills:0,bestTime:0,medkits:3}}
-function load(){try{save={...def(),...JSON.parse(localStorage.getItem(KEY)||"{}")};save.inventory=[...new Set((save.inventory||[]).filter(n=>n>=0&&n<HS_WEAPONS.length))];if(!save.inventory.includes(0))save.inventory.unshift(0)}catch{save=def()}sel=save.loadout}
+function load(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(KEY)||"{}") as Partial<Save>;
+    const defaults=def();
+    const loadout=raw.loadout==="ASSAULT"||raw.loadout==="VANGUARD"||raw.loadout==="RECON"?raw.loadout:defaults.loadout;
+    const inventory=Array.isArray(raw.inventory)?raw.inventory.filter((n):n is number=>Number.isInteger(n)&&n>=0&&n<HS_WEAPONS.length):defaults.inventory;
+    save={
+      ...defaults,
+      loadout,
+      weapon:Number.isInteger(raw.weapon)&&Number(raw.weapon)>=0&&Number(raw.weapon)<HS_WEAPONS.length?Number(raw.weapon):defaults.weapon,
+      inventory:[...new Set(inventory)],
+      bestWave:Number.isFinite(raw.bestWave)?Math.max(0,Math.floor(Number(raw.bestWave))):defaults.bestWave,
+      bestKills:Number.isFinite(raw.bestKills)?Math.max(0,Math.floor(Number(raw.bestKills))):defaults.bestKills,
+      bestTime:Number.isFinite(raw.bestTime)?Math.max(0,Number(raw.bestTime)):defaults.bestTime,
+      medkits:Number.isFinite(raw.medkits)?Math.max(0,Math.min(5,Math.floor(Number(raw.medkits)))):defaults.medkits
+    };
+    if(!save.inventory.includes(0))save.inventory.unshift(0);
+    if(!save.inventory.includes(save.weapon))save.weapon=save.inventory[0];
+  }catch{save=def()}
+  sel=save.loadout;
+}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch{}}
 function L(){return LOAD[sel]}function weapon(){return HS_WEAPONS[player?.weapon??save.weapon]||HS_WEAPONS[0]}
 function hitCircle(x:number,y:number,r:number,o:HsObstacle){const nx=Math.max(o.x,Math.min(x,o.x+o.w)),ny=Math.max(o.y,Math.min(y,o.y+o.h));const dx=x-nx,dy=y-ny;return dx*dx+dy*dy<r*r}
