@@ -187,6 +187,11 @@ function render(){
   const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":id==="radio"?"♫ RADIO":"♫ ЗАЙЦЕВ")+'</button>').join("");
   out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
   layer.innerHTML=out.join("");
+  // Dock restore controls into the portal's real bottom toolbar instead of
+  // leaving a fixed overlay above the HOME cards.
+  const taskbar=layer.querySelector<HTMLElement>(".portal-os-taskbar");
+  const toolbar=document.querySelector<HTMLElement>(".portal-toolbar");
+  if(taskbar&&toolbar)toolbar.append(taskbar);
   bind();
 }
 
