@@ -510,7 +510,7 @@ function render(){
         </a>
         ${homeCard("game")}
         ${homeCard("radio")}
-        <section class="card home-card portal-block home-zaycev" data-portal-card="zaycev" data-portal-block="zaycev" aria-label="Зайцев.нет — музыка" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#17120b,#211a0d 68%,#30200a);border:1px solid #ffb703;min-height:150px">
+        <section class="card home-card portal-block home-zaycev" data-portal-card="zaycev" data-portal-block="zaycev" aria-label="Зайцев.нет — музыка" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#17120b,#211a0d 68%,#30200a);border:1px solid #ffb703;min-height:166px">
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,36px)!important;letter-spacing:.04em;color:#ffcf5c">♫ ЗАЙЦЕВ. НЕТ</span>
           <form class="zaycev-portal-search" data-zaycev-search-form style="position:absolute;left:12px;right:12px;bottom:42px;display:flex;gap:6px">
             <label class="sr-only" for="zaycev-portal-query">Название песни или исполнитель</label>
@@ -518,6 +518,7 @@ function render(){
             <button type="submit" style="border:1px solid #ffb703;border-radius:7px;background:#ffb703;color:#15110a;padding:0 12px;font:700 12px system-ui">Найти ↗</button>
           </form>
           <div style="position:absolute;left:13px;bottom:12px;color:#d8bd82;font:10px ui-monospace,monospace;letter-spacing:1px">ПОИСК · ПРОСЛУШИВАНИЕ · ЗАГРУЗКА</div>
+          <a href="https://zaycev.net/" target="_blank" rel="noopener noreferrer" style="position:absolute;right:12px;bottom:8px;color:#ffcf5c;font:700 10px ui-monospace,monospace;text-decoration:none">ОТКРЫТЬ САЙТ ↗</a>
         </section>
         <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
           ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
