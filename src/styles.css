@@ -10383,3 +10383,41 @@ button:disabled,[aria-disabled="true"]{
 .home-zaycev .zaycev-portal-search button{min-height:36px;cursor:pointer}
 .home-zaycev .zaycev-portal-search button:active{transform:translateY(1px)}
 @media(max-width:380px){.home-zaycev .zaycev-portal-search button{padding-inline:8px}.home-zaycev .zaycev-portal-search input{font-size:11px!important}}
+
+/* Keep floating-app restore controls inside the bottom navigation strip,
+   never as a detached card hovering above it. */
+.portal-os-taskbar{
+  position:fixed!important;
+  left:50%!important;
+  bottom:calc(var(--safe-bottom,0px) + 7px)!important;
+  transform:translateX(-50%)!important;
+  z-index:10003!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  max-width:calc(100vw - 20px)!important;
+  padding:3px!important;
+  border:1px solid rgba(160,220,230,.24)!important;
+  border-radius:12px!important;
+  background:rgba(8,15,20,.94)!important;
+  box-shadow:0 0 0 2px rgba(0,0,0,.7)!important;
+  pointer-events:auto!important;
+}
+.portal-os-taskbar[hidden]{display:none!important}
+.portal-os-task{
+  min-width:42px!important;
+  min-height:38px!important;
+  max-width:116px!important;
+  padding:0 9px!important;
+  border:1px solid rgba(160,220,230,.4)!important;
+  border-radius:8px!important;
+  background:#142127!important;
+  color:#e6ffff!important;
+  font:600 11px/1.2 system-ui,sans-serif!important;
+  white-space:nowrap!important;
+}
+@media(max-width:430px){
+  .portal-os-taskbar{bottom:calc(var(--safe-bottom,0px) + 4px)!important;gap:2px!important}
+  .portal-os-task{min-width:36px!important;min-height:34px!important;padding:0 6px!important;font-size:10px!important}
+}
