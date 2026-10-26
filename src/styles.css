@@ -10359,3 +10359,11 @@ button:disabled,[aria-disabled="true"]{
     letter-spacing:.04em!important;
   }
 }
+
+
+/* Zaycev.net standalone HOME tile */
+.home-zaycev{isolation:isolate}
+.home-zaycev .zaycev-portal-search input:focus-visible{outline:2px solid #ffcf5c;outline-offset:1px}
+.home-zaycev .zaycev-portal-search button{min-height:36px;cursor:pointer}
+.home-zaycev .zaycev-portal-search button:active{transform:translateY(1px)}
+@media(max-width:380px){.home-zaycev .zaycev-portal-search button{padding-inline:8px}.home-zaycev .zaycev-portal-search input{font-size:11px!important}}
