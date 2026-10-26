@@ -510,12 +510,6 @@ function render(){
         </a>
         ${homeCard("game")}
         ${homeCard("radio")}
-        <section class="card home-card portal-block home-zaycev" data-portal-card="zaycev" data-portal-block="zaycev" aria-label="Зайцев.нет — музыка" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#17120b,#211a0d 68%,#30200a);border:1px solid #ffb703;min-height:166px">
-          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,36px)!important;letter-spacing:.04em;color:#ffcf5c">♫ ЗАЙЦЕВ. НЕТ</span>
-          <span style="position:absolute;left:13px;right:13px;bottom:44px;color:#f2e3bf;font:12px system-ui">Открой отдельное музыкальное окно</span>
-          <div style="position:absolute;left:13px;bottom:12px;color:#d8bd82;font:10px ui-monospace,monospace;letter-spacing:1px">ПОИСК · ПРОСЛУШИВАНИЕ · ЗАГРУЗКА</div>
-          <a href="https://zaycev.net/" target="_blank" rel="noopener noreferrer" style="position:absolute;right:12px;bottom:8px;color:#ffcf5c;font:700 10px ui-monospace,monospace;text-decoration:none">ОТКРЫТЬ САЙТ ↗</a>
-        </section>
         <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
           ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
           <span class="home-card-background-overlay" aria-hidden="true"></span>
@@ -885,17 +879,6 @@ function windowsCloseChatPopup(){
   window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
 }
 function bind(){
-  document.querySelector<HTMLFormElement>("[data-zaycev-search-form]")?.addEventListener("submit",event=>{
-    event.preventDefault();
-    event.stopPropagation();
-    const input=document.querySelector<HTMLInputElement>("[data-zaycev-query]");
-    const query=input?.value.trim()??"";
-    if(!query){input?.focus();return;}
-    const url=new URL("https://zaycev.net/search.html");
-    url.searchParams.set("query",query);
-    window.open(url.toString(),"_blank","noopener,noreferrer");
-  });
-
   if(view==="radio"||radioHomePopupOpen)mountRadioMap();
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
