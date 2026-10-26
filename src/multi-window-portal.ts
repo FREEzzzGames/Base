@@ -2,19 +2,17 @@ import { streams } from "./portal-ui";
 import { getLiveStreams } from "./live-catalog";
 import { liveEmbedUrl } from "./live-runtime";
 
-type MiniId = "live" | "chat" | "radio" | "zaycev";
+type MiniId = "live" | "chat" | "radio";
 type MiniWindow = { open:boolean; minimized:boolean; x:number; y:number; width:number; height:number; z:number; minWidth:number; minHeight:number };
 
 const windows:Record<MiniId,MiniWindow> = {
   live:{open:false,minimized:false,x:60,y:70,width:300,height:205,z:30,minWidth:220,minHeight:150},
   chat:{open:false,minimized:false,x:48,y:250,width:340,height:360,z:40,minWidth:250,minHeight:220},
   radio:{open:false,minimized:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64},
-  zaycev:{open:false,minimized:false,x:24,y:90,width:320,height:360,z:60,minWidth:220,minHeight:220}
 };
 let nextZ=60;
 let focusedWindow:MiniId|null=null;
 const WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1";
-let zaycevQuery="";
 const WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1";
 type WorkspaceSettings={reduceMotion:boolean;windowOpacity:number};
 function loadWorkspaceSettings():WorkspaceSettings{
@@ -101,9 +99,8 @@ function focus(id:MiniId){windows[id].z=nextZ++;}
 function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);saveWindowLayout();render();}
 function fitWindow(id:MiniId){
   const w=windows[id];
-  const isMusic=id==="zaycev";
-  const maxWidth=Math.max(180,Math.min(window.innerWidth-16,isMusic?340:window.innerWidth-8));
-  const maxHeight=Math.max(180,Math.min(window.innerHeight-64,isMusic?Math.floor(window.innerHeight*.58):window.innerHeight-16));
+  const maxWidth=Math.max(180,Math.min(window.innerWidth-16,window.innerWidth-8));
+  const maxHeight=Math.max(180,Math.min(window.innerHeight-64,window.innerHeight-16));
   w.width=Math.min(Math.max(w.width,Math.min(w.minWidth,maxWidth)),maxWidth);
   w.height=Math.min(Math.max(w.height,Math.min(w.minHeight,maxHeight)),maxHeight);
   if(isMusic){
@@ -173,18 +170,12 @@ function render(){
         : '<div class="portal-mw-chat-empty">'+esc(telegramPopupChat?"Нет сообщений":"Откройте CHAT и выберите диалог")+'</div>')+'</div>'+
       '<form data-mw-chat-form><input data-mw-chat-input type="text" inputmode="text" enterkeyhint="send" placeholder="Сообщение…" autocomplete="off" autocapitalize="sentences" spellcheck="true"><button type="submit">↗</button></form>'+resizeHandle("chat")+'</section>');
   }
-  if(windows.zaycev.open&&!windows.zaycev.minimized){
-    out.push('<section class="portal-mw portal-mw-zaycev '+(focusedWindow==="zaycev"?"portal-mw-focused":"")+'" data-mw="zaycev" style="left:'+windows.zaycev.x+'px;top:'+windows.zaycev.y+'px;width:'+windows.zaycev.width+'px;height:'+windows.zaycev.height+'px;z-index:'+windows.zaycev.z+'">'+
-      '<header class="portal-mw-head" data-mw-drag="zaycev"><strong>♫ ЗАЙЦЕВ. НЕТ</strong><div><button data-mw-minimize="zaycev" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="zaycev" type="button" aria-label="Развернуть окно" title="Развернуть / восстановить">'+(focusedWindow==="zaycev"?"↙":"⛶")+'</button><button data-mw-close="zaycev" type="button" aria-label="Закрыть">×</button></div></header>'+
-      '<div class="portal-mw-zaycev-body"><form data-mw-zaycev-form><input data-mw-zaycev-query type="text" inputmode="search" enterkeyhint="search" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="160" value="'+esc(zaycevQuery)+'" placeholder="Название песни или исполнитель" aria-label="Название песни или исполнитель" tabindex="0"><button type="submit">Найти ↗</button></form>'+
-      '<div class="portal-mw-zaycev-content"><div class="portal-mw-zaycev-mark">♫</div><strong>ПОИСК МУЗЫКИ</strong><p>Найди трек, затем открой его на официальном сайте для прослушивания и доступной загрузки.</p><a href="https://zaycev.net/" target="_blank" rel="noopener noreferrer">ОТКРЫТЬ ЗАЙЦЕВ. НЕТ ↗</a><small>Если сервис запрещает встраивание, он откроется в отдельной вкладке.</small></div></div>'+resizeHandle("zaycev")+'</section>');
-  }
   if(windows.radio.open&&!windows.radio.minimized){
     out.push('<section class="portal-mw portal-mw-radio '+(focusedWindow==="radio"?"portal-mw-focused":"") + '" data-mw="radio" style="left:'+windows.radio.x+'px;top:'+windows.radio.y+'px;width:'+windows.radio.width+'px;height:'+windows.radio.height+'px;z-index:'+windows.radio.z+'">'+
       '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-settings-open type="button" aria-label="Настройки рабочего пространства" title="Настройки">⚙</button><button data-mw-minimize="radio" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="radio" type="button" aria-label="Открыть полный экран RADIO" title="Открыть полноценный раздел RADIO">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
       '<div class="portal-mw-radio-body"><div class="portal-mw-radio-now"><span class="portal-mw-radio-title">'+esc(radioStationName||"INTERNET RADIO")+'</span><span class="portal-mw-radio-state">'+esc(radioStatus.toUpperCase())+'</span></div><div class="portal-mw-wave" data-playing="'+(radioStatus==="playing"?"true":"false")+'" aria-label="Audio playback visualization">'+Array.from({length:18},(_,i)=>'<i style="--bar:'+(i%5+2)+'"></i>').join("")+'</div><div class="portal-mw-radio-controls"><button data-mw-radio="play" aria-label="Play">▶</button><button data-mw-radio="pause" aria-label="Pause">Ⅱ</button><button data-mw-radio="stop" aria-label="Stop">■</button></div></div></section>');
   }
-  const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":id==="radio"?"♫ RADIO":"♫ ЗАЙЦЕВ")+'</button>').join("");
+  const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":"♫ RADIO")+'</button>').join("");
   out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
   layer.innerHTML=out.join("");
   // Dock restore controls into the portal's real bottom toolbar instead of
@@ -196,23 +187,6 @@ function render(){
 }
 
 function bind(){
-  const zaycevInput=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
-  // Let Android's native input activation open the IME. Calling focus()
-  // from multiple synthetic/touch events can immediately dismiss the keyboard
-  // in mobile browsers and WebViews.
-  zaycevInput?.addEventListener("pointerdown",event=>event.stopPropagation());
-  zaycevInput?.addEventListener("click",event=>event.stopPropagation());
-  zaycevInput?.addEventListener("keydown",event=>event.stopPropagation());
-  zaycevInput?.addEventListener("input",()=>{if(zaycevInput)zaycevQuery=zaycevInput.value;});
-  layer?.querySelector<HTMLFormElement>("[data-mw-zaycev-form]")?.addEventListener("submit",event=>{
-    event.preventDefault();event.stopPropagation();
-    const input=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
-    zaycevQuery=input?.value.trim()||"";
-    if(!zaycevQuery){input?.focus();return;}
-    const url=new URL("https://zaycev.net/search.html");
-    url.searchParams.set("query",zaycevQuery);
-    window.open(url.toString(),"_blank","noopener,noreferrer");
-  });
   layer?.querySelectorAll<HTMLElement>("[data-mw-settings-open]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();settingsOpen=true;layer?.classList.add("portal-mw-settings-open");});
   layer?.querySelectorAll<HTMLElement>("[data-mw-settings-close]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();settingsOpen=false;layer?.classList.remove("portal-mw-settings-open");});
   layer?.querySelectorAll<HTMLInputElement>("[data-mw-setting-motion]").forEach(input=>input.onchange=()=>{workspaceSettings.reduceMotion=input.checked;saveWorkspaceSettings();});
@@ -326,11 +300,6 @@ function bind(){
 function intercept(){
   document.addEventListener("click",e=>{
     const target=e.target as HTMLElement;
-    if(target.closest('[data-portal-card="zaycev"]')){
-      e.preventDefault();e.stopImmediatePropagation();
-      windows.zaycev.open=true;windows.zaycev.minimized=false;fitWindow("zaycev");focus("zaycev");render();
-      return;
-    }
     const el=(e.target as HTMLElement).closest<HTMLElement>("[data-view]");
     if(!el)return;
     const id=el.dataset.view as "live"|"chat"|"radio"|"game"|"library"|"home";
@@ -375,9 +344,6 @@ function intercept(){
 export function initMultiWindowPortal(){
   if(layer)return;
   restoreWindowLayout();
-  // Keep persisted window state for other apps, but never let Zaycev cover HOME on startup.
-  windows.zaycev.open=false;
-  windows.zaycev.minimized=false;
   applyWorkspaceSettings();
   window.addEventListener("resize",()=>{
     (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
