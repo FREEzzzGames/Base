@@ -386,3 +386,23 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
     z-index:10001!important;max-width:calc(100vw - 24px)!important;
   }
 }
+
+/* Android IME: keep the Zaycev search field genuinely editable and touchable. */
+.portal-mw-layer .portal-mw-zaycev input[data-mw-zaycev-query]{
+  display:block!important;
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  user-select:text!important;
+  -webkit-user-select:text!important;
+  -webkit-appearance:none!important;
+  font-size:16px!important;
+  line-height:1.35!important;
+  opacity:1!important;
+}
+.portal-mw-layer .portal-mw-zaycev input[data-mw-zaycev-query]:focus{
+  outline:2px solid #ffcf5c!important;
+  outline-offset:1px!important;
+  caret-color:#ffcf5c!important;
+}
