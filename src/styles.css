@@ -3687,6 +3687,22 @@ main{
   font-size:12px!important;
 }
 
+
+/* Dedicated Zaycev music window */
+.portal-mw-zaycev{display:grid!important;grid-template-rows:36px minmax(0,1fr)!important;border-color:rgba(255,187,3,.75)!important;background:rgba(18,15,10,.98)!important}
+.portal-mw-zaycev .portal-mw-head{background:rgba(39,29,12,.98)!important}
+.portal-mw-zaycev .portal-mw-head strong{color:#ffcf5c!important}
+.portal-mw-zaycev-body{min-height:0!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;gap:12px!important;padding:12px!important;overflow:auto!important}
+.portal-mw-zaycev-body form{display:flex!important;gap:7px!important}
+.portal-mw-zaycev-body input{min-width:0!important;flex:1!important;width:100%!important;min-height:40px!important;padding:9px 10px!important;border:1px solid #6f582b!important;border-radius:7px!important;background:#090b0e!important;color:#fff!important;font:13px system-ui!important}
+.portal-mw-zaycev-body button{min-height:40px!important;padding:0 12px!important;border:1px solid #ffb703!important;border-radius:7px!important;background:#ffb703!important;color:#15110a!important;font:700 12px system-ui!important}
+.portal-mw-zaycev-content{min-height:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:16px!important;text-align:center!important;border:1px solid rgba(255,187,3,.2)!important;border-radius:10px!important;background:radial-gradient(ellipse at top,#2a210e,#101115 72%)!important}
+.portal-mw-zaycev-mark{font-size:44px!important;line-height:1!important;color:#ffcf5c!important}
+.portal-mw-zaycev-content strong{font:700 14px ui-monospace,monospace!important;letter-spacing:1.5px!important;color:#ffcf5c!important}
+.portal-mw-zaycev-content p{max-width:300px!important;margin:0!important;color:#d8d1c0!important;font:12px/1.6 system-ui!important}
+.portal-mw-zaycev-content a{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;padding:0 14px!important;border-radius:7px!important;background:#ffb703!important;color:#15110a!important;text-decoration:none!important;font:700 12px system-ui!important}
+.portal-mw-zaycev-content small{max-width:280px!important;color:#aaa18b!important;font:10px/1.5 system-ui!important}
+
 .portal-mw-chat{
   display:grid!important;
   grid-template-rows:36px minmax(0,1fr) 44px!important;
