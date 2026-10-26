@@ -512,11 +512,7 @@ function render(){
         ${homeCard("radio")}
         <section class="card home-card portal-block home-zaycev" data-portal-card="zaycev" data-portal-block="zaycev" aria-label="Зайцев.нет — музыка" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#17120b,#211a0d 68%,#30200a);border:1px solid #ffb703;min-height:166px">
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,36px)!important;letter-spacing:.04em;color:#ffcf5c">♫ ЗАЙЦЕВ. НЕТ</span>
-          <form class="zaycev-portal-search" data-zaycev-search-form style="position:absolute;left:12px;right:12px;bottom:42px;display:flex;gap:6px">
-            <label class="sr-only" for="zaycev-portal-query">Название песни или исполнитель</label>
-            <input id="zaycev-portal-query" data-zaycev-query type="search" maxlength="160" placeholder="Исполнитель или песня" autocomplete="off" style="min-width:0;flex:1;width:100%;padding:9px 10px;border:1px solid #6f582b;border-radius:7px;background:#0c0d0e;color:#fff;font:12px system-ui">
-            <button type="submit" style="border:1px solid #ffb703;border-radius:7px;background:#ffb703;color:#15110a;padding:0 12px;font:700 12px system-ui">Найти ↗</button>
-          </form>
+          <span style="position:absolute;left:13px;right:13px;bottom:44px;color:#f2e3bf;font:12px system-ui">Открой отдельное музыкальное окно</span>
           <div style="position:absolute;left:13px;bottom:12px;color:#d8bd82;font:10px ui-monospace,monospace;letter-spacing:1px">ПОИСК · ПРОСЛУШИВАНИЕ · ЗАГРУЗКА</div>
           <a href="https://zaycev.net/" target="_blank" rel="noopener noreferrer" style="position:absolute;right:12px;bottom:8px;color:#ffcf5c;font:700 10px ui-monospace,monospace;text-decoration:none">ОТКРЫТЬ САЙТ ↗</a>
         </section>
