@@ -170,7 +170,7 @@ function render(){
   if(windows.zaycev.open&&!windows.zaycev.minimized){
     out.push('<section class="portal-mw portal-mw-zaycev '+(focusedWindow==="zaycev"?"portal-mw-focused":"")+'" data-mw="zaycev" style="left:'+windows.zaycev.x+'px;top:'+windows.zaycev.y+'px;width:'+windows.zaycev.width+'px;height:'+windows.zaycev.height+'px;z-index:'+windows.zaycev.z+'">'+
       '<header class="portal-mw-head" data-mw-drag="zaycev"><strong>♫ ЗАЙЦЕВ. НЕТ</strong><div><button data-mw-minimize="zaycev" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="zaycev" type="button" aria-label="Развернуть окно" title="Развернуть / восстановить">'+(focusedWindow==="zaycev"?"↙":"⛶")+'</button><button data-mw-close="zaycev" type="button" aria-label="Закрыть">×</button></div></header>'+
-      '<div class="portal-mw-zaycev-body"><form data-mw-zaycev-form><input data-mw-zaycev-query type="search" maxlength="160" value="'+esc(zaycevQuery)+'" placeholder="Название песни или исполнитель" aria-label="Название песни или исполнитель"><button type="submit">Найти ↗</button></form>'+
+      '<div class="portal-mw-zaycev-body"><form data-mw-zaycev-form><input data-mw-zaycev-query type="text" inputmode="search" enterkeyhint="search" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="160" value="'+esc(zaycevQuery)+'" placeholder="Название песни или исполнитель" aria-label="Название песни или исполнитель" tabindex="0"><button type="submit">Найти ↗</button></form>'+
       '<div class="portal-mw-zaycev-content"><div class="portal-mw-zaycev-mark">♫</div><strong>ПОИСК МУЗЫКИ</strong><p>Найди трек, затем открой его на официальном сайте для прослушивания и доступной загрузки.</p><a href="https://zaycev.net/" target="_blank" rel="noopener noreferrer">ОТКРЫТЬ ЗАЙЦЕВ. НЕТ ↗</a><small>Если сервис запрещает встраивание, он откроется в отдельной вкладке.</small></div></div>'+resizeHandle("zaycev")+'</section>');
   }
   if(windows.radio.open&&!windows.radio.minimized){
@@ -185,6 +185,11 @@ function render(){
 }
 
 function bind(){
+  const zaycevInput=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
+  zaycevInput?.addEventListener("pointerdown",event=>{event.stopPropagation();zaycevInput.focus();});
+  zaycevInput?.addEventListener("touchstart",event=>{event.stopPropagation();zaycevInput.focus();},{passive:true});
+  zaycevInput?.addEventListener("click",event=>{event.stopPropagation();zaycevInput.focus();});
+  zaycevInput?.addEventListener("keydown",event=>event.stopPropagation());
   layer?.querySelector<HTMLFormElement>("[data-mw-zaycev-form]")?.addEventListener("submit",event=>{
     event.preventDefault();event.stopPropagation();
     const input=layer?.querySelector<HTMLInputElement>("[data-mw-zaycev-query]");
