@@ -510,6 +510,15 @@ function render(){
         </a>
         ${homeCard("game")}
         ${homeCard("radio")}
+        <section class="card home-card portal-block home-zaycev" data-portal-card="zaycev" data-portal-block="zaycev" aria-label="Зайцев.нет — музыка" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#17120b,#211a0d 68%,#30200a);border:1px solid #ffb703;min-height:150px">
+          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,36px)!important;letter-spacing:.04em;color:#ffcf5c">♫ ЗАЙЦЕВ. НЕТ</span>
+          <form class="zaycev-portal-search" data-zaycev-search-form style="position:absolute;left:12px;right:12px;bottom:42px;display:flex;gap:6px">
+            <label class="sr-only" for="zaycev-portal-query">Название песни или исполнитель</label>
+            <input id="zaycev-portal-query" data-zaycev-query type="search" maxlength="160" placeholder="Исполнитель или песня" autocomplete="off" style="min-width:0;flex:1;width:100%;padding:9px 10px;border:1px solid #6f582b;border-radius:7px;background:#0c0d0e;color:#fff;font:12px system-ui">
+            <button type="submit" style="border:1px solid #ffb703;border-radius:7px;background:#ffb703;color:#15110a;padding:0 12px;font:700 12px system-ui">Найти ↗</button>
+          </form>
+          <div style="position:absolute;left:13px;bottom:12px;color:#d8bd82;font:10px ui-monospace,monospace;letter-spacing:1px">ПОИСК · ПРОСЛУШИВАНИЕ · ЗАГРУЗКА</div>
+        </section>
         <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
           ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
           <span class="home-card-background-overlay" aria-hidden="true"></span>
@@ -879,6 +888,17 @@ function windowsCloseChatPopup(){
   window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
 }
 function bind(){
+  document.querySelector<HTMLFormElement>("[data-zaycev-search-form]")?.addEventListener("submit",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    const input=document.querySelector<HTMLInputElement>("[data-zaycev-query]");
+    const query=input?.value.trim()??"";
+    if(!query){input?.focus();return;}
+    const url=new URL("https://zaycev.net/search.html");
+    url.searchParams.set("query",query);
+    window.open(url.toString(),"_blank","noopener,noreferrer");
+  });
+
   if(view==="radio"||radioHomePopupOpen)mountRadioMap();
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
