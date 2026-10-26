@@ -9,7 +9,7 @@ const windows:Record<MiniId,MiniWindow> = {
   live:{open:false,minimized:false,x:60,y:70,width:300,height:205,z:30,minWidth:220,minHeight:150},
   chat:{open:false,minimized:false,x:48,y:250,width:340,height:360,z:40,minWidth:250,minHeight:220},
   radio:{open:false,minimized:false,x:50,y:555,width:330,height:72,z:50,minWidth:210,minHeight:64},
-  zaycev:{open:false,minimized:false,x:24,y:90,width:360,height:440,z:60,minWidth:260,minHeight:250}
+  zaycev:{open:false,minimized:false,x:24,y:90,width:320,height:360,z:60,minWidth:220,minHeight:220}
 };
 let nextZ=60;
 let focusedWindow:MiniId|null=null;
@@ -47,7 +47,9 @@ function restoreWindowLayout(){
       if(Number.isFinite(value.height))w.height=Number(value.height);
       if(Number.isFinite(value.z))w.z=Number(value.z);
       if(typeof value.minimized==="boolean")w.minimized=value.minimized;
-      if(typeof value.open==="boolean")w.open=value.open;
+      // The music window must never reopen automatically over HOME after reload.
+      if(id!=="zaycev"&&typeof value.open==="boolean")w.open=value.open;
+      if(id==="zaycev"){w.open=false;w.minimized=false;}
     });
   }catch{}
 }
@@ -101,12 +103,18 @@ function focus(id:MiniId){windows[id].z=nextZ++;}
 function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);saveWindowLayout();render();}
 function fitWindow(id:MiniId){
   const w=windows[id];
-  const maxWidth=Math.max(w.minWidth,window.innerWidth-8);
-  const maxHeight=Math.max(w.minHeight,window.innerHeight-16);
-  w.width=Math.min(Math.max(w.width,w.minWidth),maxWidth);
-  w.height=Math.min(Math.max(w.height,w.minHeight),maxHeight);
-  w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
-  w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-8),w.y));
+  const isMusic=id==="zaycev";
+  const maxWidth=Math.max(180,Math.min(window.innerWidth-16,isMusic?340:window.innerWidth-8));
+  const maxHeight=Math.max(180,Math.min(window.innerHeight-64,isMusic?Math.floor(window.innerHeight*.58):window.innerHeight-16));
+  w.width=Math.min(Math.max(w.width,Math.min(w.minWidth,maxWidth)),maxWidth);
+  w.height=Math.min(Math.max(w.height,Math.min(w.minHeight,maxHeight)),maxHeight);
+  if(isMusic){
+    w.x=Math.round((window.innerWidth-w.width)/2);
+    w.y=Math.max(12,Math.round((window.innerHeight-w.height)*.22));
+  }else{
+    w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
+    w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-8),w.y));
+  }
 }
 function open(id:MiniId){
   fitWindow(id);
