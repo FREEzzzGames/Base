@@ -47,9 +47,7 @@ function restoreWindowLayout(){
       if(Number.isFinite(value.height))w.height=Number(value.height);
       if(Number.isFinite(value.z))w.z=Number(value.z);
       if(typeof value.minimized==="boolean")w.minimized=value.minimized;
-      // The music window must never reopen automatically over HOME after reload.
-      if(id!=="zaycev"&&typeof value.open==="boolean")w.open=value.open;
-      if(id==="zaycev"){w.open=false;w.minimized=false;}
+      if(typeof value.open==="boolean")w.open=value.open;
     });
   }catch{}
 }
@@ -369,6 +367,9 @@ function intercept(){
 export function initMultiWindowPortal(){
   if(layer)return;
   restoreWindowLayout();
+  // Keep persisted window state for other apps, but never let Zaycev cover HOME on startup.
+  windows.zaycev.open=false;
+  windows.zaycev.minimized=false;
   applyWorkspaceSettings();
   window.addEventListener("resize",()=>{
     (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
