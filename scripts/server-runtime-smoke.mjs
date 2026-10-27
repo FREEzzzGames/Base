@@ -33,7 +33,8 @@ assert.ok(live.includes("lastSyncError=null;"), "successful syncs must clear sta
 assert.ok(live.includes("bytes+=buffer.length"), "LIVE request limits must count bytes");
 assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use channel URLs, not video URLs");
 assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
-assert.ok(economy.includes("error instanceof SyntaxError"), "malformed economy JSON must return a client error");
+assert.ok(economy.includes("error instanceof SyntaxError ? 400"), "malformed economy JSON must return HTTP 400");
+assert.ok(economy.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized economy requests must return HTTP 413");
 assert.ok(legacyTelegram.includes("TELEGRAM_CLIENT_API_SECRET"), "legacy Telegram service must fail closed without an API secret");
 assert.ok(legacyTelegram.includes("timingSafeEqual"), "legacy Telegram service must compare API secrets in constant time");
 assert.ok(live.includes("function normalizeCreator(input,allowRegion=false)"), "public creator suggestions must not self-assign region");
