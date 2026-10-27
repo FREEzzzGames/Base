@@ -22,20 +22,18 @@ assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSou
 assert.ok(multiWindowSource.includes('event.key==="Escape"&&focusedWindow'), "Escape must exit window focus mode");
 assert.ok(multiWindowSource.includes('window.addEventListener("resize"'), "window layout must adapt to viewport changes");
 const gridSource = await readFile(new URL("../src/home-grid-shift.ts", import.meta.url), "utf8");
-assert.ok(gridSource.includes("grid-shift-launch"), "HOME grid editing must have a discoverable launcher");
-assert.ok(gridSource.includes('launcher.addEventListener("click"'), "HOME grid editing must be togglable without a long press");
-assert.ok(mainSource.includes('data-portal-block="hero"') && mainSource.includes('${homeCard("library")}'), "HOME must render the six core ZENITH tiles");
+assert.ok(gridSource.includes('querySelectorAll<HTMLElement>("[data-home-screen]")'), "HOME must support paged screens");
+assert.ok(gridSource.includes("pages.length !== 3"), "HOME must enforce exactly three screens");
+assert.ok(gridSource.includes("holdTimer=window.setTimeout") && gridSource.includes("setEditing(true,tile)"), "long-press must enter block editing");
+assert.ok(!gridSource.includes("grid-shift-launch") && !gridSource.includes("EDIT GRID"), "block editing must not depend on a separate launcher");
+assert.ok(gridSource.includes('data-grid-shift-size') && gridSource.includes('data-grid-shift-skin'), "editor must expose size and background controls");
+assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v1"'), "new three-screen layout must use its own versioned storage key");
+assert.ok(gridSource.includes("reorderOver") && gridSource.includes("applySkin"), "editor must support rearranging blocks and changing backgrounds");
+assert.ok(mainSource.includes('data-home-screen="0"') && mainSource.includes('data-home-screen="1"') && mainSource.includes('data-home-screen="2"'), "HOME must render exactly three swipeable screens");
+assert.ok(mainSource.includes("data-home-pagination") && mainSource.includes("data-home-screen-track"), "HOME must render swipe track and page navigation");
+assert.ok(!/GORD CONTROL LAB|gord-control-lab|home-control-lab/i.test(mainSource), "GORD Control Lab must be removed from HOME markup");
 assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("renderHomeBookmarks") && !mainSource.includes("renderHomeSystem") && !mainSource.includes("renderSignalFeed"), "HOME must not render extra experimental widget layers");
-assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-grid-shift:v7"'), "grid layout schema must be versioned after removing non-tile wrappers");
-assert.ok(gridSource.includes("updateGridMetrics") && gridSource.includes("gridAutofillWide"), "resizing must recalculate grid rows and close residual gaps");
-assert.ok(gridSource.includes('data-portal-block="library"') && gridSource.includes('data-portal-block="hero"'), "the grid editor must target only real Home tiles");
-const gridRuntime = await import("data:text/javascript;base64," + Buffer.from(ts.transpileModule(gridSource, {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext }
-}).outputText).toString("base64"));
-assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","m","m","m","m","l"]), { rows:8, wideIndex:-1 }, "the default HOME grid must fill eight mobile tracks exactly");
-assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","s","m","m","m","l"]), { rows:8, wideIndex:1 }, "an odd-sized layout must widen one small tile to close the final half-row");
-assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["s","s","s","s","s","s"]), { rows:3, wideIndex:-1 }, "all-small tiles must pack into three full rows");
-assert.deepEqual(gridRuntime.calculateHomeGridMetrics(["l","l","l","l","l","l"]), { rows:12, wideIndex:-1 }, "all-large tiles must get a matching row count");
+assert.ok(gridSource.includes('data-portal-block') && gridSource.includes('data-home-grid'), "grid editor must target actual blocks inside page grids");
 assert.ok(multiWindowSource.includes('if(el.closest(".portal-toolbar"))') && multiWindowSource.includes("windows[windowId].open=false"), "top-level navigation must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
