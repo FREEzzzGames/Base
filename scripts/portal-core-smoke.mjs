@@ -34,6 +34,17 @@ assert.ok(mainSource.includes("data-home-pagination") && mainSource.includes("da
 assert.ok(!/GORD CONTROL LAB|gord-control-lab|home-control-lab/i.test(mainSource), "GORD Control Lab must be removed from HOME markup");
 assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("renderHomeBookmarks") && !mainSource.includes("renderHomeSystem") && !mainSource.includes("renderSignalFeed"), "HOME must not render extra experimental widget layers");
 assert.ok(gridSource.includes('data-portal-block') && gridSource.includes('data-home-grid'), "grid editor must target actual blocks inside page grids");
+const requiredHomeModules = [
+  "drive-and-listen", "notable-people", "townscaper", "3d-svg-designer", "photext-shop",
+  "watabou", "anvaka", "electronics-lab", "old-maps-online", "animagraffs", "emupedia",
+  "retro-tv", "demo-formula", "echo9", "orbit-blueprint", "retro-console", "shadow-diplomacy"
+];
+assert.ok(mainSource.includes('function homeModuleCard(key:string,title:string,description:string,href:string,mark:string)'), "HOME must use one shared module-card renderer");
+assert.ok(mainSource.includes('data-portal-block="${key}"'), "shared module cards must register with the block editor");
+for (const moduleId of requiredHomeModules) {
+  assert.ok(mainSource.includes(`homeModuleCard("${moduleId}"`), `HOME must include editable module ${moduleId}`);
+}
+
 assert.ok(multiWindowSource.includes('if(el.closest(".portal-toolbar"))') && multiWindowSource.includes("windows[windowId].open=false"), "top-level navigation must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");
