@@ -122,6 +122,7 @@ function writeMeta(games: LibraryGame[]): boolean {
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    let blocked = false;
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = (event) => {
       const db = request.result;
@@ -132,11 +133,18 @@ function openDb(): Promise<IDBDatabase> {
     };
     request.onsuccess = () => {
       const db = request.result;
+      if (blocked) {
+        db.close();
+        return;
+      }
       db.onversionchange = () => db.close();
       resolve(db);
     };
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
-    request.onblocked = () => reject(new Error("LIBRARY_DB_BLOCKED"));
+    request.onblocked = () => {
+      blocked = true;
+      reject(new Error("LIBRARY_DB_BLOCKED"));
+    };
   });
 }
 
