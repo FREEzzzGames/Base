@@ -27,7 +27,7 @@ assert.ok(gridSource.includes("pages.length !== 3"), "HOME must enforce exactly 
 assert.ok(gridSource.includes("holdTimer=window.setTimeout") && gridSource.includes("setEditing(true,tile)"), "long-press must enter block editing");
 assert.ok(!gridSource.includes("grid-shift-launch") && !gridSource.includes("EDIT GRID"), "block editing must not depend on a separate launcher");
 assert.ok(gridSource.includes('data-grid-shift-size') && gridSource.includes('data-grid-shift-skin'), "editor must expose size and background controls");
-assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v1"'), "new three-screen layout must use its own versioned storage key");
+assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v2"'), "new three-screen layout must use its own versioned storage key");
 assert.ok(gridSource.includes("reorderOver") && gridSource.includes("applySkin"), "editor must support rearranging blocks and changing backgrounds");
 assert.ok(mainSource.includes('data-home-screen="0"') && mainSource.includes('data-home-screen="1"') && mainSource.includes('data-home-screen="2"'), "HOME must render exactly three swipeable screens");
 assert.ok(mainSource.includes("data-home-pagination") && mainSource.includes("data-home-screen-track"), "HOME must render swipe track and page navigation");
