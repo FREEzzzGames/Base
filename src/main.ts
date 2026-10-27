@@ -537,7 +537,7 @@ function render(){
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">ECONOMY LAB</span>
           <span style="position:absolute;left:13px;bottom:12px;color:#66fcf1;font:10px ui-monospace,monospace;letter-spacing:1.2px">OPEN MODELS · ECONOMIC SIMULATION</span>
         </a>
-        <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
+
             </div>
           </section>
         </div>
