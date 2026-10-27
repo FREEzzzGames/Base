@@ -40,12 +40,15 @@ function isTrustedOrigin(origin) {
 }
 
 async function readBody(req, maxBytes = 64 * 1024) {
-  let body = "";
+  const chunks = [];
+  let bytes = 0;
   for await (const chunk of req) {
-    body += chunk;
-    if (body.length > maxBytes) throw new Error("PAYLOAD_TOO_LARGE");
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bytes += buffer.length;
+    if (bytes > maxBytes) throw new Error("PAYLOAD_TOO_LARGE");
+    chunks.push(buffer);
   }
-  return JSON.parse(body || "{}");
+  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
 }
 
 function diagnoseInitData(initData) {
@@ -190,8 +193,10 @@ async function verifyMembership(userId) {
   if (!response.ok) throw new Error("MEMBERSHIP_SERVICE_UNAVAILABLE");
   const payload = await response.json();
   if (!payload.ok) throw new Error("MEMBERSHIP_CHECK_FAILED");
-  const status = payload.result?.status;
-  return status === "creator" || status === "administrator" || status === "member" || status === "restricted";
+  const member = payload.result;
+  const status = member?.status;
+  return status === "creator" || status === "administrator" || status === "member" ||
+    (status === "restricted" && member?.is_member === true);
 }
 
 function authFromRequest(req) {
@@ -217,6 +222,11 @@ function rateLimit(userId, cost = 1) {
   if (now - item.at > 60_000) { item.at = now; item.count = 0; }
   item.count += cost;
   rateBuckets.set(key, item);
+  if (rateBuckets.size > 5000) {
+    for (const [bucketKey, bucket] of rateBuckets) {
+      if (now - bucket.at > 120_000) rateBuckets.delete(bucketKey);
+    }
+  }
   if (item.count > 120) throw new Error("RATE_LIMITED");
 }
 
@@ -284,12 +294,22 @@ function normalizeMessage(message, chatId) {
 
 async function startTelegramLogin(userId, phoneNumber) {
   if (!apiId || !apiHash) throw new Error("MT_PROTO_NOT_CONFIGURED");
+  const key = String(userId);
+  const previous = pendingAuth.get(key);
+  if (previous) {
+    pendingAuth.delete(key);
+    try { await previous.client.disconnect(); } catch {}
+  }
   const state = getState(userId);
   if (state.client && await state.client.checkAuthorization().catch(() => false)) return { connected: true };
   const client = new TelegramClient(new StringSession(""), apiId, apiHash, { connectionRetries: 5 });
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    try { await client.disconnect(); } catch {}
+    throw error;
+  }
 
-  const key = String(userId);
   const pending = {
     client, phoneNumber,
     code: null, password: null,
@@ -306,15 +326,22 @@ async function startTelegramLogin(userId, phoneNumber) {
     firstAndLastNames: async () => { throw new Error("TELEGRAM_SIGNUP_NOT_ALLOWED"); },
     onError: () => {}
   }).then(async () => {
+    if (pendingAuth.get(key) !== pending) {
+      try { await client.disconnect(); } catch {}
+      return { connected: false, error: "LOGIN_FLOW_CANCELLED" };
+    }
     const session = client.session.save();
     sessions.set(key, { session, client });
     pendingAuth.delete(key);
     schedulePersist();
     return { connected: true };
   }).catch(async error => {
-    pendingAuth.delete(key);
+    if (pendingAuth.get(key) === pending) pendingAuth.delete(key);
+    console.error("telegram login flow failed", error?.message || "UNKNOWN");
     try { await client.disconnect(); } catch {}
-    throw error;
+    // This promise is intentionally observed here; callers advance the flow
+    // through the code/password endpoints and do not await client.start().
+    return { connected: false, error: error?.message || "TELEGRAM_LOGIN_FAILED" };
   });
 
   return { connected: false, awaiting: "code" };
@@ -325,6 +352,7 @@ async function finishPending(userId, field, value) {
   if (!pending) throw new Error("NO_PENDING_LOGIN");
   if (Date.now() - pending.startedAt > 10 * 60_000) {
     pendingAuth.delete(String(userId));
+    try { await pending.client.disconnect(); } catch {}
     throw new Error("LOGIN_FLOW_EXPIRED");
   }
   if (field === "code" && pending.code) {
