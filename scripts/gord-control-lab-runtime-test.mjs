@@ -78,6 +78,7 @@ const skills = [1, 2, 3].map((n) => {
   return b;
 });
 const document = {
+  body: get("document-body"),
   getElementById: get,
   querySelectorAll: (selector) => selector === ".skill" ? skills : [],
   querySelector: (selector) => {
