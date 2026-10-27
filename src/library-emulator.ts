@@ -1248,9 +1248,7 @@ function loadEmulatorScript(): Promise<void> {
   emulatorScriptPromise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     let settled = false;
-    const timeout = window.setTimeout(() => {
-      finish(new Error("EMULATORJS_LOAD_TIMEOUT"));
-    }, 20000);
+    let timeout = 0;
     const finish = (error?: Error) => {
       if (settled) return;
       settled = true;
@@ -1266,6 +1264,7 @@ function loadEmulatorScript(): Promise<void> {
         resolve();
       }
     };
+    timeout = window.setTimeout(() => finish(new Error("EMULATORJS_LOAD_TIMEOUT")), 20000);
     script.src = EJS_LOADER;
     script.async = true;
     script.dataset.freezzzEmulator = "1";
