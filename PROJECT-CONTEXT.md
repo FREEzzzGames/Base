@@ -95,6 +95,7 @@ The remaining LAW stages must not be renumbered.
 - Android Lint and KtLint run in the Android-specific workflow when Android files change.
 - ProGuard keep rules cover `MainActivity` and `OverlayService`; release minification stays disabled until a minified release is built and verified.
 - Material changes to functionality, architecture, build, or deployment must update `IMPLEMENTATION-STATUS.md` and this document.
+- Unreferenced prototype modules are not part of the portal just because they exist under `src/`; before retaining or adding a source file, verify it is reachable from an active Vite entry or an explicitly supported runtime.
 
 ## 9. Build and deployment rule
 
