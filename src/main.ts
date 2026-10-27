@@ -488,56 +488,68 @@ function render(){
     body=`
       <div class="content portal-layout home-portal" data-portal-layout="home" data-home-pager>
         <div class="home-screen-track" data-home-screen-track>
-          <section class="home-screen-page" data-home-screen="0" aria-label="Главные модули">
+          <section class="home-screen-page" data-home-screen="0" aria-label="Основные модули и медиа">
             <div class="home-screen-grid" data-home-grid="0">
-        <section class="hero portal-block home-hero" data-portal-block="hero">
-          ${persistentBackgroundVideo("hero",portalVideoUrl("hero"),"home-hero-video")}
-          <div class="home-hero-content">
-          <div class="home-hero-top">
-            <div class="home-hero-brand">
-              <button class="home-hero-kicker home-hero-echo-launch" data-echo9-launch type="button" aria-label="ECHO">ECHO</button>
-              <span class="home-hero-clock" data-home-clock>--:--:--</span>
-            </div>
-          </div>
-          <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(PORTAL_NICKNAME)}</h1>
-          <p>${T("homeDescription")}</p>
-          </div>
-        </section>
-        ${homeCard("game")}
-        ${homeCard("live")}
-        ${homeCard("chat")}
+              <section class="hero portal-block home-hero" data-portal-block="hero">
+                ${persistentBackgroundVideo("hero",portalVideoUrl("hero"),"home-hero-video")}
+                <div class="home-hero-content">
+                  <div class="home-hero-top">
+                    <div class="home-hero-brand">
+                      <button class="home-hero-kicker home-hero-echo-launch" data-echo9-launch type="button" aria-label="ECHO">ECHO</button>
+                      <span class="home-hero-clock" data-home-clock>--:--:--</span>
+                    </div>
+                  </div>
+                  <h1 class="home-hero-profile-trigger" data-profile-toggle role="button" tabindex="0" aria-label="${T("profile")}">${escapeHtml(PORTAL_NICKNAME)}</h1>
+                  <p>${T("homeDescription")}</p>
+                </div>
+              </section>
+              ${homeCard("game")}
+              ${homeCard("live")}
+              ${homeCard("chat")}
+              ${homeCard("radio")}
+              ${homeCard("library")}
+              <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
+              ${homeModuleCard("drive-and-listen","DRIVE & LISTEN","VIRTUAL CITIES · LOCAL RADIO","./drive-and-listen.html","♫")}
             </div>
           </section>
-          <section class="home-screen-page" data-home-screen="1" aria-label="Медиа и инструменты">
+          <section class="home-screen-page" data-home-screen="1" aria-label="Инструменты и генераторы">
             <div class="home-screen-grid" data-home-grid="1">
-        ${homeCard("radio")}
-        ${homeCard("library")}
-        <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
+              ${homeModuleCard("notable-people","NOTABLE PEOPLE","PEOPLE · BIRTHPLACES · WORLD MAP","./notable-people.html","◎")}
+              ${homeModuleCard("townscaper","TOWNSCAPER","BUILD A QUIET ISLAND TOWN","./townscaper.html","▦")}
+              ${homeModuleCard("3d-svg-designer","3D SVG DESIGNER","VECTOR → 3D · EXPORT MODELS","./3d-svg-designer.html","◇")}
+              ${homeModuleCard("photext-shop","PHOTEXT SHOP","PHOTO TEXT EDITOR · IMAGE TOOLS","./photext-shop.html","▧")}
+              ${homeModuleCard("watabou","WATABOU PROCGEN","PROCEDURAL CITIES · DUNGEONS · WORLDS","./watabou.html","⌖")}
+              ${homeModuleCard("anvaka","ANVAKA · MAP OF GITHUB","GITHUB GALAXY · OPEN SOURCE MAP","./anvaka.html","✳")}
+              ${homeModuleCard("emupedia","EMUPEDIA","RETRO GAMES · EMULATORS · EMUOS","./emupedia.html","▣")}
+              ${homeModuleCard("retro-tv","RETRO TV","VINTAGE CHANNELS · 50s–2000s","./retro-tv.html","▰")}
             </div>
           </section>
-          <section class="home-screen-page" data-home-screen="2" aria-label="Лаборатории и проекты">
+          <section class="home-screen-page" data-home-screen="2" aria-label="Лаборатории и исследовательские проекты">
             <div class="home-screen-grid" data-home-grid="2">
-        <a class="card home-card portal-block home-shadowos" href="./games/shadow-os/index.html" data-portal-card="shadowos" data-portal-block="shadowos" aria-label="ShadowOS: Теневая Дипломатия" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#070c09,#101a13 62%,#18261a);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
-          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em;color:#a6ff83">SHADOWOS</span>
-          <span style="position:absolute;left:13px;bottom:31px;color:#c4d6c8;font:10px ui-monospace,monospace;letter-spacing:1px">ТЕНЕВАЯ ДИПЛОМАТИЯ</span>
-          <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:9px ui-monospace,monospace;letter-spacing:1.2px">2007—2027 · SECURE NODE ↗</span>
-        </a>
-        <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
-          ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
-          <span class="home-card-background-overlay" aria-hidden="true"></span>
-          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(24px,5vw,44px)!important;letter-spacing:.12em">OSIRIS</span>
-          <span class="osiris-card-label">GLOBAL MONITOR</span>
-          <span class="osiris-card-open">OPEN ↗</span>
-        </a>
-        <a class="card home-card portal-block home-phet-lab" href="./phet-lab.html" data-portal-card="phet-lab" data-portal-block="phet-lab" aria-label="PHET LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#071a24,#111d2b 68%,#193b3b);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
-          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">PhET LAB</span>
-          <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:10px ui-monospace,monospace;letter-spacing:1.2px">112 SCIENCE SIMULATIONS · HTML5</span>
-        </a>
-        <a class="card home-card portal-block home-economy-lab" href="./economy-lab.html" data-portal-card="economy-lab" data-portal-block="economy-lab" aria-label="ECONOMY LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#07191f,#10151e 68%,#142c2b);border:1px solid #66fcf1;text-decoration:none;min-height:150px">
-          <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">ECONOMY LAB</span>
-          <span style="position:absolute;left:13px;bottom:12px;color:#66fcf1;font:10px ui-monospace,monospace;letter-spacing:1.2px">OPEN MODELS · ECONOMIC SIMULATION</span>
-        </a>
-
+              <a class="card home-card portal-block home-shadowos" href="./games/shadow-os/index.html" data-portal-card="shadowos" data-portal-block="shadowos" aria-label="ShadowOS: Теневая Дипломатия" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#070c09,#101a13 62%,#18261a);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
+                <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em;color:#a6ff83">SHADOWOS</span>
+                <span style="position:absolute;left:13px;bottom:31px;color:#c4d6c8;font:10px ui-monospace,monospace;letter-spacing:1px">ТЕНЕВАЯ ДИПЛОМАТИЯ</span>
+                <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:9px ui-monospace,monospace;letter-spacing:1.2px">2007—2027 · SECURE NODE ↗</span>
+              </a>
+              <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
+                ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
+                <span class="home-card-background-overlay" aria-hidden="true"></span>
+                <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(24px,5vw,44px)!important;letter-spacing:.12em">OSIRIS</span>
+                <span class="osiris-card-label">GLOBAL MONITOR</span>
+                <span class="osiris-card-open">OPEN ↗</span>
+              </a>
+              <a class="card home-card portal-block home-phet-lab" href="./phet-lab.html" data-portal-card="phet-lab" data-portal-block="phet-lab" aria-label="PHET LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#071a24,#111d2b 68%,#193b3b);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
+                <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">PhET LAB</span>
+                <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:10px ui-monospace,monospace;letter-spacing:1.2px">112 SCIENCE SIMULATIONS · HTML5</span>
+              </a>
+              <a class="card home-card portal-block home-economy-lab" href="./economy-lab.html" data-portal-card="economy-lab" data-portal-block="economy-lab" aria-label="ECONOMY LAB" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#07191f,#10151e 68%,#142c2b);border:1px solid #66fcf1;text-decoration:none;min-height:150px">
+                <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">ECONOMY LAB</span>
+                <span style="position:absolute;left:13px;bottom:12px;color:#66fcf1;font:10px ui-monospace,monospace;letter-spacing:1.2px">OPEN MODELS · ECONOMIC SIMULATION</span>
+              </a>
+              ${homeModuleCard("electronics-lab","ELECTRONICS LAB","ARDUINO · ESP32 · WOKWI","./electronics-lab.html","⌁")}
+              ${homeModuleCard("old-maps-online","OLD MAPS ONLINE","HISTORICAL MAPS · GEOSEARCH","./old-maps-online.html","⌖")}
+              ${homeModuleCard("animagraffs","ANIMAGRAFFS","ANIMATED EXPLAINERS · HOW IT WORKS","./animagraffs.html","◉")}
+              ${homeModuleCard("demo-formula","DEMO FORMULA","FORMULA · WEBGL · INTERACTIVE","./demo-formula.html","▶")}
             </div>
           </section>
         </div>
@@ -635,6 +647,13 @@ function streamAvatarMarkup(stream:typeof streams[number],className=""):string{
   if(!urls.youtube&&!urls.twitch)return icon(stream.icon,"stream-icon");
   const primary=urls.youtube||urls.twitch;
   return `<img class="stream-avatar-image ${className}" data-stream-avatar="1" data-stream-avatar-twitch="${escapeHtml(urls.twitch)}" src="${escapeHtml(primary)}" alt="" aria-hidden="true" loading="lazy">`;
+}
+function homeModuleCard(key:string,title:string,description:string,href:string,mark:string):string{
+  return `<a class="card home-card portal-block home-module-card home-module-${key}" href="${href}" data-portal-card="${key}" data-portal-block="${key}" aria-label="${title}">
+    <span class="home-module-mark" aria-hidden="true">${mark}</span>
+    <span class="home-card-title">${title}</span>
+    <span class="home-module-description">${description}</span>
+  </a>`;
 }
 function homeCard(v:Exclude<View,"home">){
   const backgrounds:Partial<Record<View,string>>={
