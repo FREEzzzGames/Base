@@ -30,7 +30,7 @@ for (const file of htmlFiles) {
       continue;
     }
     // Vite's src/index.html is emitted as the root index.html.
-    if (normalizedPath === "./index.html" || normalizedPath === "index.html") continue;
+    if (target === resolve(publicRoot, "index.html")) continue;
     if (!existsSync(target)) missing.push(virtualFile + " -> " + raw);
   }
 }
