@@ -27,13 +27,24 @@ assert.ok(gridSource.includes("pages.length !== 3"), "HOME must enforce exactly 
 assert.ok(gridSource.includes("holdTimer=window.setTimeout") && gridSource.includes("setEditing(true,tile)"), "long-press must enter block editing");
 assert.ok(!gridSource.includes("grid-shift-launch") && !gridSource.includes("EDIT GRID"), "block editing must not depend on a separate launcher");
 assert.ok(gridSource.includes('data-grid-shift-size') && gridSource.includes('data-grid-shift-skin'), "editor must expose size and background controls");
-assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v1"'), "new three-screen layout must use its own versioned storage key");
+assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v2"'), "new three-screen layout must use its own versioned storage key");
 assert.ok(gridSource.includes("reorderOver") && gridSource.includes("applySkin"), "editor must support rearranging blocks and changing backgrounds");
 assert.ok(mainSource.includes('data-home-screen="0"') && mainSource.includes('data-home-screen="1"') && mainSource.includes('data-home-screen="2"'), "HOME must render exactly three swipeable screens");
 assert.ok(mainSource.includes("data-home-pagination") && mainSource.includes("data-home-screen-track"), "HOME must render swipe track and page navigation");
 assert.ok(!/GORD CONTROL LAB|gord-control-lab|home-control-lab/i.test(mainSource), "GORD Control Lab must be removed from HOME markup");
 assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("renderHomeBookmarks") && !mainSource.includes("renderHomeSystem") && !mainSource.includes("renderSignalFeed"), "HOME must not render extra experimental widget layers");
 assert.ok(gridSource.includes('data-portal-block') && gridSource.includes('data-home-grid'), "grid editor must target actual blocks inside page grids");
+const requiredHomeModules = [
+  "drive-and-listen", "notable-people", "townscaper", "3d-svg-designer", "photext-shop",
+  "watabou", "anvaka", "electronics-lab", "old-maps-online", "animagraffs", "emupedia",
+  "retro-tv", "demo-formula", "echo9", "orbit-blueprint", "retro-console", "shadow-diplomacy"
+];
+assert.ok(mainSource.includes('function homeModuleCard(key:string,title:string,description:string,href:string,mark:string)'), "HOME must use one shared module-card renderer");
+assert.ok(mainSource.includes('data-portal-block="${key}"'), "shared module cards must register with the block editor");
+for (const moduleId of requiredHomeModules) {
+  assert.ok(mainSource.includes(`homeModuleCard("${moduleId}"`), `HOME must include editable module ${moduleId}`);
+}
+
 assert.ok(multiWindowSource.includes('if(el.closest(".portal-toolbar"))') && multiWindowSource.includes("windows[windowId].open=false"), "top-level navigation must dismiss all floating windows");
 assert.ok(multiWindowSource.includes('if(id==="chat"||id==="radio"){toggle(id);return;}'), "only CHAT and RADIO routes may toggle mini windows");
 assert.ok(mainSource.includes('"freezzz:radio-status"'), "radio playback state must be shared with the workspace player");

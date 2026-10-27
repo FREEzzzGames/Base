@@ -1,7 +1,7 @@
 type Tile = HTMLElement;
 type Size = "s" | "m" | "l";
 type Layout = { order: string[]; sizes: Record<string, Size>; skins: Record<string, number> };
-const STORAGE_KEY = "freezzz:home-free-layout:v1";
+const STORAGE_KEY = "freezzz:home-free-layout:v2";
 const SIZES: Size[] = ["s", "m", "l"];
 const SKINS = [
   { background: "linear-gradient(135deg,#11151b,#252b35)", border: "#66fcf1", color: "#f3f4f6" },
@@ -12,6 +12,10 @@ const SKINS = [
   { background: "linear-gradient(135deg,#071b12,#12452e)", border: "#7dff9b", color: "#e9ffed" }
 ];
 const keyOf = (tile: Tile) => tile.dataset.portalBlock || tile.dataset.portalCard || "";
+const defaultSizeOf = (tile: Tile): Size => {
+  const key = keyOf(tile);
+  return ["hero", "chat", "notable-people", "townscaper", "shadowos", "electronics-lab"].includes(key) ? "m" : "s";
+};
 function readLayouts(): Record<string, Layout> {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Record<string, Layout>;
@@ -128,11 +132,11 @@ export function bindHomeGridShift(root: HTMLElement) {
       ordered.forEach((tile,order)=>{tile.style.order=String(order);});
       tiles.forEach(tile=>{
         const size=saved.sizes?.[keyOf(tile)];
-        tile.dataset.gridSize=SIZES.includes(size)?size:(keyOf(tile)==="hero"?"l":"m");
+        tile.dataset.gridSize=SIZES.includes(size)?size:defaultSizeOf(tile);
         if (typeof saved.skins?.[keyOf(tile)] === "number") applySkin(tile, Number(saved.skins[keyOf(tile)]));
       });
     } else {
-      tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=keyOf(tile)==="hero"?"l":"m";});
+      tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=defaultSizeOf(tile);});
     }
   });
   const ordered = (index:number) => [...tilesByPage[index]].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0));
@@ -174,7 +178,7 @@ export function bindHomeGridShift(root: HTMLElement) {
         if(resizing){
           const delta=(lastX-startX)+(lastY-startY);
           const step=delta>72?1:delta< -72?-1:0;
-          if(step){resizeByStep(tile,step);startX=lastX;startY=lastY;}
+          if(step){animateReflow(tilesByPage[currentPage],()=>resizeByStep(tile,step));tile.classList.add("grid-shift-resizing");startX=lastX;startY=lastY;}
         }else if(dragging){
           tile.style.setProperty("--grid-drag-x",`${lastX-startX}px`);tile.style.setProperty("--grid-drag-y",`${lastY-startY}px`);
           const target=targetAt(lastX,lastY,tile);if(target&&target!==lastTarget){reorderOver(tile,target);lastTarget=target;}
