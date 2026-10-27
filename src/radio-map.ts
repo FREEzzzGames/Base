@@ -128,12 +128,27 @@ window.addEventListener("freezzz:radio-status", event => {
   if (play) play.textContent = detail?.status === "playing" || detail?.status === "loading" ? "Ⅱ" : "▶";
 });
 
+function resetFailedMap(root: HTMLElement): void {
+  if (activeRoot !== root) return;
+  try { activeMap?.remove(); } catch (error) {
+    console.warn("[FREEzzz radio map] Failed to dispose map after load error.", error);
+  }
+  activeMap = null;
+  activeRoot = null;
+}
+
 export function mountRadioMap(): void {
   const root = document.querySelector<HTMLElement>("[data-radio-map-root]");
   if (!root || root === activeRoot) return;
-  activeRoot = root;
   const mapNode = root.querySelector<HTMLElement>("#radio-world-map");
   if (!mapNode) return;
+  if (activeMap) {
+    try { activeMap.remove(); } catch (error) {
+      console.warn("[FREEzzz radio map] Failed to dispose previous map.", error);
+    }
+    activeMap = null;
+  }
+  activeRoot = root;
 
   const status = root.querySelector<HTMLElement>("[data-radio-status]");
   const search = root.querySelector<HTMLInputElement>("[data-radio-search]");
@@ -238,11 +253,13 @@ export function mountRadioMap(): void {
         } catch (error) {
           emptyState("RADIO DATA UNAVAILABLE — RETRY LATER");
           console.error("[FREEzzz radio map]", error);
+          resetFailedMap(root);
         }
       });
     } catch (error) {
       emptyState("MAP LIBRARY UNAVAILABLE");
       console.error("[FREEzzz radio map]", error);
+      resetFailedMap(root);
     }
   })();
 }
