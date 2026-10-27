@@ -12,6 +12,10 @@ const SKINS = [
   { background: "linear-gradient(135deg,#071b12,#12452e)", border: "#7dff9b", color: "#e9ffed" }
 ];
 const keyOf = (tile: Tile) => tile.dataset.portalBlock || tile.dataset.portalCard || "";
+const defaultSizeOf = (tile: Tile): Size => {
+  const key = keyOf(tile);
+  return ["hero", "chat", "notable-people", "townscaper", "shadowos", "electronics-lab"].includes(key) ? "m" : "s";
+};
 function readLayouts(): Record<string, Layout> {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Record<string, Layout>;
@@ -128,11 +132,11 @@ export function bindHomeGridShift(root: HTMLElement) {
       ordered.forEach((tile,order)=>{tile.style.order=String(order);});
       tiles.forEach(tile=>{
         const size=saved.sizes?.[keyOf(tile)];
-        tile.dataset.gridSize=SIZES.includes(size)?size:(keyOf(tile)==="hero"?"l":"m");
+        tile.dataset.gridSize=SIZES.includes(size)?size:defaultSizeOf(tile);
         if (typeof saved.skins?.[keyOf(tile)] === "number") applySkin(tile, Number(saved.skins[keyOf(tile)]));
       });
     } else {
-      tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=keyOf(tile)==="hero"?"l":"m";});
+      tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=defaultSizeOf(tile);});
     }
   });
   const ordered = (index:number) => [...tilesByPage[index]].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0));
