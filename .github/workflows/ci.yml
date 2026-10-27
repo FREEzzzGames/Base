@@ -150,6 +150,8 @@ jobs:
         run: npm run test:core
       - name: Library runtime regression smoke
         run: npm run test:library-runtime
+      - name: Local HTML route integrity smoke
+        run: npm run test:routes
       - name: Portal interaction regression smoke
         run: node scripts/portal-interaction-smoke.mjs
 
