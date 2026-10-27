@@ -79,19 +79,44 @@ let activeRomUrl: string | null = null;
 let emulatorToken = 0;
 const activeGamepadReleases = new Set<() => void>();
 let legacyRepairPromise: Promise<void> | null = null;
+let emulatorScriptPromise: Promise<void> | null = null;
+let libraryImportStatus = "";
 
 function readMeta(): LibraryGame[] {
   try {
     const raw = localStorage.getItem(META_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) {
+      console.warn("[FREEzzz library] Invalid library metadata; showing an empty catalog.");
+      return [];
+    }
+    const valid = parsed.filter((item): item is LibraryGame => {
+      if (!item || typeof item !== "object") return false;
+      const game = item as Partial<LibraryGame>;
+      return typeof game.id === "string" && typeof game.name === "string" &&
+        typeof game.fileName === "string" && typeof game.system === "string" &&
+        Object.prototype.hasOwnProperty.call(SYSTEMS, game.system) &&
+        Number.isFinite(game.size) && Number(game.size) > 0 &&
+        Number.isFinite(game.bits) && typeof game.addedAt === "string";
+    });
+    if (valid.length !== parsed.length) {
+      console.warn("[FREEzzz library] Ignored invalid library metadata entries:", parsed.length - valid.length);
+    }
+    return valid;
+  } catch (error) {
+    console.warn("[FREEzzz library] Could not read saved metadata:", error);
     return [];
   }
 }
 
-function writeMeta(games: LibraryGame[]): void {
-  try { localStorage.setItem(META_KEY, JSON.stringify(games)); } catch {}
+function writeMeta(games: LibraryGame[]): boolean {
+  try {
+    localStorage.setItem(META_KEY, JSON.stringify(games));
+    return true;
+  } catch (error) {
+    console.error("[FREEzzz library] Could not save library metadata:", error);
+    return false;
+  }
 }
 
 function openDb(): Promise<IDBDatabase> {
@@ -469,6 +494,7 @@ export function renderLibrary(): string {
     '<section class="library-shell portal-block">' +
       '<div class="library-head"><div><div class="library-kicker">FREEzzz // HOME BREW</div><h2>GAME LIBRARY</h2><p>' + total + ' игр · локально на устройстве · ROM-файлы не загружаются на сервер.</p></div>' +
       '<label class="library-add-button tg-button" ' + (libraryTab === "catalog" ? "" : "hidden") + '><input id="library-rom-input" type="file" accept=".nes,.fds,.unif,.unf,.gb,.gbc,.sms,.md,.gen,.smd,.sg,.sfc,.smc,.fig,.swc,.gba,.bin,.cue,.iso,.img,.pbp,.chd,.m3u,.zip,.7z" multiple hidden>+ ADD ROM</label></div>' +
+      (libraryImportStatus ? '<p class="library-hint" role="status">' + esc(libraryImportStatus) + '</p>' : '') +
       '<div class="library-mode-tabs" role="tablist" aria-label="Library views"><button type="button" role="tab" data-library-tab="catalog" aria-selected="' + (libraryTab === "catalog") + '" class="' + (libraryTab === "catalog" ? "active" : "") + '">CATALOG</button><button type="button" role="tab" data-library-tab="emulator" aria-selected="' + (libraryTab === "emulator") + '" class="' + (libraryTab === "emulator" ? "active" : "") + '">EMULATOR</button></div>' +
       '<div class="library-catalog-search" ' + (libraryTab === "catalog" ? "" : "hidden") + '><span>⌕</span><input id="library-search" type="search" value="' + esc(librarySearch) + '" placeholder="Поиск игры, файла или системы..." autocomplete="off" spellcheck="false"><button type="button" data-library-search-clear aria-label="Очистить поиск">×</button></div>' +
       '<div class="library-filters" ' + (libraryTab === "catalog" ? "" : "hidden") + '>' + systemCards() + '</div>' +
@@ -1210,28 +1236,43 @@ function removeExistingEmulator(): void {
 }
 
 function loadEmulatorScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[data-freezzz-emulator]');
-    if (existing) {
-      if (existing.dataset.freezzzLoaded === "1") {
-        resolve();
-      } else {
-        existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("EMULATORJS_LOAD_FAILED")), { once: true });
-      }
-      return;
-    }
+  if (emulatorScriptPromise) return emulatorScriptPromise;
+
+  // A script left behind by an earlier failed attempt has no reliable loading
+  // state. Remove it instead of waiting for an event that may already have fired.
+  const stale = document.querySelector<HTMLScriptElement>('script[data-freezzz-emulator]');
+  if (stale?.dataset.freezzzLoaded === "1") return Promise.resolve();
+  stale?.remove();
+
+  emulatorScriptPromise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      finish(new Error("EMULATORJS_LOAD_TIMEOUT"));
+    }, 20000);
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      script.onload = null;
+      script.onerror = null;
+      if (error) {
+        script.remove();
+        emulatorScriptPromise = null;
+        reject(error);
+      } else {
+        script.dataset.freezzzLoaded = "1";
+        resolve();
+      }
+    };
     script.src = EJS_LOADER;
     script.async = true;
     script.dataset.freezzzEmulator = "1";
-    script.onload = () => {
-      script.dataset.freezzzLoaded = "1";
-      resolve();
-    };
-    script.onerror = () => reject(new Error("EMULATORJS_LOAD_FAILED"));
+    script.onload = () => finish();
+    script.onerror = () => finish(new Error("EMULATORJS_LOAD_FAILED"));
     document.head.appendChild(script);
   });
+  return emulatorScriptPromise;
 }
 
 function stableGameId(id: string): number {
@@ -1414,6 +1455,8 @@ async function startGame(game: LibraryGame): Promise<void> {
 async function importFiles(files: FileList | null): Promise<void> {
   if (!files?.length) return;
   const current = readMeta();
+  const importedIds: string[] = [];
+  const failures: string[] = [];
   for (const file of Array.from(files)) {
     try {
       const resolved = await resolveImport(file);
@@ -1430,9 +1473,24 @@ async function importFiles(files: FileList | null): Promise<void> {
       };
       await putRom(id, resolved.blob);
       current.unshift(game);
-    } catch {}
+      importedIds.push(id);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      failures.push(file.name + ": " + reason);
+      console.error("[FREEzzz library] ROM import failed:", file.name, error);
+    }
   }
-  writeMeta(current);
+  if (importedIds.length && !writeMeta(current)) {
+    await Promise.all(importedIds.map(id => deleteRom(id).catch(error => {
+      console.error("[FREEzzz library] Failed to roll back unindexed ROM:", id, error);
+    })));
+    libraryImportStatus = "Не удалось сохранить каталог в памяти браузера. Освободи место или проверь настройки хранилища и повтори импорт.";
+  } else if (failures.length) {
+    libraryImportStatus = "Не удалось импортировать: " + failures.slice(0, 3).join("; ") +
+      (failures.length > 3 ? "; и ещё " + (failures.length - 3) : "");
+  } else {
+    libraryImportStatus = importedIds.length ? "Импортировано файлов: " + importedIds.length : "";
+  }
   renderLibraryIntoPage();
 }
 
