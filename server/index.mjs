@@ -24,6 +24,7 @@ if (!sessionSecret) console.warn("TELEGRAM_SESSION_SECRET is not configured; MTP
 
 const sessions = new Map();
 const pendingAuth = new Map();
+const loginErrors = new Map();
 const rateBuckets = new Map();
 
 function sendJson(res, status, body, origin = allowedOrigin) {
@@ -295,6 +296,7 @@ function normalizeMessage(message, chatId) {
 async function startTelegramLogin(userId, phoneNumber) {
   if (!apiId || !apiHash) throw new Error("MT_PROTO_NOT_CONFIGURED");
   const key = String(userId);
+  loginErrors.delete(key);
   const previous = pendingAuth.get(key);
   if (previous) {
     pendingAuth.delete(key);
@@ -337,7 +339,9 @@ async function startTelegramLogin(userId, phoneNumber) {
     return { connected: true };
   }).catch(async error => {
     if (pendingAuth.get(key) === pending) pendingAuth.delete(key);
-    console.error("telegram login flow failed", error?.message || "UNKNOWN");
+    const loginError = String(error?.message || "TELEGRAM_LOGIN_FAILED").slice(0, 120);
+    loginErrors.set(key, loginError);
+    console.error("telegram login flow failed", loginError);
     try { await client.disconnect(); } catch {}
     // This promise is intentionally observed here; callers advance the flow
     // through the code/password endpoints and do not await client.start().
@@ -450,6 +454,7 @@ const server = http.createServer(async (req, res) => {
           connected,
           accountName: connected ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "" : undefined,
           pending: pending ? pending.status : undefined,
+          loginError: loginErrors.get(String(user.id)),
           configured: Boolean(apiId && apiHash)
         }, responseOrigin);
       }
@@ -510,7 +515,10 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 404, { ok: false, error: "NOT_FOUND" }, responseOrigin);
   } catch (error) {
     const code = error instanceof Error ? error.message : "SERVER_ERROR";
-    const status = ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
+    const status = error instanceof SyntaxError ? 400
+      : code === "PAYLOAD_TOO_LARGE" ? 413
+      : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA"].includes(code) ? 401
+      : ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["ORIGIN_NOT_ALLOWED"].includes(code) ? 403
       : ["RATE_LIMITED"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED"].includes(code) ? 503
