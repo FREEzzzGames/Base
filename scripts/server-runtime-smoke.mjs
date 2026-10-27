@@ -11,6 +11,8 @@ const main = readFileSync("src/main.ts", "utf8");
 
 assert.ok(server.includes("bytes += buffer.length"), "request body limit must count UTF-8 bytes");
 assert.ok(server.includes("if (!result.user?.id) throw new Error(\"TELEGRAM_USER_REQUIRED\")"), "auth route must reject missing Telegram users");
+assert.ok(server.includes("if (!state || (!state.session && !state.client)) throw new Error(\"TELEGRAM_AUTH_REQUIRED\")"), "unauthenticated users must not open MTProto connections");
+assert.ok(server.includes("sessions.delete(String(userId))"), "expired MTProto sessions must be removed");
 assert.ok(server.includes('status === "restricted" && member?.is_member === true'), "restricted non-members must not pass membership checks");
 assert.ok(server.includes("if (isCurrent) loginErrors.set(key, loginError)"), "cancelled logins must not overwrite current login status");
 assert.ok(server.includes("return { connected: false, error: loginError }"), "client.start rejection must be observed, not rethrown unhandled");
