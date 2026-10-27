@@ -119,7 +119,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   panel.hidden=true;
   panel.innerHTML='<span data-grid-shift-active>Блок</span><button type="button" data-grid-shift-size>РАЗМЕР</button><button type="button" data-grid-shift-skin>ФОН</button><button type="button" data-grid-shift-undo>↶</button><button type="button" data-grid-shift-reset>СБРОС</button><button type="button" data-grid-shift-done>ГОТОВО</button>';
   root.append(panel);
-  pages.forEach((page,index)=>{
+  pages.forEach((_page,index)=>{
     const saved=layouts[String(index)];
     const tiles=tilesByPage[index];
     if(saved){
@@ -136,7 +136,7 @@ export function bindHomeGridShift(root: HTMLElement) {
     }
   });
   const ordered = (index:number) => [...tilesByPage[index]].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0));
-  const applyOrder = (index:number,list:Tile[]) => list.forEach((tile,i)=>tile.style.order=String(i));
+  const applyOrder = (list:Tile[]) => list.forEach((tile,i)=>tile.style.order=String(i));
   const targetAt = (x:number,y:number,except:Tile) => {
     for(const tile of tilesByPage[currentPage]){if(tile===except)continue;const r=tile.getBoundingClientRect();if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return tile;}
     return null;
@@ -148,7 +148,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   const reorderOver=(tile:Tile,target:Tile)=>{
     const list=ordered(currentPage),from=list.indexOf(tile),to=list.indexOf(target);
     if(from<0||to<0||from===to)return;
-    animateReflow(tilesByPage[currentPage],()=>{list.splice(from,1);list.splice(to,0,tile);applyOrder(currentPage,list);});
+    animateReflow(tilesByPage[currentPage],()=>{list.splice(from,1);list.splice(to,0,tile);applyOrder(list);});
   };
   pages.forEach((page,index)=>{
     const tiles=tilesByPage[index];
