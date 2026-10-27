@@ -486,7 +486,10 @@ function render(){
 
   if(view==="home"){
     body=`
-      <div class="content portal-layout home-portal" data-portal-layout="home">
+      <div class="content portal-layout home-portal" data-portal-layout="home" data-home-pager>
+        <div class="home-screen-track" data-home-screen-track>
+          <section class="home-screen-page" data-home-screen="0" aria-label="Главные модули">
+            <div class="home-screen-grid" data-home-grid="0">
         <section class="hero portal-block home-hero" data-portal-block="hero">
           ${persistentBackgroundVideo("hero",portalVideoUrl("hero"),"home-hero-video")}
           <div class="home-hero-content">
@@ -500,15 +503,25 @@ function render(){
           <p>${T("homeDescription")}</p>
           </div>
         </section>
+        ${homeCard("game")}
         ${homeCard("live")}
         ${homeCard("chat")}
+            </div>
+          </section>
+          <section class="home-screen-page" data-home-screen="1" aria-label="Медиа и инструменты">
+            <div class="home-screen-grid" data-home-grid="1">
+        ${homeCard("radio")}
+        ${homeCard("library")}
+        <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
+            </div>
+          </section>
+          <section class="home-screen-page" data-home-screen="2" aria-label="Лаборатории и проекты">
+            <div class="home-screen-grid" data-home-grid="2">
         <a class="card home-card portal-block home-shadowos" href="./games/shadow-os/index.html" data-portal-card="shadowos" data-portal-block="shadowos" aria-label="ShadowOS: Теневая Дипломатия" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#070c09,#101a13 62%,#18261a);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em;color:#a6ff83">SHADOWOS</span>
           <span style="position:absolute;left:13px;bottom:31px;color:#c4d6c8;font:10px ui-monospace,monospace;letter-spacing:1px">ТЕНЕВАЯ ДИПЛОМАТИЯ</span>
           <span style="position:absolute;left:13px;bottom:12px;color:#a6ff83;font:9px ui-monospace,monospace;letter-spacing:1.2px">2007—2027 · SECURE NODE ↗</span>
         </a>
-        ${homeCard("game")}
-        ${homeCard("radio")}
         <a class="card home-card portal-block home-osiris" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer" data-portal-card="osiris" data-portal-block="osiris" aria-label="OSIRIS AI LIVE" style="position:relative;overflow:hidden;background:#030711;border:1px solid #63eaff;text-decoration:none;min-height:150px">
           ${persistentBackgroundVideo("osiris","./videos/hud-background.mp4","home-card-background-video")}
           <span class="home-card-background-overlay" aria-hidden="true"></span>
@@ -524,10 +537,15 @@ function render(){
           <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em">ECONOMY LAB</span>
           <span style="position:absolute;left:13px;bottom:12px;color:#66fcf1;font:10px ui-monospace,monospace;letter-spacing:1.2px">OPEN MODELS · ECONOMIC SIMULATION</span>
         </a>
-        ${homeCard("library")}
 
-        <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
-        <a class="card home-card portal-block home-control-lab" href="./gord-control-lab.html" data-portal-card="control-lab" data-portal-block="control-lab" aria-label="Gord Control Lab"><span class="home-card-title">GORD CONTROL LAB</span></a>
+            </div>
+          </section>
+        </div>
+        <nav class="home-screen-pagination" aria-label="Экраны главного меню" data-home-pagination>
+          <button type="button" data-home-page="0" aria-label="Экран 1" aria-current="page">01</button>
+          <button type="button" data-home-page="1" aria-label="Экран 2">02</button>
+          <button type="button" data-home-page="2" aria-label="Экран 3">03</button>
+        </nav>
       </div>`;
   }
 
