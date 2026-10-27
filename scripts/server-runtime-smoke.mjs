@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const server = readFileSync("server/index.mjs", "utf8");
 const auth = readFileSync("server/telegram-auth.mjs", "utf8");
 const client = readFileSync("src/chat/telegram-client.ts", "utf8");
+const live = readFileSync("server/live-rankings.mjs", "utf8");
 const main = readFileSync("src/main.ts", "utf8");
 
 assert.ok(server.includes("bytes += buffer.length"), "request body limit must count UTF-8 bytes");
@@ -17,5 +18,12 @@ assert.ok(server.includes("rateBuckets.size > 5000"), "inactive rate-limit bucke
 assert.match(auth, /timingSafeEqual/);
 assert.match(client, /TELEGRAM_API_TIMEOUT/);
 assert.ok(main.includes('telegramChatStatus=status.loginError?"error"'), "chat UI must display asynchronous login errors");
+
+
+assert.ok(live.includes("persistChain=persistChain.catch(()=>{}).then"), "failed persistence must not poison future writes");
+assert.ok(live.includes("const unavailablePlatforms=new Set()"), "one provider outage must not disable the other provider");
+assert.ok(live.includes("bytes+=buffer.length"), "LIVE request limits must count bytes");
+assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use channel URLs, not video URLs");
+assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
 
 console.log("SERVER_RUNTIME_SMOKE_OK");
