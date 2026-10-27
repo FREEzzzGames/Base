@@ -21,7 +21,8 @@ function loadMapLibre(): Promise<void> {
 
   // Remove a stale failed script; its load/error event may already have fired.
   document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]')?.remove();
-  loadPromise = new Promise<void>((resolve, reject) => {
+  let promise: Promise<void>;
+  promise = new Promise<void>((resolve, reject) => {
     if (!document.querySelector('link[data-radio-maplibre]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet"; link.href = MAPLIBRE_CSS; link.dataset.radioMaplibre = "1";
@@ -38,11 +39,11 @@ function loadMapLibre(): Promise<void> {
       script.onerror = null;
       if (error) {
         script.remove();
-        loadPromise = null;
+        if (loadPromise === promise) loadPromise = null;
         reject(error);
       } else if (!window.maplibregl) {
         script.remove();
-        loadPromise = null;
+        if (loadPromise === promise) loadPromise = null;
         reject(new Error("MAPLIBRE_INIT_FAILED"));
       } else {
         resolve();
@@ -56,7 +57,8 @@ function loadMapLibre(): Promise<void> {
     script.onerror = () => finish(new Error("MAPLIBRE_LOAD_FAILED"));
     document.head.appendChild(script);
   });
-  return loadPromise;
+  loadPromise = promise;
+  return promise;
 }
 
 async function fetchStations(): Promise<RadioStation[]> {
