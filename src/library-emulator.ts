@@ -1248,7 +1248,7 @@ function loadEmulatorScript(): Promise<void> {
   stale?.remove();
 
   const generation = ++emulatorLoadGeneration;
-  emulatorScriptPromise = new Promise<void>((resolve, reject) => {
+  const promise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     let settled = false;
     let timeout = 0;
@@ -1275,7 +1275,8 @@ function loadEmulatorScript(): Promise<void> {
     script.onerror = () => finish(new Error("EMULATORJS_LOAD_FAILED"));
     document.head.appendChild(script);
   });
-  return emulatorScriptPromise;
+  emulatorScriptPromise = promise;
+  return promise;
 }
 
 function stableGameId(id: string): number {
