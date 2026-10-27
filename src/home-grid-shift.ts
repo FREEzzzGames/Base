@@ -45,7 +45,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   let currentPage = 0, editing = false, active: Tile | null = null;
   let holdTimer = 0, suppressClick = false, dragging = false, resizing = false;
   let startX = 0, startY = 0, lastX = 0, lastY = 0;
-  let resizeStart: Size = "m", lastSnapshot: Record<string, Layout> | null = null;
+  let lastSnapshot: Record<string, Layout> | null = null;
   let lastTarget: Tile | null = null;
   const grids = pages.map(page => page.querySelector<HTMLElement>("[data-home-grid]")!);
   const tilesByPage = grids.map(grid => [...grid.children].filter((node): node is Tile => node instanceof HTMLElement && node.hasAttribute("data-portal-block")));
@@ -129,7 +129,7 @@ export function bindHomeGridShift(root: HTMLElement) {
       tiles.forEach(tile=>{
         const size=saved.sizes?.[keyOf(tile)];
         tile.dataset.gridSize=SIZES.includes(size)?size:(keyOf(tile)==="hero"?"l":"m");
-        applySkin(tile,Number(saved.skins?.[keyOf(tile)]||0));
+        if (typeof saved.skins?.[keyOf(tile)] === "number") applySkin(tile, Number(saved.skins[keyOf(tile)]));
       });
     } else {
       tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=keyOf(tile)==="hero"?"l":"m";});
@@ -157,7 +157,7 @@ export function bindHomeGridShift(root: HTMLElement) {
         if(event.pointerType==="mouse"&&event.button!==0)return;
         const target=event.target as HTMLElement;
         if(editing && index===currentPage && target.closest(".grid-shift-resize-handle")){
-          resizing=true;dragging=false;active=tile;resizeStart=tile.dataset.gridSize as Size||"m";lastSnapshot=snapshot();
+          resizing=true;dragging=false;active=tile;lastSnapshot=snapshot();
         }else if(editing && index===currentPage){resizing=false;dragging=false;active=tile;lastSnapshot=snapshot();}
         else if(!editing && index===currentPage){
           active=tile;window.clearTimeout(holdTimer);
