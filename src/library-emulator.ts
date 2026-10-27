@@ -1464,7 +1464,7 @@ async function importFiles(files: FileList | null): Promise<void> {
       const config = SYSTEMS[resolved.system];
       const game: LibraryGame = {
         id,
-        name: resolved.fileName.replace(/\\.[^.]+$/, "") || resolved.fileName,
+        name: resolved.fileName.replace(/\.[^.]+$/, "") || resolved.fileName,
         fileName: resolved.fileName,
         system: resolved.system,
         bits: config.bits,
