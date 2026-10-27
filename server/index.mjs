@@ -446,6 +446,7 @@ const server = http.createServer(async (req, res) => {
       if (!botToken) return sendJson(res, 503, { ok: false, error: "AUTH_SERVICE_NOT_CONFIGURED" }, responseOrigin);
       const body = await readBody(req);
       const result = validateTelegramInitData(body.initData, botToken);
+      if (!result.user?.id) throw new Error("TELEGRAM_USER_REQUIRED");
       const member = await verifyMembership(result.user.id);
       if (!member) return sendJson(res, 403, { ok: false, error: "TELEGRAM_MEMBERSHIP_REQUIRED" }, responseOrigin);
       return sendJson(res, 200, { ok: true, authDate: result.authDate, queryId: result.queryId, user: result.user }, responseOrigin);
