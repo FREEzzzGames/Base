@@ -22,6 +22,7 @@ assert.ok(main.includes('telegramChatStatus=status.loginError?"error"'), "chat U
 
 assert.ok(live.includes("persistChain=persistChain.catch(()=>{}).then"), "failed persistence must not poison future writes");
 assert.ok(live.includes("const unavailablePlatforms=new Set()"), "one provider outage must not disable the other provider");
+assert.ok(live.includes("lastSyncError=null;"), "successful syncs must clear stale error state");
 assert.ok(live.includes("bytes+=buffer.length"), "LIVE request limits must count bytes");
 assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use channel URLs, not video URLs");
 assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
