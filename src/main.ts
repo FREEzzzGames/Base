@@ -2,7 +2,7 @@ import { RadioBrowserClient, type RadioBrowserStation } from "./radio-browser";
 import "./styles.css";
 import { initFreezzzyDroid } from "./freezzzy-droid";
 import "./zenith-os.css";
-import { initPerformanceLayer } from "./performance-layer";
+import "./performance-layer";
 import "./multi-window-portal";
 import { bindHomeGridShift } from "./home-grid-shift";
 import { portalVideoUrl } from "./video-assets";
@@ -23,7 +23,6 @@ import { mountRadioMap } from "./radio-map";
 
 initTelegramBridge();
 initFreezzzyDroid();
-initPerformanceLayer();
 
 async function checkForPortalUpdate(){
   try{

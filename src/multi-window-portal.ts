@@ -340,11 +340,6 @@ export function initMultiWindowPortal(){
   if(layer)return;
   restoreWindowLayout();
   applyWorkspaceSettings();
-  window.addEventListener("resize",()=>{
-    (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
-    saveWindowLayout();
-    if(layer)render();
-  });
   window.addEventListener("keydown",event=>{
     if(event.key==="Escape"&&focusedWindow){
       focusedWindow=null;
@@ -380,6 +375,7 @@ export function initMultiWindowPortal(){
   }
   const clampWindows=()=>{
     (Object.keys(windows) as MiniId[]).forEach(id=>fitWindow(id));
+    saveWindowLayout();
     render();
   };
   window.addEventListener("resize",clampWindows,{passive:true});
