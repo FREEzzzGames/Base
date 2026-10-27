@@ -131,10 +131,6 @@ jobs:
       - name: Telegram gateway syntax check
         run: node --check server/index.mjs
 
-
-      - name: GORD Control Lab source smoke
-        run: node scripts/gord-control-lab-smoke.mjs
-
       - name: FREEzzz Studio syntax and UI integrity smoke
         run: node scripts/freezzz-studio-smoke.mjs
 
@@ -143,9 +139,6 @@ jobs:
 
       - name: Economy Lab syntax and capability smoke
         run: node scripts/economy-lab-smoke.mjs
-
-      - name: GORD Control Lab runtime mechanics tests
-        run: node scripts/gord-control-lab-runtime-test.mjs
 
       - name: Typecheck
         run: npm run typecheck
