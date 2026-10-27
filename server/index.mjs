@@ -407,6 +407,7 @@ async function finishPending(userId, field, value) {
 
 async function disconnectTelegram(userId) {
   const key = String(userId);
+  loginErrors.delete(key);
   const pending = pendingAuth.get(key);
   if (pending) {
     clearTimeout(pending.timeout);
