@@ -18,22 +18,42 @@ let stationCache: RadioStation[] = [];
 function loadMapLibre(): Promise<void> {
   if (window.maplibregl) return Promise.resolve();
   if (loadPromise) return loadPromise;
-  loadPromise = new Promise((resolve, reject) => {
+
+  // Remove a stale failed script; its load/error event may already have fired.
+  document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]')?.remove();
+  loadPromise = new Promise<void>((resolve, reject) => {
     if (!document.querySelector('link[data-radio-maplibre]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet"; link.href = MAPLIBRE_CSS; link.dataset.radioMaplibre = "1";
       document.head.appendChild(link);
     }
-    const existing = document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Map library failed to load")), { once: true });
-      return;
-    }
     const script = document.createElement("script");
-    script.src = MAPLIBRE_JS; script.async = true; script.dataset.radioMaplibre = "1";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Map library failed to load"));
+    let settled = false;
+    let timeout = 0;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      script.onload = null;
+      script.onerror = null;
+      if (error) {
+        script.remove();
+        loadPromise = null;
+        reject(error);
+      } else if (!window.maplibregl) {
+        script.remove();
+        loadPromise = null;
+        reject(new Error("MAPLIBRE_INIT_FAILED"));
+      } else {
+        resolve();
+      }
+    };
+    timeout = window.setTimeout(() => finish(new Error("MAPLIBRE_LOAD_TIMEOUT")), 15000);
+    script.src = MAPLIBRE_JS;
+    script.async = true;
+    script.dataset.radioMaplibre = "1";
+    script.onload = () => finish();
+    script.onerror = () => finish(new Error("MAPLIBRE_LOAD_FAILED"));
     document.head.appendChild(script);
   });
   return loadPromise;
