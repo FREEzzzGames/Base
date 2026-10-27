@@ -28,20 +28,32 @@ async function checkForPortalUpdate(){
   try{
     const response=await fetch("./version.json?ts="+Date.now(),{
       cache:"no-store",
-      headers:{Accept:"application/json"}
+      headers:{Accept:"application/json"},
+      signal:AbortSignal.timeout(5000)
     });
     if(!response.ok)return;
     const remote=await response.json() as {version?:string;build?:string};
     if(!remote.build||remote.build===PORTAL_BUILD_ID)return;
-    const seenKey="freezzz:update-reload";
-    if(sessionStorage.getItem(seenKey)===remote.build)return;
-    sessionStorage.setItem(seenKey,remote.build);
-    localStorage.setItem("freezzz:build",remote.build);
+
     const url=new URL(window.location.href);
+    // Prevent a reload loop when sessionStorage is blocked in a WebView.
+    if(url.searchParams.get("freezzz_build")===remote.build)return;
+    const seenKey="freezzz:update-reload";
+    try{
+      if(sessionStorage.getItem(seenKey)===remote.build)return;
+      sessionStorage.setItem(seenKey,remote.build);
+    }catch{
+      // URL guard above remains the fallback when WebView storage is unavailable.
+    }
+    try{localStorage.setItem("freezzz:build",remote.build);}catch{
+      // The build marker is informational; it must not block the update.
+    }
     url.searchParams.set("freezzz_build",remote.build);
     url.searchParams.set("freezzz_refresh",String(Date.now()));
     window.location.replace(url.toString());
-  }catch{}
+  }catch{
+    // Update discovery is best-effort and must never block application startup.
+  }
 }
 void checkForPortalUpdate();
 
