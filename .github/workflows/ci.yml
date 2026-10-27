@@ -176,8 +176,9 @@ jobs:
           for video in dist/videos/*.mp4; do
             [ -f "$video" ] || continue
             original_size="$(stat -c%s "$video")"
+            echo "VIDEO_SOURCE_INFO: $video $(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height,r_frame_rate,bit_rate -of default=noprint_wrappers=1 "$video" | tr "\n" " ")"
             optimized="${video%.mp4}.optimized.mp4"
-            if ! ffmpeg -hide_banner -loglevel error -y -i "$video" -vf "scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2" -an -c:v libx264 -preset medium -crf 27 -pix_fmt yuv420p -movflags +faststart "$optimized"; then
+            if ! ffmpeg -hide_banner -loglevel error -y -i "$video" -vf "scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2" -an -c:v libx264 -preset slow -crf 31 -pix_fmt yuv420p -movflags +faststart "$optimized"; then
               rm -f "$optimized"
               echo "VIDEO_OPTIMIZATION_SKIPPED: $video could not be transcoded."
               continue
