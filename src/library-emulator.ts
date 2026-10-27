@@ -1219,6 +1219,7 @@ function removeExistingEmulator(): void {
   // its script after every shutdown so the next game gets a completely fresh
   // loader/core instead of reusing the previous instance.
   document.querySelectorAll<HTMLScriptElement>("script[data-freezzz-emulator]").forEach(script => script.remove());
+  emulatorScriptPromise = null;
 
   w.EJS_player = undefined;
   w.EJS_gameUrl = undefined;
@@ -1553,8 +1554,20 @@ function bindLibrary(): void {
     button.addEventListener("click", async () => {
       const id = button.dataset.libraryDelete || "";
       if (!id) return;
-      await deleteRom(id).catch(() => {});
-      writeMeta(readMeta().filter(x => x.id !== id));
+      try {
+        await deleteRom(id);
+      } catch (error) {
+        libraryImportStatus = "Не удалось удалить ROM из хранилища браузера. Запись оставлена в каталоге.";
+        console.error("[FREEzzz library] ROM deletion failed:", id, error);
+        renderLibraryIntoPage();
+        return;
+      }
+      const remaining = readMeta().filter(x => x.id !== id);
+      if (!writeMeta(remaining)) {
+        libraryImportStatus = "ROM удалён из хранилища, но каталог не удалось обновить. Перезагрузи приложение.";
+      } else {
+        libraryImportStatus = "";
+      }
       renderLibraryIntoPage();
     });
   });
