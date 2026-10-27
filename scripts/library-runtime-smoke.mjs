@@ -5,6 +5,7 @@ const library = readFileSync("src/library-emulator.ts", "utf8");
 const profile = readFileSync("src/profile-store.ts", "utf8");
 const main = readFileSync("src/main.ts", "utf8");
 const radioMap = readFileSync("src/radio-map.ts", "utf8");
+const retroConsole = readFileSync("public/retro-console.html", "utf8");
 const radioBrowser = readFileSync("src/radio-browser.ts", "utf8");
 const telegramClient = readFileSync("src/chat/telegram-client.ts", "utf8");
 
@@ -28,6 +29,7 @@ assert.match(importer, /console\.error\("\[FREEzzz library\] ROM import failed:"
 assert.match(importer, /!writeMeta\(current\)/);
 assert.match(importer, /deleteRom\(id\)/);
 assert.match(importer, /libraryImportStatus\s*=/);
+assert.ok(importer.includes('replace(/\\.[^.]+$/, "")'), "ROM names must drop their file extension");
 assert.doesNotMatch(importer, /catch\s*\{\s*\}/);
 
 const deleter = section(library, 'document.querySelectorAll<HTMLElement>("[data-library-delete]")', "\n\n}", "ROM deletion");
@@ -51,5 +53,6 @@ assert.ok(radioBrowser.includes("safeLimit=Math.min(100"));
 assert.match(telegramClient, /TELEGRAM_API_TIMEOUT/);
 assert.match(telegramClient, /AbortController/);
 assert.match(telegramClient, /TELEGRAM_INVALID_RESPONSE/);
+assert.ok(retroConsole.includes("./emupedia.html"), "retired console route must not point to a removed page");
 
 console.log("LIBRARY_RUNTIME_SMOKE_OK");
