@@ -95,11 +95,63 @@ header{padding-top:3px}.brand{font-size:11px}.sub{font-size:9px}
 #foot{font-size:8px;padding-bottom:1px}
 @media(max-width:380px){#movePanel{left:5px;width:78px}#moveArea{height:72px}#stickBase{width:66px;height:66px}#stickKnob{left:17px;top:17px;width:28px;height:28px}#skillPanel{right:5px;width:68%}.skill{max-height:64px}.skill .key{display:none}}
 @media(max-height:700px){#stage{min-height:190px}#skillInfo:not([open]){max-height:34px}#skillPanel,#movePanel{bottom:5px}.skill{max-height:58px}#moveArea{height:64px}#stickBase{width:58px;height:58px}#stickKnob{left:15px;top:15px;width:26px;height:26px}}
+
+/* Integrated opaque MLBB controller — Gord Control Lab */
+.header-tools{display:flex;align-items:center;gap:5px;min-width:0}
+#padSkin{max-width:118px;min-width:0;background:#101722;color:#eaf4ff;border:1px solid #405267;border-radius:8px;padding:7px 6px;font:700 10px inherit}
+#arenaControls{inset:auto 0 0;height:72%;min-height:184px;z-index:5;pointer-events:none;border:2px solid var(--pad-accent,#ff9f43);border-bottom:0;border-radius:24px 24px 0 0;background:linear-gradient(160deg,var(--pad-top,#191d26),var(--pad-bottom,#080a0e) 70%);box-shadow:0 -12px 32px #000c,inset 0 2px 0 #ffffff12;overflow:hidden;isolation:isolate}
+#arenaControls:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:var(--pad-texture,none);opacity:.22}
+.padShoulders{position:absolute;top:0;left:8px;right:8px;height:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:4px;pointer-events:none}
+.padShoulder{pointer-events:auto;flex:0 1 auto;min-width:0;height:25px;padding:0 7px;border:1px solid var(--pad-accent,#ff9f43);border-top:2px solid var(--pad-accent,#ff9f43);border-radius:9px 9px 4px 4px;background:#111721;color:#cbd5e1;font:800 8px ui-monospace,monospace;box-shadow:0 3px 0 #050609,inset 0 1px 2px #ffffff20;touch-action:none}
+.padShoulder:active{transform:translateY(2px);box-shadow:0 1px 0 #050609}
+.padLed{width:7px;height:7px;flex:0 0 7px;border-radius:50%;margin-top:8px;background:var(--pad-accent,#ff9f43);box-shadow:0 0 10px var(--pad-accent,#ff9f43)}
+#movePanel{left:7px;bottom:36px;width:31%;max-width:122px;pointer-events:auto}
+#skillPanel{right:7px;bottom:35px;width:64%;max-width:270px;pointer-events:auto}
+.controlCaption{font-size:7px;letter-spacing:.15em;color:#cbd5e1}
+#moveArea{height:clamp(66px,14vh,98px)}
+#stickBase{width:clamp(62px,18vw,94px);height:clamp(62px,18vw,94px);background:#07090dfc;border:2px solid #596579;box-shadow:inset 0 8px 16px #000,0 4px 8px #000c}
+#stickBase:before,#stickBase:after{background:#71809655}
+#stickKnob{width:43%;height:43%;left:28.5%;top:28.5%;background:radial-gradient(circle at 32% 28%,#465267,#161b25 75%);border:2px solid #6f7b8f;box-shadow:0 5px 0 #050609,inset 0 2px 3px #ffffff2c}
+#skills{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(3px,1vw,7px)}
+.skill{aspect-ratio:1/1;width:100%;height:auto;max-height:clamp(48px,11vh,76px);border:2px solid #7c8da3;background:radial-gradient(circle at 32% 24%,#35445b,#121925 72%);box-shadow:0 4px 0 #050609,0 7px 12px #000b,inset 0 2px 3px #ffffff2b}
+.skill .icon{font-size:clamp(15px,4vw,21px);color:var(--pad-accent,#ff9f43)}
+.skill .name{font-size:clamp(8px,2.2vw,10px)}
+.skill .key{font-size:7px}
+.skill[data-skill="1"]{border-color:#38bdf8}.skill[data-skill="2"]{border-color:#7dd3fc}.skill[data-skill="3"]{border-color:#fb7185}
+.skill.active{transform:translateY(3px);box-shadow:0 1px 0 #050609,inset 0 3px 6px #000b;border-color:#ffca6a}
+#basicAttack{grid-column:1/3;min-height:32px;border:1px solid #fbbf24;border-radius:18px;background:linear-gradient(180deg,#fbbf24,#b45309);color:#fff;font-weight:900;box-shadow:0 4px 0 #713f12,0 6px 9px #000b}
+#testPassive{min-height:32px;border-radius:18px;background:#17202d;border:1px solid #475569;color:#cbd5e1}
+.arenaActions{gap:4px;margin-top:5px}
+.arenaActions .smallBtn{border-radius:8px;background:#101722;border:1px solid #3d4a5c;color:#cbd5e1;font-size:7px;padding:6px 2px;box-shadow:0 2px 0 #050609}
+.padSystemRow{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);display:flex;gap:10px;pointer-events:auto}
+.padSystem{width:42px;height:17px;border:1px solid #3f4a5a;border-radius:10px;background:#151b25;color:#9ca3af;font:800 7px ui-monospace,monospace;transform:rotate(-10deg);box-shadow:0 3px 0 #050609,inset 0 1px 2px #ffffff20;touch-action:manipulation}
+.padSystem:active{transform:rotate(-10deg) translateY(2px);box-shadow:0 1px 0 #050609}
+#toast{z-index:6;top:8px;background:#070a0ff5;border-color:#3c4c61}
+#stage{background:#0a111b;border-color:#35465b}
+body[data-pad-skin="obsidian"]{--pad-top:#20232c;--pad-bottom:#08090d;--pad-accent:#ff9f43;--pad-texture:linear-gradient(135deg,#ffffff08,transparent 35%,#ff6a0012)}
+body[data-pad-skin="classic-grey"]{--pad-top:#737f91;--pad-bottom:#293241;--pad-accent:#d1d5db;--pad-texture:linear-gradient(135deg,#ffffff20,transparent 55%)}
+body[data-pad-skin="chess"]{--pad-top:#27272a;--pad-bottom:#09090b;--pad-accent:#e4e4e7;--pad-texture:repeating-conic-gradient(#fff1 0 25%,transparent 0 50%) 50%/18px 18px}
+body[data-pad-skin="carbon"]{--pad-top:#272b33;--pad-bottom:#08090c;--pad-accent:#a3aab7;--pad-texture:repeating-linear-gradient(135deg,#ffffff12 0 2px,transparent 2px 5px)}
+body[data-pad-skin="arctic"]{--pad-top:#27465a;--pad-bottom:#071521;--pad-accent:#7dd3fc;--pad-texture:linear-gradient(135deg,#bae6fd20,transparent 55%)}
+body[data-pad-skin="waves"]{--pad-top:#075985;--pad-bottom:#11113b;--pad-accent:#22d3ee;--pad-texture:linear-gradient(120deg,#22d3ee22,#a855f722,#2563eb22);animation:padWaves 8s ease-in-out infinite}
+@keyframes padWaves{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(45deg)}}
+body[data-pad-skin="matrix"]{--pad-top:#064e3b;--pad-bottom:#03140e;--pad-accent:#34d399;--pad-texture:repeating-linear-gradient(0deg,#10b9812b 0 2px,transparent 2px 9px);animation:padMatrix 6s linear infinite}
+@keyframes padMatrix{from{background-position:0 0}to{background-position:0 180px}}
+body[data-pad-skin="vapor"]{--pad-top:#86198f;--pad-bottom:#171044;--pad-accent:#f0abfc;--pad-texture:linear-gradient(0deg,#f0abfc18 1px,transparent 1px),linear-gradient(90deg,#f0abfc18 1px,transparent 1px);background-size:100% 100%;animation:padVapor 7s ease-in-out infinite}
+@keyframes padVapor{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(-35deg)}}
+body[data-pad-skin="ember"]{--pad-top:#7c2d12;--pad-bottom:#120908;--pad-accent:#fb923c;--pad-texture:radial-gradient(ellipse at 50% 100%,#f9731644,transparent 65%);animation:padEmber 5s ease-in-out infinite}
+@keyframes padEmber{0%,100%{--pad-accent:#fb923c}50%{--pad-accent:#f43f5e}}
+body[data-pad-skin="nebula"]{--pad-top:#4c1d95;--pad-bottom:#100b20;--pad-accent:#c084fc;--pad-texture:radial-gradient(circle at 20% 30%,#f0abfc55 0 2px,transparent 3px),radial-gradient(circle at 70% 65%,#818cf855 0 2px,transparent 3px);animation:padNebula 9s ease-in-out infinite}
+@keyframes padNebula{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(30deg)}}
+@media(max-width:380px){.padShoulder{padding:0 4px;font-size:7px}#movePanel{left:4px;width:29%}#skillPanel{right:4px;width:66%}.skill{max-height:52px}.skill .key{display:none}.padSystem{width:36px}}
+@media(max-height:700px){#arenaControls{height:76%;min-height:174px}.padShoulders{height:24px}.padShoulder{height:21px}#movePanel,#skillPanel{bottom:31px}#moveArea{height:58px}.skill{max-height:48px}.arenaActions .smallBtn{padding:4px 2px}.padSystemRow{bottom:3px}}
+@media(prefers-reduced-motion:reduce){body[data-pad-skin="waves"],body[data-pad-skin="matrix"],body[data-pad-skin="vapor"],body[data-pad-skin="ember"],body[data-pad-skin="nebula"]{animation:none!important}}
+
 </style>
 </head>
 <body>
 <div id="app">
-<header><div><div class="brand">FREEzzz // CONTROL LAB</div><div class="sub" id="mageSubtitle">GORD · МЕХАНИКА УПРАВЛЕНИЯ</div></div><div class="pill" id="modePill">Свободная практика</div></header>
+<header><div><div class="brand">FREEzzz // CONTROL LAB</div><div class="sub" id="mageSubtitle">GORD · МЕХАНИКА УПРАВЛЕНИЯ</div></div><div class="header-tools"><select id="padSkin" aria-label="Тема геймпада"><option value="obsidian">Obsidian</option><option value="classic-grey">Classic Grey</option><option value="chess">Chess Board</option><option value="carbon">Carbon Fiber</option><option value="arctic">Arctic Frost</option><option value="waves">Cyber Waves</option><option value="matrix">Matrix Rain</option><option value="vapor">Neon Vaporwave</option><option value="ember">Volcanic Ember</option><option value="nebula">Cosmic Nebula</option></select><div class="pill" id="modePill">Свободная практика</div></div></header>
 <div id="magePicker" aria-label="Выбор мага"></div>
 <section id="stats">
 <div class="stat"><div class="label">Попадания</div><div class="value" id="hits">0</div></div>
@@ -109,7 +161,7 @@ header{padding-top:3px}.brand{font-size:11px}.sub{font-size:9px}
 <div class="stat"><div class="label">Мана Сесилиона</div><div class="value" id="cecilionMana">—</div></div>
 <div class="stat"><div class="label">Мана Сесилиона</div><div class="value" id="cecilionMana">—</div></div>
 </section>
-<div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания</div><div id="arenaControls" aria-label="Встроенное управление на арене">
+<div id="stage"><canvas id="arena" aria-label="Тренировочная арена"></canvas><div id="toast">Коснись навыка и тяни к цели для прицеливания</div><div id="arenaControls" aria-label="Встроенное управление на арене"><div class="padShoulders"><button class="padShoulder" id="padL2" type="button">L2 / PING</button><button class="padShoulder" id="padL1" type="button">L1 / HERO</button><span class="padLed"></span><button class="padShoulder" id="padR1" type="button">R1 / TARGETS</button><button class="padShoulder" id="padR2" type="button">R2 / ITEM</button></div>
 <div id="movePanel" class="arenaControl"><div class="controlCaption">MOVE</div><div id="moveArea"><div id="stickBase"><div id="stickKnob"></div></div></div></div>
 <div id="skillPanel" class="arenaControl"><div class="controlCaption">SKILLS</div><div id="skills">
 <button class="skill" data-skill="1"><span class="icon">↗</span><span class="name">Навык 1</span><span class="key">Mystic Projectile</span></button>
@@ -117,7 +169,7 @@ header{padding-top:3px}.brand{font-size:11px}.sub{font-size:9px}
 <button class="skill" data-skill="3"><span class="icon">━</span><span class="name">Ульта</span><span class="key">Mystic Gush</span></button>
 <button class="smallBtn" id="basicAttack">Базовая атака</button>
 <button class="smallBtn" id="testPassive">Проверить пассивку</button>
-</div><div class="arenaActions"><button class="smallBtn" id="reset">Сбросить</button><button class="smallBtn" id="targets">Цели: движение</button></div></div></div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
+</div><div class="arenaActions"><button class="smallBtn" id="padRecall">RECALL</button><button class="smallBtn" id="padRegen">REGEN</button><button class="smallBtn" id="reset">RESET</button><button class="smallBtn" id="targets">TARGETS</button></div><div class="padSystemRow"><button class="padSystem" id="padMap">MAP</button><button class="padSystem" id="padScore">SCORE</button><button class="padSystem" id="padPause">PAUSE</button></div></div></div><div id="aimHint">Движение — левый стик · Навык — удержание и направление</div></div>
 <details id="skillInfo"><summary>Информация о навыках</summary><div id="skillDetails">Данные навыка появятся после выбора персонажа.</div></details>
 
 <div id="foot"><span>Тренировочный симулятор · не клиент MLBB</span><span>Canvas 2D · Touch</span></div>
@@ -128,6 +180,22 @@ header{padding-top:3px}.brand{font-size:11px}.sub{font-size:9px}
 const canvas=document.getElementById('arena'),ctx=canvas.getContext('2d',{alpha:false});
 const $=id=>document.getElementById(id);
 const ui={hits:$('hits'),accuracy:$('accuracy'),combo:$('combo'),toast:$('toast'),hint:$('aimHint'),stick:$('stickBase'),knob:$('stickKnob')};
+
+  const padSkin=document.getElementById('padSkin');
+  padSkin.addEventListener('change',()=>{document.body.dataset.padSkin=padSkin.value;try{localStorage.setItem('gord-studio-pad-skin',padSkin.value)}catch{}});
+  try{const savedSkin=localStorage.getItem('gord-studio-pad-skin');if(savedSkin&&[...padSkin.options].some(o=>o.value===savedSkin)){padSkin.value=savedSkin;document.body.dataset.padSkin=savedSkin;}else{document.body.dataset.padSkin='obsidian';}}catch{document.body.dataset.padSkin='obsidian';}
+  const padAction=(id,fn)=>{const el=$(id);if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add('active')});const release=e=>el.classList.remove('active');['pointerup','pointercancel','lostpointercapture'].forEach(ev=>el.addEventListener(ev,release));el.addEventListener('click',fn);};
+  padAction('padL1',()=>{const idx=MAGES.findIndex(m=>m.id===state.mageId);selectMage(MAGES[(idx+1)%MAGES.length].id);say('Герой: '+currentMage().name);});
+  padAction('padL2',()=>say('PING · цель отмечена для тренировки'));
+  padAction('padR1',()=>$('targets').click());
+  padAction('padR2',()=>{const healed=healPlayer(150);updateStats();say(healed?'ITEM · восстановлено '+Math.round(healed)+' HP':'ITEM · здоровье полное');});
+  padAction('padRecall',()=>{state.player.x=state.w*.5;state.player.y=state.h*.72;state.player.face=-Math.PI/2;state.move.x=0;state.move.y=0;state.player.hp=state.player.maxHp;updateStats();say('RECALL · возвращение на базу');});
+  padAction('padRegen',()=>{const healed=healPlayer(220);updateStats();say(healed?'REGEN · +'+Math.round(healed)+' HP':'REGEN · здоровье полное');});
+  padAction('padMap',()=>{say('MAP · '+state.targets.filter(t=>t.alive).length+' целей на арене');});
+  padAction('padScore',()=>{say('SCORE · попадания '+state.hits+' · навыки '+state.casts+' · комбо '+state.combo);});
+  let padPaused=false;
+  padAction('padPause',()=>{padPaused=!padPaused;$('padPause').textContent=padPaused?'RESUME':'PAUSE';say(padPaused?'Пауза':'Продолжаем');});
+
 const state={w:360,h:540,dpr:1,last:0,mageId:"gord",magicPower:0,recasts:{},aliceOrb:null,player:{x:180,y:420,r:13,speed:145,face:-Math.PI/2,hp:700,maxHp:1000},targets:[],shots:[],effects:[],cooldowns:[0,0,0],cdMax:[4.2,6.5,22],aim:null,move:{x:0,y:0},movingTargets:true,hits:0,casts:0,combo:0,best:0,ultimate:null,drag:null,ultSteeringPointer:null,aliceCrimson:0,aliceCrimsonTimer:0,aliceBanquet:0,aliceUltCharge:null,healing:0,baneTidal:0,baneAleReady:0,baneSpeedTimer:0,auroraPassiveCooldown:0,auroraInvuln:0,auroraRecovery:0,changEShield:0,changEShieldMax:0,changEAttackBuff:0,changESpeedTimer:0,changEUltTimer:0,eudoraSpeedTimer:0,cyclopsSpeedTimer:0,nanaCooldown:0,nanaTransform:0,nanaSpeedTimer:0,harithShield:0,harithEnhancedAttack:0,harithUltTimer:0,harithSpeedTimer:0,harleyHat:null,harleySpeedTimer:0,vexanaGuardTimer:0,vexanaGuardX:0,vexanaGuardY:0,valirUltBuff:0,valirSpeedTimer:0,cecilionMana:500,cecilionMaxMana:1000,cecilionOverflowCD:0,cecilionCostWindow:0,cecilionCostMultiplier:1,cecilionFeast:0,cecilionSpeedTimer:0};
 function resize(){const r=canvas.getBoundingClientRect();state.dpr=Math.min(window.devicePixelRatio||1,2);state.w=Math.max(1,r.width);state.h=Math.max(1,r.height);canvas.width=Math.round(state.w*state.dpr);canvas.height=Math.round(state.h*state.dpr);ctx.setTransform(state.dpr,0,0,state.dpr,0,0);if(!state.targets.length)spawnTargets();draw();}
 function spawnTargets(){state.targets=[];const w=state.w,h=state.h;for(let i=0;i<4;i++)state.targets.push({x:w*(.2+i*.2),y:h*(.22+(i%2)*.14),r:13,hp:100,max:100,phase:i*1.8,alive:true,respawn:0,statuses:{},marks:{}});}
@@ -468,7 +536,7 @@ for(let i=s.effects.length-1;i>=0;i--){const f=s.effects[i];f.life-=dt;if(f.auro
 if(s.ultimate){const u=s.ultimate;u.life-=dt;u.tick-=dt;if(u.tick<=0){u.ticks=(u.ticks||0)+1;u.tick=u.interval||.12;const end={x:p.x+Math.cos(u.angle)*s.w,y:p.y+Math.sin(u.angle)*s.w};for(const t of s.targets){if(!t.alive)continue;const vx=end.x-p.x,vy=end.y-p.y,wx=t.x-p.x,wy=t.y-p.y;const c=Math.max(0,Math.min(1,(vx*wx+vy*wy)/(vx*vx+vy*vy)));if(Math.hypot(t.x-(p.x+c*vx),t.y-(p.y+c*vy))<t.r+(u.gordBeam?13:8))hitTarget(t,u.damage||7,3,{color:u.gordBeam?'#66fcf1':'#fff0c8'});}if(u.maxTicks&&u.ticks>=u.maxTicks)u.life=0;}if(u.life<=0)s.ultimate=null;}
 draw();for(let i=1;i<=3;i++){const b=document.querySelector('[data-skill="'+i+'"]');const cd=s.cooldowns[i-1];b.classList.toggle('cooling',cd>0);b.dataset.cd=cd>0?cd.toFixed(1):'';b.classList.toggle('active',s.drag===i||!!(i===3&&s.ultimate));}}
 function iSafe(x){return Math.sin(x*.31);}
-function loop(now){const dt=Math.min(.033,(now-(state.last||now))/1000);state.last=now;update(dt);requestAnimationFrame(loop);}
+function loop(now){const dt=Math.min(.033,(now-(state.last||now))/1000);state.last=now;if(!padPaused)update(dt);requestAnimationFrame(loop);}
 function localPoint(e){const r=ui.stick.getBoundingClientRect();return{x:e.clientX-(r.left+r.width/2),y:e.clientY-(r.top+r.height/2)};}
 function setStick(e){const r=ui.stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),max=r.width*.34,l=Math.hypot(dx,dy)||1,k=Math.min(1,max/l);state.move={x:dx*k,y:dy*k};ui.knob.style.transform='translate('+dx*k+'px,'+dy*k+'px)';}
 function clearStick(){state.move={x:0,y:0};ui.knob.style.transform='translate(0,0)';}
