@@ -69,9 +69,16 @@ function validateUrl(raw,provider){
   let u;try{u=new URL(raw)}catch{throw new Error("INVALID_URL")}
   if(u.protocol!=="https:")throw new Error("HTTPS_REQUIRED");
   const host=u.hostname.toLowerCase().replace(/^www\./,"");
-  const allowed=provider==="youtube"?["youtube.com","m.youtube.com","youtu.be"].includes(host):["twitch.tv","m.twitch.tv"].includes(host);
   const parts=u.pathname.split("/").filter(Boolean);
-  if(!allowed||!parts.length||["directory","downloads","jobs","p","videos","search"].includes(parts[0].toLowerCase()))throw new Error("UNSUPPORTED_CREATOR_URL");
+  const excluded=["directory","downloads","jobs","p","videos","search","watch","shorts","live","embed","playlist","results","clip","clips"];
+  if(provider==="youtube"){
+    const allowed=["youtube.com","m.youtube.com"].includes(host);
+    const isHandle=Boolean(parts[0]?.startsWith("@")&&parts[0].length>1);
+    const isChannel=parts[0]?.toLowerCase()==="channel"&&/^UC[a-zA-Z0-9_-]{20,}$/.test(parts[1]||"");
+    if(!allowed||(!isHandle&&!isChannel))throw new Error("UNSUPPORTED_CREATOR_URL");
+  }else{
+    if(!["twitch.tv","m.twitch.tv"].includes(host)||parts.length!==1||excluded.includes((parts[0]||"").toLowerCase()))throw new Error("UNSUPPORTED_CREATOR_URL");
+  }
   return u.href;
 }
 function youtubeKey(url){
@@ -110,7 +117,8 @@ let persistChain=Promise.resolve();
 async function persist(){
   if(!store)return;
   const snapshot=JSON.stringify(store);
-  persistChain=persistChain.then(async()=>{
+  // A failed write must not permanently poison the serialized persistence queue.
+  persistChain=persistChain.catch(()=>{}).then(async()=>{
     const pool=await getDatabasePool();
     if(pool){
       await pool.query("INSERT INTO freezzz_live_state (id,payload,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET payload=EXCLUDED.payload,updated_at=NOW()",[snapshot]);
@@ -122,6 +130,17 @@ async function persist(){
     await fs.rename(temp,DATA_PATH);
   });
   return persistChain;
+}
+async function readJsonBody(req,maxBytes=32768){
+  const chunks=[];
+  let bytes=0;
+  for await(const chunk of req){
+    const buffer=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);
+    bytes+=buffer.length;
+    if(bytes>maxBytes)throw new Error("PAYLOAD_TOO_LARGE");
+    chunks.push(buffer);
+  }
+  return JSON.parse(Buffer.concat(chunks).toString("utf8")||"{}");
 }
 async function youtubeRequest(params){
   if(!YOUTUBE_KEY)throw new Error("YOUTUBE_DATA_API_KEY_NOT_CONFIGURED");
@@ -202,9 +221,10 @@ async function syncAll(){
   if(syncInFlight)return syncInFlight;
   syncInFlight=(async()=>{
     const s=await load();const now=new Date().toISOString();let successes=0,failures=0;
+    const unavailablePlatforms=new Set();
     for(const creator of s.creators){
       for(const platform of ["youtube","twitch"]){
-        if(!creator.platforms?.[platform])continue;
+        if(!creator.platforms?.[platform]||unavailablePlatforms.has(platform))continue;
         try{
           const metrics=platform==="youtube"?await resolveYoutube(creator):await resolveTwitch(creator);
           if(metrics?.available===false)throw new Error(metrics.reason);
@@ -215,8 +235,11 @@ async function syncAll(){
           failures++;const message=String(e?.message||"SYNC_FAILED");
           lastSyncError=message;
           s.snapshots.push({creatorId:creator.id,platform,observedAt:now,error:message.slice(0,120)});
-          // A missing secret or quota outage should fail fast rather than hammer the provider.
-          if(message.includes("NOT_CONFIGURED")||message.includes("HTTP_401")||message.includes("HTTP_403"))break;
+          // Stop querying this provider after configuration/auth failures, but keep
+          // syncing the other platform instead of disabling both by accident.
+          if(message.includes("NOT_CONFIGURED")||message.includes("HTTP_401")||message.includes("HTTP_403")){
+            unavailablePlatforms.add(platform);
+          }
         }
       }
     }
@@ -306,15 +329,24 @@ export async function handleLiveRoute(req,res,url,origin){
     const s=await load();return json(res,200,{ok:true,service:"live-rankings",youtubeConfigured:Boolean(YOUTUBE_KEY),twitchConfigured:Boolean(TWITCH_CLIENT_ID&&TWITCH_CLIENT_SECRET),storage:DATABASE_URL?"postgres":"local-file",persistentPath:DATABASE_URL?undefined:DATA_PATH,lastDailyRefresh:s.lastDailyRefresh,lastMonthlyReview:s.lastMonthlyReview,publishedMonth:s.publishedMonth,publishedAt:s.publishedAt,creators:s.creators.length,snapshots:s.snapshots.length,rankings:s.rankings.length,publishedRankings:(s.publishedRankings||[]).length,lastError:lastSyncError},origin);
   }
   if(req.method==="GET"&&pathname==="/api/live/catalog"){
-    const s=await load();const total=s.creators.length;const limit=Math.min(100,Math.max(1,Number(url.searchParams.get("limit")||50)));const offset=Math.max(0,Number(url.searchParams.get("offset")||0));
+    const s=await load();const total=s.creators.length;
+    const requestedLimit=Number(url.searchParams.get("limit")||50);
+    const requestedOffset=Number(url.searchParams.get("offset")||0);
+    const limit=Number.isFinite(requestedLimit)?Math.min(100,Math.max(1,Math.trunc(requestedLimit))):50;
+    const offset=Number.isFinite(requestedOffset)?Math.max(0,Math.trunc(requestedOffset)):0;
     const creators=s.creators.slice(offset,offset+limit).map(({id,name,language,region,category,subcategory,platforms,source,verified,addedAt})=>({id,name,language,region,category,subcategory,platforms,source,verified,addedAt}));
     return json(res,200,{ok:true,creators,total,limit,offset,nextOffset:offset+creators.length<total?offset+creators.length:null,generatedAt:new Date().toISOString()},origin);
   }
   if(req.method==="POST"&&pathname==="/api/live/suggestions"){
-    const ip=String(req.headers["x-forwarded-for"]||req.socket.remoteAddress||"unknown").split(",")[0].trim();const now=Date.now();const bucket=liveSuggestionBuckets.get(ip)||{at:now,count:0};
+    const forwarded=String(req.headers["x-forwarded-for"]||"").split(",").map(value=>value.trim()).filter(Boolean);
+    const ip=forwarded.at(-1)||String(req.socket.remoteAddress||"unknown");
+    const now=Date.now();const bucket=liveSuggestionBuckets.get(ip)||{at:now,count:0};
     if(now-bucket.at>60*60*1000){bucket.at=now;bucket.count=0;}if(bucket.count>=5)return json(res,429,{ok:false,error:"SUGGESTION_RATE_LIMIT"},origin);
     bucket.count++;liveSuggestionBuckets.set(ip,bucket);
-    let body;try{body=JSON.parse(await new Promise((resolve,reject)=>{let raw="";req.on("data",chunk=>{raw+=chunk;if(raw.length>32768)reject(new Error("PAYLOAD_TOO_LARGE"));});req.on("end",()=>resolve(raw||"{}"));req.on("error",reject);}));}catch{return json(res,400,{ok:false,error:"INVALID_JSON"},origin);}
+    if(liveSuggestionBuckets.size>5000){
+      for(const [key,value] of liveSuggestionBuckets)if(now-value.at>2*60*60*1000)liveSuggestionBuckets.delete(key);
+    }
+    let body;try{body=await readJsonBody(req);}catch(error){return json(res,error?.message==="PAYLOAD_TOO_LARGE"?413:400,{ok:false,error:error?.message==="PAYLOAD_TOO_LARGE"?"PAYLOAD_TOO_LARGE":"INVALID_JSON"},origin);}
     try{const creator=normalizeCreator(body);const s=await load();const existing=s.creators.findIndex(item=>item.id===creator.id);if(existing>=0)return json(res,200,{ok:true,duplicate:true,creator:s.creators[existing],total:s.creators.length},origin);s.creators.push(creator);await persist();return json(res,201,{ok:true,creator,total:s.creators.length},origin);}catch(e){return json(res,400,{ok:false,error:String(e?.message||"INVALID_CREATOR")},origin);}
   }
   if(req.method==="GET"&&pathname==="/api/live/rankings"){
@@ -325,7 +357,7 @@ export async function handleLiveRoute(req,res,url,origin){
   }
   if(req.method==="POST"&&pathname==="/api/live/creators"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
-    let body;try{body=JSON.parse(await new Promise((resolve,reject)=>{let raw="";req.on("data",chunk=>{raw+=chunk;if(raw.length>32768)reject(new Error("PAYLOAD_TOO_LARGE"));});req.on("end",()=>resolve(raw||"{}"));req.on("error",reject);}));}catch{return json(res,400,{ok:false,error:"INVALID_JSON"},origin);}
+    let body;try{body=await readJsonBody(req);}catch(error){return json(res,error?.message==="PAYLOAD_TOO_LARGE"?413:400,{ok:false,error:error?.message==="PAYLOAD_TOO_LARGE"?"PAYLOAD_TOO_LARGE":"INVALID_JSON"},origin);}
     try{
       const creator=normalizeCreator(body);const s=await load();const existing=s.creators.findIndex(c=>c.id===creator.id);
       if(existing>=0)s.creators[existing]={...s.creators[existing],...creator,addedAt:s.creators[existing].addedAt};else s.creators.push(creator);
