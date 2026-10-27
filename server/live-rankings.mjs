@@ -51,11 +51,11 @@ function json(res,status,body,origin="*"){
   res.setHeader("Cache-Control","no-store");res.setHeader("Access-Control-Allow-Origin",origin);
   res.setHeader("Vary","Origin");res.end(JSON.stringify(body));
 }
-function normalizeCreator(input){
+function normalizeCreator(input,allowRegion=false){
   if(!input||typeof input!=="object")throw new Error("INVALID_CREATOR");
   const name=String(input.name||"").trim().slice(0,100);
   const language=LANGUAGES.includes(input.language)?input.language:"unknown";
-  const region=REGIONS.includes(String(input.region||"").toUpperCase())?String(input.region).toUpperCase():null;
+  const region=allowRegion&&REGIONS.includes(String(input.region||"").toUpperCase())?String(input.region).toUpperCase():null;
   const category=CATEGORIES.includes(input.category)?input.category:"gaming";
   const subcategory=String(input.subcategory||"Other").trim().slice(0,80)||"Other";
   const yt=String(input.youtubeUrl||"").trim(),tw=String(input.twitchUrl||"").trim();
@@ -63,7 +63,7 @@ function normalizeCreator(input){
   const twitch=tw?validateUrl(tw,"twitch"):null;
   if(!name||(!youtube&&!twitch))throw new Error("NAME_AND_VALID_PLATFORM_URL_REQUIRED");
   const key=twitch?new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase():youtubeKey(youtube);
-  return {id:(twitch?"twitch:":"youtube:")+key,name,language,region,category,subcategory,platforms:{youtube:youtube?{url:youtube}:null,twitch:twitch?{url:twitch,login:new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase()}:null},source:"user",verified:false,addedAt:new Date().toISOString()};
+  return {id:(twitch?"twitch:":"youtube:")+key,name,language,region,category,subcategory,platforms:{youtube:youtube?{url:youtube}:null,twitch:twitch?{url:twitch,login:new URL(twitch).pathname.split("/").filter(Boolean)[0].toLowerCase()}:null},source:allowRegion?"admin":"user",verified:false,addedAt:new Date().toISOString()};
 }
 function validateUrl(raw,provider){
   let u;try{u=new URL(raw)}catch{throw new Error("INVALID_URL")}
@@ -360,7 +360,7 @@ export async function handleLiveRoute(req,res,url,origin){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
     let body;try{body=await readJsonBody(req);}catch(error){return json(res,error?.message==="PAYLOAD_TOO_LARGE"?413:400,{ok:false,error:error?.message==="PAYLOAD_TOO_LARGE"?"PAYLOAD_TOO_LARGE":"INVALID_JSON"},origin);}
     try{
-      const creator=normalizeCreator(body);const s=await load();const existing=s.creators.findIndex(c=>c.id===creator.id);
+      const creator=normalizeCreator(body,true);const s=await load();const existing=s.creators.findIndex(c=>c.id===creator.id);
       if(existing>=0)s.creators[existing]={...s.creators[existing],...creator,addedAt:s.creators[existing].addedAt};else s.creators.push(creator);
       await persist();return json(res,200,{ok:true,creator,total:s.creators.length},origin);
     }catch(e){return json(res,400,{ok:false,error:String(e?.message||"INVALID_CREATOR")},origin);}
