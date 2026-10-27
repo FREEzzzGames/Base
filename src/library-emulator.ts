@@ -130,46 +130,60 @@ function openDb(): Promise<IDBDatabase> {
       const oldVersion = (event as IDBVersionChangeEvent).oldVersion;
       if (oldVersion < 7) request.transaction?.objectStore(STICKER_STORE).clear();
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onversionchange = () => db.close();
+      resolve(db);
+    };
     request.onerror = () => reject(request.error || new Error("LIBRARY_DB_OPEN_FAILED"));
+    request.onblocked = () => reject(new Error("LIBRARY_DB_BLOCKED"));
   });
 }
 
 async function putRom(id: string, blob: Blob): Promise<void> {
   const db = await openDb();
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).put({ id, blob });
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error || new Error("LIBRARY_ROM_WRITE_FAILED"));
-  });
-  db.close();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put({ id, blob });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("LIBRARY_ROM_WRITE_FAILED"));
+      tx.onabort = () => reject(tx.error || new Error("LIBRARY_ROM_WRITE_ABORTED"));
+    });
+  } finally {
+    db.close();
+  }
 }
 
 async function getRom(id: string): Promise<Blob> {
   const db = await openDb();
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    const request = db.transaction(STORE, "readonly").objectStore(STORE).get(id);
-    request.onsuccess = () => {
-      const value = request.result?.blob;
-      value instanceof Blob ? resolve(value) : reject(new Error("ROM_NOT_FOUND"));
-    };
-    request.onerror = () => reject(request.error || new Error("LIBRARY_ROM_READ_FAILED"));
-  });
-  db.close();
-  return blob;
+  try {
+    return await new Promise<Blob>((resolve, reject) => {
+      const request = db.transaction(STORE, "readonly").objectStore(STORE).get(id);
+      request.onsuccess = () => {
+        const value = request.result?.blob;
+        value instanceof Blob ? resolve(value) : reject(new Error("ROM_NOT_FOUND"));
+      };
+      request.onerror = () => reject(request.error || new Error("LIBRARY_ROM_READ_FAILED"));
+    });
+  } finally {
+    db.close();
+  }
 }
-
 
 async function deleteRom(id: string): Promise<void> {
   const db = await openDb();
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error || new Error("LIBRARY_ROM_DELETE_FAILED"));
-  });
-  db.close();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("LIBRARY_ROM_DELETE_FAILED"));
+      tx.onabort = () => reject(tx.error || new Error("LIBRARY_ROM_DELETE_ABORTED"));
+    });
+  } finally {
+    db.close();
+  }
 }
 
 function extensionOf(name: string): string {
