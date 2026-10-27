@@ -5,11 +5,13 @@ import { extname, join, resolve } from "node:path";
 
 const root = resolve("public");
 const pages = [];
+const standaloneScripts = [];
 function walk(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const file = join(directory, entry.name);
     if (entry.isDirectory()) walk(file);
     else if (extname(entry.name).toLowerCase() === ".html") pages.push(file);
+    else if (extname(entry.name).toLowerCase() === ".js") standaloneScripts.push(file);
   }
 }
 walk(root);
@@ -39,5 +41,19 @@ for (const page of pages) {
     }
   }
 }
+for (const file of standaloneScripts) {
+  const source = readFileSync(file, "utf8");
+  checked++;
+  try {
+    execFileSync(process.execPath, ["--check", "--input-type=module"], {
+      input: source,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+  } catch (error) {
+    const detail = error?.stderr?.toString() || error?.message || String(error);
+    errors.push(file + ": " + detail.trim());
+  }
+}
 assert.deepEqual(errors, [], "Inline JavaScript syntax errors found:\n" + errors.join("\n"));
-console.log("INLINE_HTML_SCRIPT_SYNTAX_OK", JSON.stringify({ pages: pages.length, scripts: checked, errors: 0 }));
+console.log("INLINE_HTML_SCRIPT_SYNTAX_OK", JSON.stringify({ pages: pages.length, scripts: checked, standaloneModules: standaloneScripts.length, errors: 0 }));
