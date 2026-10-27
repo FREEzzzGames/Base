@@ -23,7 +23,7 @@ export interface TelegramMessage {
 }
 
 export interface TelegramChatClient {
-  getStatus(): Promise<{ connected: boolean; accountName?: string; pending?: string; configured?: boolean }>;
+  getStatus(): Promise<{ connected: boolean; accountName?: string; pending?: string; loginError?: string; configured?: boolean }>;
   getChats(signal?: AbortSignal): Promise<TelegramChat[]>;
   getMessages(chatId: string, limit?: number, signal?: AbortSignal): Promise<TelegramMessage[]>;
   sendMessage(chatId: string, text: string): Promise<void>;
@@ -43,18 +43,35 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
     "Content-Type": "application/json",
     "X-Telegram-Init-Data": initData()
   };
-  const response = await fetch(url, {
-    credentials: "omit",
-    ...init,
-    headers: { ...headers, ...(init.headers as Record<string,string> || {}) }
-  });
-  let payload: unknown = null;
-  try { payload = await response.json(); } catch {}
-  if (!response.ok) {
-    const code = typeof payload === "object" && payload && "error" in payload ? String((payload as {error?:unknown}).error || "") : "";
-    throw new Error(code || `TELEGRAM_API_${response.status}`);
+  const { signal: callerSignal, ...requestInit } = init;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(new Error("TELEGRAM_API_TIMEOUT")), 15000);
+  const abortFromCaller = () => controller.abort(callerSignal?.reason);
+  if (callerSignal?.aborted) abortFromCaller();
+  else callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
+  try {
+    const response = await fetch(url, {
+      credentials: "omit",
+      ...requestInit,
+      signal: controller.signal,
+      headers: { ...headers, ...(init.headers as Record<string,string> || {}) }
+    });
+    let payload: unknown = null;
+    try { payload = await response.json(); } catch {
+      if (response.ok) throw new Error("TELEGRAM_INVALID_RESPONSE");
+    }
+    if (!response.ok) {
+      const code = typeof payload === "object" && payload && "error" in payload ? String((payload as {error?:unknown}).error || "") : "";
+      throw new Error(code || `TELEGRAM_API_${response.status}`);
+    }
+    return payload as T;
+  } catch (error) {
+    if (controller.signal.aborted && !callerSignal?.aborted) throw new Error("TELEGRAM_API_TIMEOUT");
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+    callerSignal?.removeEventListener("abort", abortFromCaller);
   }
-  return payload as T;
 }
 
 export function createTelegramChatClient(baseUrl = DEFAULT_BASE): TelegramChatClient {

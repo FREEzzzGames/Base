@@ -38,9 +38,34 @@ export interface PortalProfile{
 }
 
 const KEY_PREFIX="freezzz:portal-profile:v1:";
+let storageWarningShown=false;
+function warnStorageFailure(operation:string,error:unknown):void{
+  if(storageWarningShown)return;
+  storageWarningShown=true;
+  console.warn("[FREEzzz profile] Browser storage unavailable; activity may not persist ("+operation+").",error);
+}
 function storageKey(identity:TelegramProfileIdentity=getTelegramIdentity()){return KEY_PREFIX+(identity.id?String(identity.id):"anonymous");}
 
 function nowIso(){return new Date().toISOString();}
+
+function asRecord(value:unknown):Record<string,unknown>{
+  return value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};
+}
+function safeCount(value:unknown):number{
+  const n=typeof value==="number"?value:Number.NaN;
+  return Number.isFinite(n)&&n>=0?Math.floor(n):0;
+}
+function safeTimestamp(value:unknown,fallback:string):string{
+  return typeof value==="string"&&Number.isFinite(Date.parse(value))?value:fallback;
+}
+function normalizeActivityMap(value:unknown,fallback:string):Record<string,{visits:number;seconds:number;lastSeenAt:string}>{
+  const result:Record<string,{visits:number;seconds:number;lastSeenAt:string}>={};
+  for(const [key,raw] of Object.entries(asRecord(value))){
+    const entry=asRecord(raw);
+    result[key]={visits:safeCount(entry.visits),seconds:safeCount(entry.seconds),lastSeenAt:safeTimestamp(entry.lastSeenAt,fallback)};
+  }
+  return result;
+}
 
 function emptyStats():PortalActivityStats{
   const now=nowIso();
@@ -58,29 +83,60 @@ export function getTelegramIdentity(verified?:TelegramProfileIdentity):TelegramP
 }
 
 export function loadPortalProfile(verifiedIdentity?:TelegramProfileIdentity):PortalProfile{
-  const identity=verifiedIdentity||{languageCode:getTelegramIdentity().languageCode};
+  const defaultIdentity=verifiedIdentity||{languageCode:getTelegramIdentity().languageCode};
   try{
-    const raw=localStorage.getItem(storageKey(identity));
+    const raw=localStorage.getItem(storageKey(defaultIdentity));
     if(raw){
-      const saved=JSON.parse(raw) as PortalProfile;
+      const saved=asRecord(JSON.parse(raw));
+      const savedIdentity=asRecord(saved.identity);
+      const identity:TelegramProfileIdentity=verifiedIdentity?{...verifiedIdentity}:{
+        id:typeof savedIdentity.id==="number"&&Number.isFinite(savedIdentity.id)?savedIdentity.id:undefined,
+        firstName:typeof savedIdentity.firstName==="string"?savedIdentity.firstName:undefined,
+        lastName:typeof savedIdentity.lastName==="string"?savedIdentity.lastName:undefined,
+        username:typeof savedIdentity.username==="string"?savedIdentity.username:undefined,
+        languageCode:typeof savedIdentity.languageCode==="string"?savedIdentity.languageCode:defaultIdentity.languageCode,
+        photoUrl:typeof savedIdentity.photoUrl==="string"?savedIdentity.photoUrl:undefined
+      };
+      const defaults=emptyStats();
+      const savedStats=asRecord(saved.stats);
+      const live=asRecord(savedStats.live);
+      const game=asRecord(savedStats.game);
+      const radio=asRecord(savedStats.radio);
+      const chat=asRecord(savedStats.chat);
+      const language=saved.language==="RU"||saved.language==="DE"||saved.language==="EN"?saved.language:"RU";
       return {
-        identity:verifiedIdentity?{...verifiedIdentity}:{...saved.identity},
-        language:saved.language||"RU",
+        identity,
+        language,
         stats:{
-          ...emptyStats(),...(saved.stats||{}),
-          live:{...emptyStats().live,...(saved.stats?.live||{})},
-          game:{...emptyStats().game,...(saved.stats?.game||{})},
-          radio:{...emptyStats().radio,...(saved.stats?.radio||{})},
-          chat:{...emptyStats().chat,...(saved.stats?.chat||{})}
+          firstSeenAt:safeTimestamp(savedStats.firstSeenAt,defaults.firstSeenAt),
+          lastSeenAt:safeTimestamp(savedStats.lastSeenAt,defaults.lastSeenAt),
+          sessions:safeCount(savedStats.sessions),
+          live:{
+            channels:normalizeActivityMap(live.channels,defaults.lastSeenAt),
+            totalSeconds:safeCount(live.totalSeconds)
+          },
+          game:{
+            launches:safeCount(game.launches),
+            seconds:safeCount(game.seconds),
+            lastSeenAt:safeTimestamp(game.lastSeenAt,defaults.game.lastSeenAt)
+          },
+          radio:{
+            stations:normalizeActivityMap(radio.stations,defaults.lastSeenAt),
+            totalSeconds:safeCount(radio.totalSeconds)
+          },
+          chat:{messagesSent:safeCount(chat.messagesSent)}
         }
       };
     }
-  }catch{}
-  return {identity,language:"RU",stats:emptyStats()};
+  }catch(error){
+    warnStorageFailure("read",error);
+  }
+  return {identity:defaultIdentity,language:"RU",stats:emptyStats()};
 }
 
 export function savePortalProfile(profile:PortalProfile):void{
-  try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}catch{}
+  try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}
+  catch(error){warnStorageFailure("write",error);}
 }
 
 export function syncPortalIdentity(profile:PortalProfile,verifiedIdentity?:TelegramProfileIdentity):PortalProfile{

@@ -24,6 +24,7 @@ if (!sessionSecret) console.warn("TELEGRAM_SESSION_SECRET is not configured; MTP
 
 const sessions = new Map();
 const pendingAuth = new Map();
+const loginErrors = new Map();
 const rateBuckets = new Map();
 
 function sendJson(res, status, body, origin = allowedOrigin) {
@@ -40,12 +41,15 @@ function isTrustedOrigin(origin) {
 }
 
 async function readBody(req, maxBytes = 64 * 1024) {
-  let body = "";
+  const chunks = [];
+  let bytes = 0;
   for await (const chunk of req) {
-    body += chunk;
-    if (body.length > maxBytes) throw new Error("PAYLOAD_TOO_LARGE");
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bytes += buffer.length;
+    if (bytes > maxBytes) throw new Error("PAYLOAD_TOO_LARGE");
+    chunks.push(buffer);
   }
-  return JSON.parse(body || "{}");
+  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
 }
 
 function diagnoseInitData(initData) {
@@ -190,8 +194,10 @@ async function verifyMembership(userId) {
   if (!response.ok) throw new Error("MEMBERSHIP_SERVICE_UNAVAILABLE");
   const payload = await response.json();
   if (!payload.ok) throw new Error("MEMBERSHIP_CHECK_FAILED");
-  const status = payload.result?.status;
-  return status === "creator" || status === "administrator" || status === "member" || status === "restricted";
+  const member = payload.result;
+  const status = member?.status;
+  return status === "creator" || status === "administrator" || status === "member" ||
+    (status === "restricted" && member?.is_member === true);
 }
 
 function authFromRequest(req) {
@@ -217,6 +223,11 @@ function rateLimit(userId, cost = 1) {
   if (now - item.at > 60_000) { item.at = now; item.count = 0; }
   item.count += cost;
   rateBuckets.set(key, item);
+  if (rateBuckets.size > 5000) {
+    for (const [bucketKey, bucket] of rateBuckets) {
+      if (now - bucket.at > 120_000) rateBuckets.delete(bucketKey);
+    }
+  }
   if (item.count > 120) throw new Error("RATE_LIMITED");
 }
 
@@ -232,12 +243,29 @@ function getState(userId) {
 
 async function getClient(userId) {
   if (!apiId || !apiHash) throw new Error("MT_PROTO_NOT_CONFIGURED");
-  const state = getState(userId);
+  const state = sessions.get(String(userId));
+  // Do not open MTProto connections for users who have not completed login.
+  if (!state || (!state.session && !state.client)) throw new Error("TELEGRAM_AUTH_REQUIRED");
   if (!state.client) {
-    state.client = new TelegramClient(new StringSession(state.session || ""), apiId, apiHash, { connectionRetries: 5 });
+    state.client = new TelegramClient(new StringSession(state.session), apiId, apiHash, { connectionRetries: 5 });
   }
   if (!state.client.connected) await state.client.connect();
-  if (!await state.client.checkAuthorization()) throw new Error("TELEGRAM_AUTH_REQUIRED");
+  let authorized = false;
+  try {
+    authorized = await state.client.checkAuthorization();
+  } catch (error) {
+    try { await state.client.disconnect(); } catch {}
+    state.client = null;
+    throw error;
+  }
+  if (!authorized) {
+    try { await state.client.disconnect(); } catch {}
+    state.client = null;
+    state.session = "";
+    sessions.delete(String(userId));
+    schedulePersist();
+    throw new Error("TELEGRAM_AUTH_REQUIRED");
+  }
   return state.client;
 }
 
@@ -284,20 +312,43 @@ function normalizeMessage(message, chatId) {
 
 async function startTelegramLogin(userId, phoneNumber) {
   if (!apiId || !apiHash) throw new Error("MT_PROTO_NOT_CONFIGURED");
-  const state = getState(userId);
-  if (state.client && await state.client.checkAuthorization().catch(() => false)) return { connected: true };
-  const client = new TelegramClient(new StringSession(""), apiId, apiHash, { connectionRetries: 5 });
-  await client.connect();
-
   const key = String(userId);
+  loginErrors.delete(key);
+  const previous = pendingAuth.get(key);
+  if (previous) {
+    pendingAuth.delete(key);
+    try { await previous.client.disconnect(); } catch {}
+  }
+  const state = sessions.get(key);
+  if (state?.client) {
+    if (await state.client.checkAuthorization().catch(() => false)) return { connected: true };
+    try { await state.client.disconnect(); } catch {}
+    sessions.delete(key);
+  }
+  const client = new TelegramClient(new StringSession(""), apiId, apiHash, { connectionRetries: 5 });
+  try {
+    await client.connect();
+  } catch (error) {
+    try { await client.disconnect(); } catch {}
+    throw error;
+  }
+
   const pending = {
     client, phoneNumber,
     code: null, password: null,
     status: "code",
     startedAt: Date.now(),
-    promise: null
+    promise: null,
+    timeout: null
   };
   pendingAuth.set(key, pending);
+  pending.timeout = setTimeout(() => {
+    if (pendingAuth.get(key) !== pending) return;
+    pendingAuth.delete(key);
+    loginErrors.set(key, "LOGIN_FLOW_EXPIRED");
+    void client.disconnect().catch(error => console.warn("expired Telegram login cleanup failed", error?.message || "UNKNOWN"));
+  }, 10 * 60_000);
+  pending.timeout.unref?.();
 
   pending.promise = client.start({
     phoneNumber: async () => phoneNumber,
@@ -306,15 +357,27 @@ async function startTelegramLogin(userId, phoneNumber) {
     firstAndLastNames: async () => { throw new Error("TELEGRAM_SIGNUP_NOT_ALLOWED"); },
     onError: () => {}
   }).then(async () => {
+    if (pendingAuth.get(key) !== pending) {
+      try { await client.disconnect(); } catch {}
+      return { connected: false, error: "LOGIN_FLOW_CANCELLED" };
+    }
+    clearTimeout(pending.timeout);
     const session = client.session.save();
     sessions.set(key, { session, client });
     pendingAuth.delete(key);
     schedulePersist();
     return { connected: true };
   }).catch(async error => {
-    pendingAuth.delete(key);
+    clearTimeout(pending.timeout);
+    const isCurrent = pendingAuth.get(key) === pending;
+    if (isCurrent) pendingAuth.delete(key);
+    const loginError = String(error?.message || "TELEGRAM_LOGIN_FAILED").slice(0, 120);
+    if (isCurrent) loginErrors.set(key, loginError);
+    console.error("telegram login flow failed", loginError);
     try { await client.disconnect(); } catch {}
-    throw error;
+    // This promise is intentionally observed here; callers advance the flow
+    // through the code/password endpoints and do not await client.start().
+    return { connected: false, error: loginError };
   });
 
   return { connected: false, awaiting: "code" };
@@ -324,7 +387,9 @@ async function finishPending(userId, field, value) {
   const pending = pendingAuth.get(String(userId));
   if (!pending) throw new Error("NO_PENDING_LOGIN");
   if (Date.now() - pending.startedAt > 10 * 60_000) {
+    clearTimeout(pending.timeout);
     pendingAuth.delete(String(userId));
+    try { await pending.client.disconnect(); } catch {}
     throw new Error("LOGIN_FLOW_EXPIRED");
   }
   if (field === "code" && pending.code) {
@@ -342,8 +407,10 @@ async function finishPending(userId, field, value) {
 
 async function disconnectTelegram(userId) {
   const key = String(userId);
+  loginErrors.delete(key);
   const pending = pendingAuth.get(key);
   if (pending) {
+    clearTimeout(pending.timeout);
     pendingAuth.delete(key);
     try { await pending.client.disconnect(); } catch {}
   }
@@ -401,6 +468,7 @@ const server = http.createServer(async (req, res) => {
       if (!botToken) return sendJson(res, 503, { ok: false, error: "AUTH_SERVICE_NOT_CONFIGURED" }, responseOrigin);
       const body = await readBody(req);
       const result = validateTelegramInitData(body.initData, botToken);
+      if (!result.user?.id) throw new Error("TELEGRAM_USER_REQUIRED");
       const member = await verifyMembership(result.user.id);
       if (!member) return sendJson(res, 403, { ok: false, error: "TELEGRAM_MEMBERSHIP_REQUIRED" }, responseOrigin);
       return sendJson(res, 200, { ok: true, authDate: result.authDate, queryId: result.queryId, user: result.user }, responseOrigin);
@@ -411,7 +479,6 @@ const server = http.createServer(async (req, res) => {
       rateLimit(user.id);
 
       if (pathName === "/api/telegram/status" && req.method === "GET") {
-        const state = getState(user.id);
         let connected = false;
         try {
           const client = await getClient(user.id);
@@ -422,6 +489,7 @@ const server = http.createServer(async (req, res) => {
           connected,
           accountName: connected ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "" : undefined,
           pending: pending ? pending.status : undefined,
+          loginError: loginErrors.get(String(user.id)),
           configured: Boolean(apiId && apiHash)
         }, responseOrigin);
       }
@@ -482,7 +550,10 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 404, { ok: false, error: "NOT_FOUND" }, responseOrigin);
   } catch (error) {
     const code = error instanceof Error ? error.message : "SERVER_ERROR";
-    const status = ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
+    const status = error instanceof SyntaxError ? 400
+      : code === "PAYLOAD_TOO_LARGE" ? 413
+      : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA"].includes(code) ? 401
+      : ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["ORIGIN_NOT_ALLOWED"].includes(code) ? 403
       : ["RATE_LIMITED"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED"].includes(code) ? 503

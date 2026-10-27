@@ -1,20 +1,34 @@
 import express from "express";
+import { timingSafeEqual } from "node:crypto";
 import { TelegramClient } from "telegram";
-import { StringSession } from "telegram/sessions";
+import { StringSession } from "telegram/sessions/index.js";
 import { Api } from "telegram";
-import * as readline from "node:readline/promises";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_ID = Number(process.env.TELEGRAM_API_ID || 0);
 const API_HASH = process.env.TELEGRAM_API_HASH || "";
 const SESSION = process.env.TELEGRAM_SESSION || "";
+const API_SECRET = process.env.TELEGRAM_CLIENT_API_SECRET || "";
 
 if (!API_ID || !API_HASH) {
   throw new Error("TELEGRAM_API_ID and TELEGRAM_API_HASH are required");
 }
+if (!API_SECRET || API_SECRET.length < 32) {
+  throw new Error("TELEGRAM_CLIENT_API_SECRET must contain at least 32 characters");
+}
 
 const app = express();
 app.use(express.json({ limit: "64kb" }));
+app.use("/api/telegram", (req, res, next) => {
+  const authorization = req.header("authorization") || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+  const expected = Buffer.from(API_SECRET);
+  const received = Buffer.from(token);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    return res.status(401).json({ error: "API_AUTH_REQUIRED" });
+  }
+  next();
+});
 
 const client = new TelegramClient(new StringSession(SESSION), API_ID, API_HASH, {
   connectionRetries: 5

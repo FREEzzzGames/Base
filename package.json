@@ -10,7 +10,11 @@
     "test:core": "node scripts/portal-core-smoke.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "eslint . --max-warnings=0",
+    "test:library-runtime": "node scripts/library-runtime-smoke.mjs",
+    "test:routes": "node scripts/local-route-smoke.mjs",
+    "test:inline-scripts": "node scripts/html-inline-script-smoke.mjs",
+    "test:server-runtime": "node scripts/server-runtime-smoke.mjs"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0"

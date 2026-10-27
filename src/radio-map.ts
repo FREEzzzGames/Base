@@ -11,6 +11,7 @@ declare global { interface Window { maplibregl?: any; } }
 const MAPLIBRE_JS = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
 let loadPromise: Promise<void> | null = null;
+let mapLoadGeneration = 0;
 let activeMap: MapLibreMap | null = null;
 let activeRoot: HTMLElement | null = null;
 let stationCache: RadioStation[] = [];
@@ -18,25 +19,47 @@ let stationCache: RadioStation[] = [];
 function loadMapLibre(): Promise<void> {
   if (window.maplibregl) return Promise.resolve();
   if (loadPromise) return loadPromise;
-  loadPromise = new Promise((resolve, reject) => {
+
+  // Remove a stale failed script; its load/error event may already have fired.
+  document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]')?.remove();
+  const generation = ++mapLoadGeneration;
+  const promise = new Promise<void>((resolve, reject) => {
     if (!document.querySelector('link[data-radio-maplibre]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet"; link.href = MAPLIBRE_CSS; link.dataset.radioMaplibre = "1";
       document.head.appendChild(link);
     }
-    const existing = document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Map library failed to load")), { once: true });
-      return;
-    }
     const script = document.createElement("script");
-    script.src = MAPLIBRE_JS; script.async = true; script.dataset.radioMaplibre = "1";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Map library failed to load"));
+    let settled = false;
+    let timeout = 0;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      script.onload = null;
+      script.onerror = null;
+      if (error) {
+        script.remove();
+        if (generation === mapLoadGeneration) loadPromise = null;
+        reject(error);
+      } else if (!window.maplibregl) {
+        script.remove();
+        if (loadPromise === promise) loadPromise = null;
+        reject(new Error("MAPLIBRE_INIT_FAILED"));
+      } else {
+        resolve();
+      }
+    };
+    timeout = window.setTimeout(() => finish(new Error("MAPLIBRE_LOAD_TIMEOUT")), 15000);
+    script.src = MAPLIBRE_JS;
+    script.async = true;
+    script.dataset.radioMaplibre = "1";
+    script.onload = () => finish();
+    script.onerror = () => finish(new Error("MAPLIBRE_LOAD_FAILED"));
     document.head.appendChild(script);
   });
-  return loadPromise;
+  loadPromise = promise;
+  return promise;
 }
 
 async function fetchStations(): Promise<RadioStation[]> {
@@ -105,12 +128,27 @@ window.addEventListener("freezzz:radio-status", event => {
   if (play) play.textContent = detail?.status === "playing" || detail?.status === "loading" ? "Ⅱ" : "▶";
 });
 
+function resetFailedMap(root: HTMLElement): void {
+  if (activeRoot !== root) return;
+  try { activeMap?.remove(); } catch (error) {
+    console.warn("[FREEzzz radio map] Failed to dispose map after load error.", error);
+  }
+  activeMap = null;
+  activeRoot = null;
+}
+
 export function mountRadioMap(): void {
   const root = document.querySelector<HTMLElement>("[data-radio-map-root]");
   if (!root || root === activeRoot) return;
-  activeRoot = root;
   const mapNode = root.querySelector<HTMLElement>("#radio-world-map");
   if (!mapNode) return;
+  if (activeMap) {
+    try { activeMap.remove(); } catch (error) {
+      console.warn("[FREEzzz radio map] Failed to dispose previous map.", error);
+    }
+    activeMap = null;
+  }
+  activeRoot = root;
 
   const status = root.querySelector<HTMLElement>("[data-radio-status]");
   const search = root.querySelector<HTMLInputElement>("[data-radio-search]");
@@ -215,11 +253,13 @@ export function mountRadioMap(): void {
         } catch (error) {
           emptyState("RADIO DATA UNAVAILABLE — RETRY LATER");
           console.error("[FREEzzz radio map]", error);
+          resetFailedMap(root);
         }
       });
     } catch (error) {
       emptyState("MAP LIBRARY UNAVAILABLE");
       console.error("[FREEzzz radio map]", error);
+      resetFailedMap(root);
     }
   })();
 }

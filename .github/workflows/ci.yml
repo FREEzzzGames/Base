@@ -130,6 +130,8 @@ jobs:
         run: node --test server/telegram-auth.test.mjs
       - name: Telegram gateway syntax check
         run: node --check server/index.mjs
+      - name: Legacy Telegram adapter typecheck
+        run: npm --prefix server/telegram-client install --ignore-scripts && npm --prefix server/telegram-client run typecheck
 
       - name: FREEzzz Studio syntax and UI integrity smoke
         run: node scripts/freezzz-studio-smoke.mjs
@@ -148,6 +150,14 @@ jobs:
 
       - name: Portal architecture smoke tests
         run: npm run test:core
+      - name: Library runtime regression smoke
+        run: npm run test:library-runtime
+      - name: Local HTML route integrity smoke
+        run: npm run test:routes
+      - name: Inline HTML JavaScript syntax smoke
+        run: npm run test:inline-scripts
+      - name: Server runtime regression smoke
+        run: npm run test:server-runtime
       - name: Portal interaction regression smoke
         run: node scripts/portal-interaction-smoke.mjs
 

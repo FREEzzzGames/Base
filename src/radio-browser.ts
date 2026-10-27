@@ -12,7 +12,7 @@ export class RadioBrowserClient{
     for(let offset=0;offset<SERVERS.length;offset++){
       const index=(this.serverIndex+offset)%SERVERS.length;
       try{
-        const response=await fetch(SERVERS[index]+path,{headers:{Accept:"application/json"}});
+        const response=await fetch(SERVERS[index]+path,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(10000)});
         if(!response.ok)throw new Error(`Radio Browser HTTP ${response.status}`);
         this.serverIndex=index;
         return await response.json() as T;
@@ -21,7 +21,8 @@ export class RadioBrowserClient{
     throw last instanceof Error?last:new Error("Radio Browser is unavailable.");
   }
   async searchStations(genre:string,query:string,limit=30):Promise<readonly RadioBrowserStation[]>{
-    const params=new URLSearchParams({hidebroken:"true",is_https:"true",order:"votes",reverse:"true",limit:String(limit)});
+    const safeLimit=Math.min(100,Math.max(1,Math.trunc(Number.isFinite(limit)?limit:30)));
+    const params=new URLSearchParams({hidebroken:"true",is_https:"true",order:"votes",reverse:"true",limit:String(safeLimit)});
     if(genre)params.set("tag",genre);
     if(query.trim())params.set("name",query.trim());
     const stations=await this.request<RadioBrowserStation[]>(`/json/stations/search?${params}`);
