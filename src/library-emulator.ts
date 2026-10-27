@@ -80,6 +80,7 @@ let emulatorToken = 0;
 const activeGamepadReleases = new Set<() => void>();
 let legacyRepairPromise: Promise<void> | null = null;
 let emulatorScriptPromise: Promise<void> | null = null;
+let emulatorLoadGeneration = 0;
 let libraryImportStatus = "";
 
 function readMeta(): LibraryGame[] {
@@ -1219,6 +1220,7 @@ function removeExistingEmulator(): void {
   // its script after every shutdown so the next game gets a completely fresh
   // loader/core instead of reusing the previous instance.
   document.querySelectorAll<HTMLScriptElement>("script[data-freezzz-emulator]").forEach(script => script.remove());
+  emulatorLoadGeneration++;
   emulatorScriptPromise = null;
 
   w.EJS_player = undefined;
@@ -1245,8 +1247,8 @@ function loadEmulatorScript(): Promise<void> {
   if (stale?.dataset.freezzzLoaded === "1") return Promise.resolve();
   stale?.remove();
 
-  let promise: Promise<void>;
-  promise = new Promise<void>((resolve, reject) => {
+  const generation = ++emulatorLoadGeneration;
+  emulatorScriptPromise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     let settled = false;
     let timeout = 0;
@@ -1258,7 +1260,7 @@ function loadEmulatorScript(): Promise<void> {
       script.onerror = null;
       if (error) {
         script.remove();
-        if (emulatorScriptPromise === promise) emulatorScriptPromise = null;
+        if (generation === emulatorLoadGeneration) emulatorScriptPromise = null;
         reject(error);
       } else {
         script.dataset.freezzzLoaded = "1";
@@ -1273,8 +1275,7 @@ function loadEmulatorScript(): Promise<void> {
     script.onerror = () => finish(new Error("EMULATORJS_LOAD_FAILED"));
     document.head.appendChild(script);
   });
-  emulatorScriptPromise = promise;
-  return promise;
+  return emulatorScriptPromise;
 }
 
 function stableGameId(id: string): number {
