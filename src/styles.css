@@ -10154,3 +10154,62 @@ button:disabled,[aria-disabled="true"]{
 .home-portal[data-home-pager] .home-screen-track{
   height:100%!important;
 }
+
+
+/* HOME FIX: each horizontal screen is a fixed viewport; dense 4-column tiles must never scroll vertically. */
+.portal-home-workspace > main > .home-portal[data-home-pager]{
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+}
+.home-portal[data-home-pager] .home-screen-track{
+  height:100%!important;
+  min-height:0!important;
+}
+.home-portal[data-home-pager] .home-screen-page{
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+.home-portal[data-home-pager] .home-screen-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:minmax(0,1fr)!important;
+  grid-auto-flow:row dense!important;
+  gap:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+  align-content:stretch!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block]{
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="s"]{
+  grid-column:span 2!important;
+  grid-row:span 1!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="m"]{
+  grid-column:span 4!important;
+  grid-row:span 1!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="l"]{
+  grid-column:span 4!important;
+  grid-row:span 2!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block="hero"]{
+  grid-column:span 4!important;
+}
+.home-portal[data-home-pager] .home-screen-pagination{
+  display:none!important;
+}
