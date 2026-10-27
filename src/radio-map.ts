@@ -11,6 +11,7 @@ declare global { interface Window { maplibregl?: any; } }
 const MAPLIBRE_JS = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
 let loadPromise: Promise<void> | null = null;
+let mapLoadGeneration = 0;
 let activeMap: MapLibreMap | null = null;
 let activeRoot: HTMLElement | null = null;
 let stationCache: RadioStation[] = [];
@@ -21,8 +22,8 @@ function loadMapLibre(): Promise<void> {
 
   // Remove a stale failed script; its load/error event may already have fired.
   document.querySelector<HTMLScriptElement>('script[data-radio-maplibre]')?.remove();
-  let promise: Promise<void>;
-  promise = new Promise<void>((resolve, reject) => {
+  const generation = ++mapLoadGeneration;
+  const promise = new Promise<void>((resolve, reject) => {
     if (!document.querySelector('link[data-radio-maplibre]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet"; link.href = MAPLIBRE_CSS; link.dataset.radioMaplibre = "1";
@@ -39,7 +40,7 @@ function loadMapLibre(): Promise<void> {
       script.onerror = null;
       if (error) {
         script.remove();
-        if (loadPromise === promise) loadPromise = null;
+        if (generation === mapLoadGeneration) loadPromise = null;
         reject(error);
       } else if (!window.maplibregl) {
         script.remove();
