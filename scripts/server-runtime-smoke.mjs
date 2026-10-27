@@ -6,6 +6,7 @@ const auth = readFileSync("server/telegram-auth.mjs", "utf8");
 const client = readFileSync("src/chat/telegram-client.ts", "utf8");
 const live = readFileSync("server/live-rankings.mjs", "utf8");
 const economy = readFileSync("server/economy-api.mjs", "utf8");
+const legacyTelegram = readFileSync("server/telegram-client/src/server.ts", "utf8");
 const main = readFileSync("src/main.ts", "utf8");
 
 assert.ok(server.includes("bytes += buffer.length"), "request body limit must count UTF-8 bytes");
@@ -31,6 +32,8 @@ assert.ok(live.includes("bytes+=buffer.length"), "LIVE request limits must count
 assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use channel URLs, not video URLs");
 assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
 assert.ok(economy.includes("error instanceof SyntaxError"), "malformed economy JSON must return a client error");
+assert.ok(legacyTelegram.includes("TELEGRAM_CLIENT_API_SECRET"), "legacy Telegram service must fail closed without an API secret");
+assert.ok(legacyTelegram.includes("timingSafeEqual"), "legacy Telegram service must compare API secrets in constant time");
 assert.ok(live.includes("function normalizeCreator(input,allowRegion=false)"), "public creator suggestions must not self-assign region");
 assert.ok(live.includes("normalizeCreator(body,true)"), "only the admin creator route may assign a region directly");
 
