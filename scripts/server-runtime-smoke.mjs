@@ -26,5 +26,7 @@ assert.ok(live.includes("lastSyncError=null;"), "successful syncs must clear sta
 assert.ok(live.includes("bytes+=buffer.length"), "LIVE request limits must count bytes");
 assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use channel URLs, not video URLs");
 assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
+assert.ok(live.includes("function normalizeCreator(input,allowRegion=false)"), "public creator suggestions must not self-assign region");
+assert.ok(live.includes("normalizeCreator(body,true)"), "only the admin creator route may assign a region directly");
 
 console.log("SERVER_RUNTIME_SMOKE_OK");
