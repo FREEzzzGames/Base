@@ -250,7 +250,22 @@ async function getClient(userId) {
     state.client = new TelegramClient(new StringSession(state.session), apiId, apiHash, { connectionRetries: 5 });
   }
   if (!state.client.connected) await state.client.connect();
-  if (!await state.client.checkAuthorization()) throw new Error("TELEGRAM_AUTH_REQUIRED");
+  let authorized = false;
+  try {
+    authorized = await state.client.checkAuthorization();
+  } catch (error) {
+    try { await state.client.disconnect(); } catch {}
+    state.client = null;
+    throw error;
+  }
+  if (!authorized) {
+    try { await state.client.disconnect(); } catch {}
+    state.client = null;
+    state.session = "";
+    sessions.delete(String(userId));
+    schedulePersist();
+    throw new Error("TELEGRAM_AUTH_REQUIRED");
+  }
   return state.client;
 }
 
@@ -305,7 +320,11 @@ async function startTelegramLogin(userId, phoneNumber) {
     try { await previous.client.disconnect(); } catch {}
   }
   const state = sessions.get(key);
-  if (state?.client && await state.client.checkAuthorization().catch(() => false)) return { connected: true };
+  if (state?.client) {
+    if (await state.client.checkAuthorization().catch(() => false)) return { connected: true };
+    try { await state.client.disconnect(); } catch {}
+    sessions.delete(key);
+  }
   const client = new TelegramClient(new StringSession(""), apiId, apiHash, { connectionRetries: 5 });
   try {
     await client.connect();
