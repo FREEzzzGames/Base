@@ -243,9 +243,11 @@ function getState(userId) {
 
 async function getClient(userId) {
   if (!apiId || !apiHash) throw new Error("MT_PROTO_NOT_CONFIGURED");
-  const state = getState(userId);
+  const state = sessions.get(String(userId));
+  // Do not open MTProto connections for users who have not completed login.
+  if (!state || (!state.session && !state.client)) throw new Error("TELEGRAM_AUTH_REQUIRED");
   if (!state.client) {
-    state.client = new TelegramClient(new StringSession(state.session || ""), apiId, apiHash, { connectionRetries: 5 });
+    state.client = new TelegramClient(new StringSession(state.session), apiId, apiHash, { connectionRetries: 5 });
   }
   if (!state.client.connected) await state.client.connect();
   if (!await state.client.checkAuthorization()) throw new Error("TELEGRAM_AUTH_REQUIRED");
@@ -302,8 +304,8 @@ async function startTelegramLogin(userId, phoneNumber) {
     pendingAuth.delete(key);
     try { await previous.client.disconnect(); } catch {}
   }
-  const state = getState(userId);
-  if (state.client && await state.client.checkAuthorization().catch(() => false)) return { connected: true };
+  const state = sessions.get(key);
+  if (state?.client && await state.client.checkAuthorization().catch(() => false)) return { connected: true };
   const client = new TelegramClient(new StringSession(""), apiId, apiHash, { connectionRetries: 5 });
   try {
     await client.connect();
@@ -457,7 +459,6 @@ const server = http.createServer(async (req, res) => {
       rateLimit(user.id);
 
       if (pathName === "/api/telegram/status" && req.method === "GET") {
-        const state = getState(user.id);
         let connected = false;
         try {
           const client = await getClient(user.id);
