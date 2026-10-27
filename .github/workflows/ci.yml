@@ -154,6 +154,8 @@ jobs:
         run: npm run test:routes
       - name: Inline HTML JavaScript syntax smoke
         run: npm run test:inline-scripts
+      - name: Server runtime regression smoke
+        run: npm run test:server-runtime
       - name: Portal interaction regression smoke
         run: node scripts/portal-interaction-smoke.mjs
 
