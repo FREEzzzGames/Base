@@ -23,7 +23,7 @@ for (const file of htmlFiles) {
     if (!raw || /^(?:https?:|data:|blob:|mailto:|tel:|#|javascript:)/i.test(raw) || raw.startsWith("//")) continue;
     const pathname = raw.split(/[?#]/, 1)[0];
     if (!pathname || pathname.endsWith("/")) continue;
-    const normalizedPath = pathname.replace(/^\\/+/, "");
+    const normalizedPath = pathname.startsWith("/") ? pathname.slice(1) : pathname;
     const target = resolve(publicRoot, pathname.startsWith("/") ? "" : virtualDirectory, normalizedPath);
     if (!target.startsWith(publicRoot + sep) && target !== publicRoot) {
       missing.push(file + " -> path escapes public/: " + raw);
