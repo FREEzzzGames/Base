@@ -1,7 +1,7 @@
 type Tile = HTMLElement;
 type Size = "s" | "m" | "l";
 type Layout = { order: string[]; sizes: Record<string, Size>; skins: Record<string, number> };
-const STORAGE_KEY = "freezzz:home-free-layout:v1";
+const STORAGE_KEY = "freezzz:home-free-layout:v2";
 const SIZES: Size[] = ["s", "m", "l"];
 const SKINS = [
   { background: "linear-gradient(135deg,#11151b,#252b35)", border: "#66fcf1", color: "#f3f4f6" },
