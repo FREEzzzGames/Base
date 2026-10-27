@@ -170,6 +170,11 @@ function render(){
       '<header class="portal-mw-head" data-mw-drag="radio"><strong>🎵 RADIO</strong><div><button data-mw-settings-open type="button" aria-label="Настройки рабочего пространства" title="Настройки">⚙</button><button data-mw-minimize="radio" type="button" aria-label="Свернуть окно" title="Свернуть">−</button><button data-mw-focus="radio" type="button" aria-label="Открыть полный экран RADIO" title="Открыть полноценный раздел RADIO">'+(focusedWindow==="radio"?"↙":"⛶")+'</button><button data-mw-close="radio">×</button></div></header>'+
       '<div class="portal-mw-radio-body"><div class="portal-mw-radio-now"><span class="portal-mw-radio-title">'+esc(radioStationName||"INTERNET RADIO")+'</span><span class="portal-mw-radio-state">'+esc(radioStatus.toUpperCase())+'</span></div><div class="portal-mw-wave" data-playing="'+(radioStatus==="playing"?"true":"false")+'" aria-label="Audio playback visualization">'+Array.from({length:18},(_,i)=>'<i style="--bar:'+(i%5+2)+'"></i>').join("")+'</div><div class="portal-mw-radio-controls"><button data-mw-radio="play" aria-label="Play">▶</button><button data-mw-radio="pause" aria-label="Pause">Ⅱ</button><button data-mw-radio="stop" aria-label="Stop">■</button></div></div></section>');
   }
+  out.push('<section class="portal-mw-settings" role="dialog" aria-label="Настройки рабочего пространства">'+
+    '<header><strong>НАСТРОЙКИ РАБОЧЕГО ПРОСТРАНСТВА</strong><button data-mw-settings-close type="button" aria-label="Закрыть настройки">×</button></header>'+
+    '<label class="portal-mw-setting-row"><span><b>Уменьшить анимацию</b><input data-mw-setting-motion type="checkbox" '+(workspaceSettings.reduceMotion?'checked':'')+'></span></label>'+
+    '<label class="portal-mw-setting-row"><span><b>Прозрачность окон</b><span data-mw-opacity-value>'+Math.round(workspaceSettings.windowOpacity*100)+'%</span></span><input data-mw-setting-opacity type="range" min="55" max="100" step="1" value="'+Math.round(workspaceSettings.windowOpacity*100)+'" aria-label="Прозрачность окон"></label>'+
+    '<button class="portal-mw-settings-reset" data-mw-settings-reset type="button">СБРОСИТЬ НАСТРОЙКИ</button></section>');
   const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":"♫ RADIO")+'</button>').join("");
   out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
   layer.innerHTML=out.join("");
@@ -306,6 +311,7 @@ function intercept(){
       (Object.keys(windows) as MiniId[]).forEach(windowId=>{windows[windowId].open=false;});
       focusedWindow=null;
       settingsOpen=false;
+      layer?.classList.remove("portal-mw-settings-open");
       saveWindowLayout();
       render();
       return;
@@ -341,7 +347,13 @@ export function initMultiWindowPortal(){
   restoreWindowLayout();
   applyWorkspaceSettings();
   window.addEventListener("keydown",event=>{
-    if(event.key==="Escape"&&focusedWindow){
+    if(event.key!=="Escape")return;
+    if(settingsOpen){
+      settingsOpen=false;
+      layer?.classList.remove("portal-mw-settings-open");
+      return;
+    }
+    if(focusedWindow){
       focusedWindow=null;
       render();
     }
