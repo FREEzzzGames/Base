@@ -2554,22 +2554,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   overflow:hidden!important;
   background:transparent!important;
 }
-.portal-toolbar-background-video{
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  width:100%!important;
-  height:100%!important;
-  max-width:none!important;
-  max-height:none!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:inherit!important;
-  object-fit:cover!important;
-  object-position:center!important;
-  pointer-events:none!important;
-}
 .portal-toolbar-main{
   position:relative!important;
   z-index:1!important;
@@ -2636,9 +2620,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
 .portal-toolbar{
   overflow:visible!important;
 }
-.portal-toolbar-background-video{
-  border-radius:inherit!important;
-}
 .portal-toolbar > .portal-toolbar-main .portal-toolbar-item,
 .portal-toolbar-language-button{
   background:transparent!important;
@@ -2684,14 +2665,6 @@ main{padding-top:max(8px,var(--tg-safe-area-inset-top,0px));padding-left:max(var
   border-radius:0!important;
   z-index:120!important;
   overflow:visible!important;
-}
-.portal-toolbar-background-video{
-  position:absolute!important;
-  inset:0!important;
-  width:100%!important;
-  height:100%!important;
-  object-fit:cover!important;
-  border-radius:0!important;
 }
 .portal-toolbar-main{
   position:relative!important;
@@ -2840,10 +2813,6 @@ main{
   background:rgba(0,0,0,.16)!important;
   box-shadow:inset 0 0 32px rgba(0,0,0,.12)!important;
   pointer-events:none!important;
-}
-.portal-toolbar-background-video{
-  z-index:0!important;
-  border-radius:inherit!important;
 }
 .portal-toolbar-main{
   z-index:2!important;
@@ -3201,7 +3170,6 @@ main{
   background:#000!important;
   z-index:120!important;
 }
-.portal-toolbar-background-video{z-index:1!important;border-radius:inherit!important}
 .portal-toolbar-main{
   position:relative!important;
   z-index:1000!important;
@@ -3477,11 +3445,6 @@ main{
 .portal-home-workspace > .portal-toolbar,
 .portal-route-workspace > .portal-toolbar{
   overflow:visible!important;
-}
-.portal-home-workspace > .portal-toolbar-background-video,
-.portal-route-workspace > .portal-toolbar-background-video{
-  overflow:hidden!important;
-  border-radius:inherit!important;
 }
 @media(max-width:699px){
   .portal-route-workspace{
@@ -4573,17 +4536,6 @@ button,
   min-height:0!important;
   max-height:none!important;
 }
-/* Keep the bar graphics inside the framed HOME block. */
-.portal-workspace > .portal-toolbar .portal-toolbar-background-video{
-  position:absolute!important;
-  inset:0!important;
-  width:100%!important;
-  height:100%!important;
-  object-fit:cover!important;
-  object-position:center!important;
-  z-index:0!important;
-  pointer-events:none!important;
-}
 .portal-workspace > .portal-toolbar .portal-toolbar-main{
   position:relative!important;
   z-index:2!important;
@@ -4767,11 +4719,7 @@ a{color:var(--portal-red)!important}
   color:var(--portal-white)!important;
   border-color:var(--portal-red)!important;
   box-shadow:none!important;
-}
-
-/* Background media is monochrome; red is never introduced by video. */
-.portal-toolbar-background-video,
-.home-hero-video{
+}.home-hero-video{
   filter:grayscale(1) contrast(1.05)!important;
 }
 
@@ -9280,7 +9228,6 @@ body{background:var(--fz-bg)!important}
   border-top:1px solid #29313a!important;border-bottom:0!important;background:rgba(8,9,11,.98)!important;
   box-shadow:0 -8px 24px rgba(0,0,0,.2);transition:transform .2s ease;
 }
-.portal-toolbar-background-video{display:none!important}
 .portal-toolbar-main{width:min(100%,760px);min-height:60px;margin:0 auto;display:block}
 .portal-toolbar-nav{
   display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:2px!important;
