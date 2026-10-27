@@ -510,6 +510,7 @@ function render(){
               ${homeCard("library")}
               <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
               ${homeModuleCard("drive-and-listen","DRIVE & LISTEN","VIRTUAL CITIES · LOCAL RADIO","./drive-and-listen.html","♫")}
+              ${homeModuleCard("echo9","ECHO-9","SCI-FI · ANIMATION · STORY","./echo9.html","✧")}
             </div>
           </section>
           <section class="home-screen-page" data-home-screen="1" aria-label="Инструменты и генераторы">
@@ -522,6 +523,8 @@ function render(){
               ${homeModuleCard("anvaka","ANVAKA · MAP OF GITHUB","GITHUB GALAXY · OPEN SOURCE MAP","./anvaka.html","✳")}
               ${homeModuleCard("emupedia","EMUPEDIA","RETRO GAMES · EMULATORS · EMUOS","./emupedia.html","▣")}
               ${homeModuleCard("retro-tv","RETRO TV","VINTAGE CHANNELS · 50s–2000s","./retro-tv.html","▰")}
+              ${homeModuleCard("orbit-blueprint","ORBIT BLUEPRINT","SPACECRAFT · ORBITAL DESIGN","./orbit-blueprint.html","◌")}
+              ${homeModuleCard("retro-console","RETRO CONSOLE","CLASSIC GAMES · CONSOLE LAB","./retro-console.html","▣")}
             </div>
           </section>
           <section class="home-screen-page" data-home-screen="2" aria-label="Лаборатории и исследовательские проекты">
@@ -550,6 +553,7 @@ function render(){
               ${homeModuleCard("old-maps-online","OLD MAPS ONLINE","HISTORICAL MAPS · GEOSEARCH","./old-maps-online.html","⌖")}
               ${homeModuleCard("animagraffs","ANIMAGRAFFS","ANIMATED EXPLAINERS · HOW IT WORKS","./animagraffs.html","◉")}
               ${homeModuleCard("demo-formula","DEMO FORMULA","FORMULA · WEBGL · INTERACTIVE","./demo-formula.html","▶")}
+              ${homeModuleCard("shadow-diplomacy","SHADOW DIPLOMACY","TACTICAL STRATEGY · SHADOWOS UNIVERSE","./games/shadow-diplomacy/index.html","⬈")}
             </div>
           </section>
         </div>
