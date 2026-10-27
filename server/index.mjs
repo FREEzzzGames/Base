@@ -338,14 +338,15 @@ async function startTelegramLogin(userId, phoneNumber) {
     schedulePersist();
     return { connected: true };
   }).catch(async error => {
-    if (pendingAuth.get(key) === pending) pendingAuth.delete(key);
+    const isCurrent = pendingAuth.get(key) === pending;
+    if (isCurrent) pendingAuth.delete(key);
     const loginError = String(error?.message || "TELEGRAM_LOGIN_FAILED").slice(0, 120);
-    loginErrors.set(key, loginError);
+    if (isCurrent) loginErrors.set(key, loginError);
     console.error("telegram login flow failed", loginError);
     try { await client.disconnect(); } catch {}
     // This promise is intentionally observed here; callers advance the flow
     // through the code/password endpoints and do not await client.start().
-    return { connected: false, error: error?.message || "TELEGRAM_LOGIN_FAILED" };
+    return { connected: false, error: loginError };
   });
 
   return { connected: false, awaiting: "code" };
