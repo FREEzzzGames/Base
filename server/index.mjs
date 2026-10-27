@@ -321,7 +321,9 @@ async function startTelegramLogin(userId, phoneNumber) {
   }
   const state = sessions.get(key);
   if (state?.client) {
-    if (await state.client.checkAuthorization().catch(() => false)) return { connected: true };
+    // A transport failure is not proof that the saved Telegram session is invalid.
+    const authorized = await state.client.checkAuthorization();
+    if (authorized) return { connected: true };
     try { await state.client.disconnect(); } catch {}
     sessions.delete(key);
   }
