@@ -10145,3 +10145,12 @@ button:disabled,[aria-disabled="true"]{
   margin:4px 0 0!important;font-size:10px!important;line-height:1.2!important;
 }
 .home-portal[data-home-pager] .home-screen-grid>.home-hero .home-hero-clock{font-size:12px!important}
+
+
+/* Keep the three-screen pager and swipe logic; hide only its visible 01/02/03 controls. */
+.home-portal[data-home-pager] .home-screen-pagination{
+  display:none!important;
+}
+.home-portal[data-home-pager] .home-screen-track{
+  height:100%!important;
+}
