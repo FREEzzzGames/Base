@@ -174,7 +174,7 @@ export function bindHomeGridShift(root: HTMLElement) {
         if(resizing){
           const delta=(lastX-startX)+(lastY-startY);
           const step=delta>72?1:delta< -72?-1:0;
-          if(step){resizeByStep(tile,step);startX=lastX;startY=lastY;}
+          if(step){animateReflow(tilesByPage[currentPage],()=>resizeByStep(tile,step));tile.classList.add("grid-shift-resizing");startX=lastX;startY=lastY;}
         }else if(dragging){
           tile.style.setProperty("--grid-drag-x",`${lastX-startX}px`);tile.style.setProperty("--grid-drag-y",`${lastY-startY}px`);
           const target=targetAt(lastX,lastY,tile);if(target&&target!==lastTarget){reorderOver(tile,target);lastTarget=target;}
