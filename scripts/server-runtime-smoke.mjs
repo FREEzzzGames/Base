@@ -23,6 +23,8 @@ assert.ok(server.includes('error instanceof SyntaxError ? 400'), "malformed JSON
 assert.ok(server.includes("rateBuckets.size > 5000"), "inactive rate-limit buckets must be pruned");
 assert.ok(server.includes("pending.timeout = setTimeout"), "abandoned Telegram login sessions must expire");
 assert.ok(server.includes("clearTimeout(pending.timeout)"), "login timeout must be cleared on completion and disconnect");
+assert.ok(server.includes('pending.status = "authenticating"'), "code submission must not assume that 2FA is required");
+assert.ok(!server.includes("password_or_complete"), "the API must not report a password step before Telegram requests it");
 assert.match(auth, /timingSafeEqual/);
 assert.match(client, /TELEGRAM_API_TIMEOUT/);
 assert.ok(main.includes('telegramChatStatus=status.loginError?"error"'), "chat UI must display asynchronous login errors");
