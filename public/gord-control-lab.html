@@ -133,19 +133,24 @@ body[data-pad-skin="classic-grey"]{--pad-top:#737f91;--pad-bottom:#293241;--pad-
 body[data-pad-skin="chess"]{--pad-top:#27272a;--pad-bottom:#09090b;--pad-accent:#e4e4e7;--pad-texture:repeating-conic-gradient(#fff1 0 25%,transparent 0 50%) 50%/18px 18px}
 body[data-pad-skin="carbon"]{--pad-top:#272b33;--pad-bottom:#08090c;--pad-accent:#a3aab7;--pad-texture:repeating-linear-gradient(135deg,#ffffff12 0 2px,transparent 2px 5px)}
 body[data-pad-skin="arctic"]{--pad-top:#27465a;--pad-bottom:#071521;--pad-accent:#7dd3fc;--pad-texture:linear-gradient(135deg,#bae6fd20,transparent 55%)}
-body[data-pad-skin="waves"]{--pad-top:#075985;--pad-bottom:#11113b;--pad-accent:#22d3ee;--pad-texture:linear-gradient(120deg,#22d3ee22,#a855f722,#2563eb22);animation:padWaves 8s ease-in-out infinite}
+body[data-pad-skin="waves"]{--pad-top:#075985;--pad-bottom:#11113b;--pad-accent:#22d3ee;--pad-texture:linear-gradient(120deg,#22d3ee22,#a855f722,#2563eb22)}
+body[data-pad-skin="waves"] #arenaControls{animation:padWaves 8s ease-in-out infinite}
 @keyframes padWaves{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(45deg)}}
-body[data-pad-skin="matrix"]{--pad-top:#064e3b;--pad-bottom:#03140e;--pad-accent:#34d399;--pad-texture:repeating-linear-gradient(0deg,#10b9812b 0 2px,transparent 2px 9px);animation:padMatrix 6s linear infinite}
+body[data-pad-skin="matrix"]{--pad-top:#064e3b;--pad-bottom:#03140e;--pad-accent:#34d399;--pad-texture:repeating-linear-gradient(0deg,#10b9812b 0 2px,transparent 2px 9px)}
+body[data-pad-skin="matrix"] #arenaControls{animation:padMatrix 6s linear infinite}
 @keyframes padMatrix{from{background-position:0 0}to{background-position:0 180px}}
-body[data-pad-skin="vapor"]{--pad-top:#86198f;--pad-bottom:#171044;--pad-accent:#f0abfc;--pad-texture:linear-gradient(0deg,#f0abfc18 1px,transparent 1px),linear-gradient(90deg,#f0abfc18 1px,transparent 1px);background-size:100% 100%;animation:padVapor 7s ease-in-out infinite}
+body[data-pad-skin="vapor"]{--pad-top:#86198f;--pad-bottom:#171044;--pad-accent:#f0abfc;--pad-texture:linear-gradient(0deg,#f0abfc18 1px,transparent 1px),linear-gradient(90deg,#f0abfc18 1px,transparent 1px)}
+body[data-pad-skin="vapor"] #arenaControls{animation:padVapor 7s ease-in-out infinite}
 @keyframes padVapor{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(-35deg)}}
-body[data-pad-skin="ember"]{--pad-top:#7c2d12;--pad-bottom:#120908;--pad-accent:#fb923c;--pad-texture:radial-gradient(ellipse at 50% 100%,#f9731644,transparent 65%);animation:padEmber 5s ease-in-out infinite}
+body[data-pad-skin="ember"]{--pad-top:#7c2d12;--pad-bottom:#120908;--pad-accent:#fb923c;--pad-texture:radial-gradient(ellipse at 50% 100%,#f9731644,transparent 65%)}
+body[data-pad-skin="ember"] #arenaControls{animation:padEmber 5s ease-in-out infinite}
 @keyframes padEmber{0%,100%{--pad-accent:#fb923c}50%{--pad-accent:#f43f5e}}
-body[data-pad-skin="nebula"]{--pad-top:#4c1d95;--pad-bottom:#100b20;--pad-accent:#c084fc;--pad-texture:radial-gradient(circle at 20% 30%,#f0abfc55 0 2px,transparent 3px),radial-gradient(circle at 70% 65%,#818cf855 0 2px,transparent 3px);animation:padNebula 9s ease-in-out infinite}
+body[data-pad-skin="nebula"]{--pad-top:#4c1d95;--pad-bottom:#100b20;--pad-accent:#c084fc;--pad-texture:radial-gradient(circle at 20% 30%,#f0abfc55 0 2px,transparent 3px),radial-gradient(circle at 70% 65%,#818cf855 0 2px,transparent 3px)}
+body[data-pad-skin="nebula"] #arenaControls{animation:padNebula 9s ease-in-out infinite}
 @keyframes padNebula{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(30deg)}}
 @media(max-width:380px){.padShoulder{padding:0 4px;font-size:7px}#movePanel{left:4px;width:29%}#skillPanel{right:4px;width:66%}.skill{max-height:52px}.skill .key{display:none}.padSystem{width:36px}}
 @media(max-height:700px){#arenaControls{height:76%;min-height:174px}.padShoulders{height:24px}.padShoulder{height:21px}#movePanel,#skillPanel{bottom:31px}#moveArea{height:58px}.skill{max-height:48px}.arenaActions .smallBtn{padding:4px 2px}.padSystemRow{bottom:3px}}
-@media(prefers-reduced-motion:reduce){body[data-pad-skin="waves"],body[data-pad-skin="matrix"],body[data-pad-skin="vapor"],body[data-pad-skin="ember"],body[data-pad-skin="nebula"]{animation:none!important}}
+@media(prefers-reduced-motion:reduce){body[data-pad-skin="waves"] #arenaControls,body[data-pad-skin="matrix"] #arenaControls,body[data-pad-skin="vapor"] #arenaControls,body[data-pad-skin="ember"] #arenaControls,body[data-pad-skin="nebula"] #arenaControls{animation:none!important}}
 
 </style>
 </head>
