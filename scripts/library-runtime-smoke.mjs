@@ -22,6 +22,9 @@ assert.match(loader, /if\s*\(emulatorScriptPromise\)\s*return emulatorScriptProm
 assert.match(loader, /EMULATORJS_LOAD_TIMEOUT/);
 assert.match(loader, /script\.remove\(\)/);
 assert.match(loader, /emulatorScriptPromise\s*=\s*null/);
+assert.match(library, /emulatorLoadGeneration\+\+/);
+assert.match(library, /finally\s*\{\s*db\.close\(\);\s*\}/);
+assert.match(library, /LIBRARY_DB_BLOCKED/);
 assert.match(library, /emulatorScriptPromise\s*=\s*null;\s*\n\s*w\.EJS_player/);
 
 const importer = section(library, "async function importFiles(", "function renderLibraryIntoPage(", "ROM import");
@@ -47,6 +50,8 @@ assert.match(updateCheck, /Update discovery is best-effort/);
 const mapLoader = section(radioMap, "function loadMapLibre()", "async function fetchStations()", "MapLibre loader");
 assert.match(mapLoader, /MAPLIBRE_LOAD_TIMEOUT/);
 assert.match(mapLoader, /MAPLIBRE_INIT_FAILED/);
+assert.match(radioMap, /mapLoadGeneration/);
+assert.match(radioMap, /resetFailedMap\(root\)/);
 assert.ok(mapLoader.includes("loadPromise = null"));
 assert.ok(radioBrowser.includes("AbortSignal.timeout(10000)"));
 assert.ok(radioBrowser.includes("safeLimit=Math.min(100"));
