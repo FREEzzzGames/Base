@@ -177,7 +177,7 @@ jobs:
             [ -f "$video" ] || continue
             original_size="$(stat -c%s "$video")"
             optimized="${video%.mp4}.optimized.mp4"
-            if ! ffmpeg -hide_banner -loglevel error -y -i "$video" -an -c:v libx264 -preset medium -crf 26 -pix_fmt yuv420p -movflags +faststart "$optimized"; then
+            if ! ffmpeg -hide_banner -loglevel error -y -i "$video" -vf "scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2" -an -c:v libx264 -preset medium -crf 27 -pix_fmt yuv420p -movflags +faststart "$optimized"; then
               rm -f "$optimized"
               echo "VIDEO_OPTIMIZATION_SKIPPED: $video could not be transcoded."
               continue
@@ -188,7 +188,7 @@ jobs:
               echo "VIDEO_OPTIMIZED: $video original=$original_size optimized=$optimized_size saved=$((original_size-optimized_size))"
             else
               rm -f "$optimized"
-              echo "VIDEO_KEEP_ORIGINAL: $video size=$original_size"
+              echo "VIDEO_KEEP_ORIGINAL: $video original=$original_size candidate=$optimized_size"
             fi
           done
           echo "PUBLISHED_VIDEO_SIZES:"
