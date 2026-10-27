@@ -119,18 +119,7 @@ assert.ok(catalog.includes('grid?.addEventListener("click"'), "GAME card actions
 assert.ok(catalog.includes('closest<HTMLButtonElement>("[data-open-game-play], [data-open-game-source]")'),
   "GAME Play and Source actions must work for dynamically filtered cards");
 
-const cargo = readFileSync("src/cargo-deck-game.ts", "utf8");
-const vfx = readFileSync("src/cargo-deck-vfx.ts", "utf8");
 const emulator = readFileSync("src/library-emulator.ts", "utf8");
-assert.ok(cargo.includes("Math.min(1.5,elapsed/16.6667)"), "Canvas game deltaTime must be capped after stalls/resume");
-assert.ok(cargo.includes('document.addEventListener("visibilitychange",onVisibilityChange)'), "Canvas game loop must pause while the document is hidden");
-assert.ok(cargo.includes("Math.min(weakDevice?1.25:1.5,device)"), "Canvas backing resolution must cap devicePixelRatio");
-assert.ok(cargo.includes("const MAX_FRAME_GLOWS=weakGraphics?3:8") && cargo.includes("function glowBlur(requested:number)"), "Canvas glow shadows must be capped per frame, with a stricter budget on low-power devices");
-assert.ok(cargo.includes("const bulletPool:Bullet[]=[]") && cargo.includes("const MAX_BULLETS=256"), "Canvas game projectiles must use a bounded object pool");
-assert.ok(cargo.includes("const effectPool:FloatEffect[]=[]") && cargo.includes("const MAX_FLOAT_EFFECTS=64"), "Combat text must use a bounded object pool");
-assert.ok(cargo.includes("const obsCache:HsObstacle[]=[...OBS,...Array.from({length:6}"), "Collision geometry must be reused between frames");
-assert.ok(vfx.includes("const CAP=160") && vfx.includes("new Float32Array(CAP)"), "VFX must retain its fixed typed-array particle cap");
-assert.ok(!vfx.includes("createRadialGradient("), "VFX hot render loop must not allocate CanvasGradient objects per flash");
 for (const stage of ['"rom-read"', '"core-loader"', '"core-ready"', '"initialized"', '"exit"']) {
   assert.ok(emulator.includes(stage), `Emulator timing stage missing: ${stage}`);
 }

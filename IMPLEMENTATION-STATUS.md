@@ -2,6 +2,12 @@
 
 Source of truth: `FREEzzzGames/Base`, `main`.
 
+## 2026-10-27 inactive legacy runtime cleanup
+
+- Removed the unreferenced CARGO DECK entry, gameplay runtime, VFX, CSS, combat-core module, and operator model files. The canonical Vite entry (`src/index.html`) does not load the legacy entry; active GAME remains the open-games catalog with SPARK featured.
+- This is source/repository hygiene, not a gameplay change. Git history preserves the removed source if it is ever explicitly needed again.
+- Validation is required on the cleanup PR: typecheck, lint, portal smoke tests, build, and release smoke. No source is removed from `public/` by this cleanup.
+
 ## Execution protocol
 - One functional block per release.
 - Typecheck + build + release smoke before Pages deployment.

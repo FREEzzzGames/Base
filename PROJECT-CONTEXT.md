@@ -57,7 +57,7 @@ Game-specific gameplay mechanics are separate from portal infrastructure.
 The current GAME route is **SPARK / Ichiraku Ramen: Shinobi Ops**, embedded by `src/spark-console.html` and backed by the runtime in `public/spark.html` and `public/spark-*.js`.
 
 - Preserve the eight-shinobi action-platformer/shooter and its existing combat simulation.
-- Do not restore CARGO DECK as the active GAME runtime; its legacy URL redirects to SPARK.
+- CARGO DECK is not the active GAME runtime. Its unused legacy source files were removed in the 2026-10-27 cleanup; historical source remains available in Git history. Do not restore it as active without an explicit requirement.
 - The console provides movement, jump, weapon selection, shield, blink, fire, menu and restart controls.
 - Keep portrait/mobile Telegram Mini App presentation and optimize rendering for low-end Android.
 - Avoid per-frame allocations and expensive repeated background rendering.
