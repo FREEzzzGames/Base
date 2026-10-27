@@ -16,6 +16,7 @@ assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-l
 assert.ok(multiWindowSource.includes('WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1"'), "workspace settings must persist with a versioned key");
 assert.ok(multiWindowSource.includes("data-mw-settings-open") && multiWindowSource.includes("data-mw-settings-close"), "workspace settings panel must be openable and dismissible");
 assert.ok(multiWindowSource.includes("data-mw-setting-motion") && multiWindowSource.includes("data-mw-setting-opacity"), "workspace settings must expose motion and opacity controls");
+assert.ok(multiWindowSource.includes('class="portal-mw-settings"') && multiWindowSource.includes("Настройки рабочего пространства"), "workspace settings panel must be rendered, not only wired to handlers");
 assert.ok(multiWindowSource.includes("zenith-reduce-motion") && multiWindowSource.includes("--zenith-window-opacity"), "workspace settings must apply accessible motion and opacity preferences");
 assert.ok(multiWindowSource.includes("restoreWindowLayout();") && multiWindowSource.includes("saveWindowLayout();"), "floating window geometry must be restored and saved");
 assert.ok(multiWindowSource.includes('event.key==="Escape"&&focusedWindow'), "Escape must exit window focus mode");
