@@ -152,6 +152,8 @@ jobs:
         run: npm run test:library-runtime
       - name: Local HTML route integrity smoke
         run: npm run test:routes
+      - name: Inline HTML JavaScript syntax smoke
+        run: npm run test:inline-scripts
       - name: Portal interaction regression smoke
         run: node scripts/portal-interaction-smoke.mjs
 
