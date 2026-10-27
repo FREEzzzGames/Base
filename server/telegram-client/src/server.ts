@@ -1,9 +1,8 @@
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
 import { TelegramClient } from "telegram";
-import { StringSession } from "telegram/sessions";
+import { StringSession } from "telegram/sessions/index.js";
 import { Api } from "telegram";
-import * as readline from "node:readline/promises";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_ID = Number(process.env.TELEGRAM_API_ID || 0);
