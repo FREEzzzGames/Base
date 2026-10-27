@@ -18,9 +18,38 @@ const defaultSizeOf = (tile: Tile): Size => {
 };
 function readLayouts(): Record<string, Layout> {
   try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") as Record<string, Layout>;
-    return value && typeof value === "object" ? value : {};
-  } catch { return {}; }
+    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const source = parsed as Record<string, unknown>;
+    const result: Record<string, Layout> = {};
+    for (const page of ["0", "1", "2"]) {
+      const raw = source[page];
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const item = raw as Record<string, unknown>;
+      const order = Array.isArray(item.order)
+        ? item.order.filter((key): key is string => typeof key === "string").slice(0, 200)
+        : [];
+      const rawSizes = item.sizes && typeof item.sizes === "object" && !Array.isArray(item.sizes)
+        ? item.sizes as Record<string, unknown> : {};
+      const sizes: Record<string, Size> = {};
+      for (const [key, size] of Object.entries(rawSizes)) {
+        if (typeof size === "string" && SIZES.includes(size as Size)) sizes[key] = size as Size;
+      }
+      const rawSkins = item.skins && typeof item.skins === "object" && !Array.isArray(item.skins)
+        ? item.skins as Record<string, unknown> : {};
+      const skins: Record<string, number> = {};
+      for (const [key, skin] of Object.entries(rawSkins)) {
+        if (typeof skin === "number" && Number.isFinite(skin)) {
+          skins[key] = Math.min(SKINS.length - 1, Math.max(0, Math.trunc(skin)));
+        }
+      }
+      result[page] = { order, sizes, skins };
+    }
+    return result;
+  } catch (error) {
+    console.warn("[FREEzzz home layout] Saved layout is invalid; using defaults.", error);
+    return {};
+  }
 }
 function saveLayouts(layouts: Record<string, Layout>) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(layouts)); } catch { /* Storage may be disabled in WebView. */ }
