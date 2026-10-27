@@ -4,6 +4,9 @@ import { readFileSync } from "node:fs";
 const library = readFileSync("src/library-emulator.ts", "utf8");
 const profile = readFileSync("src/profile-store.ts", "utf8");
 const main = readFileSync("src/main.ts", "utf8");
+const radioMap = readFileSync("src/radio-map.ts", "utf8");
+const radioBrowser = readFileSync("src/radio-browser.ts", "utf8");
+const telegramClient = readFileSync("src/chat/telegram-client.ts", "utf8");
 
 function section(source, start, end, label) {
   const from = source.indexOf(start);
@@ -38,5 +41,15 @@ const updateCheck = section(main, "async function checkForPortalUpdate()", "void
 assert.match(updateCheck, /AbortSignal\.timeout\(5000\)/);
 assert.match(updateCheck, /searchParams\.get\("freezzz_build"\)/);
 assert.match(updateCheck, /Update discovery is best-effort/);
+
+const mapLoader = section(radioMap, "function loadMapLibre()", "async function fetchStations()", "MapLibre loader");
+assert.match(mapLoader, /MAPLIBRE_LOAD_TIMEOUT/);
+assert.match(mapLoader, /MAPLIBRE_INIT_FAILED/);
+assert.match(mapLoader, /loadPromise\\s*=\\s*null/);
+assert.match(radioBrowser, /AbortSignal\\.timeout\\(10000\\)/);
+assert.match(radioBrowser, /safeLimit=Math\\.min\\(100/);
+assert.match(telegramClient, /TELEGRAM_API_TIMEOUT/);
+assert.match(telegramClient, /AbortController/);
+assert.match(telegramClient, /TELEGRAM_INVALID_RESPONSE/);
 
 console.log("LIBRARY_RUNTIME_SMOKE_OK");
