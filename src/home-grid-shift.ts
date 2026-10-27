@@ -146,8 +146,8 @@ export function bindHomeGridShift(root: HTMLElement) {
     return null;
   };
   const resizeByStep = (tile:Tile,step:number) => {
-    const size=tile.dataset.gridSize as Size||"m",index=SIZES.indexOf(size);
-    tile.dataset.gridSize=SIZES[Math.max(0,Math.min(2,index+step))];
+    const size=tile.dataset.gridSize as Size||"m",index=Math.max(0,SIZES.indexOf(size));
+    tile.dataset.gridSize=SIZES[(index+step+SIZES.length)%SIZES.length];
   };
   const reorderOver=(tile:Tile,target:Tile)=>{
     const list=ordered(currentPage),from=list.indexOf(tile),to=list.indexOf(target);
