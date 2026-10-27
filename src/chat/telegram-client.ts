@@ -23,7 +23,7 @@ export interface TelegramMessage {
 }
 
 export interface TelegramChatClient {
-  getStatus(): Promise<{ connected: boolean; accountName?: string; pending?: string; configured?: boolean }>;
+  getStatus(): Promise<{ connected: boolean; accountName?: string; pending?: string; loginError?: string; configured?: boolean }>;
   getChats(signal?: AbortSignal): Promise<TelegramChat[]>;
   getMessages(chatId: string, limit?: number, signal?: AbortSignal): Promise<TelegramMessage[]>;
   sendMessage(chatId: string, text: string): Promise<void>;
