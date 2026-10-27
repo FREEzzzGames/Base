@@ -347,15 +347,14 @@ export function initMultiWindowPortal(){
   restoreWindowLayout();
   applyWorkspaceSettings();
   window.addEventListener("keydown",event=>{
-    if(event.key!=="Escape")return;
-    if(settingsOpen){
-      settingsOpen=false;
-      layer?.classList.remove("portal-mw-settings-open");
-      return;
-    }
-    if(focusedWindow){
+    if(event.key==="Escape"&&focusedWindow&&!settingsOpen){
       focusedWindow=null;
       render();
+      return;
+    }
+    if(event.key==="Escape"&&settingsOpen){
+      settingsOpen=false;
+      layer?.classList.remove("portal-mw-settings-open");
     }
   });
   layer=document.createElement("div");
