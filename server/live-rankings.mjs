@@ -221,6 +221,7 @@ async function syncAll(){
   if(syncInFlight)return syncInFlight;
   syncInFlight=(async()=>{
     const s=await load();const now=new Date().toISOString();let successes=0,failures=0;
+    lastSyncError=null;
     const unavailablePlatforms=new Set();
     for(const creator of s.creators){
       for(const platform of ["youtube","twitch"]){
