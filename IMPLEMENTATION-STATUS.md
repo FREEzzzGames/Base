@@ -2,6 +2,12 @@
 
 Source of truth: `FREEzzzGames/Base`, `main`.
 
+## 2026-10-27 orphaned prototype cleanup
+
+- Removed `freezzz-photoreal-map.ts`, `freezzz-world-detail.ts`, `freezzz-tenders.ts`, `pixel-soldier-3d.ts`, `space-marine-star-3d.ts`, `radio-config.ts`, and `visual-comfort.ts` after confirming they are not imported by the active TypeScript entry graph (`src/index.html` → `main.ts` / `electronics-lab-entry.ts`).
+- Active RADIO functionality remains in `main.ts`, `radio-browser.ts`, and `radio-map.ts`; these were retained. Active HOME, GAME, emulator, EARTH, Shadow Diplomacy, and Shadow OS files were not removed.
+- Validate the cleanup with the full pull-request CI before merging. Git history retains removed source if a future requirement explicitly reactivates a prototype.
+
 ## 2026-10-27 inactive legacy runtime cleanup
 
 - Removed the unreferenced CARGO DECK entry, gameplay runtime, VFX, CSS, combat-core module, and operator model files. The canonical Vite entry (`src/index.html`) does not load the legacy entry; active GAME remains the open-games catalog with SPARK featured.
