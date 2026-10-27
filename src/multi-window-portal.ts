@@ -103,13 +103,8 @@ function fitWindow(id:MiniId){
   const maxHeight=Math.max(180,Math.min(window.innerHeight-64,window.innerHeight-16));
   w.width=Math.min(Math.max(w.width,Math.min(w.minWidth,maxWidth)),maxWidth);
   w.height=Math.min(Math.max(w.height,Math.min(w.minHeight,maxHeight)),maxHeight);
-  if(isMusic){
-    w.x=Math.round((window.innerWidth-w.width)/2);
-    w.y=Math.max(12,Math.round((window.innerHeight-w.height)*.22));
-  }else{
-    w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
-    w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-8),w.y));
-  }
+  w.x=Math.max(4,Math.min(Math.max(4,window.innerWidth-w.width-4),w.x));
+  w.y=Math.max(4,Math.min(Math.max(4,window.innerHeight-w.height-8),w.y));
 }
 function open(id:MiniId){
   fitWindow(id);
