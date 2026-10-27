@@ -163,6 +163,37 @@ jobs:
           VITE_TELEGRAM_AUTH_URL: ${{ secrets.TELEGRAM_AUTH_URL }}
         run: npm run build
 
+      - name: Optimize published portal background videos
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            if ! (sudo apt-get update && sudo apt-get install -y ffmpeg); then
+              echo "VIDEO_OPTIMIZATION_SKIPPED: ffmpeg unavailable; original assets will be published."
+              exit 0
+            fi
+          fi
+          for video in dist/videos/*.mp4; do
+            [ -f "$video" ] || continue
+            original_size="$(stat -c%s "$video")"
+            optimized="${video%.mp4}.optimized.mp4"
+            if ! ffmpeg -hide_banner -loglevel error -y -i "$video" -an -c:v libx264 -preset medium -crf 26 -pix_fmt yuv420p -movflags +faststart "$optimized"; then
+              rm -f "$optimized"
+              echo "VIDEO_OPTIMIZATION_SKIPPED: $video could not be transcoded."
+              continue
+            fi
+            optimized_size="$(stat -c%s "$optimized")"
+            if (( optimized_size < original_size )); then
+              mv "$optimized" "$video"
+              echo "VIDEO_OPTIMIZED: $video original=$original_size optimized=$optimized_size saved=$((original_size-optimized_size))"
+            else
+              rm -f "$optimized"
+              echo "VIDEO_KEEP_ORIGINAL: $video size=$original_size"
+            fi
+          done
+          echo "PUBLISHED_VIDEO_SIZES:"
+          ls -lh dist/videos/*.mp4
+
       - name: Verify local portal videos
         shell: bash
         run: |
