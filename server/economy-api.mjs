@@ -136,7 +136,7 @@ export async function handleEconomyRoute(req, url, playerId, sendJson, origin) {
     return sendJson(null, 404, { ok: false, error: "NOT_FOUND" }, origin);
   } catch (error) {
     const code = error instanceof Error ? error.message : "ECONOMY_ERROR";
-    const status = error instanceof SyntaxError || ["INVALID_TRADE","INVALID_SIDE","INVALID_QUANTITY","TRADE_TOO_LARGE","PRICE_CHANGED","INSUFFICIENT_CREDITS","INSUFFICIENT_SUPPLY","INSUFFICIENT_INVENTORY","INVALID_WORLD_ID","PAYLOAD_TOO_LARGE","INVALID_SEED"].includes(code) ? 400 : 500;
+    const status = error instanceof SyntaxError ? 400 : code === "PAYLOAD_TOO_LARGE" ? 413 : ["INVALID_TRADE","INVALID_SIDE","INVALID_QUANTITY","TRADE_TOO_LARGE","PRICE_CHANGED","INSUFFICIENT_CREDITS","INSUFFICIENT_SUPPLY","INSUFFICIENT_INVENTORY","INVALID_WORLD_ID","INVALID_SEED"].includes(code) ? 400 : 500;
     console.error("economy api error", code);
     return sendJson(null, status, { ok: false, error: code }, origin);
   }
