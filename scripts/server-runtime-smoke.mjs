@@ -15,6 +15,8 @@ assert.ok(server.includes("loginError: loginErrors.get(String(user.id))"), "stat
 assert.ok(server.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized requests must return HTTP 413");
 assert.ok(server.includes('error instanceof SyntaxError ? 400'), "malformed JSON must return HTTP 400");
 assert.ok(server.includes("rateBuckets.size > 5000"), "inactive rate-limit buckets must be pruned");
+assert.ok(server.includes("pending.timeout = setTimeout"), "abandoned Telegram login sessions must expire");
+assert.ok(server.includes("clearTimeout(pending.timeout)"), "login timeout must be cleared on completion and disconnect");
 assert.match(auth, /timingSafeEqual/);
 assert.match(client, /TELEGRAM_API_TIMEOUT/);
 assert.ok(main.includes('telegramChatStatus=status.loginError?"error"'), "chat UI must display asynchronous login errors");
