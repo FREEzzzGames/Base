@@ -158,7 +158,7 @@ export function bindHomeGridShift(root: HTMLElement) {
         const target=event.target as HTMLElement;
         if(editing && index===currentPage && target.closest(".grid-shift-resize-handle")){
           resizing=true;dragging=false;active=tile;lastSnapshot=snapshot();
-        }else if(editing && index===currentPage){resizing=false;dragging=false;active=tile;lastSnapshot=snapshot();}
+        }else if(editing && index===currentPage){resizing=false;dragging=false;active=tile;lastSnapshot=snapshot();const title=panel.querySelector<HTMLElement>("[data-grid-shift-active]");if(title)title.textContent=tile.getAttribute("aria-label")||tile.dataset.portalBlock||"Блок";}
         else if(!editing && index===currentPage){
           active=tile;window.clearTimeout(holdTimer);
           holdTimer=window.setTimeout(()=>{suppressClick=true;lastSnapshot=snapshot();setEditing(true,tile);tile.classList.add("grid-shift-dragging");},480);
@@ -186,7 +186,7 @@ export function bindHomeGridShift(root: HTMLElement) {
           tile.classList.remove("grid-shift-dragging","grid-shift-resizing");tile.style.removeProperty("--grid-drag-x");tile.style.removeProperty("--grid-drag-y");
           commit();suppressClick=true;
         }
-        if(!editing || active===tile){active=null;dragging=false;resizing=false;lastTarget=null;}
+        dragging=false;resizing=false;lastTarget=null;if(!editing)active=null;
       };
       tile.addEventListener("pointerup",finish);tile.addEventListener("pointercancel",finish);
       tile.addEventListener("click",event=>{
