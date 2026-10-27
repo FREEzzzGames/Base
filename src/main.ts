@@ -176,8 +176,10 @@ async function loadTelegramChatStatus(){
   render();
   try{
     const status=await telegramChatClient.getStatus();
-    telegramChatStatus=status.connected?"connected":"disconnected";
-    if(status.connected){
+    telegramChatStatus=status.loginError?"error":status.connected?"connected":"disconnected";
+    if(status.loginError){
+      telegramChatError=status.loginError;
+    }else if(status.connected){
       telegramAuthStep="none";
       await loadTelegramChats();
     }else if(status.pending==="code"){
