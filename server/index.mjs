@@ -354,8 +354,8 @@ async function startTelegramLogin(userId, phoneNumber) {
 
   pending.promise = client.start({
     phoneNumber: async () => phoneNumber,
-    phoneCode: async () => new Promise(resolve => { pending.code = resolve; }),
-    password: async () => new Promise(resolve => { pending.password = resolve; }),
+    phoneCode: async () => new Promise(resolve => { pending.status = "code"; pending.code = resolve; }),
+    password: async () => new Promise(resolve => { pending.status = "password"; pending.password = resolve; }),
     firstAndLastNames: async () => { throw new Error("TELEGRAM_SIGNUP_NOT_ALLOWED"); },
     onError: () => {}
   }).then(async () => {
@@ -395,12 +395,12 @@ async function finishPending(userId, field, value) {
     throw new Error("LOGIN_FLOW_EXPIRED");
   }
   if (field === "code" && pending.code) {
-    const resolve = pending.code; pending.code = null; pending.status = "password";
+    const resolve = pending.code; pending.code = null; pending.status = "authenticating";
     resolve(value);
-    return { awaiting: "password_or_complete" };
+    return { awaiting: "authenticating" };
   }
   if (field === "password" && pending.password) {
-    const resolve = pending.password; pending.password = null;
+    const resolve = pending.password; pending.password = null; pending.status = "authenticating";
     resolve(value);
     return { awaiting: "complete" };
   }
