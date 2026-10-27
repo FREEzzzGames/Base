@@ -38,6 +38,12 @@ export interface PortalProfile{
 }
 
 const KEY_PREFIX="freezzz:portal-profile:v1:";
+let storageWarningShown=false;
+function warnStorageFailure(operation:string,error:unknown):void{
+  if(storageWarningShown)return;
+  storageWarningShown=true;
+  console.warn("[FREEzzz profile] Browser storage unavailable; activity may not persist ("+operation+").",error);
+}
 function storageKey(identity:TelegramProfileIdentity=getTelegramIdentity()){return KEY_PREFIX+(identity.id?String(identity.id):"anonymous");}
 
 function nowIso(){return new Date().toISOString();}
@@ -75,12 +81,15 @@ export function loadPortalProfile(verifiedIdentity?:TelegramProfileIdentity):Por
         }
       };
     }
-  }catch{}
+  }catch(error){
+    warnStorageFailure("read",error);
+  }
   return {identity,language:"RU",stats:emptyStats()};
 }
 
 export function savePortalProfile(profile:PortalProfile):void{
-  try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}catch{}
+  try{localStorage.setItem(storageKey(profile.identity),JSON.stringify(profile));}
+  catch(error){warnStorageFailure("write",error);}
 }
 
 export function syncPortalIdentity(profile:PortalProfile,verifiedIdentity?:TelegramProfileIdentity):PortalProfile{
