@@ -317,9 +317,17 @@ async function startTelegramLogin(userId, phoneNumber) {
     code: null, password: null,
     status: "code",
     startedAt: Date.now(),
-    promise: null
+    promise: null,
+    timeout: null
   };
   pendingAuth.set(key, pending);
+  pending.timeout = setTimeout(() => {
+    if (pendingAuth.get(key) !== pending) return;
+    pendingAuth.delete(key);
+    loginErrors.set(key, "LOGIN_FLOW_EXPIRED");
+    void client.disconnect().catch(error => console.warn("expired Telegram login cleanup failed", error?.message || "UNKNOWN"));
+  }, 10 * 60_000);
+  pending.timeout.unref?.();
 
   pending.promise = client.start({
     phoneNumber: async () => phoneNumber,
@@ -332,12 +340,14 @@ async function startTelegramLogin(userId, phoneNumber) {
       try { await client.disconnect(); } catch {}
       return { connected: false, error: "LOGIN_FLOW_CANCELLED" };
     }
+    clearTimeout(pending.timeout);
     const session = client.session.save();
     sessions.set(key, { session, client });
     pendingAuth.delete(key);
     schedulePersist();
     return { connected: true };
   }).catch(async error => {
+    clearTimeout(pending.timeout);
     const isCurrent = pendingAuth.get(key) === pending;
     if (isCurrent) pendingAuth.delete(key);
     const loginError = String(error?.message || "TELEGRAM_LOGIN_FAILED").slice(0, 120);
@@ -356,6 +366,7 @@ async function finishPending(userId, field, value) {
   const pending = pendingAuth.get(String(userId));
   if (!pending) throw new Error("NO_PENDING_LOGIN");
   if (Date.now() - pending.startedAt > 10 * 60_000) {
+    clearTimeout(pending.timeout);
     pendingAuth.delete(String(userId));
     try { await pending.client.disconnect(); } catch {}
     throw new Error("LOGIN_FLOW_EXPIRED");
@@ -377,6 +388,7 @@ async function disconnectTelegram(userId) {
   const key = String(userId);
   const pending = pendingAuth.get(key);
   if (pending) {
+    clearTimeout(pending.timeout);
     pendingAuth.delete(key);
     try { await pending.client.disconnect(); } catch {}
   }
