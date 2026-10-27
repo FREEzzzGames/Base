@@ -8,6 +8,7 @@ const radioMap = readFileSync("src/radio-map.ts", "utf8");
 const retroConsole = readFileSync("public/retro-console.html", "utf8");
 const radioBrowser = readFileSync("src/radio-browser.ts", "utf8");
 const telegramClient = readFileSync("src/chat/telegram-client.ts", "utf8");
+const homeGrid = readFileSync("src/home-grid-shift.ts", "utf8");
 
 function section(source, start, end, label) {
   const from = source.indexOf(start);
@@ -41,6 +42,8 @@ assert.match(deleter, /if\s*\(!writeMeta\(remaining\)\)/);
 
 assert.match(profile, /warnStorageFailure\("read",error\)/);
 assert.match(profile, /warnStorageFailure\("write",error\)/);
+assert.ok(homeGrid.includes("item.order.filter((key): key is string => typeof key === \"string\")"), "invalid saved layout order must not crash home rendering");
+assert.ok(homeGrid.includes("Math.min(SKINS.length - 1"), "saved skin indices must be clamped");
 
 const updateCheck = section(main, "async function checkForPortalUpdate()", "void checkForPortalUpdate()", "update checker");
 assert.match(updateCheck, /AbortSignal\.timeout\(5000\)/);
