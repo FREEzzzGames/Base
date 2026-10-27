@@ -1245,7 +1245,8 @@ function loadEmulatorScript(): Promise<void> {
   if (stale?.dataset.freezzzLoaded === "1") return Promise.resolve();
   stale?.remove();
 
-  emulatorScriptPromise = new Promise<void>((resolve, reject) => {
+  let promise: Promise<void>;
+  promise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     let settled = false;
     let timeout = 0;
@@ -1257,7 +1258,7 @@ function loadEmulatorScript(): Promise<void> {
       script.onerror = null;
       if (error) {
         script.remove();
-        emulatorScriptPromise = null;
+        if (emulatorScriptPromise === promise) emulatorScriptPromise = null;
         reject(error);
       } else {
         script.dataset.freezzzLoaded = "1";
@@ -1272,7 +1273,8 @@ function loadEmulatorScript(): Promise<void> {
     script.onerror = () => finish(new Error("EMULATORJS_LOAD_FAILED"));
     document.head.appendChild(script);
   });
-  return emulatorScriptPromise;
+  emulatorScriptPromise = promise;
+  return promise;
 }
 
 function stableGameId(id: string): number {
