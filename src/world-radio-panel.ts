@@ -15,6 +15,7 @@ type WorldStation = {
   clickcount: number;
   geo_lat: number | string | null;
   geo_long: number | string | null;
+  lastcheckok?: number;
 };
 type GeoPoint = { lat: number; lng: number; station?: WorldStation };
 
@@ -182,13 +183,15 @@ function initGlobe(): void {
   drawGlobe();
 }
 function drawGlobe(): void {
-  if (!canvas || !ctx) return;
-  const host = canvas.parentElement;
+  const activeCanvas = canvas;
+  const context = ctx;
+  if (!activeCanvas || !context) return;
+  const host = activeCanvas.parentElement;
   if (!host) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2), size = Math.max(160, Math.floor(Math.min(host.clientWidth || 280, host.clientHeight || 280)));
-  if (canvas.width !== Math.floor(size * dpr) || canvas.height !== Math.floor(size * dpr)) { canvas.width = Math.floor(size * dpr); canvas.height = Math.floor(size * dpr); }
+  if (activeCanvas.width !== Math.floor(size * dpr) || activeCanvas.height !== Math.floor(size * dpr)) { canvas.width = Math.floor(size * dpr); canvas.height = Math.floor(size * dpr); }
   const w = canvas.width, h = canvas.height, r = Math.min(w, h) * 0.46, cx = w / 2, cy = h / 2, step = Math.max(5.5, w / 74);
-  ctx.clearRect(0, 0, w, h);
+  context.clearRect(0, 0, w, h);
   ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
   const bg = ctx.createRadialGradient(cx-r*.35,cy-r*.42,r*.05,cx,cy,r*1.2); bg.addColorStop(0,"#143044"); bg.addColorStop(.62,"#071722"); bg.addColorStop(1,"#02080e"); ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
   ctx.strokeStyle="rgba(90,135,158,.16)"; ctx.lineWidth=Math.max(1,w/500);
