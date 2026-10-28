@@ -40,7 +40,7 @@ let dragging = false;
 let lastX = 0;
 let lastY = 0;
 let mapOpen = false;
-let initialized = false;
+let globalListenersBound = false;
 let audioStatus = "idle";
 const favorites = new Set<string>(readStorage("freezzz:radio:world-favorites", []));
 const recentIds: string[] = readStorage("freezzz:radio:world-recent", []);
@@ -282,19 +282,30 @@ export function bindWorldRadioPanel(openMap: () => void): void {
   root.querySelector<HTMLButtonElement>("[data-wr-previous]")?.addEventListener("click", () => cycleStation(-1));
   root.querySelector<HTMLButtonElement>("[data-wr-next]")?.addEventListener("click", () => cycleStation(1));
   root.querySelector<HTMLInputElement>("[data-wr-volume]")?.addEventListener("input", e => window.dispatchEvent(new CustomEvent("freezzz:radio-volume", { detail: { volume: Number((e.currentTarget as HTMLInputElement).value) } })));
-  window.addEventListener("freezzz:radio-status", e => {
-    const detail = (e as CustomEvent<{ status?: string; station?: string }>).detail || {};
-    audioStatus = detail.status || "idle";
-    const status = root.querySelector<HTMLElement>("#wr-player-status");
-    if (status) status.textContent = audioStatus === "playing" ? t("playing") : audioStatus === "failed" ? t("failed") : audioStatus === "loading" ? "CONNECTING…" : audioStatus === "paused" ? "PAUSED" : t("ready");
-    const button = root.querySelector<HTMLButtonElement>("[data-wr-main-play]");
-    if (button) button.textContent = audioStatus === "playing" || audioStatus === "loading" ? "Ⅱ" : "▶";
-  });
-  window.addEventListener("freezzz:radio-select", e => {
-    const d = (e as CustomEvent<{ stationuuid?: string }>).detail;
-    const s = stations.find(x => x.stationuuid === d?.stationuuid);
-    if (s) { currentStation = s; const name = root.querySelector<HTMLElement>("#wr-player-name"); if (name) name.textContent = s.name; }
-  });
+  if (!globalListenersBound) {
+    globalListenersBound = true;
+    window.addEventListener("freezzz:radio-status", e => {
+      const activeRoot = document.querySelector<HTMLElement>("[data-world-radio-panel]");
+      if (!activeRoot) return;
+      const detail = (e as CustomEvent<{ status?: string; station?: string }>).detail || {};
+      audioStatus = detail.status || "idle";
+      const status = activeRoot.querySelector<HTMLElement>("#wr-player-status");
+      if (status) status.textContent = audioStatus === "playing" ? t("playing") : audioStatus === "failed" ? t("failed") : audioStatus === "loading" ? "CONNECTING…" : audioStatus === "paused" ? "PAUSED" : t("ready");
+      const button = activeRoot.querySelector<HTMLButtonElement>("[data-wr-main-play]");
+      if (button) button.textContent = audioStatus === "playing" || audioStatus === "loading" ? "Ⅱ" : "▶";
+    });
+    window.addEventListener("freezzz:radio-select", e => {
+      const activeRoot = document.querySelector<HTMLElement>("[data-world-radio-panel]");
+      if (!activeRoot) return;
+      const d = (e as CustomEvent<{ stationuuid?: string }>).detail;
+      const s = stations.find(x => x.stationuuid === d?.stationuuid);
+      if (s) {
+        currentStation = s;
+        const name = activeRoot.querySelector<HTMLElement>("#wr-player-name");
+        if (name) name.textContent = s.name;
+      }
+    });
+  }
   void loadDirectory();
 }
 function cycleStation(direction: number): void {
