@@ -815,7 +815,11 @@ window.addEventListener("freezzz:radio-volume",event=>{
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
   if(action==="play"){
-    if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
+    if(radioAudio&&!radioAudio.paused){
+      radioAudio.pause();
+      endRadioActivity();
+      setRadioPlaybackStatus("paused");
+    }else if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
       void radioAudio.play().then(()=>setRadioPlaybackStatus("playing")).catch(()=>setRadioPlaybackStatus("failed"));
     }else if(radioSelectedId)playRadioStation(radioSelectedId);
     else void playRandomRadioStation();
