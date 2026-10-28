@@ -20,6 +20,7 @@ import { createTelegramChatClient, type TelegramChat, type TelegramMessage } fro
 import { renderLibrary, bindLibraryView, resumeLastPlayedGame, stopLibraryEmulator } from "./library-emulator";
 import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
 import { mountRadioMap } from "./radio-map";
+import { renderWorldRadioPanel, bindWorldRadioPanel } from "./world-radio-panel";
 
 initTelegramBridge();
 initFreezzzyDroid();
@@ -603,16 +604,7 @@ function render(){
     body=safeModuleContent("game",()=>renderOpenGamesCatalog(lang));
   }
   if(view==="radio"){
-    body=`
-      <section class="content portal-layout radio-portal radio-map-only" data-portal-layout="radio" data-radio-map-root aria-label="World radio map">
-        <div class="radio-map-canvas" id="radio-world-map"></div>
-        <div class="radio-map-top"><input class="radio-map-search" data-radio-search type="search" placeholder="Search station or country" aria-label="Search station or country" autocomplete="off"><span class="radio-map-count" data-radio-count>LOADING</span></div>
-        <div class="radio-map-player" role="region" aria-label="Radio player">
-          <div class="radio-map-player-info"><span class="radio-map-live-dot"></span><div class="radio-map-station-text"><strong data-radio-station>Choose a station</strong><small data-radio-country>WORLDWIDE</small></div></div>
-          <span class="radio-map-status" data-radio-status>LOADING WORLD RADIO…</span>
-          <div class="radio-map-player-controls"><button type="button" data-radio-play aria-label="Play or pause">▶</button><button type="button" data-radio-stop aria-label="Stop radio">■</button></div>
-        </div>
-      </section>`;
+    body=renderWorldRadioPanel(lang);
   }
 
   if(view==="library"){
@@ -816,10 +808,18 @@ window.addEventListener("freezzz:radio-open-fullscreen",()=>{
   radioHomePopupOpen=false;
   portalEvents.emit("navigation:changed",{view:"radio"});
 });
+window.addEventListener("freezzz:radio-volume",event=>{
+  const volume=Number((event as CustomEvent<{volume?:number}>).detail?.volume);
+  if(radioAudio&&Number.isFinite(volume))radioAudio.volume=Math.max(0,Math.min(1,volume));
+});
 window.addEventListener("freezzz:radio-mini",event=>{
   const action=(event as CustomEvent<{action?:string}>).detail?.action;
   if(action==="play"){
-    if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
+    if(radioAudio&&!radioAudio.paused){
+      radioAudio.pause();
+      endRadioActivity();
+      setRadioPlaybackStatus("paused");
+    }else if(radioAudio&&radioAudio.paused&&radioPlaybackStatus!=="stopped"&&radioPlaybackStatus!=="failed"){
       void radioAudio.play().then(()=>setRadioPlaybackStatus("playing")).catch(()=>setRadioPlaybackStatus("failed"));
     }else if(radioSelectedId)playRadioStation(radioSelectedId);
     else void playRandomRadioStation();
@@ -933,7 +933,8 @@ function windowsCloseChatPopup(){
   window.dispatchEvent(new CustomEvent("freezzz:close-chat-popup"));
 }
 function bind(){
-  if(view==="radio"||radioHomePopupOpen)mountRadioMap();
+  if(radioHomePopupOpen)mountRadioMap();
+  if(view==="radio")bindWorldRadioPanel(()=>{requestAnimationFrame(()=>mountRadioMap());});
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
 

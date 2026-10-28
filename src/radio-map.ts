@@ -139,7 +139,11 @@ function resetFailedMap(root: HTMLElement): void {
 
 export function mountRadioMap(): void {
   const root = document.querySelector<HTMLElement>("[data-radio-map-root]");
-  if (!root || root === activeRoot) return;
+  if (!root) return;
+  if (root === activeRoot) {
+    try { activeMap?.resize?.(); } catch {}
+    return;
+  }
   const mapNode = root.querySelector<HTMLElement>("#radio-world-map");
   if (!mapNode) return;
   if (activeMap) {
