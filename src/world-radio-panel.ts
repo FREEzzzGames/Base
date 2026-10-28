@@ -189,18 +189,18 @@ function drawGlobe(): void {
   const host = activeCanvas.parentElement;
   if (!host) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2), size = Math.max(160, Math.floor(Math.min(host.clientWidth || 280, host.clientHeight || 280)));
-  if (activeCanvas.width !== Math.floor(size * dpr) || activeCanvas.height !== Math.floor(size * dpr)) { canvas.width = Math.floor(size * dpr); canvas.height = Math.floor(size * dpr); }
-  const w = canvas.width, h = canvas.height, r = Math.min(w, h) * 0.46, cx = w / 2, cy = h / 2, step = Math.max(5.5, w / 74);
+  if (activeCanvas.width !== Math.floor(size * dpr) || activeCanvas.height !== Math.floor(size * dpr)) { activeCanvas.width = Math.floor(size * dpr); activeCanvas.height = Math.floor(size * dpr); }
+  const w = activeCanvas.width, h = activeCanvas.height, r = Math.min(w, h) * 0.46, cx = w / 2, cy = h / 2, step = Math.max(5.5, w / 74);
   context.clearRect(0, 0, w, h);
-  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-  const bg = ctx.createRadialGradient(cx-r*.35,cy-r*.42,r*.05,cx,cy,r*1.2); bg.addColorStop(0,"#143044"); bg.addColorStop(.62,"#071722"); bg.addColorStop(1,"#02080e"); ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle="rgba(90,135,158,.16)"; ctx.lineWidth=Math.max(1,w/500);
-  for(let lat=-60;lat<=60;lat+=20){ctx.beginPath();let started=false;for(let lon=-180;lon<=180;lon+=3){const p=globeProject(lon,lat,r,cx,cy);if(p.z>0){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;}ctx.stroke();}
-  for(let lon=-180;lon<180;lon+=30){ctx.beginPath();let started=false;for(let lat=-88;lat<=88;lat+=2){const p=globeProject(lon,lat,r,cx,cy);if(p.z>0){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;}ctx.stroke();}
-  for(let lat=-78;lat<=78;lat+=3.7){for(let lon=-180;lon<180;lon+=3.7){const p=globeProject(lon,lat,r,cx,cy);if(p.z<.04)continue;const land=LAND.some(poly=>landAt(lon,lat,poly));ctx.beginPath();ctx.arc(p.x,p.y,land?step*.25:step*.18,0,Math.PI*2);ctx.fillStyle=land?"rgba(255,181,112,.78)":"rgba(91,132,153,.28)";ctx.fill();}}
-  stations.filter(s=>validGeo(s)).slice(0,250).forEach(s=>{const g=validGeo(s)!;const p=globeProject(g.lng,g.lat,r,cx,cy);if(p.z<=0)return;const rr=Math.max(2.4,w/125);ctx.beginPath();ctx.arc(p.x,p.y,rr*3,0,Math.PI*2);ctx.fillStyle="rgba(255,123,36,.12)";ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,rr,0,Math.PI*2);ctx.fillStyle="#ff862d";ctx.shadowColor="#ff7827";ctx.shadowBlur=rr*5;ctx.fill();ctx.shadowBlur=0;});
-  const shade=ctx.createRadialGradient(cx-r*.22,cy-r*.25,r*.25,cx,cy,r*1.15);shade.addColorStop(0,"rgba(0,0,0,0)");shade.addColorStop(.72,"rgba(0,0,0,.03)");shade.addColorStop(1,"rgba(0,0,0,.72)");ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
-  ctx.restore();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle="rgba(110,157,183,.65)";ctx.lineWidth=Math.max(1.5,w/230);ctx.shadowColor="#5e8da7";ctx.shadowBlur=w/70;ctx.stroke();ctx.shadowBlur=0;
+  context.save(); context.beginPath(); context.arc(cx, cy, r, 0, Math.PI * 2); context.clip();
+  const bg = context.createRadialGradient(cx-r*.35,cy-r*.42,r*.05,cx,cy,r*1.2); bg.addColorStop(0,"#143044"); bg.addColorStop(.62,"#071722"); bg.addColorStop(1,"#02080e"); context.fillStyle=bg; context.fillRect(0,0,w,h);
+  context.strokeStyle="rgba(90,135,158,.16)"; context.lineWidth=Math.max(1,w/500);
+  for(let lat=-60;lat<=60;lat+=20){context.beginPath();let started=false;for(let lon=-180;lon<=180;lon+=3){const p=globeProject(lon,lat,r,cx,cy);if(p.z>0){if(!started){context.moveTo(p.x,p.y);started=true;}else context.lineTo(p.x,p.y);}else started=false;}context.stroke();}
+  for(let lon=-180;lon<180;lon+=30){context.beginPath();let started=false;for(let lat=-88;lat<=88;lat+=2){const p=globeProject(lon,lat,r,cx,cy);if(p.z>0){if(!started){context.moveTo(p.x,p.y);started=true;}else context.lineTo(p.x,p.y);}else started=false;}context.stroke();}
+  for(let lat=-78;lat<=78;lat+=3.7){for(let lon=-180;lon<180;lon+=3.7){const p=globeProject(lon,lat,r,cx,cy);if(p.z<.04)continue;const land=LAND.some(poly=>landAt(lon,lat,poly));context.beginPath();context.arc(p.x,p.y,land?step*.25:step*.18,0,Math.PI*2);context.fillStyle=land?"rgba(255,181,112,.78)":"rgba(91,132,153,.28)";context.fill();}}
+  stations.filter(s=>validGeo(s)).slice(0,250).forEach(s=>{const g=validGeo(s)!;const p=globeProject(g.lng,g.lat,r,cx,cy);if(p.z<=0)return;const rr=Math.max(2.4,w/125);context.beginPath();context.arc(p.x,p.y,rr*3,0,Math.PI*2);context.fillStyle="rgba(255,123,36,.12)";context.fill();context.beginPath();context.arc(p.x,p.y,rr,0,Math.PI*2);context.fillStyle="#ff862d";context.shadowColor="#ff7827";context.shadowBlur=rr*5;context.fill();context.shadowBlur=0;});
+  const shade=context.createRadialGradient(cx-r*.22,cy-r*.25,r*.25,cx,cy,r*1.15);shade.addColorStop(0,"rgba(0,0,0,0)");shade.addColorStop(.72,"rgba(0,0,0,.03)");shade.addColorStop(1,"rgba(0,0,0,.72)");context.fillStyle=shade;context.fillRect(0,0,w,h);
+  context.restore();context.beginPath();context.arc(cx,cy,r,0,Math.PI*2);context.strokeStyle="rgba(110,157,183,.65)";context.lineWidth=Math.max(1.5,w/230);context.shadowColor="#5e8da7";context.shadowBlur=w/70;context.stroke();context.shadowBlur=0;
 }
 async function loadDirectory(): Promise<void> {
   if (loading) return;
