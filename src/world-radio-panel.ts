@@ -228,7 +228,7 @@ function setView(value: string): void {
 export function renderWorldRadioPanel(language: RadioPanelLanguage = "RU"): string {
   activeLanguage = language;
   const text = TEXT[language];
-  return '<section class="wr-panel" data-world-radio-panel>' +
+  return '<section class="content portal-layout radio-portal wr-panel" data-portal-layout="radio" data-world-radio-panel aria-label="World Radio">' +
     '<header class="wr-header"><div class="wr-brand"><span class="wr-brand-icon">♧</span><div><strong>WORLD <em>RADIO</em></strong><small>LIVE STATIONS ONLINE</small></div></div>' +
     '<label class="wr-search"><span>⌕</span><input id="wr-search" type="search" placeholder="' + escape(text.search) + '" autocomplete="off"></label><button class="wr-settings" type="button" data-wr-settings aria-label="Settings">⚙</button></header>' +
     '<div class="wr-hero"><nav class="wr-side-nav">' +
