@@ -133,6 +133,7 @@ function renderMap(): void {
     const status = panel.querySelector<HTMLElement>("[data-radio-status]");
     if (status) status.textContent = "LOADING MAP…";
     window.dispatchEvent(new CustomEvent("freezzz:radio-map-open"));
+    requestAnimationFrame(() => panel.scrollIntoView({ behavior: "smooth", block: "center" }));
   }
 }
 function globeProject(lon: number, lat: number, r: number, cx: number, cy: number): { x: number; y: number; z: number } {
@@ -210,7 +211,7 @@ async function loadDirectory(): Promise<void> {
   let error: unknown;
   for (const server of servers) {
     try {
-      const response = await fetch(server + "/json/stations/search?hidebroken=true&has_geo_info=true&is_https=true&order=clickcount&reverse=true&limit=1200", { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(14000) });
+      const response = await fetch(server + "/json/stations/search?hidebroken=true&has_geo_info=true&is_https=true&order=clickcount&reverse=true&limit=5000", { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(14000) });
       if (!response.ok) throw new Error("Radio Browser HTTP " + response.status);
       stations = (await response.json() as WorldStation[]).filter(s => s.stationuuid && s.name && (s.url_resolved || s.url) && s.lastcheckok !== 0);
       const country = document.querySelector<HTMLSelectElement>("#wr-country");
