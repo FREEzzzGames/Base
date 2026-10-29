@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b10">
+  <title>FootPulse — FREEzzz</title>
+  <style>
+    :root{color-scheme:dark;--bg:#080b10;--panel:#10151d;--line:#29313d;--text:#f4f6f8;--muted:#9ca8b7;--accent:#ff394d}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+    body{display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top)}
+    .bar{height:54px;flex:0 0 54px;display:flex;align-items:center;gap:12px;padding:0 14px;border-bottom:1px solid var(--line);background:#0b0f15}
+    .back{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:36px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;font-size:20px}
+    .brand{font-weight:850;letter-spacing:.08em;font-size:15px}.brand span{color:var(--accent)}.sub{margin-left:auto;color:var(--muted);font-size:10px;letter-spacing:.12em}
+    main{position:relative;flex:1;min-height:0;background:var(--bg)}iframe{display:block;border:0;width:100%;height:100%;background:var(--bg)}
+    .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;background:var(--bg)}
+    .fallback-card{max-width:390px;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+    .fallback p{color:var(--muted)}.open{display:inline-flex;margin-top:10px;padding:12px 18px;border-radius:10px;background:var(--accent);color:white;text-decoration:none;font-weight:750}
+    @media(min-width:800px){.bar{height:60px;flex-basis:60px;padding:0 22px}.brand{font-size:17px}}
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="./index.html" aria-label="Вернуться в FREEzzz">‹</a>
+    <div class="brand">FOOT<span>PULSE</span></div>
+    <div class="sub">FOOTBALL · DATA · REPLAY</div>
+  </header>
+  <main>
+    <iframe id="footpulse-app" src="https://footpulse-bzve.onrender.com/" title="FootPulse — футбольная статистика" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe>
+    <section class="fallback" id="fallback">
+      <div class="fallback-card">
+        <strong>FootPulse не удалось встроить в портал</strong>
+        <p>Если источник запрещает отображение во встроенном окне, открой футбольный портал отдельно. Это не изменит настройки FREEzzz.</p>
+        <a class="open" href="https://footpulse-bzve.onrender.com/" target="_blank" rel="noopener noreferrer">Открыть FootPulse ↗</a>
+      </div>
+    </section>
+  </main>
+  <script>
+    const frame=document.getElementById('footpulse-app');
+    const fallback=document.getElementById('fallback');
+    let loaded=false;
+    frame.addEventListener('load',()=>{loaded=true;});
+    window.setTimeout(()=>{if(!loaded)fallback.style.display='flex';},9000);
+    frame.addEventListener('error',()=>{fallback.style.display='flex';});
+  </script>
+</body>
+</html>
