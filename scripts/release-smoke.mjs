@@ -1,11 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-const required = ["dist/index.html", "dist/version.json"];
+const required = ["dist/index.html", "dist/version.json", "dist/footpulse.html"];
 for (const file of required) {
   if (!existsSync(file)) throw new Error("Missing release artifact: " + file);
 }
 
 const html = readFileSync("dist/index.html", "utf8");
+const footpulse = readFileSync("dist/footpulse.html", "utf8");
 const version = JSON.parse(readFileSync("dist/version.json", "utf8"));
 const assets = existsSync("dist/assets") ? readdirSync("dist/assets") : [];
 
@@ -19,6 +20,13 @@ if (!assets.some(file => /\.js$/i.test(file))) throw new Error("No compiled Java
 if (!assets.some(file => /\.css$/i.test(file))) throw new Error("No compiled CSS asset found.");
 if (/constructor|editor-layout|data-editor-/i.test(html)) throw new Error("Obsolete constructor/editor runtime leaked into production.");
 
+// FootPulse must remain a standalone page within Base, opening the separately hosted app.
+if (!footpulse.includes('href="./index.html"')) throw new Error("FootPulse return route to HOME is missing.");
+if (!footpulse.includes('id="footpulse-app"')) throw new Error("FootPulse iframe is missing.");
+if (!footpulse.includes('https://footpulse-bzve.onrender.com/')) throw new Error("FootPulse production origin is missing.");
+if (!footpulse.includes('id="retry"') || !footpulse.includes('id="reload"')) throw new Error("FootPulse recovery controls are missing.");
+if (!footpulse.includes('target="_blank" rel="noopener noreferrer"')) throw new Error("FootPulse standalone fallback link is missing.");
+
 // The removed SPARK game must not be shipped in the portal build.
 if (readdirSync("dist").some(file => /^spark(?:-|\.)/i.test(file))) {
   throw new Error("Obsolete SPARK runtime artifact leaked into production.");
@@ -28,6 +36,6 @@ console.log("RELEASE_SMOKE_OK", JSON.stringify({
   build: version.build,
   version: version.version,
   assets: assets.length,
-  checkedPages: ["index.html"],
+  checkedPages: ["index.html", "footpulse.html"],
   obsoleteSparkArtifacts: 0
 }));
