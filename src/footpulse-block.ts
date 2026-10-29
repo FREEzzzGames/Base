@@ -9,6 +9,8 @@ function addFootPulseCard(): void {
   card.href = "./footpulse.html";
   card.dataset.portalCard = FOOT_PULSE_CARD_ID;
   card.dataset.portalBlock = FOOT_PULSE_CARD_ID;
+  card.dataset.gridSize = "s";
+  card.dataset.bentoAuto = "1";
   card.setAttribute("aria-label", "FOOTPULSE — Football Portal");
   card.innerHTML = '<span class="home-module-mark" aria-hidden="true">⚽</span>' +
     '<span class="home-card-title">FOOTPULSE</span>' +
