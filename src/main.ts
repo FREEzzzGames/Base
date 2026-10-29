@@ -913,24 +913,18 @@ function bindHudTouchGesture(){
 
 function applyHomeBentoRules(){
   const grids=document.querySelectorAll<HTMLElement>(".home-portal[data-home-pager] .home-screen-grid");
-  const wideTitlePattern=/FOOTPULSE|WATABOU|PROCGEN|3D SVG DESIGNER|DRIVE & LISTEN|NOTABLE PEOPLE|PHOTEXT SHOP|OLD MAPS ONLINE|SHADOW DIPLOMACY|ECONOMY LAB|ELECTRONICS LAB|ANVAKA|EMUPEDIA/;
   grids.forEach(grid=>{
     grid.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(card=>{
-      const titleNode=card.querySelector<HTMLElement>(".home-card-title");
-      const title=(titleNode?.textContent?.trim()||card.getAttribute("aria-label")?.trim()||card.dataset.portalCard||"")
-        .replace(/\\s+/g," ").toUpperCase();
-      const isLong=title.length>=12||wideTitlePattern.test(title);
-      if(!isLong)return;
-      if(!card.hasAttribute("data-grid-size"))card.dataset.gridSize="s";
-      card.dataset.bentoAuto="1";
-      if(titleNode){
-        titleNode.style.setProperty("white-space","normal","important");
-        titleNode.style.setProperty("word-break","normal","important");
-        titleNode.style.setProperty("overflow-wrap","normal","important");
-        titleNode.style.setProperty("hyphens","none","important");
-        titleNode.style.setProperty("font-size","clamp(12px, 3.8vw, 18px)","important");
-        titleNode.style.setProperty("line-height","1.15","important");
-        titleNode.style.setProperty("max-width","calc(100% - 24px)","important");
+      if(card.hasAttribute("data-grid-size")) return;
+      const title=card.querySelector<HTMLElement>(".home-card-title")?.textContent?.trim()
+        || card.getAttribute("aria-label")?.trim()
+        || card.dataset.portalCard
+        || "";
+      const normalized=title.replace(/\\s+/g," ").toUpperCase();
+      const longTitle=normalized.length>=9 || /FOOTPULSE|WATABOU|PROCGEN|3D SVG|DRIVE & LISTEN/.test(normalized);
+      if(longTitle){
+        card.dataset.gridSize="s";
+        card.dataset.bentoAuto="1";
       }
     });
   });
