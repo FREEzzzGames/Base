@@ -626,6 +626,7 @@ function render(){
       ${renderRadioHomePopup()}
     </div>`;
 
+  if(view==="home") applyHomeBentoRules();
   lastRenderedView=view;
   if(previousRenderedView!==null&&previousRenderedView!==view&&!document.documentElement.hasAttribute("data-reduced-motion")){
     const panel=document.querySelector<HTMLElement>(".portal-workspace > main");
@@ -908,6 +909,25 @@ function bindHudTouchGesture(){
   },{passive:true});
   document.addEventListener("touchend",end,{passive:true});
   document.addEventListener("touchcancel",end,{passive:true});
+}
+
+function applyHomeBentoRules(){
+  const grids=document.querySelectorAll<HTMLElement>(".home-portal[data-home-pager] .home-screen-grid");
+  grids.forEach(grid=>{
+    grid.querySelectorAll<HTMLElement>("[data-portal-block]").forEach(card=>{
+      if(card.hasAttribute("data-grid-size")) return;
+      const title=card.querySelector<HTMLElement>(".home-card-title")?.textContent?.trim()
+        || card.getAttribute("aria-label")?.trim()
+        || card.dataset.portalCard
+        || "";
+      const normalized=title.replace(/\\s+/g," ").toUpperCase();
+      const longTitle=normalized.length>=9 || /FOOTPULSE|WATABOU|PROCGEN|3D SVG|DRIVE & LISTEN/.test(normalized);
+      if(longTitle){
+        card.dataset.gridSize="s";
+        card.dataset.bentoAuto="1";
+      }
+    });
+  });
 }
 function updateHomeClock(){
   if(view!=="home")return;
