@@ -522,6 +522,7 @@ function render(){
               ${homeCard("game")}
               ${homeCard("live")}
               ${homeCard("chat")}
+              ${homeCard("ai")}
               ${homeCard("radio")}
               ${homeCard("library")}
             </div>
@@ -614,6 +615,10 @@ function render(){
     body=`<div class="echo9-portal"><iframe class="echo9-frame" src="./echo9.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="ЭХО-9: Три из Трёх" loading="eager"></iframe></div>`;
   }
 
+  if(view==="ai"){
+    body=`<div class="freezzz-ai-portal"><iframe class="freezzz-ai-frame" src="./freezzz-ai.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="FREEzzz AI — персональный ассистент" loading="eager"></iframe></div>`;
+  }
+
   app.innerHTML=`
     <div class="app-shell">
       <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${view==="echo9"?" portal-echo9-workspace":""}${hudHidden?" portal-hud-hidden":""}">
@@ -674,7 +679,7 @@ function homeCard(v:Exclude<View,"home">){
     library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
-  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",};
+  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",ai:"FREEzzz AI"};
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
@@ -845,6 +850,7 @@ moduleManager.registerAdapter("library",{
   onDeactivate:()=>stopLibraryEmulator()
 });
 moduleManager.registerAdapter("echo9",{});
+moduleManager.registerAdapter("ai",{});
 portalEvents.on("navigation:changed",payload=>{
   if(payload.view!==view){
     if(view==="game")stopOpenGamesSession();
