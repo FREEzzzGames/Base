@@ -3551,6 +3551,9 @@ main{
   height:36px!important;
   min-height:36px!important;
   display:flex!important;
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
   align-items:center!important;
   justify-content:space-between!important;
   gap:6px!important;
