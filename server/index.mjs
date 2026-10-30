@@ -17,6 +17,8 @@ const apiId = Number(process.env.TELEGRAM_API_ID || 0);
 const apiHash = process.env.TELEGRAM_API_HASH || "";
 const sessionSecret = process.env.TELEGRAM_SESSION_SECRET || "";
 const sessionStorePath = process.env.TELEGRAM_SESSION_STORE_PATH || "/tmp/freezzz-telegram-sessions.json";
+const openAiApiKey = process.env.OPENAI_API_KEY || "";
+const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
 if (!apiId || !apiHash) console.warn("TELEGRAM_API_ID / TELEGRAM_API_HASH are not configured.");
@@ -453,7 +455,9 @@ const server = http.createServer(async (req, res) => {
       configuredBotId: configuredBotId || undefined,
       botConfigured: Boolean(botToken),
       mtprotoConfigured: Boolean(apiId && apiHash),
-      sessionStoreConfigured: Boolean(sessionSecret)
+      sessionStoreConfigured: Boolean(sessionSecret),
+      aiConfigured: Boolean(openAiApiKey),
+      aiModel: openAiModel
     }, responseOrigin);
   }
 
@@ -474,6 +478,61 @@ const server = http.createServer(async (req, res) => {
       const member = await verifyMembership(result.user.id);
       if (!member) return sendJson(res, 403, { ok: false, error: "TELEGRAM_MEMBERSHIP_REQUIRED" }, responseOrigin);
       return sendJson(res, 200, { ok: true, authDate: result.authDate, queryId: result.queryId, user: result.user }, responseOrigin);
+    }
+
+    if (pathName === "/api/ai/chat" && req.method === "POST") {
+      const user = authFromRequest(req);
+      // AI calls consume a larger rate-limit budget because they incur provider charges.
+      rateLimit(user.id, 12);
+      if (!openAiApiKey) return sendJson(res, 503, { ok: false, error: "AI_NOT_CONFIGURED" }, responseOrigin);
+
+      const body = await readBody(req, 48 * 1024);
+      if (!Array.isArray(body.messages) || body.messages.length < 1 || body.messages.length > 12) {
+        throw new Error("INVALID_AI_MESSAGES");
+      }
+      const messages = body.messages.map(item => {
+        if (!item || !["user", "assistant"].includes(item.role) ||
+            typeof item.content !== "string" || !item.content.trim() || item.content.length > 8000) {
+          throw new Error("INVALID_AI_MESSAGE");
+        }
+        return { role: item.role, content: item.content.trim() };
+      });
+      if (messages[messages.length - 1].role !== "user") throw new Error("AI_USER_MESSAGE_REQUIRED");
+      const totalChars = messages.reduce((sum, item) => sum + item.content.length, 0);
+      if (totalChars > 18000) throw new Error("AI_CONTEXT_TOO_LARGE");
+
+      let upstream;
+      try {
+        upstream = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + openAiApiKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: openAiModel,
+            store: false,
+            max_output_tokens: 1400,
+            instructions: "Ты — FREEzzz AI, персональный русскоязычный ассистент владельца FREEzzz Portal. Отвечай на языке пользователя, по умолчанию на русском. Помогай с программированием, проектированием, анализом и созданием контента. Будь точным, разделяй проверенные факты и предположения, не выдумывай выполненные действия, доступ к файлам, новости или результаты инструментов. У тебя нет автоматического доступа к другим модулям портала, интернету, истории ChatGPT или его памяти; не утверждай обратного. Если нужна актуальная информация или внешнее действие, прямо сообщи об ограничении. Не запрашивай секреты и ключи API.",
+            input: messages
+          }),
+          signal: AbortSignal.timeout(65000)
+        });
+      } catch (error) {
+        console.error("OpenAI request failed", error instanceof Error ? error.name : "UNKNOWN");
+        return sendJson(res, 502, { ok: false, error: "OPENAI_UPSTREAM_ERROR" }, responseOrigin);
+      }
+      const payload = await upstream.json().catch(() => ({}));
+      if (!upstream.ok) {
+        console.error("OpenAI API returned", upstream.status, payload?.error?.code || "UPSTREAM_ERROR");
+        return sendJson(res, 502, { ok: false, error: "OPENAI_UPSTREAM_ERROR" }, responseOrigin);
+      }
+      const answer = typeof payload.output_text === "string" ? payload.output_text :
+        (Array.isArray(payload.output) ? payload.output.flatMap(item =>
+          Array.isArray(item.content) ? item.content.filter(part => part.type === "output_text").map(part => part.text) : []
+        ).join("\\n") : "");
+      if (!answer.trim()) return sendJson(res, 502, { ok: false, error: "AI_EMPTY_RESPONSE" }, responseOrigin);
+      return sendJson(res, 200, { ok: true, message: answer.trim(), model: openAiModel }, responseOrigin);
     }
 
     if (pathName.startsWith("/api/economy/")) {
@@ -568,7 +627,7 @@ const server = http.createServer(async (req, res) => {
     const status = error instanceof SyntaxError ? 400
       : code === "PAYLOAD_TOO_LARGE" ? 413
       : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA"].includes(code) ? 401
-      : ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
+      : ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["ORIGIN_NOT_ALLOWED"].includes(code) ? 403
       : ["RATE_LIMITED"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED"].includes(code) ? 503
