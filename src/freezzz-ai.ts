@@ -42,7 +42,7 @@ function render() {
       <div class="ai-notice" data-ai-notice hidden></div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
-      <footer class="ai-footer"><span>PRIVATE SESSION · TELEGRAM AUTH</span><span>Проверяй важные решения</span></footer>
+      <footer class="ai-footer"><span>OWNER-ONLY · OPENAI API</span><span>История локальная · запросы передаются OpenAI</span></footer>
     </section>`;
   const transcriptEl = root!.querySelector<HTMLElement>("[data-ai-transcript]")!;
   const rendered = transcriptEl.querySelectorAll<HTMLElement>(".ai-message");
