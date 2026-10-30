@@ -32,9 +32,6 @@ function loadHistory(): ChatMessage[] {
 function saveHistory() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_HISTORY))); } catch { /* storage is optional */ }
 }
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[char] || char);
-}
 function renderMessage(message: ChatMessage): string {
   return '<article class="ai-message '+message.role+'"><span class="ai-message-role">'+(message.role === "user" ? "YOU" : "FREEzzz AI")+'</span><p></p></article>';
 }
