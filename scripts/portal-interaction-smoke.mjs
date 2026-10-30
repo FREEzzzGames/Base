@@ -212,3 +212,6 @@ assert.ok(homeGridShift.includes("page.inert=inactive;") && homeGridShift.includ
 assert.ok(homeGridShift.includes('setPage(0);') && homeGridShift.includes('Number(button.dataset.homePage||0)'),
   "HOME / MODULES controls must initialize and navigate to their declared screen");
 console.log("HOME_TWO_SCREEN_PAGER_SMOKE_OK");
+
+assert.ok(homeGridShift.includes('tile.dataset.gridSize || defaultSizeOf(tile)') && homeGridShift.includes('tile.dataset.gridSize||defaultSizeOf(tile)'),
+  "HOME layout snapshots and commits must preserve each tile's own default size instead of expanding every tile");
