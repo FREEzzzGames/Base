@@ -279,6 +279,7 @@ function bind(){
     const sx=pointer.clientX,sy=pointer.clientY,ox=w.x,oy=w.y;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
     const move=(ev:PointerEvent)=>{
+      if(ev.pointerId!==pointer.pointerId)return;
       const maxX=Math.max(4,window.innerWidth-w.width-4);
       const maxY=Math.max(4,window.innerHeight-w.height-8);
       w.x=Math.max(4,Math.min(maxX,ox+ev.clientX-sx));
