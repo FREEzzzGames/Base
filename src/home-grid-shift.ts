@@ -115,7 +115,11 @@ export function bindHomeGridShift(root: HTMLElement) {
   const setPage = (index: number) => {
     currentPage = Math.max(0, Math.min(pages.length - 1, index));
     track.style.transform = `translate3d(-${currentPage * 100}%,0,0)`;
-    pages.forEach((page,i)=>{\n      const inactive=i!==currentPage;\n      page.setAttribute("aria-hidden",String(inactive));\n      page.inert=inactive;\n    });
+    pages.forEach((page,i)=>{
+      const inactive=i!==currentPage;
+      page.setAttribute("aria-hidden",String(inactive));
+      page.inert=inactive;
+    });
     pagination.querySelectorAll<HTMLButtonElement>("[data-home-page]").forEach((button,i)=>{
       if(i===currentPage)button.setAttribute("aria-current","page"); else button.removeAttribute("aria-current");
     });
