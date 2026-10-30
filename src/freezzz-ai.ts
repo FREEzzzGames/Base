@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "").replace(/\/$/, "");
+const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "https://freezzz-telegram-auth.onrender.com").replace(/\/$/, "");
 const STORAGE_KEY = "freezzz:ai:history:v1";
 const MAX_HISTORY = 24;
 const root = document.querySelector<HTMLDivElement>("#freezzz-ai-root");
