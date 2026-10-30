@@ -87,8 +87,16 @@ export class PortalModuleManager{
 
   registerAdapter(view:Exclude<PortalView,"home">,adapter:PortalModuleAdapter):()=>void{
     if(!this.has(view))throw new Error("Cannot register an unknown portal module: "+view);
+    const previous=this.adapters.get(view);
+    if(previous===adapter)return ()=>{};
+    if(this.active===view&&previous)this.invokeAdapter(view,"deactivate",previous);
     this.adapters.set(view,adapter);
-    return ()=>{if(this.adapters.get(view)===adapter)this.adapters.delete(view);};
+    if(this.active===view)this.invokeAdapter(view,"activate",adapter);
+    return ()=>{
+      if(this.adapters.get(view)!==adapter)return;
+      if(this.active===view)this.invokeAdapter(view,"deactivate",adapter);
+      this.adapters.delete(view);
+    };
   }
 
   transition(next:PortalView):boolean{
@@ -110,9 +118,16 @@ export class PortalModuleManager{
 
   private invoke(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate"):void{
     const adapter=this.adapters.get(view);
-    const callback=phase==="activate"?adapter?.onActivate:adapter?.onDeactivate;
+    if(adapter)this.invokeAdapter(view,phase,adapter);
+  }
+
+  private invokeAdapter(view:Exclude<PortalView,"home">,phase:"activate"|"deactivate",adapter:PortalModuleAdapter):void{
+    const callback=phase==="activate"?adapter.onActivate:adapter.onDeactivate;
     if(!callback)return;
-    try{callback();}catch(error){this.errorHandler(view,phase,error);}
+    try{callback();}catch(error){
+      try{this.errorHandler(view,phase,error);}
+      catch(handlerError){console.error("[FREEzzz module error handler]",view,phase,handlerError);}
+    }
   }
 }
 
