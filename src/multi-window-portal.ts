@@ -286,16 +286,24 @@ function bind(){
       const el=layer?.querySelector<HTMLElement>('[data-mw="'+id+'"]');
       if(el){el.style.left=w.x+"px";el.style.top=w.y+"px";}
     };
+    let ended=false;
     const end=()=>{
-      h.removeEventListener("pointermove",move);
-      h.removeEventListener("pointerup",end);
-      h.removeEventListener("pointercancel",end);
-      try{h.releasePointerCapture(pointer.pointerId);}catch{}
+      if(ended)return;
+      ended=true;
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",onPointerEnd);
+      window.removeEventListener("pointercancel",onPointerEnd);
+      window.removeEventListener("blur",end);
+      h.removeEventListener("lostpointercapture",end);
+      try{if(h.hasPointerCapture(pointer.pointerId))h.releasePointerCapture(pointer.pointerId);}catch{}
       saveWindowLayout();
     };
-    h.addEventListener("pointermove",move);
-    h.addEventListener("pointerup",end);
-    h.addEventListener("pointercancel",end);
+    const onPointerEnd=(event:PointerEvent)=>{if(event.pointerId===pointer.pointerId)end();};
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",onPointerEnd);
+    window.addEventListener("pointercancel",onPointerEnd);
+    window.addEventListener("blur",end);
+    h.addEventListener("lostpointercapture",end);
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-resize]").forEach(h=>h.onpointerdown=e=>{
     e.preventDefault();e.stopPropagation();
@@ -303,9 +311,25 @@ function bind(){
     focus(id);
     const sx=pointer.clientX,sy=pointer.clientY,sw=w.width,sh=w.height;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
-    const move=(ev:PointerEvent)=>resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);
-    const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}saveWindowLayout();};
-    h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
+    const move=(ev:PointerEvent)=>{if(ev.pointerId===pointer.pointerId)resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);};
+    let ended=false;
+    const end=()=>{
+      if(ended)return;
+      ended=true;
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",onPointerEnd);
+      window.removeEventListener("pointercancel",onPointerEnd);
+      window.removeEventListener("blur",end);
+      h.removeEventListener("lostpointercapture",end);
+      try{if(h.hasPointerCapture(pointer.pointerId))h.releasePointerCapture(pointer.pointerId);}catch{}
+      saveWindowLayout();
+    };
+    const onPointerEnd=(event:PointerEvent)=>{if(event.pointerId===pointer.pointerId)end();};
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",onPointerEnd);
+    window.addEventListener("pointercancel",onPointerEnd);
+    window.addEventListener("blur",end);
+    h.addEventListener("lostpointercapture",end);
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.onclick=e=>{
     e.preventDefault();e.stopPropagation();
