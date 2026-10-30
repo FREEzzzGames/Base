@@ -44,6 +44,7 @@ assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination 
 assert.ok(economy.includes("error instanceof SyntaxError ? 400"), "malformed economy JSON must return HTTP 400");
 assert.ok(economy.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized economy requests must return HTTP 413");
 assert.ok(economy.includes("pg_try_advisory_lock"), "economy world clock must be single-leader across API instances");
+assert.ok(economy.includes("VALUES ($1,0,$2,$4,$3::jsonb)"), "new economy world treasury column must match the serialized initial state");
 assert.ok(economy.includes("pg_advisory_unlock"), "economy scheduler must release its cross-instance lock");
 assert.ok(economy.includes("if (!lockAcquired) return;"), "a non-leader API instance must skip the economy tick");
 assert.ok(legacyTelegram.includes("TELEGRAM_CLIENT_API_SECRET"), "legacy Telegram service must fail closed without an API secret");
