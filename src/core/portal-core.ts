@@ -111,7 +111,8 @@ export class PortalModuleManager{
 
   runIsolated<T>(view:Exclude<PortalView,"home">,operation:()=>T,fallback:T):T{
     try{return operation();}catch(error){
-      this.errorHandler(view,"render",error);
+      try{this.errorHandler(view,"render",error);}
+      catch(handlerError){console.error("[FREEzzz module error handler]",view,"render",handlerError);}
       return fallback;
     }
   }
