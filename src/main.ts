@@ -62,15 +62,15 @@ type View = PortalView;
 type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-const portalState=createPlatformState({view:"home",language:"RU",telegram:Boolean(getTelegramWebApp())});
+const overlayRoute=new URLSearchParams(window.location.search).get("freezzzOverlay");
+const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : "home";
+const portalState=createPlatformState({view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 const moduleManager=new PortalModuleManager();
-const zenithKernel=new ZenithOSKernel({modules:moduleManager,initial:{view:"home",language:"RU",telegram:Boolean(getTelegramWebApp()),online:portalState.online}});
+const zenithKernel=new ZenithOSKernel({modules:moduleManager,initial:{view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp()),online:portalState.online}});
 moduleManager.setErrorHandler((moduleView,phase,error)=>{
   console.error("[FREEzzz module lifecycle]",moduleView,phase,error);
 });
-const overlayRoute=new URLSearchParams(window.location.search).get("freezzzOverlay");
-const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : portalState.view;
 let view:View=initialView;
 let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
 const T=(key:string)=>pt(lang,key);
