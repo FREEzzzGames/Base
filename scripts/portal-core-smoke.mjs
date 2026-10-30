@@ -136,6 +136,19 @@ assert.equal(replaceManager.activeView, "radio", "disposing an active adapter mu
 assert.equal(replacementLifecycle.at(-1), "radio:deactivate", "disposing an active adapter must run its cleanup callback");
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
 assert.equal(lifecycle.at(-1), "error:game:render");
+const isolatedFailureManager = new PortalModuleManager();
+isolatedFailureManager.setErrorHandler(() => { throw new Error("error reporter failure"); });
+const previousConsoleError = console.error;
+console.error = () => {};
+try {
+  assert.equal(
+    isolatedFailureManager.runIsolated("game", () => { throw new Error("module render failure"); }, "safe fallback"),
+    "safe fallback",
+    "a failing error reporter must not escape the isolated render boundary"
+  );
+} finally {
+  console.error = previousConsoleError;
+}
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
 const osKernel = new ZenithOSKernel({ initial: { view: "home", language: "RU" } });
 assert.equal(osKernel.snapshot.view, "home", "ZENITH OS must boot into HOME");
