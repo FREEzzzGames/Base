@@ -147,7 +147,14 @@ let economyTimer = null;
 export function startEconomyScheduler() {
   if (!pool || economyTimer) return;
   const runTick = async () => {
+    let lockClient;
+    const lockKey = 742091337;
     try {
+      // Render or other hosts may run multiple API instances. A session-level
+      // advisory lock makes the world clock advance only once per scheduler tick.
+      lockClient = await pool.connect();
+      const lock = await lockClient.query("SELECT pg_try_advisory_lock($1) AS locked", [lockKey]);
+      if (!lock.rows[0]?.locked) return;
       await ensureSchema();
       const worlds = await pool.query("SELECT id FROM economy_worlds ORDER BY id");
       for (const item of worlds.rows) {
@@ -184,6 +191,12 @@ export function startEconomyScheduler() {
       }
     } catch (error) {
       console.error("economy scheduler failed", error?.message || error);
+    } finally {
+      if (lockClient) {
+        try { await lockClient.query("SELECT pg_advisory_unlock($1)", [lockKey]); }
+        catch (error) { console.error("economy scheduler lock release failed", error?.message || error); }
+        lockClient.release();
+      }
     }
   };
   economyTimer = setInterval(runTick, 60_000);
