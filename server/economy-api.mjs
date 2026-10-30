@@ -48,8 +48,8 @@ async function withWorld(worldId, playerId, callback) {
     const seed = Number.parseInt(process.env.ECONOMY_WORLD_SEED || "9137", 10);
     const initial = createWorld({ id: worldId, seed: Number.isSafeInteger(seed) && seed >= 0 ? seed : 9137 });
     await client.query(
-      "INSERT INTO economy_worlds (id,tick,seed,treasury,state) VALUES ($1,0,$2,0,$3::jsonb) ON CONFLICT (id) DO NOTHING",
-      [worldId, initial.seed, JSON.stringify(initial)]
+      "INSERT INTO economy_worlds (id,tick,seed,treasury,state) VALUES ($1,0,$2,$4,$3::jsonb) ON CONFLICT (id) DO NOTHING",
+      [worldId, initial.seed, JSON.stringify(initial), initial.treasury]
     );
     const selected = await client.query("SELECT state FROM economy_worlds WHERE id=$1 FOR UPDATE", [worldId]);
     const world = selected.rows[0].state;
