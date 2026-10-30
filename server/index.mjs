@@ -525,7 +525,7 @@ const server = http.createServer(async (req, res) => {
       if (!githubToken) return sendJson(res, 503, { ok: false, error: "GITHUB_NOT_CONFIGURED" }, responseOrigin);
       if (pathName === "/api/dev/repo/tree") {
         const requestedPath = url.searchParams.get("path") || "";
-        const suffix = requestedPath ? "/" + validateDevPath(requestedPath) : "";
+        const suffix = requestedPath ? "/" + validateDevPath(requestedPath).split("/").map(encodeURIComponent).join("/") : "";
         const payload = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName +
           "/contents" + suffix + "?ref=main");
         const items = Array.isArray(payload) ? payload : [payload];
@@ -537,7 +537,7 @@ const server = http.createServer(async (req, res) => {
       if (pathName === "/api/dev/repo/file") {
         const filePath = validateDevPath(url.searchParams.get("path") || "");
         const item = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName +
-          "/contents/" + filePath + "?ref=main");
+          "/contents/" + filePath.split("/").map(encodeURIComponent).join("/") + "?ref=main");
         if (item.type !== "file" || typeof item.content !== "string" || Number(item.size) > 100000) {
           throw new Error("REPO_FILE_NOT_READABLE");
         }
@@ -714,11 +714,11 @@ const server = http.createServer(async (req, res) => {
     const code = error instanceof Error ? error.message : "SERVER_ERROR";
     const status = error instanceof SyntaxError ? 400
       : code === "PAYLOAD_TOO_LARGE" ? 413
-      : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA"].includes(code) ? 401
-      : ["MISSING_INIT_DATA","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
-      : ["ORIGIN_NOT_ALLOWED"].includes(code) ? 403
+      : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA","MISSING_INIT_DATA"].includes(code) ? 401
+      : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
+      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["RATE_LIMITED"].includes(code) ? 429
-      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED"].includes(code) ? 503
+      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED"].includes(code) ? 503
       : 502;
     console.error("telegram api error", code);
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
