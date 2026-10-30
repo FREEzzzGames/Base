@@ -176,6 +176,6 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added a separate Vite entry for the assistant UI; chat history is stored locally in the user's browser and sent only as the recent conversation context.
 - Added an authenticated backend gateway to the OpenAI Responses API. Telegram Web App init data is validated server-side; the OpenAI API key remains server-only and is never shipped to the browser.
 - Added request validation, context limits, provider timeout handling, no-store Responses requests, and rate-limit cost weighting.
-- Added Render environment configuration for `OPENAI_API_KEY` (secret) and `OPENAI_MODEL` (default `gpt-6-luna`).
+- Added Render environment configuration for `OPENAI_API_KEY` (secret), `OPENAI_MODEL` (default `gpt-6-luna`), and `AI_ALLOWED_TELEGRAM_USER_ID` (owner-only allowlist).
 - **Activation requirement:** set `OPENAI_API_KEY` in the existing Render service environment and deploy the updated service. AI chat remains unavailable until the secret is configured.
 - **Verification boundary:** source changes alone do not prove CI, deployment, Telegram authentication, or a successful paid API call. Verify GitHub Actions and the published Telegram Mini App after merge and backend deployment.
