@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#08090c"><title>VOICE STUDIO · NewSportV</title>
+<style>
+:root{color-scheme:dark;--bg:#08090c;--panel:#111319;--line:#282c35;--muted:#9298a5;--red:#ed2438;--white:#f4f5f7;--cyan:#66fcf1}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#32121a 0,transparent 38%),var(--bg);color:var(--white);font:15px/1.45 Inter,system-ui,sans-serif;min-height:100dvh}.wrap{max-width:780px;margin:auto;padding:clamp(16px,4vw,30px);padding-bottom:calc(30px + env(safe-area-inset-bottom))}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}.brand{font-weight:900;letter-spacing:.08em;font-size:18px}.brand span{color:var(--red)}.tag{font:10px ui-monospace,monospace;letter-spacing:.18em;color:var(--muted)}h1{font-size:clamp(30px,7vw,52px);line-height:1;margin:0 0 10px;font-weight:900;letter-spacing:-.045em}h1 b{color:var(--red)}.sub{color:var(--muted);margin:0 0 25px}.panel{background:linear-gradient(145deg,#151820,#0e1015);border:1px solid var(--line);border-radius:18px;padding:clamp(15px,3vw,22px);box-shadow:0 20px 50px #0005}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:17px}label,.label{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#aeb4c0;margin-bottom:8px;text-transform:uppercase}select,textarea,input{width:100%;background:#090b10;color:var(--white);border:1px solid #343945;border-radius:11px;padding:13px;font:inherit;outline:none}select:focus,textarea:focus{border-color:var(--red)}textarea{min-height:220px;resize:vertical;line-height:1.55}textarea::placeholder{color:#626977}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:7px}.voice-note{color:var(--muted);font-size:12px;margin-top:7px}.speed{display:flex;align-items:center;gap:12px}.speed input{padding:0;accent-color:var(--red)}.speed output{min-width:44px;text-align:right;font-variant-numeric:tabular-nums}.actions{display:flex;gap:10px;margin-top:18px}.button{border:1px solid var(--line);border-radius:11px;padding:13px 17px;background:#1b1e27;color:var(--white);font-weight:800;cursor:pointer;min-height:48px}.button.primary{background:var(--red);border-color:var(--red);color:white;flex:1}.button:disabled{opacity:.5;cursor:wait}.status{min-height:22px;margin:12px 0 0;color:var(--muted);font-size:12px}.status.error{color:#ff6674}.result{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);display:none}.result.show{display:block}audio{width:100%;margin:8px 0 12px}.license{font-size:11px;color:#777f8c;margin:17px 2px 0}.license a{color:#aeb4c0}.foot{font:10px ui-monospace,monospace;color:#616875;letter-spacing:.12em;margin-top:25px}@media(max-width:480px){.row{grid-template-columns:1fr}.actions .button{padding:12px}.panel{border-radius:15px}textarea{min-height:190px}}
+</style></head><body><main class="wrap">
+<header class="top"><div class="brand">NewSport<span>V</span></div><div class="tag">AUDIO LAB / 01</div></header>
+<h1>VOICE <b>STUDIO</b></h1><p class="sub">Текст → голос → готовый WAV. Мужской и женский голос на трёх языках.</p>
+<section class="panel">
+<div class="row">
+<div class="field"><label for="language">Язык</label><select id="language"><option value="ru">Русский</option><option value="en">English</option><option value="de">Deutsch</option></select></div>
+<div class="field"><label for="gender">Голос</label><select id="gender"><option value="male">Мужской</option><option value="female">Женский</option></select></div>
+</div>
+<div class="voice-note" id="voiceName">RU · Denis · medium</div>
+<div class="field" style="margin-top:20px"><label for="text">Текст для озвучки</label><textarea id="text" maxlength="20000" placeholder="Вставь текст или загрузи .txt файл…"></textarea><div class="meta"><span>До 20 000 символов</span><span id="count">0 / 20 000</span></div></div>
+<div class="field"><label for="file">Загрузить текстовый файл</label><input id="file" type="file" accept=".txt,text/plain"></div>
+<div class="field"><label for="speed">Скорость речи</label><div class="speed"><input id="speed" type="range" min=".8" max="1.2" step=".05" value="1"><output id="speedValue">1.00×</output></div></div>
+<div class="actions"><button class="button primary" id="generate">СОЗДАТЬ АУДИО ↗</button><button class="button" id="clear">ОЧИСТИТЬ</button></div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+<div class="result" id="result"><label>ГОТОВЫЙ РЕЗУЛЬТАТ</label><audio id="player" controls></audio><a class="button primary" id="download" download="newsportv-voice.wav" style="display:block;text-align:center;text-decoration:none">СКАЧАТЬ WAV ↓</a></div>
+</section>
+<p class="license">Голоса Piper. Лицензии движка и каждой модели различаются — перед коммерческим использованием проверь карточку конкретной модели. Женский немецкий Eva K использует модель уровня x_low.</p>
+<div class="foot">NEWS · SPORT · TV — SPORT. STORIES. EMOTIONS.</div>
+</main>
+<script>
+(() => {
+ const API_BASE = "https://newsportv-voice-api.onrender.com";
+ const $ = id => document.getElementById(id);
+ const voices = {
+  ru:{male:"RU · Denis · medium",female:"RU · Irina · medium"},
+  en:{male:"EN · Ryan · medium",female:"EN · Amy · medium"},
+  de:{male:"DE · Thorsten · medium",female:"DE · Eva K · x_low"}
+ };
+ let audioUrl = "";
+ function sync(){ $("voiceName").textContent=voices[$("language").value][$("gender").value]; }
+ function count(){ $("count").textContent=$("text").value.length.toLocaleString()+" / 20 000"; }
+ function status(message,error=false){$("status").textContent=message;$("status").classList.toggle("error",error);}
+ $("language").addEventListener("change",sync);$("gender").addEventListener("change",sync);
+ $("text").addEventListener("input",count);
+ $("file").addEventListener("change",async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(f.size>200000) {status("Файл слишком большой.",true);return;} $("text").value=(await f.text()).slice(0,20000);count();});
+ $("speed").addEventListener("input",()=>{$("speedValue").textContent=Number($("speed").value).toFixed(2)+"×";});
+ $("clear").addEventListener("click",()=>{$("text").value="";$("file").value="";count();status("");$("result").classList.remove("show");if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl="";});
+ $("generate").addEventListener("click",async()=>{
+  const text=$("text").value.trim();if(!text){status("Добавь текст для озвучки.",true);return;}
+  const button=$("generate");button.disabled=true;button.textContent="СИНТЕЗ…";status("Подготовка голоса. При первом запуске модель загружается с Hugging Face…");$("result").classList.remove("show");
+  try{
+   const response=await fetch(API_BASE+"/api/synthesize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,language:$("language").value,gender:$("gender").value,speed:Number($("speed").value)})});
+   if(!response.ok){let message="Ошибка синтеза ("+response.status+")";try{const d=await response.json();message=d.detail||message;}catch{}throw new Error(message);}
+   const blob=await response.blob();if(!blob.size)throw new Error("Сервер вернул пустой файл.");
+   if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(blob);
+   $("player").src=audioUrl;$("download").href=audioUrl;
+   const lang=$("language").value;const gender=$("gender").value;
+   $("download").download="newsportv-"+lang+"-"+gender+".wav";
+   $("result").classList.add("show");status("Готово. WAV создан.");
+  }catch(error){status((error instanceof Error?error.message:"Не удалось выполнить синтез.")+" Проверь соединение с Voice API.",true);}
+  finally{button.disabled=false;button.textContent="СОЗДАТЬ АУДИО ↗";}
+ });
+ sync();count();
+})();
+</script></body></html>
