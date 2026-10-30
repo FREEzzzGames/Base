@@ -150,6 +150,13 @@ try {
   console.error = previousConsoleError;
 }
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
+const activationManager = new PortalModuleManager();
+let activationKernel;
+let activatedRoute = "";
+activationManager.registerAdapter("game", { onActivate: () => { activatedRoute = activationKernel.snapshot.view; } });
+activationKernel = new ZenithOSKernel({ modules: activationManager });
+assert.equal(activationKernel.navigate("game").accepted, true);
+assert.equal(activatedRoute, "game", "module activation must observe the destination route in the shared kernel snapshot");
 const osKernel = new ZenithOSKernel({ initial: { view: "home", language: "RU" } });
 assert.equal(osKernel.snapshot.view, "home", "ZENITH OS must boot into HOME");
 assert.equal(osKernel.navigate("game").accepted, true);
