@@ -20,6 +20,7 @@ const sessionStorePath = process.env.TELEGRAM_SESSION_STORE_PATH || "/tmp/freezz
 const openAiApiKey = process.env.OPENAI_API_KEY || "";
 const aiAllowedTelegramUserId = process.env.AI_ALLOWED_TELEGRAM_USER_ID || "";
 const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
+const githubToken = process.env.GITHUB_TOKEN || "";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
 if (!apiId || !apiHash) console.warn("TELEGRAM_API_ID / TELEGRAM_API_HASH are not configured.");
