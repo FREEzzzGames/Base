@@ -502,6 +502,25 @@ const server = http.createServer(async (req, res) => {
         }
         return { role: item.role, content: item.content.trim() };
       });
+      let portalContext = null;
+      if (body.portalContext !== undefined) {
+        const context = body.portalContext;
+        const allowedModules = new Set(["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI"]);
+        if (!context || typeof context !== "object" ||
+            typeof context.activeModule !== "string" || !allowedModules.has(context.activeModule) ||
+            !["RU", "DE", "EN"].includes(context.language) ||
+            !Array.isArray(context.modules) || context.modules.length > 12 ||
+            !context.modules.every(module => typeof module === "string" && allowedModules.has(module)) ||
+            typeof context.build !== "string" || context.build.length > 80) {
+          throw new Error("INVALID_AI_PORTAL_CONTEXT");
+        }
+        portalContext = {
+          activeModule: context.activeModule,
+          language: context.language,
+          modules: context.modules,
+          build: context.build
+        };
+      }
       if (messages[messages.length - 1].role !== "user") throw new Error("AI_USER_MESSAGE_REQUIRED");
       const totalChars = messages.reduce((sum, item) => sum + item.content.length, 0);
       if (totalChars > 18000) throw new Error("AI_CONTEXT_TOO_LARGE");
@@ -518,7 +537,7 @@ const server = http.createServer(async (req, res) => {
             model: openAiModel,
             store: false,
             max_output_tokens: 1400,
-            instructions: "Ты — FREEzzz AI, персональный русскоязычный ассистент владельца FREEzzz Portal. Отвечай на языке пользователя, по умолчанию на русском. Помогай с программированием, проектированием, анализом и созданием контента. Будь точным, разделяй проверенные факты и предположения, не выдумывай выполненные действия, доступ к файлам, новости или результаты инструментов. У тебя нет автоматического доступа к другим модулям портала, интернету, истории ChatGPT или его памяти; не утверждай обратного. Если нужна актуальная информация или внешнее действие, прямо сообщи об ограничении. Не запрашивай секреты и ключи API.",
+            instructions: "Ты — FREEzzz AI, персональный русскоязычный ассистент владельца FREEzzz Portal. Отвечай на языке пользователя, по умолчанию на русском. Помогай с программированием, проектированием, анализом и созданием контента. Будь точным, разделяй проверенные факты и предположения, не выдумывай выполненные действия, доступ к файлам, новости или результаты инструментов. Ты получаешь только явно включённый пользователем ограниченный контекст портала: активный раздел, язык интерфейса, список модулей и версию сборки. Это не даёт доступа к содержимому модулей, файлам, переписке, профилю или личным данным. Не утверждай обратного. Если нужна актуальная информация или внешнее действие, прямо сообщи об ограничении. Не запрашивай секреты и ключи API." + (portalContext ? "\\n\\nОграниченный контекст портала: " + JSON.stringify(portalContext) : ""),
             input: messages
           }),
           signal: AbortSignal.timeout(65000)
