@@ -221,3 +221,26 @@ assert.ok(homeGridShift.includes('["0", "1", "2"]') && homeGridShift.includes("n
   "Legacy HOME and both module pages must be merged without duplicate tile IDs");
 assert.ok(homeGridShift.includes('source["1"] = { order: mergedOrder, sizes: {}, skins: mergedSkins }') && homeGridShift.includes("if (migratedLegacyLayouts) commit();"),
   "Migration must preserve custom order and skins, reset stale sizes, and persist the new layout");
+
+
+const homePagerStyles = readFileSync("src/styles.css", "utf8");
+const canonicalPager = homePagerStyles.slice(homePagerStyles.lastIndexOf("/* HOME / MODULES — canonical two-page pager"));
+assert.ok(canonicalPager.includes("display:flex!important;") && canonicalPager.includes("flex-direction:column!important;"),
+  "HOME pager must have one bounded vertical stack for pager and page controls");
+assert.ok(canonicalPager.includes("overflow:hidden!important;") && canonicalPager.includes("flex:1 1 auto!important;"),
+  "Horizontal pager track must clip adjacent pages while filling the available viewport");
+assert.ok(canonicalPager.includes("flex:0 0 100%!important;") && canonicalPager.includes("min-width:100%!important;"),
+  "HOME and MODULES must occupy one full viewport each, never share a row as visible columns");
+assert.ok(canonicalPager.includes("overflow-y:auto!important;") && canonicalPager.includes("overscroll-behavior-y:contain!important;") &&
+  canonicalPager.includes("-webkit-overflow-scrolling:touch!important;"),
+  "HOME and MODULES must each own an independent touch-friendly vertical scroll container");
+assert.ok(canonicalPager.includes("height:auto!important;") && canonicalPager.includes("overflow:visible!important;") &&
+  canonicalPager.includes("grid-auto-rows:clamp(112px,17dvh,136px)!important;"),
+  "Both page grids must grow to their content rather than clipping cards at viewport height");
+assert.ok(canonicalPager.includes("grid-template-columns:repeat(2,minmax(0,1fr))!important;"),
+  "Mobile cards must use a readable two-column layout");
+assert.ok(canonicalPager.includes("display:flex!important;") && canonicalPager.includes("flex:0 0 38px!important;"),
+  "HOME and MODULES pager controls must remain visible and usable");
+assert.ok(!homePagerStyles.includes("/* HOME FIX: each horizontal screen is a fixed viewport; dense 4-column tiles must never scroll vertically. */"),
+  "Obsolete fixed-height HOME pager rules must be removed");
+console.log("HOME_MODULES_INDEPENDENT_SCROLL_SMOKE_OK");
