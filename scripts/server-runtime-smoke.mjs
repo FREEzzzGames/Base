@@ -46,6 +46,8 @@ assert.ok(economy.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized eco
 assert.ok(legacyTelegram.includes("TELEGRAM_CLIENT_API_SECRET"), "legacy Telegram service must fail closed without an API secret");
 assert.ok(legacyTelegram.includes("timingSafeEqual"), "legacy Telegram service must compare API secrets in constant time");
 assert.ok(live.includes("function normalizeCreator(input,allowRegion=false)"), "public creator suggestions must not self-assign region");
+assert.ok(!live.includes('if(platform==="youtube"&&!creator.region'), "self-reported YouTube country must not silently become an admin-verified ranking region");
+assert.ok(live.includes("Only admin-assigned regions are ranked."), "monthly ranking methodology must disclose the admin-only region requirement");
 assert.ok(live.includes("normalizeCreator(body,true)"), "only the admin creator route may assign a region directly");
 
 console.log("SERVER_RUNTIME_SMOKE_OK");
