@@ -62,6 +62,16 @@ type View = PortalView;
 type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
+const aiPortalModules = ["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI"] as const;
+window.addEventListener("message", event => {
+  if (event.origin !== window.location.origin || event.data?.type !== "FREEZZ_AI_READY") return;
+  const frame = document.querySelector<HTMLIFrameElement>(".freezzz-ai-frame");
+  if (!frame?.contentWindow || event.source !== frame.contentWindow) return;
+  frame.contentWindow.postMessage({
+    type: "FREEZZ_AI_CONTEXT",
+    payload: { activeModule: view.toUpperCase(), language: lang, modules: aiPortalModules, build: PORTAL_BUILD_ID }
+  }, window.location.origin);
+});;
 const overlayRoute=new URLSearchParams(window.location.search).get("freezzzOverlay");
 const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : "home";
 const initialPlatformState=createPlatformState({view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp())});
