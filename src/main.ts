@@ -64,15 +64,15 @@ type Language="RU"|"DE"|"EN";
 const app=document.querySelector<HTMLDivElement>("#app")!;
 const overlayRoute=new URLSearchParams(window.location.search).get("freezzzOverlay");
 const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : "home";
-const portalState=createPlatformState({view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp())});
+const initialPlatformState=createPlatformState({view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp())});
 const portalEvents=new PortalEventBus();
 const moduleManager=new PortalModuleManager();
-const zenithKernel=new ZenithOSKernel({modules:moduleManager,initial:{view:initialView,language:"RU",telegram:Boolean(getTelegramWebApp()),online:portalState.online}});
+const zenithKernel=new ZenithOSKernel({modules:moduleManager,initial:{view:initialView,language:"RU",telegram:initialPlatformState.telegram,online:initialPlatformState.online}});
 moduleManager.setErrorHandler((moduleView,phase,error)=>{
   console.error("[FREEzzz module lifecycle]",moduleView,phase,error);
 });
 let view:View=initialView;
-let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return portalState.language;})();
+let lang:Language=(()=>{try{const saved=localStorage.getItem("freezzz:language");if(saved==="RU"||saved==="DE"||saved==="EN")return saved;}catch{}return "RU";})();
 const T=(key:string)=>pt(lang,key);
 try{document.documentElement.lang=lang.toLowerCase();}catch{}
 function safeModuleContent(moduleView:Exclude<PortalView,"home">,renderContent:()=>string,fallbackOverride?:string):string{
@@ -93,6 +93,7 @@ try{
     else if(code.startsWith("EN"))lang="EN";
   }
 }catch{ /* WebView storage may be disabled; keep the default language. */ }
+zenithKernel.setLanguage(lang);
 let portalProfile:PortalProfile=loadPortalProfile(verifiedTelegramIdentity);
 syncPortalIdentity(portalProfile,verifiedTelegramIdentity);
 startPortalSession(portalProfile);
@@ -858,12 +859,11 @@ portalEvents.on("navigation:changed",payload=>{
   }
   flushActivityTracking();
   view=zenithKernel.snapshot.view;
-  portalState.view=view;
   render();
 });
 window.addEventListener("resize",()=>{ if(view==="home")render(); });
-window.addEventListener("online",()=>{portalState.online=true;zenithKernel.patchSystemState({online:true});});
-window.addEventListener("offline",()=>{portalState.online=false;zenithKernel.patchSystemState({online:false});});
+window.addEventListener("online",()=>zenithKernel.patchSystemState({online:true}));
+window.addEventListener("offline",()=>zenithKernel.patchSystemState({online:false}));
 window.setInterval(()=>flushActivityTracking(),15000);
 window.setInterval(updateHomeClock,1000);
 window.addEventListener("pagehide",()=>{flushActivityTracking();gameActivityStartedAt=null;liveActivityStartedAt=null;liveActivityNames.clear();radioActivityStartedAt=null;radioActivityName="";});
@@ -1066,7 +1066,6 @@ function bind(){
       if(next!=="RU"&&next!=="DE"&&next!=="EN")return;
       if(lang===next){languageMenuOpen=false;render();return;}
       lang=next;
-      portalState.language=next;
       zenithKernel.setLanguage(next);
       languageMenuOpen=false;
       try{localStorage.setItem("freezzz:language",next);}catch{}
