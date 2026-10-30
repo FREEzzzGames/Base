@@ -1,7 +1,7 @@
 type Tile = HTMLElement;
 type Size = "s" | "m" | "l";
 type Layout = { order: string[]; sizes: Record<string, Size>; skins: Record<string, number> };
-const STORAGE_KEY = "freezzz:home-free-layout:v2";
+const STORAGE_KEY = "freezzz:home-free-layout:v3";
 const SIZES: Size[] = ["s", "m", "l"];
 const SKINS = [
   { background: "linear-gradient(135deg,#11151b,#252b35)", border: "#66fcf1", color: "#f3f4f6" },
@@ -14,7 +14,7 @@ const SKINS = [
 const keyOf = (tile: Tile) => tile.dataset.portalBlock || tile.dataset.portalCard || "";
 const defaultSizeOf = (tile: Tile): Size => {
   const key = keyOf(tile);
-  return ["hero", "chat", "notable-people", "townscaper", "shadowos", "electronics-lab"].includes(key) ? "m" : "s";
+  return key === "hero" ? "m" : "s";
 };
 function readLayouts(): Record<string, Layout> {
   try {
