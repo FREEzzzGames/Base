@@ -2,6 +2,7 @@ import "./freezzz-ai.css";
 
 type ChatRole = "user" | "assistant";
 type ChatMessage = { role: ChatRole; content: string };
+type PortalContext = { activeModule: string; language: "RU" | "DE" | "EN"; modules: string[]; build: string };
 declare global {
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
@@ -19,6 +20,8 @@ let busy = false;
 let statusLabel = "ПРОВЕРКА";
 let statusState: "ok" | "warn" | "error" = "warn";
 let noticeMessage = "";
+let portalContext: PortalContext | null = null;
+let portalContextEnabled = false;
 
 function loadHistory(): ChatMessage[] {
   try {
@@ -41,7 +44,7 @@ function render() {
     '<div class="ai-empty"><div class="ai-orb">✳</div><h2>Твой персональный AI</h2><p>Помогаю исследовать, планировать, писать и разбирать задачи внутри FREEzzz Portal.</p><div class="ai-suggestions"><button type="button" data-prompt="Помоги спланировать мои текущие проекты в FREEzzz Portal.">Разобрать проекты</button><button type="button" data-prompt="Предложи план выпуска новостного подкаста PULSE на сегодня.">Подготовить PULSE</button><button type="button" data-prompt="Объясни сложную технологическую тему простым языком.">Объяснить тему</button></div></div>';
   root!.innerHTML = `
     <section class="ai-shell">
-      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
+      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="false">КОНТЕКСТ ВЫКЛ</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
       <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
@@ -58,6 +61,18 @@ function render() {
   root!.querySelector<HTMLFormElement>("[data-ai-form]")!.addEventListener("submit", event => {
     event.preventDefault();
     void sendMessage();
+  });
+  root!.querySelector<HTMLButtonElement>("[data-context-toggle]")!.addEventListener("click", () => {
+    if (!portalContext) { setNotice("Контекст портала пока не получен. Перезапусти модуль FREEzzz AI."); return; }
+    portalContextEnabled = !portalContextEnabled;
+    const toggle = root!.querySelector<HTMLButtonElement>("[data-context-toggle]");
+    if (toggle) {
+      toggle.textContent = portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ";
+      toggle.setAttribute("aria-pressed", String(portalContextEnabled));
+    }
+    setNotice(portalContextEnabled
+      ? "Контекст включён: AI получит активный раздел, язык и список модулей. Личные данные и содержимое чатов не передаются."
+      : "Контекст выключен. В запросы отправляется только диалог.");
   });
   root!.querySelector<HTMLButtonElement>("[data-new-chat]")!.addEventListener("click", () => {
     messages = [];
@@ -136,7 +151,7 @@ async function sendMessage() {
     const response = await fetch(API_BASE + "/api/ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Telegram-Init-Data": initData },
-      body: JSON.stringify({ messages: messages.slice(-12) }),
+      body: JSON.stringify({ messages: messages.slice(-12), ...(portalContextEnabled && portalContext ? { portalContext } : {}) }),
       credentials: "omit",
       cache: "no-store",
       signal: AbortSignal.timeout(70000)
@@ -167,6 +182,23 @@ async function sendMessage() {
     render();
   }
 }
+
+window.addEventListener("message", event => {
+  if (event.origin !== window.location.origin || event.data?.type !== "FREEZZ_AI_CONTEXT") return;
+  const value = event.data.payload as Partial<PortalContext> | undefined;
+  if (!value || typeof value.activeModule !== "string" ||
+      !["RU", "DE", "EN"].includes(String(value.language)) ||
+      !Array.isArray(value.modules) || value.modules.length > 12 ||
+      !value.modules.every(item => typeof item === "string" && item.length <= 16) ||
+      typeof value.build !== "string" || value.build.length > 80) return;
+  portalContext = {
+    activeModule: value.activeModule.slice(0, 16),
+    language: value.language as PortalContext["language"],
+    modules: value.modules.slice(),
+    build: value.build
+  };
+});
+window.parent.postMessage({ type: "FREEZZ_AI_READY" }, window.location.origin);
 
 window.Telegram?.WebApp?.ready?.();
 window.Telegram?.WebApp?.expand?.();
