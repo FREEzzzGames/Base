@@ -10820,3 +10820,60 @@ button:disabled,[aria-disabled="true"]{
 @media(prefers-reduced-motion:reduce){
   .home-portal[data-home-pager] .home-screen-track{transition:none!important}
 }
+
+
+/* HOME PAGER — enforce viewport geometry at the actual DOM depth.
+   The workspace is a two-column shell (rail + content); the pager itself
+   must never inherit a two-column layout from legacy HOME grid rules. */
+html body #app .app-shell .portal-workspace.portal-home-workspace > main > .content.home-portal[data-home-pager]{
+  display:flex!important;
+  flex-flow:column nowrap!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+}
+html body #app .app-shell .portal-workspace.portal-home-workspace > main > .content.home-portal[data-home-pager] > .home-screen-track{
+  display:flex!important;
+  flex:1 1 0%!important;
+  flex-flow:row nowrap!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+}
+html body #app .app-shell .portal-workspace.portal-home-workspace > main > .content.home-portal[data-home-pager] > .home-screen-track > .home-screen-page{
+  display:block!important;
+  position:relative!important;
+  flex:0 0 100%!important;
+  flex-shrink:0!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  box-sizing:border-box!important;
+}
+html body #app .app-shell .portal-workspace.portal-home-workspace > main > .content.home-portal[data-home-pager] > .home-screen-track > .home-screen-page > .home-screen-grid{
+  display:grid!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow:visible!important;
+  align-content:start!important;
+}

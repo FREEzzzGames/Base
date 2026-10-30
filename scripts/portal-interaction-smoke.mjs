@@ -244,3 +244,19 @@ assert.ok(canonicalPager.includes("display:flex!important;") && canonicalPager.i
 assert.ok(!homePagerStyles.includes("/* HOME FIX: each horizontal screen is a fixed viewport; dense 4-column tiles must never scroll vertically. */"),
   "Obsolete fixed-height HOME pager rules must be removed");
 console.log("HOME_MODULES_INDEPENDENT_SCROLL_SMOKE_OK");
+
+
+const pagerMarkup = main.slice(main.indexOf('if(view==="home"){'), main.indexOf('if(view==="home"){') + 18000);
+assert.ok(pagerMarkup.includes('<div class="content portal-layout home-portal" data-portal-layout="home" data-home-pager>'),
+  "HOME pager root must match the production workspace structure");
+assert.ok(pagerMarkup.includes('<div class="home-screen-track" data-home-screen-track>') &&
+  (pagerMarkup.match(/class="home-screen-page/g) || []).length >= 2,
+  "HOME and MODULES must be separate full-page children of one horizontal track");
+assert.ok(styles.includes('html body #app .app-shell .portal-workspace.portal-home-workspace > main > .content.home-portal[data-home-pager] > .home-screen-track > .home-screen-page') &&
+  styles.includes('flex-shrink:0!important;') &&
+  styles.includes('min-width:100%!important;'),
+  "Production-depth HOME pager rules must prevent page flex-shrink and enforce one full viewport per page");
+assert.ok(styles.includes('> .home-screen-track{') && styles.includes('min-width:100%!important;') &&
+  styles.includes('max-width:100%!important;') && styles.includes('overflow:hidden!important;'),
+  "HOME track must be bounded to one viewport and clip the adjacent page");
+console.log("HOME_PAGER_PRODUCTION_GEOMETRY_SMOKE_OK");
