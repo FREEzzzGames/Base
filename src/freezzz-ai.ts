@@ -23,6 +23,7 @@ let statusState: "ok" | "warn" | "error" = "warn";
 let noticeMessage = "";
 let portalContext: PortalContext | null = null;
 let portalContextEnabled = false;
+let devModeEnabled = false;
 
 function loadHistory(): ChatMessage[] {
   try {
@@ -46,7 +47,7 @@ function render() {
   root!.innerHTML = `
     <section class="ai-shell">
       <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-dev-toggle" data-dev-toggle>DEV</button><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="${portalContextEnabled}">${portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ"}</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
-      <section class="ai-dev-panel" data-dev-panel hidden><div class="ai-dev-head"><b>DEVELOPER ACCESS</b><button type="button" data-dev-close>×</button></div><p data-dev-status>Не проверено</p><small data-dev-detail></small></section>
+      <section class="ai-dev-panel" data-dev-panel hidden><div class="ai-dev-head"><b>DEVELOPER ACCESS</b><button type="button" data-dev-close>×</button></div><p data-dev-status>Не проверено</p><small data-dev-detail></small><button type="button" data-dev-enable>ПОДКЛЮЧИТЬ ЧТЕНИЕ РЕПОЗИТОРИЯ</button></section>
       <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
@@ -65,6 +66,7 @@ function render() {
     void sendMessage();
   });
   root!.querySelector<HTMLButtonElement>("[data-dev-toggle]")!.addEventListener("click", () => { void checkDevStatus(); });
+  root!.querySelector<HTMLButtonElement>("[data-dev-enable]")!.addEventListener("click", () => { void enableDevMode(); });
   root!.querySelector<HTMLButtonElement>("[data-dev-close]")!.addEventListener("click", () => { const panel = root!.querySelector<HTMLElement>("[data-dev-panel]"); if (panel) panel.hidden = true; });
   root!.querySelector<HTMLButtonElement>("[data-context-toggle]")!.addEventListener("click", () => {
     if (!portalContext) { setNotice("Контекст портала пока не получен. Перезапусти модуль FREEzzz AI."); return; }
@@ -130,14 +132,14 @@ async function checkService() {
     setNotice("Не удалось связаться с FREEzzz backend. Проверь адрес сервиса и его состояние.");
   }
 }
-async function checkDevStatus() {
+async function checkDevStatus(): Promise<boolean> {
   const panel = root!.querySelector<HTMLElement>("[data-dev-panel]");
   const status = root!.querySelector<HTMLElement>("[data-dev-status]");
   const detail = root!.querySelector<HTMLElement>("[data-dev-detail]");
-  if (!panel || !status || !detail) return;
+  if (!panel || !status || !detail) return false;
   panel.hidden = false; status.textContent = "Проверяю GitHub…"; detail.textContent = "";
   const initData = window.Telegram?.WebApp?.initData || "";
-  if (!initData) { status.textContent = "Открой портал внутри Telegram."; return; }
+  if (!initData) { status.textContent = "Открой портал внутри Telegram."; return false; }
   try {
     const response = await fetch(API_BASE + "/api/dev/repo/status", {
       headers: { "X-Telegram-Init-Data": initData }, credentials: "omit",
@@ -148,15 +150,27 @@ async function checkDevStatus() {
     if (!data.configured) {
       status.textContent = "GITHUB_TOKEN не найден на сервере.";
       detail.textContent = "Добавь GITHUB_TOKEN в Render Environment и дождись перезапуска backend.";
-      return;
+      return false;
     }
     status.textContent = "GitHub подключён · " + (data.repository || "FREEzzzGames/Base");
     detail.textContent = "Ветка: " + (data.defaultBranch || "main") + " · " +
       (data.permissions?.push ? "read/write" : data.permissions?.pull ? "read-only" : "доступ ограничен");
+    return Boolean(data.permissions?.pull || data.permissions?.push);
   } catch (error) {
     status.textContent = "Проверка не пройдена.";
     detail.textContent = error instanceof Error ? error.message : "DEV_ACCESS_FAILED";
+    return false;
   }
+}
+async function enableDevMode() {
+  const enabled = await checkDevStatus();
+  if (!enabled) return;
+  devModeEnabled = !devModeEnabled;
+  const button = root!.querySelector<HTMLButtonElement>("[data-dev-enable]");
+  if (button) button.textContent = devModeEnabled ? "ОТКЛЮЧИТЬ ЧТЕНИЕ РЕПОЗИТОРИЯ" : "ПОДКЛЮЧИТЬ ЧТЕНИЕ РЕПОЗИТОРИЯ";
+  setNotice(devModeEnabled
+    ? "DEV включён. К запросам AI будет добавляться ограниченная выборка файлов FREEzzzGames/Base. Доступ только на чтение."
+    : "Чтение репозитория отключено.");
 }
 
 async function sendMessage() {
@@ -184,7 +198,7 @@ async function sendMessage() {
     const response = await fetch(API_BASE + "/api/ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Telegram-Init-Data": initData },
-      body: JSON.stringify({ messages: messages.slice(-12), ...(portalContextEnabled && portalContext ? { portalContext } : {}) }),
+      body: JSON.stringify({ messages: messages.slice(-12), ...(portalContextEnabled && portalContext ? { portalContext } : {}), ...(devModeEnabled ? { devMode: true } : {}) }),
       credentials: "omit",
       cache: "no-store",
       signal: AbortSignal.timeout(70000)
@@ -197,7 +211,11 @@ async function sendMessage() {
         AI_ACCESS_DENIED: "Этот AI-модуль доступен только владельцу портала.",
         TELEGRAM_AUTH_REQUIRED: "Не удалось подтвердить Telegram-сессию. Перезапусти Mini App.",
         RATE_LIMITED: "Слишком много запросов. Подожди минуту.",
-        OPENAI_UPSTREAM_ERROR: "AI-провайдер временно не ответил. Повтори запрос позже."
+        OPENAI_UPSTREAM_ERROR: "AI-провайдер временно не ответил. Повтори запрос позже.",
+        GITHUB_NOT_CONFIGURED: "GitHub не настроен на сервере.",
+        GITHUB_API_ERROR: "GitHub API отклонил запрос. Проверь права токена.",
+        GITHUB_RESOURCE_NOT_FOUND: "Один из файлов репозитория не найден.",
+        REPO_CONTEXT_EMPTY: "Не удалось прочитать файлы репозитория."
       };
       throw new Error(errors[data.error || ""] || data.error || "AI_REQUEST_FAILED");
     }
