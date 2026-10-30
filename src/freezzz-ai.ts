@@ -3,6 +3,7 @@ import "./freezzz-ai.css";
 type ChatRole = "user" | "assistant";
 type ChatMessage = { role: ChatRole; content: string };
 type PortalContext = { activeModule: string; language: "RU" | "DE" | "EN"; modules: string[]; build: string };
+type DevStatus = { ok?: boolean; configured?: boolean; repository?: string; defaultBranch?: string; private?: boolean; permissions?: { pull?: boolean; push?: boolean }; error?: string };
 declare global {
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
@@ -44,7 +45,8 @@ function render() {
     '<div class="ai-empty"><div class="ai-orb">✳</div><h2>Твой персональный AI</h2><p>Помогаю исследовать, планировать, писать и разбирать задачи внутри FREEzzz Portal.</p><div class="ai-suggestions"><button type="button" data-prompt="Помоги спланировать мои текущие проекты в FREEzzz Portal.">Разобрать проекты</button><button type="button" data-prompt="Предложи план выпуска новостного подкаста PULSE на сегодня.">Подготовить PULSE</button><button type="button" data-prompt="Объясни сложную технологическую тему простым языком.">Объяснить тему</button></div></div>';
   root!.innerHTML = `
     <section class="ai-shell">
-      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="${portalContextEnabled}">${portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ"}</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
+      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-dev-toggle" data-dev-toggle>DEV</button><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="${portalContextEnabled}">${portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ"}</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
+      <section class="ai-dev-panel" data-dev-panel hidden><div class="ai-dev-head"><b>DEVELOPER ACCESS</b><button type="button" data-dev-close>×</button></div><p data-dev-status>Не проверено</p><small data-dev-detail></small></section>
       <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
@@ -62,6 +64,8 @@ function render() {
     event.preventDefault();
     void sendMessage();
   });
+  root!.querySelector<HTMLButtonElement>("[data-dev-toggle]")!.addEventListener("click", () => { void checkDevStatus(); });
+  root!.querySelector<HTMLButtonElement>("[data-dev-close]")!.addEventListener("click", () => { const panel = root!.querySelector<HTMLElement>("[data-dev-panel]"); if (panel) panel.hidden = true; });
   root!.querySelector<HTMLButtonElement>("[data-context-toggle]")!.addEventListener("click", () => {
     if (!portalContext) { setNotice("Контекст портала пока не получен. Перезапусти модуль FREEzzz AI."); return; }
     portalContextEnabled = !portalContextEnabled;
@@ -126,6 +130,35 @@ async function checkService() {
     setNotice("Не удалось связаться с FREEzzz backend. Проверь адрес сервиса и его состояние.");
   }
 }
+async function checkDevStatus() {
+  const panel = root!.querySelector<HTMLElement>("[data-dev-panel]");
+  const status = root!.querySelector<HTMLElement>("[data-dev-status]");
+  const detail = root!.querySelector<HTMLElement>("[data-dev-detail]");
+  if (!panel || !status || !detail) return;
+  panel.hidden = false; status.textContent = "Проверяю GitHub…"; detail.textContent = "";
+  const initData = window.Telegram?.WebApp?.initData || "";
+  if (!initData) { status.textContent = "Открой портал внутри Telegram."; return; }
+  try {
+    const response = await fetch(API_BASE + "/api/dev/repo/status", {
+      headers: { "X-Telegram-Init-Data": initData }, credentials: "omit",
+      cache: "no-store", signal: AbortSignal.timeout(15000)
+    });
+    const data = await response.json() as DevStatus;
+    if (!response.ok) throw new Error(data.error || "DEV_ACCESS_FAILED");
+    if (!data.configured) {
+      status.textContent = "GITHUB_TOKEN не найден на сервере.";
+      detail.textContent = "Добавь GITHUB_TOKEN в Render Environment и дождись перезапуска backend.";
+      return;
+    }
+    status.textContent = "GitHub подключён · " + (data.repository || "FREEzzzGames/Base");
+    detail.textContent = "Ветка: " + (data.defaultBranch || "main") + " · " +
+      (data.permissions?.push ? "read/write" : data.permissions?.pull ? "read-only" : "доступ ограничен");
+  } catch (error) {
+    status.textContent = "Проверка не пройдена.";
+    detail.textContent = error instanceof Error ? error.message : "DEV_ACCESS_FAILED";
+  }
+}
+
 async function sendMessage() {
   if (busy) return;
   const input = root!.querySelector<HTMLTextAreaElement>("[data-ai-input]")!;
