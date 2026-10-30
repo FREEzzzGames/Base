@@ -9,6 +9,8 @@ const html = readFileSync("dist/index.html", "utf8");
 const footpulse = readFileSync("dist/footpulse.html", "utf8");
 const voiceStudio = readFileSync("dist/voice-studio.html", "utf8");
 const voiceCard = readFileSync("dist/voice-studio-card.js", "utf8");
+const cssAsset = assets.find(file => /\\.css$/i.test(file));
+const css = cssAsset ? readFileSync("dist/assets/" + cssAsset, "utf8") : "";
 const version = JSON.parse(readFileSync("dist/version.json", "utf8"));
 const assets = existsSync("dist/assets") ? readdirSync("dist/assets") : [];
 
