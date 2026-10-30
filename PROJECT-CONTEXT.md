@@ -203,3 +203,11 @@ This document is project context, not a replacement for the actual implementatio
 - Current first-release scope: authenticated text chat, local browser chat history, bounded context, and configurable model. It does not yet have automatic access to portal files, modules, live web search, or ChatGPT account memory.
 - The default backend model is `gpt-6-luna`; it can be changed through the server-side `OPENAI_MODEL` environment variable.
 - Activation requires configuring the API key in Render. Deployment and live Telegram verification must be checked independently.
+
+
+## 2026-10-30 FREEzzz AI context integration
+
+- FREEzzz AI remains isolated in its own iframe and backend gateway.
+- A same-origin postMessage handshake provides optional, consent-based portal metadata: active route, interface language, module names, and build identifier.
+- Context sharing is disabled by default. The server validates all metadata against an allowlist.
+- The bridge does not grant access to module contents, Telegram messages, profile data, files, or arbitrary portal actions. Deeper integration requires narrow, separately authorized module APIs.
