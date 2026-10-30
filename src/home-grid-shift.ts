@@ -87,7 +87,7 @@ export function bindHomeGridShift(root: HTMLElement) {
     grids.forEach((grid, index) => {
       copy[String(index)] = {
         order: [...grid.children].filter((node): node is Tile => node instanceof HTMLElement && node.hasAttribute("data-portal-block")).sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(keyOf),
-        sizes: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size])),
+        sizes: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), (tile.dataset.gridSize || defaultSizeOf(tile)) as Size])),
         skins: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), Number(tile.dataset.gridSkin || 0)]))
       };
     });
@@ -98,7 +98,7 @@ export function bindHomeGridShift(root: HTMLElement) {
       const tiles = tilesByPage[index];
       layouts[String(index)] = {
         order: [...tiles].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(keyOf),
-        sizes: Object.fromEntries(tiles.map(tile=>[keyOf(tile),(tile.dataset.gridSize||"m") as Size])),
+        sizes: Object.fromEntries(tiles.map(tile=>[keyOf(tile),(tile.dataset.gridSize||defaultSizeOf(tile)) as Size])),
         skins: Object.fromEntries(tiles.map(tile=>[keyOf(tile),Number(tile.dataset.gridSkin||0)]))
       };
     });
