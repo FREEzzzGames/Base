@@ -211,3 +211,12 @@ This document is project context, not a replacement for the actual implementatio
 - A same-origin postMessage handshake provides optional, consent-based portal metadata: active route, interface language, module names, and build identifier.
 - Context sharing is disabled by default. The server validates all metadata against an allowlist.
 - The bridge does not grant access to module contents, Telegram messages, profile data, files, or arbitrary portal actions. Deeper integration requires narrow, separately authorized module APIs.
+
+
+## 2026-10-30 FREEzzz AI developer gateway
+
+- Added owner-authenticated GitHub repository status, tree and bounded file-read routes, fixed to FREEzzzGames/Base.
+- GitHub credential is read only from Render GITHUB_TOKEN; it is never returned to the browser.
+- Added DEV panel to check live credential validity and repository permissions from Telegram.
+- Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
+- Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.

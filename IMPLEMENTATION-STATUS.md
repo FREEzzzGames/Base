@@ -197,3 +197,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Backend validates context against a fixed allowlist before including it in OpenAI instructions.
 - No module contents, Telegram chats, profile data, files, credentials, or private records are exposed.
 - This is read-only navigation/context integration, not general module execution or file access.
+
+
+## 2026-10-30 FREEzzz AI developer gateway
+
+- Added owner-authenticated GitHub repository status, tree and bounded file-read routes, fixed to FREEzzzGames/Base.
+- GitHub credential is read only from Render GITHUB_TOKEN; it is never returned to the browser.
+- Added DEV panel to check live credential validity and repository permissions from Telegram.
+- Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
+- Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.
