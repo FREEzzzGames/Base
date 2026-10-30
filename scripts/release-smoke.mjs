@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-const required = ["dist/index.html", "dist/version.json", "dist/footpulse.html", "dist/voice-studio.html", "dist/voice-studio-card.js"];
+const required = ["dist/index.html", "dist/version.json", "dist/footpulse.html", "dist/voice-studio.html", "dist/voice-studio-card.js", "dist/freezzz-ai.html"];
 for (const file of required) {
   if (!existsSync(file)) throw new Error("Missing release artifact: " + file);
 }
@@ -9,6 +9,7 @@ const html = readFileSync("dist/index.html", "utf8");
 const footpulse = readFileSync("dist/footpulse.html", "utf8");
 const voiceStudio = readFileSync("dist/voice-studio.html", "utf8");
 const voiceCard = readFileSync("dist/voice-studio-card.js", "utf8");
+const freezzzAi = readFileSync("dist/freezzz-ai.html", "utf8");
 const version = JSON.parse(readFileSync("dist/version.json", "utf8"));
 const assets = existsSync("dist/assets") ? readdirSync("dist/assets") : [];
 const cssAsset = assets.find(file => /\.css$/i.test(file));
@@ -37,6 +38,10 @@ if (!voiceStudio.includes('id="generate"') || !voiceStudio.includes('id="downloa
 if (!voiceStudio.includes("https://newsportv-voice-api.onrender.com")) throw new Error("Voice Studio API origin is missing.");
 if (!voiceCard.includes("data-home-grid=\"1\"") || !voiceCard.includes("./voice-studio.html")) throw new Error("Voice Studio HOME catalog card is invalid.");
 
+// FREEzzz AI must ship as a separately built entry, not only as an iframe reference.
+if (!freezzzAi.includes("freezzz-ai") || !/<script[^>]+type="module"[^>]+src=/i.test(freezzzAi)) throw new Error("FREEzzz AI production entry is missing.");
+if (!freezzzAi.includes("stylesheet")) throw new Error("FREEzzz AI stylesheet is missing.");
+
 // The removed SPARK game must not be shipped in the portal build.
 if (readdirSync("dist").some(file => /^spark(?:-|\.)/i.test(file))) {
   throw new Error("Obsolete SPARK runtime artifact leaked into production.");
@@ -46,6 +51,6 @@ console.log("RELEASE_SMOKE_OK", JSON.stringify({
   build: version.build,
   version: version.version,
   assets: assets.length,
-  checkedPages: ["index.html", "footpulse.html", "voice-studio.html"],
+  checkedPages: ["index.html", "footpulse.html", "voice-studio.html", "freezzz-ai.html"],
   obsoleteSparkArtifacts: 0
 }));

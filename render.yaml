@@ -30,3 +30,9 @@ services:
         value: "4"
       - key: LIVE_DATA_PATH
         value: /tmp/freezzz-live-data.json
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-6-luna
+      - key: AI_ALLOWED_TELEGRAM_USER_ID
+        sync: false

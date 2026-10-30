@@ -1,0 +1,36 @@
+:root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#080c11;color:#e8f0f4;font-synthesis:none}
+*{box-sizing:border-box}
+html,body,#freezzz-ai-root{margin:0;width:100%;height:100%;min-height:100%;overflow:hidden;background:#080c11}
+button,textarea{font:inherit}
+button{cursor:pointer}
+.ai-shell{height:100dvh;max-width:920px;margin:0 auto;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;padding:calc(12px + env(safe-area-inset-top)) 14px calc(8px + env(safe-area-inset-bottom));gap:10px;background:radial-gradient(ellipse at 50% -25%,rgba(0,220,210,.13),transparent 55%),#080c11}
+.ai-header{display:flex;justify-content:space-between;align-items:center;padding:10px 4px 14px;border-bottom:1px solid rgba(102,252,241,.2)}
+.ai-eyebrow{font:10px "Space Mono",monospace;letter-spacing:2px;color:#66fcf1}
+.ai-header h1{margin:5px 0 0;font-size:clamp(25px,6vw,38px);letter-spacing:.08em;font-weight:800}
+.ai-header h1 i{font-style:normal;color:#66fcf1}
+.ai-header p{margin:4px 0 0;color:#83949e;font-size:12px}
+.ai-header-actions{display:flex;align-items:center;gap:9px}
+.ai-status{font:9px "Space Mono",monospace;letter-spacing:.7px;color:#ffbf69;border:1px solid currentColor;border-radius:99px;padding:7px 9px;white-space:nowrap}
+.ai-status[data-state=ok]{color:#67e6a6}.ai-status[data-state=error]{color:#ff7777}
+.ai-new-chat{width:38px;height:38px;border:1px solid rgba(102,252,241,.35);border-radius:10px;background:#101b22;color:#66fcf1;font-size:22px}
+.ai-notice{padding:10px 12px;border:1px solid rgba(255,191,105,.35);border-radius:10px;background:rgba(255,191,105,.08);color:#f4c98f;font-size:12px;line-height:1.45}
+.ai-notice[hidden]{display:none}
+.ai-transcript{min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:14px 2px;scrollbar-width:thin;scrollbar-color:#25424b transparent}
+.ai-message{max-width:88%;padding:11px 13px;border:1px solid rgba(125,150,165,.16);border-radius:13px;background:#101820;align-self:flex-start}
+.ai-message.user{align-self:flex-end;background:#10252a;border-color:rgba(102,252,241,.23)}
+.ai-message-role{display:block;margin-bottom:6px;color:#66fcf1;font:9px "Space Mono",monospace;letter-spacing:1.2px}
+.ai-message.user .ai-message-role{color:#b0c1c7}
+.ai-message p{margin:0;color:#e0e8eb;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.ai-empty{margin:auto;max-width:460px;text-align:center;padding:18px 8px}
+.ai-orb{width:62px;height:62px;margin:0 auto 15px;display:grid;place-items:center;border:1px solid rgba(102,252,241,.5);border-radius:20px;color:#66fcf1;font-size:30px;box-shadow:0 0 35px rgba(102,252,241,.12)}
+.ai-empty h2{margin:0 0 8px;font-size:20px}.ai-empty p{margin:0 auto 18px;color:#8fa0aa;font-size:13px;line-height:1.5}
+.ai-suggestions{display:grid;grid-template-columns:1fr;gap:7px}
+.ai-suggestions button{min-height:38px;padding:8px 12px;border:1px solid rgba(102,252,241,.2);border-radius:9px;background:#0e171d;color:#c5d4d9;font-size:12px;text-align:left}
+.ai-composer{display:flex;align-items:flex-end;gap:8px;padding:8px;border:1px solid rgba(102,252,241,.24);border-radius:14px;background:#0e171d}
+.ai-composer textarea{flex:1;min-width:0;max-height:130px;resize:vertical;border:0;outline:0;background:transparent;color:#f2f6f7;padding:9px 7px;font-size:14px;line-height:1.4}
+.ai-composer textarea::placeholder{color:#6f818b}
+.ai-composer button{width:42px;height:42px;flex:0 0 42px;border:0;border-radius:10px;background:#66fcf1;color:#071012;font-size:22px;font-weight:800}
+.ai-composer button:disabled{opacity:.5}
+.ai-footer{display:flex;justify-content:space-between;gap:8px;color:#53636c;font:8px "Space Mono",monospace;letter-spacing:.6px}
+@media(min-width:650px){.ai-shell{padding-left:24px;padding-right:24px}.ai-suggestions{grid-template-columns:repeat(3,minmax(0,1fr))}.ai-suggestions button{min-height:58px}}
+@media(max-width:380px){.ai-header p{font-size:10px}.ai-status{font-size:8px;padding:6px}.ai-new-chat{width:34px;height:34px}.ai-message{max-width:94%}}

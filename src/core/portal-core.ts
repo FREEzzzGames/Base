@@ -1,7 +1,7 @@
-export type PortalView = "home"|"live"|"chat"|"game"|"radio"|"library"|"echo9";
+export type PortalView = "home"|"live"|"chat"|"game"|"radio"|"library"|"echo9"|"ai";
 
 export interface PortalModuleDefinition{
-  readonly id:"LIVE"|"CHAT"|"GAME"|"RADIO"|"LIBRARY"|"ECHO9";
+  readonly id:"LIVE"|"CHAT"|"GAME"|"RADIO"|"LIBRARY"|"ECHO9"|"AI";
   readonly view:Exclude<PortalView,"home">;
   readonly independent:boolean;
 }
@@ -12,7 +12,8 @@ export const PORTAL_MODULES:readonly PortalModuleDefinition[]=[
   {id:"GAME",view:"game",independent:true},
   {id:"RADIO",view:"radio",independent:true},
   {id:"LIBRARY",view:"library",independent:true},
-  {id:"ECHO9",view:"echo9",independent:true}
+  {id:"ECHO9",view:"echo9",independent:true},
+  {id:"AI",view:"ai",independent:true}
 ];
 
 export type PortalEventMap={

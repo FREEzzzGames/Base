@@ -191,3 +191,15 @@ This document is project context, not a replacement for the actual implementatio
 - Portal-owned ads are not added. The portal cannot guarantee the absence of advertising or commercial UI served by Radio Garden itself.
 - The Radio Browser station loader and automatic HOME preload were removed from the active route.
 - An outdated Procedural Studio smoke assertion was found to require the exact text `await Tone.loaded()`, although the current implementation correctly calls `Tone.loaded()` inside a timeout race. The assertion was changed to check `Tone.loaded()` as the capability. Re-run and verify the full release chain after this correction. Test actual iframe and external-link behavior in Telegram Android before claiming runtime compatibility.
+
+
+## 2026-10-30 FREEzzz AI integration
+
+- FREEzzz AI is an independent portal module, reachable from the primary HOME module grid.
+- The assistant UI is built as a separate Vite HTML entry and embedded in the portal route to isolate its runtime and styling from other modules.
+- The browser sends Telegram Mini App init data to the existing backend; the backend validates the user and proxies requests to the OpenAI Responses API.
+- `OPENAI_API_KEY` must exist only in the backend Render environment. Never expose it in Vite variables, client code, repository files, or browser storage.
+- The backend must also have `AI_ALLOWED_TELEGRAM_USER_ID` set to the owner's numeric Telegram user ID. The AI endpoint rejects requests from every other Telegram account and fails closed when the allowlist is absent.
+- Current first-release scope: authenticated text chat, local browser chat history, bounded context, and configurable model. It does not yet have automatic access to portal files, modules, live web search, or ChatGPT account memory.
+- The default backend model is `gpt-6-luna`; it can be changed through the server-side `OPENAI_MODEL` environment variable.
+- Activation requires configuring the API key in Render. Deployment and live Telegram verification must be checked independently.

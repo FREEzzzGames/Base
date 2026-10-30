@@ -168,3 +168,14 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - **Release verification pending:** the Pages workflow is currently blocked before typecheck/build by the existing Procedural Studio smoke assertion `Missing expected audio/project capability: await Tone.loaded()`. The Radio Garden embed itself still requires runtime verification in Telegram Android; external-site framing policy may prevent iframe playback. No claim of a successful deployment is made.
 
 - Follow-up: the Procedural Studio smoke assertion was updated to check for `Tone.loaded()` rather than requiring the exact spelling `await Tone.loaded()`; the runtime uses `Tone.loaded()` inside a timeout race. The new Pages run must still verify typecheck/build/deployment.
+
+
+## 2026-10-30 FREEzzz AI assistant module
+
+- Added an independent AI route and a dedicated mobile-first chat entry to the portal HOME workspace.
+- Added a separate Vite entry for the assistant UI; chat history is stored locally in the user's browser and sent only as the recent conversation context.
+- Added an authenticated backend gateway to the OpenAI Responses API. Telegram Web App init data is validated server-side; the OpenAI API key remains server-only and is never shipped to the browser.
+- Added request validation, context limits, provider timeout handling, no-store Responses requests, and rate-limit cost weighting.
+- Added Render environment configuration for `OPENAI_API_KEY` (secret), `OPENAI_MODEL` (default `gpt-6-luna`), and `AI_ALLOWED_TELEGRAM_USER_ID` (owner-only allowlist).
+- **Activation requirement:** set `OPENAI_API_KEY` in the existing Render service environment and deploy the updated service. AI chat remains unavailable until the secret is configured.
+- **Verification boundary:** source changes alone do not prove CI, deployment, Telegram authentication, or a successful paid API call. Verify GitHub Actions and the published Telegram Mini App after merge and backend deployment.
