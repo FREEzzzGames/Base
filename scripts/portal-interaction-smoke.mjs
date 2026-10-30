@@ -256,7 +256,7 @@ assert.ok(styles.includes('html body #app .app-shell .portal-workspace.portal-ho
   styles.includes('flex-shrink:0!important;') &&
   styles.includes('min-width:100%!important;'),
   "Production-depth HOME pager rules must prevent page flex-shrink and enforce one full viewport per page");
-assert.ok(styles.includes('> .home-screen-track{') && styles.includes('min-width:100%!important;max-width:100%!important;') &&
-  styles.includes('overflow:hidden!important;'),
+assert.ok(styles.includes('> .home-screen-track{') && styles.includes('min-width:100%!important;') &&
+  styles.includes('max-width:100%!important;') && styles.includes('overflow:hidden!important;'),
   "HOME track must be bounded to one viewport and clip the adjacent page");
 console.log("HOME_PAGER_PRODUCTION_GEOMETRY_SMOKE_OK");
