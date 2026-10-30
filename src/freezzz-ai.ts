@@ -16,6 +16,9 @@ if (!root) throw new Error("FREEZZ_AI_ROOT_MISSING");
 
 let messages: ChatMessage[] = loadHistory();
 let busy = false;
+let statusLabel = "ПРОВЕРКА";
+let statusState: "ok" | "warn" | "error" = "warn";
+let noticeMessage = "";
 
 function loadHistory(): ChatMessage[] {
   try {
@@ -38,8 +41,8 @@ function render() {
     '<div class="ai-empty"><div class="ai-orb">✳</div><h2>Твой персональный AI</h2><p>Помогаю исследовать, планировать, писать и разбирать задачи внутри FREEzzz Portal.</p><div class="ai-suggestions"><button type="button" data-prompt="Помоги спланировать мои текущие проекты в FREEzzz Portal.">Разобрать проекты</button><button type="button" data-prompt="Предложи план выпуска новостного подкаста PULSE на сегодня.">Подготовить PULSE</button><button type="button" data-prompt="Объясни сложную технологическую тему простым языком.">Объяснить тему</button></div></div>';
   root!.innerHTML = `
     <section class="ai-shell">
-      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><span class="ai-status" data-ai-status>ПРОВЕРКА</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
-      <div class="ai-notice" data-ai-notice hidden></div>
+      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
+      <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
       <footer class="ai-footer"><span>OWNER-ONLY · OPENAI API</span><span>История локальная · запросы передаются OpenAI</span></footer>
@@ -75,14 +78,17 @@ function updateControls() {
   if (button) { button.disabled = busy; button.textContent = busy ? "…" : "↗"; }
 }
 function setStatus(label: string, state: "ok" | "warn" | "error" = "warn") {
+  statusLabel = label;
+  statusState = state;
   const el = root!.querySelector<HTMLElement>("[data-ai-status]");
-  if (el) { el.textContent = label; el.dataset.state = state; }
+  if (el) { el.textContent = statusLabel; el.dataset.state = statusState; }
 }
 function setNotice(message: string) {
+  noticeMessage = message;
   const el = root!.querySelector<HTMLElement>("[data-ai-notice]");
   if (!el) return;
-  el.textContent = message;
-  el.hidden = !message;
+  el.textContent = noticeMessage;
+  el.hidden = !noticeMessage;
 }
 async function checkService() {
   if (!API_BASE) {
@@ -94,8 +100,9 @@ async function checkService() {
     const response = await fetch(API_BASE + "/health", { cache: "no-store", signal: AbortSignal.timeout(8000) });
     const data = await response.json() as { aiConfigured?: boolean; aiApiKeyConfigured?: boolean; aiUserConfigured?: boolean };
     if (!response.ok) throw new Error("BACKEND_UNAVAILABLE");
-    if (data.aiConfigured) setStatus("AI ONLINE", "ok");
-    else {
+    if (data.aiConfigured) {
+      if (!busy) { setStatus("AI ONLINE", "ok"); setNotice(""); }
+    } else if (!busy) {
       setStatus("НУЖЕН API KEY", "warn");
       setNotice("Backend доступен. Для включения личного AI добавь в Render переменные OPENAI_API_KEY и AI_ALLOWED_TELEGRAM_USER_ID (твой числовой Telegram ID).");
     }
