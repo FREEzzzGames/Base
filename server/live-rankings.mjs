@@ -229,7 +229,6 @@ async function syncAll(){
         try{
           const metrics=platform==="youtube"?await resolveYoutube(creator):await resolveTwitch(creator);
           if(metrics?.available===false)throw new Error(metrics.reason);
-          if(platform==="youtube"&&!creator.region&&REGIONS.includes(String(metrics?.country||"").toUpperCase()))creator.region=String(metrics.country).toUpperCase();
           s.snapshots.push({creatorId:creator.id,platform,observedAt:now,metrics});
           successes++;
         }catch(e){
@@ -354,7 +353,7 @@ export async function handleLiveRoute(req,res,url,origin){
     const s=await load();const platform=url.searchParams.get("platform"),region=url.searchParams.get("region"),language=url.searchParams.get("language"),category=url.searchParams.get("category"),subcategory=url.searchParams.get("subcategory");
     const filtered=(s.publishedRankings||[]).filter(x=>(!platform||x.platform===platform)&&(!region||x.region===region.toUpperCase())&&(!language||x.language===language)&&(!category||x.category===category)&&(!subcategory||x.subcategory===subcategory));
     const top=filtered.sort((a,b)=>a.region.localeCompare(b.region)||a.platform.localeCompare(b.platform)||a.language.localeCompare(b.language)||a.category.localeCompare(b.category)||a.subcategory.localeCompare(b.subcategory)||a.rank-b.rank);
-    return json(res,200,{ok:true,rankings:top,total:top.length,lastUpdated:s.publishedAt,publishedMonth:s.publishedMonth,methodology:"YouTube monthly channel-statistic growth; Twitch average live viewers sampled during the month. Region requires verified channel country or an admin-verified region.",officialOnly:false},origin);
+    return json(res,200,{ok:true,rankings:top,total:top.length,lastUpdated:s.publishedAt,publishedMonth:s.publishedMonth,methodology:"YouTube monthly channel-statistic growth; Twitch average live viewers sampled during the month. Region is assigned only through the admin-verified creator workflow.",officialOnly:false},origin);
   }
   if(req.method==="POST"&&pathname==="/api/live/creators"){
     if(!REFRESH_SECRET||req.headers["x-live-admin-key"]!==REFRESH_SECRET)return json(res,403,{ok:false,error:"ADMIN_AUTH_REQUIRED"},origin);
@@ -376,7 +375,7 @@ export async function handleLiveRoute(req,res,url,origin){
       const targetMonth=url.searchParams.get("month")||previousCompletedMonth();
       const result=publishMonthlyRankings(s,targetMonth);
       if(result.published)await persist();
-      return json(res,result.published?200:409,{...result,methodology:"Monthly YouTube subscriber/view growth and Twitch average live viewers. Only verified regions are ranked."},origin);
+      return json(res,result.published?200:409,{...result,methodology:"Monthly YouTube subscriber/view growth and Twitch average live viewers. Only admin-assigned regions are ranked."},origin);
     }catch(e){return json(res,502,{ok:false,error:String(e?.message||"LIVE_MONTHLY_PUBLISH_FAILED")},origin);}
   }
   if(req.method==="POST"&&pathname==="/api/live/refresh"){
