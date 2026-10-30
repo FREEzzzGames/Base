@@ -212,8 +212,7 @@ function requireAiOwner(user) {
 }
 function validateDevPath(value) {
   if (typeof value !== "string" || !value || value.length > 220 || value.startsWith("/") ||
-      value.split("/").some(part => !part || part === "." || part === "..") ||
-      /(^|\\/)\\.git($|\\/)|(^|\\/)node_modules($|\\/)/.test(value)) throw new Error("INVALID_REPO_PATH");
+      value.split("/").some(part => !part || part === "." || part === ".." || part === ".git" || part === "node_modules")) throw new Error("INVALID_REPO_PATH");
   return value;
 }
 async function devGitHubGet(apiPath) {
