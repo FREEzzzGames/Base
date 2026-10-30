@@ -524,13 +524,14 @@ function render(){
               ${homeCard("chat")}
               ${homeCard("radio")}
               ${homeCard("library")}
+            </div>
+          </section>
+          <section class="home-screen-page home-catalog-page" data-home-screen="1" aria-label="Каталог всех модулей">
+            <header class="home-catalog-heading"><span>MODULES / КАТАЛОГ</span><small>ALL TOOLS · CREATIVE · LABS · GAMES</small></header>
+            <div class="home-screen-grid" data-home-grid="1">
               <a class="card home-card portal-block home-studio" href="./procedural-studio.html" style="position:relative;background:linear-gradient(135deg,#071c27,#11182a);border:1px solid #20f4e7;text-decoration:none" data-portal-card="studio" data-portal-block="studio" aria-label="FREEzzz Procedural Studio"><span class="home-card-title" style="top:12px;left:12px;font-size:clamp(20px,4vw,40px)!important">FREEzzz STUDIO</span><span style="position:absolute;left:13px;bottom:12px;color:#20f4e7;font-size:11px;letter-spacing:1.5px">PROCEDURAL MUSIC · WAV EXPORT</span></a>
               ${homeModuleCard("drive-and-listen","DRIVE & LISTEN","VIRTUAL CITIES · LOCAL RADIO","./drive-and-listen.html","♫")}
               ${homeModuleCard("echo9","ECHO-9","SCI-FI · ANIMATION · STORY","./echo9.html","✧")}
-            </div>
-          </section>
-          <section class="home-screen-page" data-home-screen="1" aria-label="Инструменты и генераторы">
-            <div class="home-screen-grid" data-home-grid="1">
               ${homeModuleCard("notable-people","NOTABLE PEOPLE","PEOPLE · BIRTHPLACES · WORLD MAP","./notable-people.html","◎")}
               ${homeModuleCard("townscaper","TOWNSCAPER","BUILD A QUIET ISLAND TOWN","./townscaper.html","▦")}
               ${homeModuleCard("3d-svg-designer","3D SVG DESIGNER","VECTOR → 3D · EXPORT MODELS","./3d-svg-designer.html","◇")}
@@ -541,10 +542,7 @@ function render(){
               ${homeModuleCard("retro-tv","RETRO TV","VINTAGE CHANNELS · 50s–2000s","./retro-tv.html","▰")}
               ${homeModuleCard("orbit-blueprint","ORBIT BLUEPRINT","SPACECRAFT · ORBITAL DESIGN","./orbit-blueprint.html","◌")}
               ${homeModuleCard("retro-console","RETRO CONSOLE","CLASSIC GAMES · CONSOLE LAB","./retro-console.html","▣")}
-            </div>
-          </section>
-          <section class="home-screen-page" data-home-screen="2" aria-label="Лаборатории и исследовательские проекты">
-            <div class="home-screen-grid" data-home-grid="2">
+
               <a class="card home-card portal-block home-shadowos" href="./games/shadow-os/index.html" data-portal-card="shadowos" data-portal-block="shadowos" aria-label="ShadowOS: Теневая Дипломатия" style="position:relative;overflow:hidden;background:linear-gradient(135deg,#070c09,#101a13 62%,#18261a);border:1px solid #a6ff83;text-decoration:none;min-height:150px">
                 <span class="home-card-title" style="top:12px;left:12px;font-size:clamp(22px,4.8vw,40px)!important;letter-spacing:.08em;color:#a6ff83">SHADOWOS</span>
                 <span style="position:absolute;left:13px;bottom:31px;color:#c4d6c8;font:10px ui-monospace,monospace;letter-spacing:1px">ТЕНЕВАЯ ДИПЛОМАТИЯ</span>
@@ -570,13 +568,13 @@ function render(){
               ${homeModuleCard("animagraffs","ANIMAGRAFFS","ANIMATED EXPLAINERS · HOW IT WORKS","./animagraffs.html","◉")}
               ${homeModuleCard("demo-formula","DEMO FORMULA","FORMULA · WEBGL · INTERACTIVE","./demo-formula.html","▶")}
               ${homeModuleCard("shadow-diplomacy","SHADOW DIPLOMACY","TACTICAL STRATEGY · SHADOWOS UNIVERSE","./games/shadow-diplomacy/index.html","⬈")}
+
             </div>
           </section>
         </div>
         <nav class="home-screen-pagination" aria-label="Экраны главного меню" data-home-pagination>
-          <button type="button" data-home-page="0" aria-label="Экран 1" aria-current="page">01</button>
-          <button type="button" data-home-page="1" aria-label="Экран 2">02</button>
-          <button type="button" data-home-page="2" aria-label="Экран 3">03</button>
+          <button type="button" data-home-page="0" aria-label="Главная" aria-current="page">HOME</button>
+          <button type="button" data-home-page="1" aria-label="Каталог модулей">MODULES</button>
         </nav>
       </div>`;
   }

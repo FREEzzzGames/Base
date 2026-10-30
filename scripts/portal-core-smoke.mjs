@@ -37,13 +37,13 @@ assert.ok(multiWindowSource.includes('event.key==="Escape"&&focusedWindow'), "Es
 assert.ok(multiWindowSource.includes('window.addEventListener("resize"'), "window layout must adapt to viewport changes");
 const gridSource = await readFile(new URL("../src/home-grid-shift.ts", import.meta.url), "utf8");
 assert.ok(gridSource.includes('querySelectorAll<HTMLElement>("[data-home-screen]")'), "HOME must support paged screens");
-assert.ok(gridSource.includes("pages.length !== 3"), "HOME must enforce exactly three screens");
+assert.ok(gridSource.includes("pages.length !== 2"), "HOME must enforce exactly two screens after catalog consolidation");
 assert.ok(gridSource.includes("holdTimer=window.setTimeout") && gridSource.includes("setEditing(true,tile)"), "long-press must enter block editing");
 assert.ok(!gridSource.includes("grid-shift-launch") && !gridSource.includes("EDIT GRID"), "block editing must not depend on a separate launcher");
 assert.ok(gridSource.includes('data-grid-shift-size') && gridSource.includes('data-grid-shift-skin'), "editor must expose size and background controls");
-assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v2"'), "new three-screen layout must use its own versioned storage key");
+assert.ok(gridSource.includes('STORAGE_KEY = "freezzz:home-free-layout:v3"'), "two-screen layout must use a fresh versioned storage key");
 assert.ok(gridSource.includes("reorderOver") && gridSource.includes("applySkin"), "editor must support rearranging blocks and changing backgrounds");
-assert.ok(mainSource.includes('data-home-screen="0"') && mainSource.includes('data-home-screen="1"') && mainSource.includes('data-home-screen="2"'), "HOME must render exactly three swipeable screens");
+assert.ok(mainSource.includes('data-home-screen="0"') && mainSource.includes('data-home-screen="1"') && !mainSource.includes('data-home-screen="2"'), "HOME must render exactly two swipeable screens");
 assert.ok(mainSource.includes("data-home-pagination") && mainSource.includes("data-home-screen-track"), "HOME must render swipe track and page navigation");
 assert.ok(!/GORD CONTROL LAB|gord-control-lab|home-control-lab/i.test(mainSource), "GORD Control Lab must be removed from HOME markup");
 assert.ok(!mainSource.includes("renderHomeFilterBar") && !mainSource.includes("renderHomeBookmarks") && !mainSource.includes("renderHomeSystem") && !mainSource.includes("renderSignalFeed"), "HOME must not render extra experimental widget layers");

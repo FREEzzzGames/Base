@@ -1,7 +1,9 @@
 type Tile = HTMLElement;
 type Size = "s" | "m" | "l";
 type Layout = { order: string[]; sizes: Record<string, Size>; skins: Record<string, number> };
-const STORAGE_KEY = "freezzz:home-free-layout:v2";
+const STORAGE_KEY = "freezzz:home-free-layout:v3";
+const LEGACY_STORAGE_KEY = "freezzz:home-free-layout:v2";
+let migratedLegacyLayouts = false;
 const SIZES: Size[] = ["s", "m", "l"];
 const SKINS = [
   { background: "linear-gradient(135deg,#11151b,#252b35)", border: "#66fcf1", color: "#f3f4f6" },
@@ -14,15 +16,35 @@ const SKINS = [
 const keyOf = (tile: Tile) => tile.dataset.portalBlock || tile.dataset.portalCard || "";
 const defaultSizeOf = (tile: Tile): Size => {
   const key = keyOf(tile);
-  return ["hero", "chat", "notable-people", "townscaper", "shadowos", "electronics-lab"].includes(key) ? "m" : "s";
+  return key === "hero" ? "m" : "s";
 };
 function readLayouts(): Record<string, Layout> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const current = localStorage.getItem(STORAGE_KEY);
+    const legacy = current ? null : localStorage.getItem(LEGACY_STORAGE_KEY);
+    const parsed: unknown = JSON.parse(current || legacy || "{}");
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const source = parsed as Record<string, unknown>;
+    if (!current && legacy) {
+      const legacyPages = ["0", "1", "2"].map(page => {
+        const value = source[page];
+        return value && typeof value === "object" && !Array.isArray(value)
+          ? value as Record<string, unknown> : {};
+      });
+      const mergedOrder = [...new Set(legacyPages.flatMap(page =>
+        Array.isArray(page.order) ? page.order.filter((key): key is string => typeof key === "string") : []
+      ))];
+      const mergedSkins = Object.assign({}, ...legacyPages.map(page =>
+        page.skins && typeof page.skins === "object" && !Array.isArray(page.skins)
+          ? page.skins as Record<string, number> : {}
+      ));
+      source["1"] = { order: mergedOrder, sizes: {}, skins: mergedSkins };
+      const home = legacyPages[0];
+      source["0"] = { order: home.order || [], sizes: {}, skins: home.skins || {} };
+      migratedLegacyLayouts = true;
+    }
     const result: Record<string, Layout> = {};
-    for (const page of ["0", "1", "2"]) {
+    for (const page of ["0", "1"]) {
       const raw = source[page];
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       const item = raw as Record<string, unknown>;
@@ -72,7 +94,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   const pages = [...root.querySelectorAll<HTMLElement>("[data-home-screen]")];
   const track = root.querySelector<HTMLElement>("[data-home-screen-track]");
   const pagination = root.querySelector<HTMLElement>("[data-home-pagination]");
-  if (pages.length !== 3 || !track || !pagination) return;
+  if (pages.length !== 2 || !track || !pagination) return;
   root.dataset.gridShiftBound = "true";
   const layouts = readLayouts();
   let currentPage = 0, editing = false, active: Tile | null = null;
@@ -87,7 +109,7 @@ export function bindHomeGridShift(root: HTMLElement) {
     grids.forEach((grid, index) => {
       copy[String(index)] = {
         order: [...grid.children].filter((node): node is Tile => node instanceof HTMLElement && node.hasAttribute("data-portal-block")).sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(keyOf),
-        sizes: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), (tile.dataset.gridSize || "m") as Size])),
+        sizes: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), (tile.dataset.gridSize || defaultSizeOf(tile)) as Size])),
         skins: Object.fromEntries(tilesByPage[index].map(tile => [keyOf(tile), Number(tile.dataset.gridSkin || 0)]))
       };
     });
@@ -98,7 +120,7 @@ export function bindHomeGridShift(root: HTMLElement) {
       const tiles = tilesByPage[index];
       layouts[String(index)] = {
         order: [...tiles].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(keyOf),
-        sizes: Object.fromEntries(tiles.map(tile=>[keyOf(tile),(tile.dataset.gridSize||"m") as Size])),
+        sizes: Object.fromEntries(tiles.map(tile=>[keyOf(tile),(tile.dataset.gridSize||defaultSizeOf(tile)) as Size])),
         skins: Object.fromEntries(tiles.map(tile=>[keyOf(tile),Number(tile.dataset.gridSkin||0)]))
       };
     });
@@ -115,7 +137,11 @@ export function bindHomeGridShift(root: HTMLElement) {
   const setPage = (index: number) => {
     currentPage = Math.max(0, Math.min(pages.length - 1, index));
     track.style.transform = `translate3d(-${currentPage * 100}%,0,0)`;
-    pages.forEach((page,i)=>page.setAttribute("aria-hidden",String(i!==currentPage)));
+    pages.forEach((page,i)=>{
+      const inactive=i!==currentPage;
+      page.setAttribute("aria-hidden",String(inactive));
+      page.inert=inactive;
+    });
     pagination.querySelectorAll<HTMLButtonElement>("[data-home-page]").forEach((button,i)=>{
       if(i===currentPage)button.setAttribute("aria-current","page"); else button.removeAttribute("aria-current");
     });
@@ -168,6 +194,8 @@ export function bindHomeGridShift(root: HTMLElement) {
       tiles.forEach((tile,order)=>{tile.style.order=String(order);tile.dataset.gridSize=defaultSizeOf(tile);});
     }
   });
+  if (migratedLegacyLayouts) commit();
+
   const ordered = (index:number) => [...tilesByPage[index]].sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0));
   const applyOrder = (list:Tile[]) => list.forEach((tile,i)=>tile.style.order=String(i));
   const targetAt = (x:number,y:number,except:Tile) => {

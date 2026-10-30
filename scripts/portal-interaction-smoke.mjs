@@ -201,3 +201,23 @@ console.log("PORTAL_WORKSPACE_REGRESSION_SMOKE_OK");
 
 const languageInit = main.slice(main.indexOf("try{\n  if(!localStorage.getItem(\"freezzz:language\"))"), main.indexOf("let portalProfile"));
 assert.ok(languageInit.includes("catch{ /* WebView storage may be disabled; keep the default language. */ }"), "Language auto-detection must not crash when WebView storage is unavailable");
+const homeGridShift = readFileSync("src/home-grid-shift.ts", "utf8");
+assert.ok(homeGridShift.includes('if (pages.length !== 2 || !track || !pagination) return;'),
+  "HOME pager must initialize with exactly two screens after catalog consolidation");
+assert.ok(homeGridShift.includes('for (const page of ["0", "1"])'),
+  "HOME layout persistence must only read the two current screen layouts");
+assert.ok(homeGridShift.includes("page.inert=inactive;") && homeGridShift.includes('page.setAttribute("aria-hidden",String(inactive))'),
+  "Inactive HOME screens must be hidden from assistive technology and keyboard focus");
+assert.ok(homeGridShift.includes('setPage(0);') && homeGridShift.includes('Number(button.dataset.homePage||0)'),
+  "HOME / MODULES controls must initialize and navigate to their declared screen");
+console.log("HOME_TWO_SCREEN_PAGER_SMOKE_OK");
+
+assert.ok(homeGridShift.includes('tile.dataset.gridSize || defaultSizeOf(tile)') && homeGridShift.includes('tile.dataset.gridSize||defaultSizeOf(tile)'),
+  "HOME layout snapshots and commits must preserve each tile's own default size instead of expanding every tile");
+
+assert.ok(homeGridShift.includes('LEGACY_STORAGE_KEY = "freezzz:home-free-layout:v2"') && homeGridShift.includes("migratedLegacyLayouts"),
+  "HOME must detect and migrate the previous saved layout version");
+assert.ok(homeGridShift.includes('["0", "1", "2"]') && homeGridShift.includes("new Set(legacyPages.flatMap"),
+  "Legacy HOME and both module pages must be merged without duplicate tile IDs");
+assert.ok(homeGridShift.includes('source["1"] = { order: mergedOrder, sizes: {}, skins: mergedSkins }') && homeGridShift.includes("if (migratedLegacyLayouts) commit();"),
+  "Migration must preserve custom order and skins, reset stale sizes, and persist the new layout");
