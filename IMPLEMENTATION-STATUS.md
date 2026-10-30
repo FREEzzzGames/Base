@@ -179,3 +179,11 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added Render environment configuration for `OPENAI_API_KEY` (secret), `OPENAI_MODEL` (default `gpt-6-luna`), and `AI_ALLOWED_TELEGRAM_USER_ID` (owner-only allowlist).
 - **Activation requirement:** set `OPENAI_API_KEY` in the existing Render service environment and deploy the updated service. AI chat remains unavailable until the secret is configured.
 - **Verification boundary:** source changes alone do not prove CI, deployment, Telegram authentication, or a successful paid API call. Verify GitHub Actions and the published Telegram Mini App after merge and backend deployment.
+
+
+## 2026-10-30 FREEzzz AI mobile UI correction
+
+- Persist the service-status badge and notice across transcript rerenders; sending a message no longer resets the badge to the initial checking state.
+- Keep the composer and footer in dedicated non-overlapping grid rows, constrain the textarea height, and allow the footer to wrap on narrow Telegram WebView widths.
+- Keep the AI module within its parent viewport rather than forcing a second independent viewport height.
+- Verify typecheck, lint, build, release smoke, Pages deployment, and Telegram Android layout after publication.
