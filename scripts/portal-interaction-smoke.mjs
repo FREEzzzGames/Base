@@ -221,3 +221,15 @@ assert.ok(homeGridShift.includes('["0", "1", "2"]') && homeGridShift.includes("n
   "Legacy HOME and both module pages must be merged without duplicate tile IDs");
 assert.ok(homeGridShift.includes('source["1"] = { order: mergedOrder, sizes: {}, skins: mergedSkins }') && homeGridShift.includes("if (migratedLegacyLayouts) commit();"),
   "Migration must preserve custom order and skins, reset stale sizes, and persist the new layout");
+
+
+const homePagerStyles = readFileSync("src/styles.css", "utf8");
+assert.ok(homePagerStyles.includes(".home-portal[data-home-pager] .home-screen-page{\n  overflow-x:hidden!important;\n  overflow-y:auto!important;"),
+  "HOME and MODULES must each own an independent vertical scroll container");
+assert.ok(homePagerStyles.includes("overscroll-behavior-y:contain!important") &&
+  homePagerStyles.includes("-webkit-overflow-scrolling:touch!important"),
+  "HOME and MODULES vertical scrolling must be contained and touch-friendly");
+assert.ok(homePagerStyles.includes('[data-home-screen="0"] .home-screen-grid{\n  height:auto!important;') &&
+  homePagerStyles.includes('[data-home-screen="1"] .home-screen-grid{\n  height:auto!important;'),
+  "HOME and MODULES content grids must grow inside their own scroll viewports");
+console.log("HOME_MODULES_INDEPENDENT_SCROLL_SMOKE_OK");
