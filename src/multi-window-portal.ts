@@ -118,7 +118,7 @@ function syncDomNode(current:Node,next:Node):Node{
   for(let index=0;index<desired.length;index++){
     const incoming=desired[index];
     const key=incoming instanceof Element?incoming.getAttribute("data-mw"):null;
-    let existing=current.childNodes[index]||null;
+    let existing:ChildNode|null=current.childNodes.item(index);
     if(key)existing=Array.from(current.childNodes).find(node=>node instanceof Element&&node.getAttribute("data-mw")===key)||null;
     else if(existing instanceof Element&&existing.hasAttribute("data-mw"))existing=null;
     if(existing){
