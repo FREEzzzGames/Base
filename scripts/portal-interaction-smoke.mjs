@@ -210,6 +210,15 @@ assert.ok(homeGridShift.includes("page.inert=inactive;") && homeGridShift.includ
   "Inactive HOME screens must be hidden from assistive technology and keyboard focus");
 assert.ok(homeGridShift.includes('setPage(0);') && homeGridShift.includes('Number(button.dataset.homePage||0)'),
   "HOME / MODULES controls must initialize and navigate to their declared screen");
+
+const mobilePagerFix = readFileSync("src/zenith-os.css", "utf8").slice(readFileSync("src/zenith-os.css", "utf8").lastIndexOf("/* FINAL HOME pager correction"));
+assert.ok(mobilePagerFix.includes('data-portal-layout="home"][data-home-pager]') && mobilePagerFix.includes("display:flex!important;") && mobilePagerFix.includes("flex-direction:column!important;"),
+  "Mobile HOME root must override the legacy two-column grid and stack track above pagination");
+assert.ok(mobilePagerFix.includes("flex:1 1 0!important;") && mobilePagerFix.includes("flex:0 0 100%!important;"),
+  "HOME track and both pages must fill the full mobile viewport width");
+assert.ok(mobilePagerFix.includes("grid-template-columns:repeat(7,minmax(0,1fr))!important;"),
+  "Mobile bottom navigation must retain all seven destinations");
+
 console.log("HOME_TWO_SCREEN_PAGER_SMOKE_OK");
 
 assert.ok(homeGridShift.includes('tile.dataset.gridSize || defaultSizeOf(tile)') && homeGridShift.includes('tile.dataset.gridSize||defaultSizeOf(tile)'),
