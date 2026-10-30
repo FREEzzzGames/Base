@@ -19,6 +19,13 @@ assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be r
 assert.ok(multiWindowSource.includes("syncDomNode(current,incoming)") || multiWindowSource.includes("syncDomChildren(layer,template)"), "floating-window updates must reconcile DOM in place");
 assert.ok(!multiWindowSource.includes('layer.innerHTML=out.join("")'), "floating-window renders must not replace the entire layer and reload iframes");
 assert.ok(multiWindowSource.includes('if(isFrame)return current;'), "unchanged iframe elements must retain their browsing context");
+const bindStart = multiWindowSource.indexOf("function bind(){");
+const bindEnd = multiWindowSource.indexOf("\n\nfunction intercept(){", bindStart);
+assert.ok(bindStart >= 0 && bindEnd > bindStart, "floating-window event binding function must remain explicit");
+const bindSource = multiWindowSource.slice(bindStart, bindEnd);
+assert.ok(!bindSource.includes('el.addEventListener("pointerdown"'), "persistent window focus handlers must not accumulate on re-render");
+assert.ok(!/addEventListener\("(?:click|input|submit|change)"/.test(bindSource), "persistent controls must replace handlers rather than stacking listeners on re-render");
+assert.ok(bindSource.includes("popupForm.onsubmit=") && bindSource.includes("replayButton.onclick="), "persistent chat and LIVE controls must use replaceable DOM event properties");
 assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1"'), "floating window geometry must have a versioned persistence key");
 assert.ok(multiWindowSource.includes('WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1"'), "workspace settings must persist with a versioned key");
 assert.ok(multiWindowSource.includes("data-mw-settings-open") && multiWindowSource.includes("data-mw-settings-close"), "workspace settings panel must be openable and dismissible");
