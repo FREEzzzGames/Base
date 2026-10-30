@@ -476,6 +476,19 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, authDate: result.authDate, queryId: result.queryId, user: result.user }, responseOrigin);
     }
 
+    if (pathName.startsWith("/api/economy/")) {
+      const user = authFromRequest(req);
+      rateLimit(user.id);
+      const economyResponse = await handleEconomyRoute(
+        req,
+        url,
+        user.id,
+        (_request, status, body, routeOrigin) => sendJson(res, status, body, routeOrigin),
+        responseOrigin
+      );
+      if (economyResponse !== null) return economyResponse;
+    }
+
     if (pathName.startsWith("/api/telegram/")) {
       const user = authFromRequest(req);
       rateLimit(user.id);
@@ -566,6 +579,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, "0.0.0.0", () => {
+  startLiveScheduler();
   startEconomyScheduler();
   console.log("FREEzzz Telegram auth/chat listening on " + port);
 });

@@ -48,8 +48,8 @@ async function withWorld(worldId, playerId, callback) {
     const seed = Number.parseInt(process.env.ECONOMY_WORLD_SEED || "9137", 10);
     const initial = createWorld({ id: worldId, seed: Number.isSafeInteger(seed) && seed >= 0 ? seed : 9137 });
     await client.query(
-      "INSERT INTO economy_worlds (id,tick,seed,treasury,state) VALUES ($1,0,$2,0,$3::jsonb) ON CONFLICT (id) DO NOTHING",
-      [worldId, initial.seed, JSON.stringify(initial)]
+      "INSERT INTO economy_worlds (id,tick,seed,treasury,state) VALUES ($1,0,$2,$4,$3::jsonb) ON CONFLICT (id) DO NOTHING",
+      [worldId, initial.seed, JSON.stringify(initial), initial.treasury]
     );
     const selected = await client.query("SELECT state FROM economy_worlds WHERE id=$1 FOR UPDATE", [worldId]);
     const world = selected.rows[0].state;
@@ -147,7 +147,16 @@ let economyTimer = null;
 export function startEconomyScheduler() {
   if (!pool || economyTimer) return;
   const runTick = async () => {
+    let lockClient;
+    let lockAcquired = false;
+    const lockKey = 742091337;
     try {
+      // Render or other hosts may run multiple API instances. A session-level
+      // advisory lock makes the world clock advance only once per scheduler tick.
+      lockClient = await pool.connect();
+      const lock = await lockClient.query("SELECT pg_try_advisory_lock($1) AS locked", [lockKey]);
+      lockAcquired = Boolean(lock.rows[0]?.locked);
+      if (!lockAcquired) return;
       await ensureSchema();
       const worlds = await pool.query("SELECT id FROM economy_worlds ORDER BY id");
       for (const item of worlds.rows) {
@@ -184,6 +193,14 @@ export function startEconomyScheduler() {
       }
     } catch (error) {
       console.error("economy scheduler failed", error?.message || error);
+    } finally {
+      if (lockClient) {
+        if (lockAcquired) {
+          try { await lockClient.query("SELECT pg_advisory_unlock($1)", [lockKey]); }
+          catch (error) { console.error("economy scheduler lock release failed", error?.message || error); }
+        }
+        lockClient.release();
+      }
     }
   };
   economyTimer = setInterval(runTick, 60_000);

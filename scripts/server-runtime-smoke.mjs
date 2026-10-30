@@ -21,6 +21,11 @@ assert.ok(server.includes("loginError: loginErrors.get(String(user.id))"), "stat
 assert.ok(server.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized requests must return HTTP 413");
 assert.ok(server.includes('error instanceof SyntaxError ? 400'), "malformed JSON must return HTTP 400");
 assert.ok(server.includes("rateBuckets.size > 5000"), "inactive rate-limit buckets must be pruned");
+assert.ok(server.includes("startLiveScheduler();"), "LIVE daily/monthly scheduler must start with the API server");
+assert.ok(server.includes('pathName.startsWith("/api/economy/")'), "economy routes must be mounted in the API server");
+assert.ok(server.includes("const user = authFromRequest(req);"), "economy API must require verified Telegram identity");
+assert.ok(server.includes("rateLimit(user.id);"), "economy API must share per-user rate limiting");
+assert.ok(server.includes("handleEconomyRoute("), "economy API handler must be reachable from HTTP routing");
 assert.ok(server.includes("pending.timeout = setTimeout"), "abandoned Telegram login sessions must expire");
 assert.ok(server.includes("clearTimeout(pending.timeout)"), "login timeout must be cleared on completion and disconnect");
 assert.ok(server.includes('pending.status = "authenticating"'), "code submission must not assume that 2FA is required");
@@ -38,9 +43,15 @@ assert.ok(live.includes("startsWith(\"@\")"), "YouTube suggestions must use chan
 assert.ok(live.includes("Number.isFinite(requestedLimit)"), "catalog pagination must handle malformed limits");
 assert.ok(economy.includes("error instanceof SyntaxError ? 400"), "malformed economy JSON must return HTTP 400");
 assert.ok(economy.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized economy requests must return HTTP 413");
+assert.ok(economy.includes("pg_try_advisory_lock"), "economy world clock must be single-leader across API instances");
+assert.ok(economy.includes("VALUES ($1,0,$2,$4,$3::jsonb)"), "new economy world treasury column must match the serialized initial state");
+assert.ok(economy.includes("pg_advisory_unlock"), "economy scheduler must release its cross-instance lock");
+assert.ok(economy.includes("if (!lockAcquired) return;"), "a non-leader API instance must skip the economy tick");
 assert.ok(legacyTelegram.includes("TELEGRAM_CLIENT_API_SECRET"), "legacy Telegram service must fail closed without an API secret");
 assert.ok(legacyTelegram.includes("timingSafeEqual"), "legacy Telegram service must compare API secrets in constant time");
 assert.ok(live.includes("function normalizeCreator(input,allowRegion=false)"), "public creator suggestions must not self-assign region");
+assert.ok(!live.includes('if(platform==="youtube"&&!creator.region'), "self-reported YouTube country must not silently become an admin-verified ranking region");
+assert.ok(live.includes("Only admin-assigned regions are ranked."), "monthly ranking methodology must disclose the admin-only region requirement");
 assert.ok(live.includes("normalizeCreator(body,true)"), "only the admin creator route may assign a region directly");
 
 console.log("SERVER_RUNTIME_SMOKE_OK");

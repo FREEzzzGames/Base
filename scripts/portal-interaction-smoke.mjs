@@ -133,12 +133,19 @@ assert.ok(multiWindow.includes('if(id==="radio")') && multiWindow.includes('new 
   "RADIO widget expand control must not merely enlarge an empty player window");
 assert.ok(multiWindow.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
 const visualStyles = readFileSync("src/styles.css", "utf8");
+assert.ok(visualStyles.includes(".portal-mw-head strong{\n  touch-action:none!important;"), "floating window title must suppress native touch panning while preserving slider controls");
 assert.ok(visualStyles.includes(".home-portal > .home-phet-lab .home-card-title") &&
   visualStyles.includes("bottom:auto!important") && visualStyles.includes("white-space:normal!important"),
   "HOME PHET, Economy and Studio headings must stay in a separate top-aligned region");
 assert.ok(visualStyles.includes(".home-portal > .home-phet-lab > span:not(.home-card-title)") &&
   visualStyles.includes("bottom:12px!important") && visualStyles.includes("overflow-wrap:anywhere!important"),
   "HOME card descriptions must stay anchored at the bottom and wrap instead of overlapping headings");
+assert.ok(multiWindow.includes('h.addEventListener("lostpointercapture",end)'), "floating-window drag and resize gestures must clean up when pointer capture is lost");
+assert.ok(multiWindow.includes('window.addEventListener("blur",end)'), "floating-window gestures must clean up when the browser loses focus");
+assert.ok(multiWindow.includes('window.addEventListener("pointermove",move)'), "drag and resize tracking must survive pointer movement outside the original handle");
+assert.ok(multiWindow.includes('if(ev.pointerId!==pointer.pointerId)return;'), "drag must ignore unrelated simultaneous pointers");
+assert.ok(multiWindow.includes('if(ev.pointerId===pointer.pointerId)resizeWindow'), "resize must ignore unrelated simultaneous pointers");
+assert.ok(multiWindow.includes('if(ended)return;'), "pointer gesture cleanup must be idempotent");
 assert.ok(multiWindow.includes('window.visualViewport?.addEventListener("resize",clampWindows'),
   "Floating windows must clamp to Telegram WebView visual viewport changes");
 assert.ok(multiWindow.includes("w.x=Math.max(4,Math.min") && multiWindow.includes("w.y=Math.max(4,Math.min"),

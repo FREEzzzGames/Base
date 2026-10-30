@@ -94,6 +94,50 @@ function syncTelegramPopup(detail?:{chat?:TelegramPopupChat|null;messages?:Teleg
 }
 let layer:HTMLDivElement|null=null;
 
+/** Patch floating-window DOM in place so stable iframe nodes keep their browsing context. */
+function syncDomNode(current:Node,next:Node):Node{
+  if(current.nodeType!==next.nodeType)return next.cloneNode(true);
+  if(current.nodeType===Node.TEXT_NODE||current.nodeType===Node.COMMENT_NODE){
+    if(current.nodeValue!==next.nodeValue)current.nodeValue=next.nodeValue;
+    return current;
+  }
+  if(!(current instanceof Element)||!(next instanceof Element)||current.tagName!==next.tagName)return next.cloneNode(true);
+  const isFrame=current.tagName==="IFRAME";
+  for(const attribute of Array.from(current.attributes)){
+    if(!next.hasAttribute(attribute.name)){
+      if(isFrame&&attribute.name==="src")continue;
+      current.removeAttribute(attribute.name);
+    }
+  }
+  for(const attribute of Array.from(next.attributes)){
+    if(isFrame&&attribute.name==="src"&&current.getAttribute("src")===attribute.value)continue;
+    if(current.getAttribute(attribute.name)!==attribute.value)current.setAttribute(attribute.name,attribute.value);
+  }
+  if(isFrame)return current;
+  const desired=Array.from(next.childNodes);
+  for(let index=0;index<desired.length;index++){
+    const incoming=desired[index];
+    const key=incoming instanceof Element?incoming.getAttribute("data-mw"):null;
+    let existing:ChildNode|null=current.childNodes.item(index);
+    if(key)existing=Array.from(current.childNodes).find(node=>node instanceof Element&&node.getAttribute("data-mw")===key)||null;
+    else if(existing instanceof Element&&existing.hasAttribute("data-mw"))existing=null;
+    if(existing){
+      if(existing!==current.childNodes[index])current.insertBefore(existing,current.childNodes[index]||null);
+      const patched=syncDomNode(existing,incoming);
+      if(patched!==existing)current.replaceChild(patched,existing);
+    }else current.insertBefore(incoming.cloneNode(true),current.childNodes[index]||null);
+  }
+  while(current.childNodes.length>desired.length)current.removeChild(current.lastChild!);
+  return current;
+}
+
+function syncDomChildren(container:Element,template:Element):void{
+  for(const attribute of Array.from(container.attributes)){
+    if(!template.hasAttribute(attribute.name))template.setAttribute(attribute.name,attribute.value);
+  }
+  syncDomNode(container,template);
+}
+
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
 function focus(id:MiniId){windows[id].z=nextZ++;}
 function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);saveWindowLayout();render();}
@@ -177,7 +221,9 @@ function render(){
     '<button class="portal-mw-settings-reset" data-mw-settings-reset type="button">СБРОСИТЬ НАСТРОЙКИ</button></section>');
   const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":"♫ RADIO")+'</button>').join("");
   out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
-  layer.innerHTML=out.join("");
+  const template=document.createElement("div");
+  template.innerHTML=out.join("");
+  syncDomChildren(layer,template);
   // Dock restore controls into the portal's real bottom toolbar instead of
   // leaving a fixed overlay above the HOME cards.
   const taskbar=layer.querySelector<HTMLElement>(".portal-os-taskbar");
@@ -208,18 +254,24 @@ function bind(){
     }
     toggleFocus(id);
   });
-  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.addEventListener("pointerdown",()=>{const id=el.dataset.mw as MiniId;if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}}));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();
   });
-  layer?.querySelector<HTMLElement>("[data-mw-replay]")?.addEventListener("click",()=>{liveReplay=!liveReplay;render();});
-  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("input",event=>{
-    liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
-    const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
-    if(live)live.style.setProperty("--live-panel-alpha",String(liveOpacity));
+  const replayButton=layer?.querySelector<HTMLElement>("[data-mw-replay]");
+  if(replayButton)replayButton.onclick=()=>{liveReplay=!liveReplay;render();};
+  const liveOpacityInput=layer?.querySelector<HTMLInputElement>("[data-mw-opacity]");
+  if(liveOpacityInput){
+    liveOpacityInput.oninput=event=>{
+      liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
+      const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
+      if(live)live.style.setProperty("--live-panel-alpha",String(liveOpacity));
+    };
+    liveOpacityInput.onpointerdown=event=>event.stopPropagation();
+  }
+  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.onpointerdown=()=>{
+    const id=el.dataset.mw as MiniId;
+    if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}
   });
-  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("pointerdown",event=>event.stopPropagation());
-  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(e=>e.onpointerdown=()=>focus(e.dataset.mw as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-drag]").forEach(h=>h.onpointerdown=e=>{
     if((e.target as HTMLElement).closest("button"))return;
     const id=h.dataset.mwDrag as MiniId,w=windows[id];
@@ -227,6 +279,7 @@ function bind(){
     const sx=pointer.clientX,sy=pointer.clientY,ox=w.x,oy=w.y;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
     const move=(ev:PointerEvent)=>{
+      if(ev.pointerId!==pointer.pointerId)return;
       const maxX=Math.max(4,window.innerWidth-w.width-4);
       const maxY=Math.max(4,window.innerHeight-w.height-8);
       w.x=Math.max(4,Math.min(maxX,ox+ev.clientX-sx));
@@ -234,16 +287,24 @@ function bind(){
       const el=layer?.querySelector<HTMLElement>('[data-mw="'+id+'"]');
       if(el){el.style.left=w.x+"px";el.style.top=w.y+"px";}
     };
+    let ended=false;
     const end=()=>{
-      h.removeEventListener("pointermove",move);
-      h.removeEventListener("pointerup",end);
-      h.removeEventListener("pointercancel",end);
-      try{h.releasePointerCapture(pointer.pointerId);}catch{}
+      if(ended)return;
+      ended=true;
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",onPointerEnd);
+      window.removeEventListener("pointercancel",onPointerEnd);
+      window.removeEventListener("blur",end);
+      h.removeEventListener("lostpointercapture",end);
+      try{if(h.hasPointerCapture(pointer.pointerId))h.releasePointerCapture(pointer.pointerId);}catch{}
       saveWindowLayout();
     };
-    h.addEventListener("pointermove",move);
-    h.addEventListener("pointerup",end);
-    h.addEventListener("pointercancel",end);
+    const onPointerEnd=(event:PointerEvent)=>{if(event.pointerId===pointer.pointerId)end();};
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",onPointerEnd);
+    window.addEventListener("pointercancel",onPointerEnd);
+    window.addEventListener("blur",end);
+    h.addEventListener("lostpointercapture",end);
   });
   layer?.querySelectorAll<HTMLElement>("[data-mw-resize]").forEach(h=>h.onpointerdown=e=>{
     e.preventDefault();e.stopPropagation();
@@ -251,11 +312,27 @@ function bind(){
     focus(id);
     const sx=pointer.clientX,sy=pointer.clientY,sw=w.width,sh=w.height;
     try{h.setPointerCapture(pointer.pointerId);}catch{}
-    const move=(ev:PointerEvent)=>resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);
-    const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}saveWindowLayout();};
-    h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
+    const move=(ev:PointerEvent)=>{if(ev.pointerId===pointer.pointerId)resizeWindow(id,sx,sy,sw,sh,ev.clientX,ev.clientY);};
+    let ended=false;
+    const end=()=>{
+      if(ended)return;
+      ended=true;
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",onPointerEnd);
+      window.removeEventListener("pointercancel",onPointerEnd);
+      window.removeEventListener("blur",end);
+      h.removeEventListener("lostpointercapture",end);
+      try{if(h.hasPointerCapture(pointer.pointerId))h.releasePointerCapture(pointer.pointerId);}catch{}
+      saveWindowLayout();
+    };
+    const onPointerEnd=(event:PointerEvent)=>{if(event.pointerId===pointer.pointerId)end();};
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",onPointerEnd);
+    window.addEventListener("pointercancel",onPointerEnd);
+    window.addEventListener("blur",end);
+    h.addEventListener("lostpointercapture",end);
   });
-  layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.addEventListener("click",e=>{
+  layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.onclick=e=>{
     e.preventDefault();e.stopPropagation();
     const id=(e.currentTarget as HTMLElement).dataset.mwChatExpand||"";
     if(!id)return;
@@ -276,21 +353,25 @@ function bind(){
         nextList.scrollTop+=nextMessageRect.top-nextListRect.top-anchorOffset;
       });
     }
-  }));
+  });
   const popupInput=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]");
-  popupInput?.addEventListener("pointerdown",e=>{e.stopPropagation();});
-  popupInput?.addEventListener("click",e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);});
-  layer?.querySelector<HTMLElement>("[data-mw-chat-form]")?.addEventListener("submit",e=>{
+  if(popupInput){
+    popupInput.onpointerdown=e=>e.stopPropagation();
+    popupInput.onclick=e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);};
+  }
+  const popupForm=layer?.querySelector<HTMLFormElement>("[data-mw-chat-form]");
+  if(popupForm)popupForm.onsubmit=e=>{
     e.preventDefault();
     const i=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]"),m=i?.value.trim()||"";
     if(!m||!telegramPopupChat?.id)return;
     window.dispatchEvent(new CustomEvent("freezzz:chat-send",{detail:{chatId:telegramPopupChat.id,text:m}}));
     if(i)i.value="";
-  });
-  layer?.querySelector<HTMLElement>("[data-mw-chat-open]")?.addEventListener("click",e=>{
+  };
+  const chatOpenButton=layer?.querySelector<HTMLElement>("[data-mw-chat-open]");
+  if(chatOpenButton)chatOpenButton.onclick=e=>{
     e.preventDefault();e.stopPropagation();
     window.dispatchEvent(new CustomEvent("freezzz:open-chat-selector"));
-  });
+  };
   layer?.querySelectorAll<HTMLElement>("[data-mw-radio]").forEach(b=>b.onclick=()=>{
     window.dispatchEvent(new CustomEvent("freezzz:radio-mini",{detail:{action:b.dataset.mwRadio||"play"}}));
   });

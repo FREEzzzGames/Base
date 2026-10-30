@@ -3562,6 +3562,9 @@ main{
   cursor:move!important;
 }
 .portal-mw-head strong{
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
   min-width:0!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
@@ -5996,8 +5999,8 @@ a{
 .freezzz-gamepad-md .freezzz-gp-dpad{left:10%!important;top:32%!important;width:22%!important;height:43%!important}
 .freezzz-gamepad-md .freezzz-gp-face{right:7%!important;top:31%!important;width:30%!important;height:47%!important}
 .freezzz-gamepad-md .freezzz-gp-face .face{width:22%!important;height:27%!important;background:linear-gradient(180deg,#404348,#17181b)!important;border:1px solid #08090a!important}
-.freezzz-gamepad-md .freezzz-gp-face .x{left:0!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .y{left:39%!important;top:0!important}.freezzz-gamepad-md .freezzz-gp-face .z{right:0!important;top:0!important}
-.freezzz-gamepad-md .freezzz-gp-face .a{left:0!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .b{left:39%!important;bottom:0!important}.freezzz-gamepad-md .freezzz-gp-face .c{right:0!important;bottom:0!important}
+.freezzz-gamepad-md .freezzz-gp-face .y{left:39%!important;top:0!important}
+.freezzz-gamepad-md .freezzz-gp-face .b{left:39%!important;bottom:0!important}
 .freezzz-gamepad-md .freezzz-gp-center{left:40%!important;top:48%!important;width:20%!important;height:15%!important}
 .freezzz-gamepad-md .freezzz-gp-center .mode,.freezzz-gamepad-md .freezzz-gp-center .start{
   width:42%!important;height:45%!important;top:27%!important;background:#111216!important;border:1px solid #050506!important;color:#bfc1c4!important;font-size:clamp(7px,1.5vw,10px)!important;
@@ -10013,9 +10016,6 @@ button:disabled,[aria-disabled="true"]{
   margin:0!important;box-sizing:border-box!important;grid-column:span 2!important;grid-row:span 1!important;overflow:hidden!important;
   border-radius:0!important;border-width:1px!important;
 }
-.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="s"]{grid-column:span 1!important;grid-row:span 1!important}
-.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="m"]{grid-column:span 2!important;grid-row:span 1!important}
-.home-portal[data-home-pager] .home-screen-grid>[data-portal-block][data-grid-size="l"]{grid-column:span 2!important;grid-row:span 2!important}
 .home-portal[data-home-pager] .home-screen-grid>[data-portal-block="hero"]{grid-column:span 2!important}
 .home-portal[data-home-pager] .home-screen-grid>[data-portal-block].home-tile-custom-skin{
   background:var(--home-tile-custom-bg)!important;border-color:var(--home-tile-custom-border)!important;color:var(--home-tile-custom-color)!important;

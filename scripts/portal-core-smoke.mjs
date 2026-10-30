@@ -5,13 +5,27 @@ import ts from "typescript";
 const source = await readFile(new URL("../src/core/portal-core.ts", import.meta.url), "utf8");
 const mainSource = await readFile(new URL("../src/main.ts", import.meta.url), "utf8");
 const multiWindowSource = await readFile(new URL("../src/multi-window-portal.ts", import.meta.url), "utf8");
-assert.ok(mainSource.includes('createPlatformState({view:"home"'), "HOME must be the default entry route");
+assert.ok(mainSource.includes('const initialView:View=overlayRoute==="live"||overlayRoute==="radio" ? overlayRoute : "home"'), "overlay routes must be resolved before kernel initialization");
+assert.ok(mainSource.includes("createPlatformState({view:initialView"), "platform state must match the initial overlay route");
+assert.ok(mainSource.includes("initial:{view:initialView"), "ZENITH kernel must boot into the same initial route as the UI");
+assert.ok(!mainSource.includes("portalState"), "ZENITH kernel must be the only owner of shared portal system state");
+assert.ok(mainSource.includes("zenithKernel.setLanguage(lang);"), "resolved startup language must be committed to the kernel");
 assert.ok(mainSource.includes('safeModuleContent("live",()=>renderLiveCatalog(lang))'), "LIVE catalog must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("chat",()=>renderTelegramChat())'), "CHAT must have an error boundary");
 assert.ok(mainSource.includes('safeModuleContent("library",()=>renderLibrary())'), "LIBRARY must have an error boundary");
 assert.ok(mainSource.includes('"freezzz:live-window-open"') && multiWindowSource.includes('"freezzz:live-window-open"'), "LIVE overlays must use the shared floating window");
 assert.ok(multiWindowSource.includes("data-mw-focus"), "floating windows must expose focus-mode controls");
 assert.ok(multiWindowSource.includes("portal-mw-focused"), "focus mode must be reflected in the window state");
+assert.ok(multiWindowSource.includes("syncDomNode(current,incoming)") || multiWindowSource.includes("syncDomChildren(layer,template)"), "floating-window updates must reconcile DOM in place");
+assert.ok(!multiWindowSource.includes('layer.innerHTML=out.join("")'), "floating-window renders must not replace the entire layer and reload iframes");
+assert.ok(multiWindowSource.includes('if(isFrame)return current;'), "unchanged iframe elements must retain their browsing context");
+const bindStart = multiWindowSource.indexOf("function bind(){");
+const bindEnd = multiWindowSource.indexOf("\n\nfunction intercept(){", bindStart);
+assert.ok(bindStart >= 0 && bindEnd > bindStart, "floating-window event binding function must remain explicit");
+const bindSource = multiWindowSource.slice(bindStart, bindEnd);
+assert.ok(!bindSource.includes('el.addEventListener("pointerdown"'), "persistent window focus handlers must not accumulate on re-render");
+assert.ok(!/addEventListener\("(?:click|input|submit|change)"/.test(bindSource), "persistent controls must replace handlers rather than stacking listeners on re-render");
+assert.ok(bindSource.includes("popupForm.onsubmit=") && bindSource.includes("replayButton.onclick="), "persistent chat and LIVE controls must use replaceable DOM event properties");
 assert.ok(multiWindowSource.includes('WINDOW_LAYOUT_KEY="freezzz:zenith:window-layout:v1"'), "floating window geometry must have a versioned persistence key");
 assert.ok(multiWindowSource.includes('WORKSPACE_SETTINGS_KEY="freezzz:zenith:settings:v1"'), "workspace settings must persist with a versioned key");
 assert.ok(multiWindowSource.includes("data-mw-settings-open") && multiWindowSource.includes("data-mw-settings-close"), "workspace settings panel must be openable and dismissible");
@@ -98,9 +112,51 @@ assert.deepEqual(lifecycle, [
   "error:live:activate"
 ]);
 assert.equal(manager.transition("not-a-view"), false, "unknown routes must be rejected");
+const replacementLifecycle = [];
+const replaceManager = new PortalModuleManager();
+const disposeOld = replaceManager.registerAdapter("chat", {
+  onActivate: () => replacementLifecycle.push("old:activate"),
+  onDeactivate: () => replacementLifecycle.push("old:deactivate")
+});
+replaceManager.transition("chat");
+const replacement = {
+  onActivate: () => replacementLifecycle.push("new:activate"),
+  onDeactivate: () => replacementLifecycle.push("new:deactivate")
+};
+replaceManager.registerAdapter("chat", replacement);
+assert.deepEqual(replacementLifecycle, ["old:activate", "old:deactivate", "new:activate"], "replacing an active adapter must close the old lifecycle and activate the new adapter");
+disposeOld();
+assert.equal(replaceManager.activeView, "chat", "stale adapter disposal must not unregister its replacement");
+replaceManager.transition("home");
+assert.deepEqual(replacementLifecycle, ["old:activate", "old:deactivate", "new:activate", "new:deactivate"], "active replacement must receive its matching deactivate callback");
+const disposeActive = replaceManager.registerAdapter("radio", { onActivate: () => replacementLifecycle.push("radio:activate"), onDeactivate: () => replacementLifecycle.push("radio:deactivate") });
+replaceManager.transition("radio");
+disposeActive();
+assert.equal(replaceManager.activeView, "radio", "disposing an active adapter must not mutate navigation state");
+assert.equal(replacementLifecycle.at(-1), "radio:deactivate", "disposing an active adapter must run its cleanup callback");
 assert.equal(manager.runIsolated("game", () => { throw new Error("module failure"); }, "fallback"), "fallback");
 assert.equal(lifecycle.at(-1), "error:game:render");
+const isolatedFailureManager = new PortalModuleManager();
+isolatedFailureManager.setErrorHandler(() => { throw new Error("error reporter failure"); });
+const previousConsoleError = console.error;
+console.error = () => {};
+try {
+  assert.equal(
+    isolatedFailureManager.runIsolated("game", () => { throw new Error("module render failure"); }, "safe fallback"),
+    "safe fallback",
+    "a failing error reporter must not escape the isolated render boundary"
+  );
+} finally {
+  console.error = previousConsoleError;
+}
 assert.equal(createPlatformState({ language: "DE" }).language, "DE");
+const activationManager = new PortalModuleManager();
+let activationKernel;
+let activatedRoute = "";
+activationManager.registerAdapter("game", { onActivate: () => { activatedRoute = activationKernel.snapshot.view; } });
+activationKernel = new ZenithOSKernel({ modules: activationManager });
+assert.equal(activationKernel.navigate("game").accepted, true);
+assert.equal(activatedRoute, "game", "module activation must observe the destination route in the shared kernel snapshot");
 const osKernel = new ZenithOSKernel({ initial: { view: "home", language: "RU" } });
 assert.equal(osKernel.snapshot.view, "home", "ZENITH OS must boot into HOME");
 assert.equal(osKernel.navigate("game").accepted, true);
