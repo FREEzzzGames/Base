@@ -10732,3 +10732,38 @@ button:disabled,[aria-disabled="true"]{
   overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
   text-wrap:balance;
 }
+
+
+/* HOME / MODULES: independent vertical scroll containers per horizontal page. */
+.home-portal[data-home-pager] .home-screen-track{
+  overflow:hidden!important;
+}
+.home-portal[data-home-pager] .home-screen-page{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  scrollbar-width:none!important;
+}
+.home-portal[data-home-pager] .home-screen-page::-webkit-scrollbar{
+  display:none!important;
+}
+.home-portal[data-home-pager] .home-screen-grid{
+  height:auto!important;
+  min-height:100%!important;
+  overflow:visible!important;
+  align-content:start!important;
+}
+.home-portal[data-home-pager] [data-home-screen="0"] .home-screen-grid{
+  height:auto!important;
+  min-height:100%!important;
+  grid-template-rows:minmax(118px,1.12fr) repeat(3,minmax(92px,1fr))!important;
+  grid-auto-rows:minmax(92px,auto)!important;
+}
+.home-portal[data-home-pager] [data-home-screen="1"] .home-screen-grid{
+  height:auto!important;
+  min-height:100%!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:minmax(112px,auto)!important;
+}
