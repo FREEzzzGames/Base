@@ -258,14 +258,21 @@ function bind(){
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();
   });
-  layer?.querySelector<HTMLElement>("[data-mw-replay]")?.addEventListener("click",()=>{liveReplay=!liveReplay;render();});
-  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("input",event=>{
-    liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
-    const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
-    if(live)live.style.setProperty("--live-panel-alpha",String(liveOpacity));
+  const replayButton=layer?.querySelector<HTMLElement>("[data-mw-replay]");
+  if(replayButton)replayButton.onclick=()=>{liveReplay=!liveReplay;render();};
+  const liveOpacityInput=layer?.querySelector<HTMLInputElement>("[data-mw-opacity]");
+  if(liveOpacityInput){
+    liveOpacityInput.oninput=event=>{
+      liveOpacity=Number((event.currentTarget as HTMLInputElement).value)/100;
+      const live=layer?.querySelector<HTMLElement>("[data-mw='live']");
+      if(live)live.style.setProperty("--live-panel-alpha",String(liveOpacity));
+    };
+    liveOpacityInput.onpointerdown=event=>event.stopPropagation();
+  }
+  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.onpointerdown=()=>{
+    const id=el.dataset.mw as MiniId;
+    if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}
   });
-  layer?.querySelector<HTMLInputElement>("[data-mw-opacity]")?.addEventListener("pointerdown",event=>event.stopPropagation());
-  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(e=>e.onpointerdown=()=>focus(e.dataset.mw as MiniId));
   layer?.querySelectorAll<HTMLElement>("[data-mw-drag]").forEach(h=>h.onpointerdown=e=>{
     if((e.target as HTMLElement).closest("button"))return;
     const id=h.dataset.mwDrag as MiniId,w=windows[id];
@@ -301,7 +308,7 @@ function bind(){
     const end=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",end);h.removeEventListener("pointercancel",end);try{h.releasePointerCapture(pointer.pointerId);}catch{}saveWindowLayout();};
     h.addEventListener("pointermove",move);h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
   });
-  layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.addEventListener("click",e=>{
+  layer?.querySelectorAll<HTMLElement>("[data-mw-chat-expand]").forEach(button=>button.onclick=e=>{
     e.preventDefault();e.stopPropagation();
     const id=(e.currentTarget as HTMLElement).dataset.mwChatExpand||"";
     if(!id)return;
@@ -322,21 +329,25 @@ function bind(){
         nextList.scrollTop+=nextMessageRect.top-nextListRect.top-anchorOffset;
       });
     }
-  }));
+  });
   const popupInput=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]");
-  popupInput?.addEventListener("pointerdown",e=>{e.stopPropagation();});
-  popupInput?.addEventListener("click",e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);});
-  layer?.querySelector<HTMLElement>("[data-mw-chat-form]")?.addEventListener("submit",e=>{
+  if(popupInput){
+    popupInput.onpointerdown=e=>e.stopPropagation();
+    popupInput.onclick=e=>{e.stopPropagation();window.setTimeout(()=>popupInput.focus(),0);};
+  }
+  const popupForm=layer?.querySelector<HTMLFormElement>("[data-mw-chat-form]");
+  if(popupForm)popupForm.onsubmit=e=>{
     e.preventDefault();
     const i=layer?.querySelector<HTMLInputElement>("[data-mw-chat-input]"),m=i?.value.trim()||"";
     if(!m||!telegramPopupChat?.id)return;
     window.dispatchEvent(new CustomEvent("freezzz:chat-send",{detail:{chatId:telegramPopupChat.id,text:m}}));
     if(i)i.value="";
-  });
-  layer?.querySelector<HTMLElement>("[data-mw-chat-open]")?.addEventListener("click",e=>{
+  };
+  const chatOpenButton=layer?.querySelector<HTMLElement>("[data-mw-chat-open]");
+  if(chatOpenButton)chatOpenButton.onclick=e=>{
     e.preventDefault();e.stopPropagation();
     window.dispatchEvent(new CustomEvent("freezzz:open-chat-selector"));
-  });
+  };
   layer?.querySelectorAll<HTMLElement>("[data-mw-radio]").forEach(b=>b.onclick=()=>{
     window.dispatchEvent(new CustomEvent("freezzz:radio-mini",{detail:{action:b.dataset.mwRadio||"play"}}));
   });
