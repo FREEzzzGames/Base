@@ -187,3 +187,13 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Keep the composer and footer in dedicated non-overlapping grid rows, constrain the textarea height, and allow the footer to wrap on narrow Telegram WebView widths.
 - Keep the AI module within its parent viewport rather than forcing a second independent viewport height.
 - Verify typecheck, lint, build, release smoke, Pages deployment, and Telegram Android layout after publication.
+
+
+## 2026-10-30 FREEzzz AI portal context bridge
+
+- Added a same-origin, source-verified postMessage handshake between the portal shell and isolated AI iframe.
+- AI can optionally receive only the active module name, UI language, available module names, and build identifier.
+- Context sharing is OFF by default and requires an explicit toggle. The interface explains exactly what is sent.
+- Backend validates context against a fixed allowlist before including it in OpenAI instructions.
+- No module contents, Telegram chats, profile data, files, credentials, or private records are exposed.
+- This is read-only navigation/context integration, not general module execution or file access.
