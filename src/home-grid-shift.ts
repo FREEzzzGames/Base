@@ -22,7 +22,7 @@ function readLayouts(): Record<string, Layout> {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const source = parsed as Record<string, unknown>;
     const result: Record<string, Layout> = {};
-    for (const page of ["0", "1", "2"]) {
+    for (const page of ["0", "1"]) {
       const raw = source[page];
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       const item = raw as Record<string, unknown>;
@@ -72,7 +72,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   const pages = [...root.querySelectorAll<HTMLElement>("[data-home-screen]")];
   const track = root.querySelector<HTMLElement>("[data-home-screen-track]");
   const pagination = root.querySelector<HTMLElement>("[data-home-pagination]");
-  if (pages.length !== 3 || !track || !pagination) return;
+  if (pages.length !== 2 || !track || !pagination) return;
   root.dataset.gridShiftBound = "true";
   const layouts = readLayouts();
   let currentPage = 0, editing = false, active: Tile | null = null;
@@ -115,7 +115,7 @@ export function bindHomeGridShift(root: HTMLElement) {
   const setPage = (index: number) => {
     currentPage = Math.max(0, Math.min(pages.length - 1, index));
     track.style.transform = `translate3d(-${currentPage * 100}%,0,0)`;
-    pages.forEach((page,i)=>page.setAttribute("aria-hidden",String(i!==currentPage)));
+    pages.forEach((page,i)=>{\n      const inactive=i!==currentPage;\n      page.setAttribute("aria-hidden",String(inactive));\n      page.inert=inactive;\n    });
     pagination.querySelectorAll<HTMLButtonElement>("[data-home-page]").forEach((button,i)=>{
       if(i===currentPage)button.setAttribute("aria-current","page"); else button.removeAttribute("aria-current");
     });
