@@ -215,6 +215,28 @@ function validateDevPath(value) {
       value.split("/").some(part => !part || part === "." || part === ".." || part === ".git" || part === "node_modules")) throw new Error("INVALID_REPO_PATH");
   return value;
 }
+async function loadDevRepositoryContext() {
+  const files = ["README.md", "PROJECT-CONTEXT.md", "IMPLEMENTATION-STATUS.md", "package.json", "src/main.ts", "src/freezzz-ai.ts"];
+  const sections = [];
+  let remaining = 24000;
+  for (const filePath of files) {
+    if (remaining <= 0) break;
+    try {
+      const item = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName +
+        "/contents/" + filePath.split("/").map(encodeURIComponent).join("/") + "?ref=main");
+      if (item.type !== "file" || typeof item.content !== "string" || Number(item.size) > 30000) continue;
+      const content = Buffer.from(item.content, "base64").toString("utf8").slice(0, Math.min(5000, remaining));
+      if (!content.trim()) continue;
+      sections.push("FILE: " + filePath + "\n" + content);
+      remaining -= content.length;
+    } catch (error) {
+      if (error?.message !== "GITHUB_RESOURCE_NOT_FOUND") throw error;
+    }
+  }
+  if (!sections.length) throw new Error("REPO_CONTEXT_EMPTY");
+  return sections.join("\n\n---\n\n");
+}
+
 async function devGitHubGet(apiPath) {
   if (!githubToken) throw new Error("GITHUB_NOT_CONFIGURED");
   const response = await fetch("https://api.github.com" + apiPath, {
@@ -588,6 +610,11 @@ const server = http.createServer(async (req, res) => {
       if (messages[messages.length - 1].role !== "user") throw new Error("AI_USER_MESSAGE_REQUIRED");
       const totalChars = messages.reduce((sum, item) => sum + item.content.length, 0);
       if (totalChars > 18000) throw new Error("AI_CONTEXT_TOO_LARGE");
+      let devRepositoryContext = "";
+      if (body.devMode === true) {
+        requireAiOwner(user);
+        devRepositoryContext = await loadDevRepositoryContext();
+      }
 
       let upstream;
       try {
@@ -601,7 +628,7 @@ const server = http.createServer(async (req, res) => {
             model: openAiModel,
             store: false,
             max_output_tokens: 1400,
-            instructions: "Ты — FREEzzz AI, персональный русскоязычный ассистент владельца FREEzzz Portal. Отвечай на языке пользователя, по умолчанию на русском. Помогай с программированием, проектированием, анализом и созданием контента. Будь точным, разделяй проверенные факты и предположения, не выдумывай выполненные действия, доступ к файлам, новости или результаты инструментов. Ты получаешь только явно включённый пользователем ограниченный контекст портала: активный раздел, язык интерфейса, список модулей и версию сборки. Это не даёт доступа к содержимому модулей, файлам, переписке, профилю или личным данным. Не утверждай обратного. Если нужна актуальная информация или внешнее действие, прямо сообщи об ограничении. Не запрашивай секреты и ключи API." + (portalContext ? "\\n\\nОграниченный контекст портала: " + JSON.stringify(portalContext) : ""),
+            instructions: "Ты — FREEzzz AI, персональный русскоязычный ассистент владельца FREEzzz Portal. Отвечай на языке пользователя, по умолчанию на русском. Помогай с программированием, проектированием, анализом и созданием контента. Будь точным, разделяй проверенные факты и предположения, не выдумывай выполненные действия, доступ к файлам, новости или результаты инструментов. Без режима DEV ты не имеешь доступа к репозиторию. При включённом DEV тебе передаётся только ограниченная актуальная выборка файлов FREEzzzGames/Base с ветки main; анализируй только фактически переданное содержимое, не утверждай, что прочитал остальные файлы или выполнил изменения. Доступ только на чтение: не обещай редактирование, коммиты или деплой. Контекст портала, если передан, содержит только активный раздел, язык, список модулей и версию сборки. Не запрашивай секреты и ключи API." + (portalContext ? "\\n\\nОграниченный контекст портала: " + JSON.stringify(portalContext) : "") + (devRepositoryContext ? "\\n\\nРЕПОЗИТОРИЙ FREEzzzGames/Base — ПРОЧИТАННЫЕ ФАЙЛЫ (ветка main):\\n" + devRepositoryContext : ""),
             input: messages
           }),
           signal: AbortSignal.timeout(65000)

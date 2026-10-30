@@ -44,3 +44,5 @@ button{cursor:pointer}
 @media(max-width:380px){.ai-header-actions{gap:4px}.ai-dev-toggle{padding:0 6px;font-size:8px}}
 
 @media(max-width:520px){.ai-header{gap:8px;flex-wrap:wrap}.ai-header>div:first-child{flex:1 1 145px;min-width:0}.ai-header-actions{flex:0 1 auto;margin-left:auto;justify-content:flex-end;gap:5px;flex-wrap:wrap}.ai-dev-toggle{min-height:28px;padding:0 7px;font-size:8px}.ai-context-toggle{min-height:28px}}
+
+.ai-dev-panel [data-dev-enable]{margin-top:10px;min-height:36px;padding:0 12px;border:1px solid rgba(102,252,241,.4);border-radius:8px;background:#0d2021;color:#66fcf1;font:9px "Space Mono",monospace;letter-spacing:.5px}
