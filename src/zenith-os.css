@@ -384,3 +384,229 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
     z-index:10001!important;max-width:calc(100vw - 24px)!important;
   }
 }
+
+
+/* FREEzzz HOME / MODULES — structural layout repair.
+   The pager contains a track, two pages and independent grids. Never grid the pager
+   itself: doing so constrains the entire track to the first half of the viewport. */
+.home-portal[data-home-pager]{
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:58px 10px 16px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.home-portal[data-home-pager]>.home-screen-track{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:flex-start!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  gap:0!important;
+  will-change:transform;
+  transition:transform .24s cubic-bezier(.2,.75,.25,1);
+}
+.home-portal[data-home-pager]>.home-screen-track>.home-screen-page{
+  display:block!important;
+  flex:0 0 100%!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+.home-portal[data-home-pager] .home-screen-grid{
+  display:grid!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-auto-flow:row dense!important;
+  grid-auto-rows:minmax(118px,auto)!important;
+  align-items:stretch!important;
+  align-content:start!important;
+  justify-content:stretch!important;
+  gap:8px!important;
+  box-sizing:border-box!important;
+}
+.home-portal[data-home-pager] .home-screen-grid>[data-portal-block]{
+  position:relative!important;
+  display:block!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:118px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  grid-column:span 1!important;
+  grid-row:auto!important;
+}
+.home-portal[data-home-pager] [data-home-grid="0"]>[data-portal-block="hero"]{
+  grid-column:1/-1!important;
+  min-height:clamp(190px,31vh,300px)!important;
+}
+.home-portal[data-home-pager] .home-card{
+  min-height:clamp(118px,19vh,190px)!important;
+  padding:0!important;
+}
+.home-portal[data-home-pager] .home-card-title{
+  position:absolute!important;
+  z-index:3!important;
+  left:12px!important;
+  right:12px!important;
+  bottom:12px!important;
+  top:auto!important;
+  display:block!important;
+  width:auto!important;
+  max-width:none!important;
+  font-size:clamp(15px,3.6vw,22px)!important;
+  line-height:1.08!important;
+  overflow-wrap:anywhere!important;
+}
+.home-portal[data-home-pager] .home-card-background-video,
+.home-portal[data-home-pager] .home-card-background-overlay{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  pointer-events:none!important;
+}
+.home-portal[data-home-pager] .home-catalog-heading{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  min-width:0!important;
+  margin:0 0 9px!important;
+  padding:0 2px 8px!important;
+  border-bottom:1px solid rgba(255,255,255,.18)!important;
+  color:#f3f3f3!important;
+  font:10px 'DM Mono',monospace!important;
+  letter-spacing:.12em!important;
+}
+.home-portal[data-home-pager] .home-catalog-heading small{
+  color:#777!important;
+  font-size:8px!important;
+  text-align:right!important;
+}
+.home-portal[data-home-pager] .home-screen-pagination{
+  position:absolute!important;
+  top:5px!important;
+  right:8px!important;
+  z-index:50!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+}
+.home-portal[data-home-pager] .home-screen-pagination button{
+  display:grid!important;
+  place-items:center!important;
+  width:clamp(92px,20vw,142px)!important;
+  min-width:0!important;
+  min-height:48px!important;
+  height:48px!important;
+  padding:0 12px!important;
+  border:1px solid #ddd!important;
+  border-radius:7px!important;
+  background:#080a0d!important;
+  color:#f4f4f4!important;
+  font:600 11px 'DM Mono',monospace!important;
+  letter-spacing:.08em!important;
+}
+.home-portal[data-home-pager] .home-screen-pagination button[aria-current="page"]{
+  border-color:#fff!important;
+  background:#ff303d!important;
+  color:#fff!important;
+  box-shadow:0 0 16px rgba(255,48,61,.2)!important;
+}
+.home-portal[data-home-pager] .home-screen-pagination button:focus-visible{
+  outline:2px solid #fff!important;
+  outline-offset:3px!important;
+}
+
+/* The bottom dock has seven destinations, including Studio. */
+.portal-toolbar-nav{
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+}
+.portal-toolbar-item{
+  min-width:0!important;
+  width:100%!important;
+}
+.portal-toolbar-studio{
+  min-width:0!important;
+}
+
+@media(max-width:700px){
+  .home-portal[data-home-pager]{
+    padding:58px 8px 14px!important;
+  }
+  .home-portal[data-home-pager] .home-screen-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(112px,auto)!important;
+    gap:7px!important;
+  }
+  .home-portal[data-home-pager] [data-home-grid="0"]>[data-portal-block="hero"]{
+    min-height:clamp(165px,24vh,230px)!important;
+  }
+  .home-portal[data-home-pager] .home-card{
+    min-height:clamp(112px,18vh,168px)!important;
+  }
+  .home-portal[data-home-pager] .home-screen-pagination{
+    right:8px!important;
+    gap:7px!important;
+  }
+  .home-portal[data-home-pager] .home-screen-pagination button{
+    width:clamp(88px,21vw,142px)!important;
+    min-height:46px!important;
+    height:46px!important;
+    font-size:10px!important;
+  }
+  .portal-workspace.portal-home-workspace>main{
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .portal-toolbar-nav{
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    gap:0!important;
+    padding-inline:2px!important;
+  }
+  .portal-toolbar-item{
+    gap:3px!important;
+    padding-inline:0!important;
+  }
+  .portal-toolbar-label{
+    font-size:clamp(6px,1.7vw,8px)!important;
+    white-space:nowrap!important;
+  }
+}
+@media(max-width:360px){
+  .home-portal[data-home-pager] .home-screen-pagination button{
+    width:84px!important;
+    min-height:42px!important;
+    height:42px!important;
+    padding-inline:6px!important;
+  }
+  .home-portal[data-home-pager]{padding-top:53px!important}
+  .portal-toolbar-label{font-size:6px!important}
+}
