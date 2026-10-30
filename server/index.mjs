@@ -18,6 +18,7 @@ const apiHash = process.env.TELEGRAM_API_HASH || "";
 const sessionSecret = process.env.TELEGRAM_SESSION_SECRET || "";
 const sessionStorePath = process.env.TELEGRAM_SESSION_STORE_PATH || "/tmp/freezzz-telegram-sessions.json";
 const openAiApiKey = process.env.OPENAI_API_KEY || "";
+const aiAllowedTelegramUserId = process.env.AI_ALLOWED_TELEGRAM_USER_ID || "";
 const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
@@ -456,7 +457,9 @@ const server = http.createServer(async (req, res) => {
       botConfigured: Boolean(botToken),
       mtprotoConfigured: Boolean(apiId && apiHash),
       sessionStoreConfigured: Boolean(sessionSecret),
-      aiConfigured: Boolean(openAiApiKey),
+      aiConfigured: Boolean(openAiApiKey && aiAllowedTelegramUserId),
+      aiApiKeyConfigured: Boolean(openAiApiKey),
+      aiUserConfigured: Boolean(aiAllowedTelegramUserId),
       aiModel: openAiModel
     }, responseOrigin);
   }
@@ -484,6 +487,8 @@ const server = http.createServer(async (req, res) => {
       const user = authFromRequest(req);
       // AI calls consume a larger rate-limit budget because they incur provider charges.
       rateLimit(user.id, 12);
+      if (!aiAllowedTelegramUserId) return sendJson(res, 503, { ok: false, error: "AI_ACCESS_NOT_CONFIGURED" }, responseOrigin);
+      if (String(user.id) !== aiAllowedTelegramUserId) return sendJson(res, 403, { ok: false, error: "AI_ACCESS_DENIED" }, responseOrigin);
       if (!openAiApiKey) return sendJson(res, 503, { ok: false, error: "AI_NOT_CONFIGURED" }, responseOrigin);
 
       const body = await readBody(req, 48 * 1024);
