@@ -254,7 +254,6 @@ function bind(){
     }
     toggleFocus(id);
   });
-  layer?.querySelectorAll<HTMLElement>("[data-mw]").forEach(el=>el.addEventListener("pointerdown",()=>{const id=el.dataset.mw as MiniId;if(id in windows&&focusedWindow!==id){focus(id);saveWindowLayout();el.style.zIndex=String(windows[id].z);}}));
   layer?.querySelectorAll<HTMLElement>("[data-mw-source]").forEach(b=>b.onclick=()=>{
     liveSource=b.dataset.mwSource==="youtube"?"youtube":"twitch";liveReplay=false;render();
   });
