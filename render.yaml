@@ -34,3 +34,5 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-6-luna
+      - key: AI_ALLOWED_TELEGRAM_USER_ID
+        sync: false
