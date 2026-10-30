@@ -3,14 +3,12 @@ import "./freezzz-ai.css";
 type ChatRole = "user" | "assistant";
 type ChatMessage = { role: ChatRole; content: string };
 declare global {
-  interface ImportMetaEnv { readonly VITE_TELEGRAM_AUTH_URL?: string }
-  interface ImportMeta { readonly env: ImportMetaEnv }
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
   }
 }
 
-const API_BASE = (import.meta.env.VITE_TELEGRAM_AUTH_URL || "").replace(/\/$/, "");
+const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "").replace(/\/$/, "");
 const STORAGE_KEY = "freezzz:ai:history:v1";
 const MAX_HISTORY = 24;
 const root = document.querySelector<HTMLDivElement>("#freezzz-ai-root");
@@ -94,12 +92,12 @@ async function checkService() {
   }
   try {
     const response = await fetch(API_BASE + "/health", { cache: "no-store", signal: AbortSignal.timeout(8000) });
-    const data = await response.json() as { aiConfigured?: boolean };
+    const data = await response.json() as { aiConfigured?: boolean; aiApiKeyConfigured?: boolean; aiUserConfigured?: boolean };
     if (!response.ok) throw new Error("BACKEND_UNAVAILABLE");
     if (data.aiConfigured) setStatus("AI ONLINE", "ok");
     else {
       setStatus("НУЖЕН API KEY", "warn");
-      setNotice("Backend доступен, но OPENAI_API_KEY ещё не добавлен в переменные окружения сервиса FREEzzz на Render.");
+      setNotice("Backend доступен. Для включения личного AI добавь в Render переменные OPENAI_API_KEY и AI_ALLOWED_TELEGRAM_USER_ID (твой числовой Telegram ID).");
     }
   } catch {
     setStatus("BACKEND OFFLINE", "error");
@@ -140,6 +138,8 @@ async function sendMessage() {
     if (!response.ok) {
       const errors: Record<string, string> = {
         AI_NOT_CONFIGURED: "На сервере не задан OPENAI_API_KEY.",
+        AI_ACCESS_NOT_CONFIGURED: "В Render не задан AI_ALLOWED_TELEGRAM_USER_ID.",
+        AI_ACCESS_DENIED: "Этот AI-модуль доступен только владельцу портала.",
         TELEGRAM_AUTH_REQUIRED: "Не удалось подтвердить Telegram-сессию. Перезапусти Mini App.",
         RATE_LIMITED: "Слишком много запросов. Подожди минуту.",
         OPENAI_UPSTREAM_ERROR: "AI-провайдер временно не ответил. Повтори запрос позже."
