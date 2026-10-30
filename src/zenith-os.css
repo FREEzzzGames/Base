@@ -610,3 +610,89 @@ input,textarea,select{background:#101010!important;color:#eee!important;border-c
   .home-portal[data-home-pager]{padding-top:53px!important}
   .portal-toolbar-label{font-size:6px!important}
 }
+
+
+/* FINAL HOME pager correction — override the legacy mobile 2-column HOME grid.
+   The old selector put the track and pager buttons in separate grid columns,
+   making both screens render at half viewport width. */
+@media(max-width:700px){
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"][data-home-pager]{
+    display:flex!important;
+    flex-direction:column!important;
+    flex-wrap:nowrap!important;
+    position:relative!important;
+    inset:auto!important;
+    float:none!important;
+    width:100%!important;
+    min-width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    gap:0!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr) 38px!important;
+    grid-auto-flow:row!important;
+    align-items:stretch!important;
+    align-content:stretch!important;
+    justify-content:stretch!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"][data-home-pager]>.home-screen-track{
+    display:flex!important;
+    flex:1 1 0!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    width:100%!important;
+    min-width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    gap:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"][data-home-pager]>.home-screen-track>.home-screen-page{
+    display:block!important;
+    flex:0 0 100%!important;
+    width:100%!important;
+    min-width:100%!important;
+    max-width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0!important;
+    padding:0 0 8px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    box-sizing:border-box!important;
+  }
+  .portal-workspace.portal-home-workspace>main>.content.portal-layout.home-portal[data-portal-layout="home"][data-home-pager]>.home-screen-pagination{
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    flex:0 0 38px!important;
+    width:100%!important;
+    min-width:100%!important;
+    max-width:100%!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:4px 8px!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    box-sizing:border-box!important;
+  }
+  .portal-workspace.portal-home-workspace>.portal-toolbar .portal-toolbar-nav{
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  }
+}
