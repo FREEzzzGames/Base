@@ -201,7 +201,6 @@ console.log("PORTAL_WORKSPACE_REGRESSION_SMOKE_OK");
 
 const languageInit = main.slice(main.indexOf("try{\n  if(!localStorage.getItem(\"freezzz:language\"))"), main.indexOf("let portalProfile"));
 assert.ok(languageInit.includes("catch{ /* WebView storage may be disabled; keep the default language. */ }"), "Language auto-detection must not crash when WebView storage is unavailable");
-\n
 const homeGridShift = readFileSync("src/home-grid-shift.ts", "utf8");
 assert.ok(homeGridShift.includes('if (pages.length !== 2 || !track || !pagination) return;'),
   "HOME pager must initialize with exactly two screens after catalog consolidation");
