@@ -14,7 +14,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: fromRoot("./src/index.html")
+        main: fromRoot("./src/index.html"),
+        freezzzAi: fromRoot("./src/freezzz-ai.html")
       }
     }
   }
