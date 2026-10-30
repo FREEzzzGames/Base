@@ -203,10 +203,11 @@ export class ZenithOSKernel {
       this.history.push(previous);
       if (this.history.length > this.maxHistory) this.history.splice(0, this.history.length - this.maxHistory);
     }
+    this.state.view = next;
     if (!this.modules.transition(next)) {
+      this.state.view = previous;
       return { accepted: false, previous, current: previous, reason };
     }
-    this.state.view = next;
     return { accepted: true, previous, current: next, reason };
   }
 
