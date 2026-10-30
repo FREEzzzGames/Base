@@ -133,7 +133,7 @@ assert.ok(multiWindow.includes('if(id==="radio")') && multiWindow.includes('new 
   "RADIO widget expand control must not merely enlarge an empty player window");
 assert.ok(multiWindow.includes('windows.radio.open=false'), "RADIO widget must close before opening the full RADIO workspace");
 const visualStyles = readFileSync("src/styles.css", "utf8");
-assert.ok(true, "floating window title must suppress native touch panning while preserving slider controls");
+assert.ok(visualStyles.includes(".portal-mw-head strong{\n  touch-action:none!important;"), "floating window title must suppress native touch panning while preserving slider controls");
 assert.ok(visualStyles.includes(".home-portal > .home-phet-lab .home-card-title") &&
   visualStyles.includes("bottom:auto!important") && visualStyles.includes("white-space:normal!important"),
   "HOME PHET, Economy and Studio headings must stay in a separate top-aligned region");
