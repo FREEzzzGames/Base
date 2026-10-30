@@ -21,6 +21,11 @@ assert.ok(server.includes("loginError: loginErrors.get(String(user.id))"), "stat
 assert.ok(server.includes('code === "PAYLOAD_TOO_LARGE" ? 413'), "oversized requests must return HTTP 413");
 assert.ok(server.includes('error instanceof SyntaxError ? 400'), "malformed JSON must return HTTP 400");
 assert.ok(server.includes("rateBuckets.size > 5000"), "inactive rate-limit buckets must be pruned");
+assert.ok(server.includes("startLiveScheduler();"), "LIVE daily/monthly scheduler must start with the API server");
+assert.ok(server.includes('pathName.startsWith("/api/economy/")'), "economy routes must be mounted in the API server");
+assert.ok(server.includes("const user = authFromRequest(req);"), "economy API must require verified Telegram identity");
+assert.ok(server.includes("rateLimit(user.id);"), "economy API must share per-user rate limiting");
+assert.ok(server.includes("handleEconomyRoute("), "economy API handler must be reachable from HTTP routing");
 assert.ok(server.includes("pending.timeout = setTimeout"), "abandoned Telegram login sessions must expire");
 assert.ok(server.includes("clearTimeout(pending.timeout)"), "login timeout must be cleared on completion and disconnect");
 assert.ok(server.includes('pending.status = "authenticating"'), "code submission must not assume that 2FA is required");
