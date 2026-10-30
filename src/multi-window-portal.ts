@@ -132,6 +132,9 @@ function syncDomNode(current:Node,next:Node):Node{
 }
 
 function syncDomChildren(container:Element,template:Element):void{
+  for(const attribute of Array.from(container.attributes)){
+    if(!template.hasAttribute(attribute.name))template.setAttribute(attribute.name,attribute.value);
+  }
   syncDomNode(container,template);
 }
 
