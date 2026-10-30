@@ -10715,3 +10715,20 @@ button:disabled,[aria-disabled="true"]{
     left:10px!important;right:10px!important;bottom:9px!important;font-size:9px!important;
   }
 }
+
+
+/* Dashboard density: distribute the primary destinations across the usable viewport. */
+@media(min-width:0px){
+  .home-portal[data-home-pager] [data-home-screen="0"] .home-screen-grid{
+    display:grid!important;height:100%!important;min-height:100%!important;
+    grid-template-rows:minmax(118px,1.12fr) repeat(3,minmax(92px,1fr))!important;
+    grid-auto-rows:minmax(92px,1fr)!important;align-content:stretch!important;
+  }
+  .home-portal[data-home-pager] [data-home-screen="0"] .home-screen-grid>[data-portal-block]{
+    min-height:0!important;
+  }
+}
+.home-portal[data-home-pager] .home-screen-grid .home-card-title{
+  overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
+  text-wrap:balance;
+}
