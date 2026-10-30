@@ -21,6 +21,8 @@ const openAiApiKey = process.env.OPENAI_API_KEY || "";
 const aiAllowedTelegramUserId = process.env.AI_ALLOWED_TELEGRAM_USER_ID || "";
 const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
 const githubToken = process.env.GITHUB_TOKEN || "";
+const devRepoOwner = "FREEzzzGames";
+const devRepoName = "Base";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
 if (!apiId || !apiHash) console.warn("TELEGRAM_API_ID / TELEGRAM_API_HASH are not configured.");
@@ -202,6 +204,31 @@ async function verifyMembership(userId) {
   const status = member?.status;
   return status === "creator" || status === "administrator" || status === "member" ||
     (status === "restricted" && member?.is_member === true);
+}
+
+function requireAiOwner(user) {
+  if (!aiAllowedTelegramUserId) throw new Error("AI_ACCESS_NOT_CONFIGURED");
+  if (String(user.id) !== aiAllowedTelegramUserId) throw new Error("AI_ACCESS_DENIED");
+}
+function validateDevPath(value) {
+  if (typeof value !== "string" || !value || value.length > 220 || value.startsWith("/") ||
+      value.split("/").some(part => !part || part === "." || part === "..") ||
+      /(^|\\/)\\.git($|\\/)|(^|\\/)node_modules($|\\/)/.test(value)) throw new Error("INVALID_REPO_PATH");
+  return value;
+}
+async function devGitHubGet(apiPath) {
+  if (!githubToken) throw new Error("GITHUB_NOT_CONFIGURED");
+  const response = await fetch("https://api.github.com" + apiPath, {
+    headers: { Authorization: "Bearer " + githubToken, Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "FREEzzz-Portal-Dev" },
+    signal: AbortSignal.timeout(12000)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    console.error("developer GitHub request failed", response.status);
+    throw new Error(response.status === 404 ? "GITHUB_RESOURCE_NOT_FOUND" : "GITHUB_API_ERROR");
+  }
+  return data;
 }
 
 function authFromRequest(req) {
@@ -482,6 +509,43 @@ const server = http.createServer(async (req, res) => {
       const member = await verifyMembership(result.user.id);
       if (!member) return sendJson(res, 403, { ok: false, error: "TELEGRAM_MEMBERSHIP_REQUIRED" }, responseOrigin);
       return sendJson(res, 200, { ok: true, authDate: result.authDate, queryId: result.queryId, user: result.user }, responseOrigin);
+    }
+
+    if (pathName.startsWith("/api/dev/repo/") && req.method === "GET") {
+      const user = authFromRequest(req);
+      requireAiOwner(user);
+      rateLimit(user.id, 2);
+      if (pathName === "/api/dev/repo/status") {
+        if (!githubToken) return sendJson(res, 200, { ok: true, configured: false,
+          repository: devRepoOwner + "/" + devRepoName }, responseOrigin);
+        const repoInfo = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName);
+        return sendJson(res, 200, { ok: true, configured: true,
+          repository: devRepoOwner + "/" + devRepoName, defaultBranch: repoInfo.default_branch,
+          private: repoInfo.private, permissions: repoInfo.permissions || {} }, responseOrigin);
+      }
+      if (!githubToken) return sendJson(res, 503, { ok: false, error: "GITHUB_NOT_CONFIGURED" }, responseOrigin);
+      if (pathName === "/api/dev/repo/tree") {
+        const requestedPath = url.searchParams.get("path") || "";
+        const suffix = requestedPath ? "/" + validateDevPath(requestedPath) : "";
+        const payload = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName +
+          "/contents" + suffix + "?ref=main");
+        const items = Array.isArray(payload) ? payload : [payload];
+        return sendJson(res, 200, { ok: true, items: items.slice(0, 100).map(item => ({
+          name: String(item.name || "").slice(0, 140), path: String(item.path || "").slice(0, 220),
+          type: item.type === "dir" ? "dir" : "file", size: Number(item.size || 0)
+        })) }, responseOrigin);
+      }
+      if (pathName === "/api/dev/repo/file") {
+        const filePath = validateDevPath(url.searchParams.get("path") || "");
+        const item = await devGitHubGet("/repos/" + devRepoOwner + "/" + devRepoName +
+          "/contents/" + filePath + "?ref=main");
+        if (item.type !== "file" || typeof item.content !== "string" || Number(item.size) > 100000) {
+          throw new Error("REPO_FILE_NOT_READABLE");
+        }
+        return sendJson(res, 200, { ok: true, path: item.path,
+          content: Buffer.from(item.content, "base64").toString("utf8"), sha: item.sha }, responseOrigin);
+      }
+      return sendJson(res, 404, { ok: false, error: "DEV_ROUTE_NOT_FOUND" }, responseOrigin);
     }
 
     if (pathName === "/api/ai/chat" && req.method === "POST") {
