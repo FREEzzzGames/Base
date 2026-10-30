@@ -98,7 +98,7 @@ let portalProfile:PortalProfile=loadPortalProfile(verifiedTelegramIdentity);
 syncPortalIdentity(portalProfile,verifiedTelegramIdentity);
 startPortalSession(portalProfile);
 let activityLastFlushAt=Date.now();
-let gameActivityStartedAt:number|null=view==="game"?Date.now():null;
+let gameActivityStartedAt:number|null=zenithKernel.snapshot.view==="game"?Date.now():null;
 let liveActivityStartedAt:number|null=null;
 let radioActivityStartedAt:number|null=null;
 const liveActivityNames=new Set<string>();
