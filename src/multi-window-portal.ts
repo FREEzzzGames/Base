@@ -94,6 +94,47 @@ function syncTelegramPopup(detail?:{chat?:TelegramPopupChat|null;messages?:Teleg
 }
 let layer:HTMLDivElement|null=null;
 
+/** Patch floating-window DOM in place so stable iframe nodes keep their browsing context. */
+function syncDomNode(current:Node,next:Node):Node{
+  if(current.nodeType!==next.nodeType)return next.cloneNode(true);
+  if(current.nodeType===Node.TEXT_NODE||current.nodeType===Node.COMMENT_NODE){
+    if(current.nodeValue!==next.nodeValue)current.nodeValue=next.nodeValue;
+    return current;
+  }
+  if(!(current instanceof Element)||!(next instanceof Element)||current.tagName!==next.tagName)return next.cloneNode(true);
+  const isFrame=current.tagName==="IFRAME";
+  for(const attribute of Array.from(current.attributes)){
+    if(!next.hasAttribute(attribute.name)){
+      if(isFrame&&attribute.name==="src")continue;
+      current.removeAttribute(attribute.name);
+    }
+  }
+  for(const attribute of Array.from(next.attributes)){
+    if(isFrame&&attribute.name==="src"&&current.getAttribute("src")===attribute.value)continue;
+    if(current.getAttribute(attribute.name)!==attribute.value)current.setAttribute(attribute.name,attribute.value);
+  }
+  if(isFrame)return current;
+  const desired=Array.from(next.childNodes);
+  for(let index=0;index<desired.length;index++){
+    const incoming=desired[index];
+    const key=incoming instanceof Element?incoming.getAttribute("data-mw"):null;
+    let existing=current.childNodes[index]||null;
+    if(key)existing=Array.from(current.childNodes).find(node=>node instanceof Element&&node.getAttribute("data-mw")===key)||null;
+    else if(existing instanceof Element&&existing.hasAttribute("data-mw"))existing=null;
+    if(existing){
+      if(existing!==current.childNodes[index])current.insertBefore(existing,current.childNodes[index]||null);
+      const patched=syncDomNode(existing,incoming);
+      if(patched!==existing)current.replaceChild(patched,existing);
+    }else current.insertBefore(incoming.cloneNode(true),current.childNodes[index]||null);
+  }
+  while(current.childNodes.length>desired.length)current.removeChild(current.lastChild!);
+  return current;
+}
+
+function syncDomChildren(container:Element,template:Element):void{
+  syncDomNode(container,template);
+}
+
 function esc(s:string){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c));}
 function focus(id:MiniId){windows[id].z=nextZ++;}
 function toggleFocus(id:MiniId){focusedWindow=focusedWindow===id?null:id;focus(id);saveWindowLayout();render();}
@@ -177,7 +218,9 @@ function render(){
     '<button class="portal-mw-settings-reset" data-mw-settings-reset type="button">СБРОСИТЬ НАСТРОЙКИ</button></section>');
   const taskItems=(Object.keys(windows) as MiniId[]).filter(id=>windows[id].open).map(id=>'<button type="button" class="portal-os-task" data-os-restore="'+id+'" aria-label="Восстановить '+id+'">'+(id==="live"?"📺 LIVE":id==="chat"?"💬 CHAT":"♫ RADIO")+'</button>').join("");
   out.push('<nav class="portal-os-taskbar" aria-label="Открытые приложения" '+(taskItems?"":"hidden")+'>'+taskItems+'</nav>');
-  layer.innerHTML=out.join("");
+  const template=document.createElement("div");
+  template.innerHTML=out.join("");
+  syncDomChildren(layer,template);
   // Dock restore controls into the portal's real bottom toolbar instead of
   // leaving a fixed overlay above the HOME cards.
   const taskbar=layer.querySelector<HTMLElement>(".portal-os-taskbar");
