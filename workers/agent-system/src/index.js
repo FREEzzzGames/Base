@@ -286,7 +286,7 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/internal/status") {
-      return json({ ok: true, databaseConfigured: false, modelConfigured: Boolean(env.AI), model: env.AGENT_MODEL || MODEL_DEFAULT,
+      return json({ ok: true, storageConfigured: Boolean(env.AGENT_TASKS), modelConfigured: Boolean(env.AI), model: env.AGENT_MODEL || MODEL_DEFAULT,
         roles: AGENTS.map(({ key, title }) => ({ key, title })), mode: "cloud-only", writesEnabled: false });
     }
 
