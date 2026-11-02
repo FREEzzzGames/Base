@@ -275,7 +275,7 @@ async function toggleAgentPanel() {
     await refreshAgentPanel(true);
     if (agentPollTimer === null) agentPollTimer = window.setInterval(() => {
       if (agentPanelOpen) void refreshAgentPanel(false);
-    }, 7000);
+    }, 15000);
   } else closeAgentPanel();
 }
 function closeAgentPanel() {
