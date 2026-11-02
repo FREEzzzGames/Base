@@ -45,7 +45,8 @@ function safeTask(row) {
     result: row.result || null,
     error: row.error_code || null,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    events: row.events || []
   };
 }
 
@@ -97,6 +98,7 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
       CREATE INDEX IF NOT EXISTS freezzz_agent_events_task
         ON freezzz_agent_events (task_id, id ASC);
     `);
+    await pool.query("UPDATE freezzz_agent_tasks SET status='queued',stage='queued',updated_at=NOW() WHERE status='running' AND updated_at < NOW() - INTERVAL '15 minutes'");
     initialized = true;
     return true;
   }
@@ -144,7 +146,7 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
     if (!pool) throw new Error("AGENT_DATABASE_NOT_CONFIGURED");
     await initialize();
     const result = await pool.query(
-      "SELECT * FROM freezzz_agent_tasks WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20",
+      "SELECT t.*, COALESCE((SELECT json_agg(json_build_object('agent',e.agent,'status',e.status,'content',e.content,'created_at',e.created_at) ORDER BY e.id ASC) FROM freezzz_agent_events e WHERE e.task_id=t.id), '[]'::json) AS events FROM freezzz_agent_tasks t WHERE t.user_id=$1 ORDER BY t.created_at DESC LIMIT 20",
       [String(userId)]
     );
     return result.rows.map(safeTask);
@@ -224,8 +226,9 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
     if (!pool || !accountId || !apiToken || processing || stopping) return false;
     processing = true;
     let task = null;
-    const client = await pool.connect();
+    let client;
     try {
+      client = await pool.connect();
       await client.query("BEGIN");
       const selected = await client.query(
         "SELECT * FROM freezzz_agent_tasks WHERE status='queued' ORDER BY created_at ASC FOR UPDATE SKIP LOCKED LIMIT 1"
@@ -244,7 +247,7 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
       await executeTask(task);
       return true;
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch {}
+      try { if (client) await client.query("ROLLBACK"); } catch {}
       if (task) {
         const code = error instanceof Error ? error.message : "AGENT_EXECUTION_FAILED";
         await pool.query(
@@ -256,7 +259,7 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
       console.error("FREEzzz Agent task failed", error instanceof Error ? error.message : "UNKNOWN");
       return false;
     } finally {
-      client.release();
+      client?.release();
       processing = false;
     }
   }
