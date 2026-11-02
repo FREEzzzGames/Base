@@ -297,10 +297,14 @@ function renderAgentTasks() {
       const state = event?.status || (task.stage === key ? "running" : "waiting");
       return '<span class="ai-agent-chip" data-state="' + escapeAgentText(state) + '">' + escapeAgentText(key.toUpperCase()) + '</span>';
     }).join("");
+    const outputs = events.filter(item => item.status === "completed" && item.agent !== "system").map(item =>
+      '<details class="ai-agent-output"><summary>' + escapeAgentText(item.agent.toUpperCase()) + '</summary><pre>' +
+      escapeAgentText(item.content) + '</pre></details>'
+    ).join("");
     return '<article class="ai-agent-task" data-task-id="' + escapeAgentText(task.id) + '"><div class="ai-agent-task-head"><b>' +
       escapeAgentText(task.status.toUpperCase()) + '</b><small>' + escapeAgentText(task.stage) + '</small></div><p>' +
       escapeAgentText(task.prompt) + '</p><div class="ai-agent-chips">' + agents + '</div><div class="ai-agent-summary">' +
-      escapeAgentText(summary) + '</div></article>';
+      escapeAgentText(summary) + '</div>' + outputs + '</article>';
   }).join("");
 }
 async function refreshAgentPanel(showErrors: boolean) {
