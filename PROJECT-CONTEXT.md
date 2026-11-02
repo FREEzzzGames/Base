@@ -220,3 +220,12 @@ This document is project context, not a replacement for the actual implementatio
 - Added DEV panel to check live credential validity and repository permissions from Telegram.
 - Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
 - Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.
+
+
+## 2026-11-02 FREEzzz Agent System architecture decision
+
+- New planned subsystem: `FREEzzz Agent System`, documented in `AGENT-SYSTEM-CLOUD.md`.
+- Mandatory architecture: cloud-only. The Telegram Mini App is a thin client; no local models, Ollama, on-device orchestration or local code execution.
+- Candidate cloud stack: Cloudflare Workers + durable Workflows + Workers AI; GitHub Actions standard runners execute repository checks remotely.
+- Free-tier quotas are bounded. No silent paid-provider fallback; quota exhaustion must pause/fail visibly.
+- Work is not implemented or deployed yet. This is an architecture decision and implementation baseline only.
