@@ -71,3 +71,8 @@ button{cursor:pointer}
 .ai-agent-summary{max-height:120px;overflow:auto;padding-top:6px;border-top:1px solid rgba(125,150,165,.15);color:#aebdc3;font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}
 .ai-agent-disclaimer{margin-top:9px;color:#ffbf69!important}
 @media(max-width:420px){.ai-agent-panel{max-height:34vh;padding:9px}.ai-agent-form{grid-template-columns:1fr}.ai-agent-form button{min-height:34px}.ai-agent-toggle{padding:0 6px;font-size:8px}}
+
+
+.ai-agent-output{margin-top:5px;border-top:1px solid rgba(125,150,165,.15);padding-top:5px}
+.ai-agent-output summary{color:#66fcf1;font:9px "Space Mono",monospace;cursor:pointer}
+.ai-agent-output pre{max-height:220px;overflow:auto;margin:6px 0 0;padding:8px;border-radius:6px;background:#080e13;color:#c2d0d6;font:10px/1.5 "Space Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere}
