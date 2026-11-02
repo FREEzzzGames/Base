@@ -4,6 +4,8 @@ type ChatRole = "user" | "assistant";
 type ChatMessage = { role: ChatRole; content: string };
 type PortalContext = { activeModule: string; language: "RU" | "DE" | "EN"; modules: string[]; build: string };
 type DevStatus = { ok?: boolean; configured?: boolean; repository?: string; defaultBranch?: string; private?: boolean; permissions?: { pull?: boolean; push?: boolean }; error?: string };
+type AgentTask = { id: string; status: string; stage: string; prompt: string; result?: { summary?: string; agents?: Record<string, string>; execution?: { filesChanged?: boolean; testsExecuted?: boolean; commitCreated?: boolean } } | null; error?: string | null; events?: Array<{ agent: string; status: string; content: string; created_at: string }> };
+type AgentStatus = { databaseConfigured?: boolean; modelConfigured?: boolean; model?: string; mode?: string; writesEnabled?: boolean; roles?: Array<{ key: string; title: string }>; tasks?: AgentTask[] };
 declare global {
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
@@ -24,6 +26,10 @@ let noticeMessage = "";
 let portalContext: PortalContext | null = null;
 let portalContextEnabled = false;
 let devModeEnabled = false;
+let agentPanelOpen = false;
+let agentStatus: AgentStatus | null = null;
+let agentTasks: AgentTask[] = [];
+let agentPollTimer: number | null = null;
 
 function loadHistory(): ChatMessage[] {
   try {
@@ -46,12 +52,12 @@ function render() {
     '<div class="ai-empty"><div class="ai-orb">✳</div><h2>Твой персональный AI</h2><p>Помогаю исследовать, планировать, писать и разбирать задачи внутри FREEzzz Portal.</p><div class="ai-suggestions"><button type="button" data-prompt="Помоги спланировать мои текущие проекты в FREEzzz Portal.">Разобрать проекты</button><button type="button" data-prompt="Предложи план выпуска новостного подкаста PULSE на сегодня.">Подготовить PULSE</button><button type="button" data-prompt="Объясни сложную технологическую тему простым языком.">Объяснить тему</button></div></div>';
   root!.innerHTML = `
     <section class="ai-shell">
-      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-dev-toggle" data-dev-toggle>DEV</button><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="${portalContextEnabled}">${portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ"}</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
-      <section class="ai-dev-panel" data-dev-panel hidden><div class="ai-dev-head"><b>DEVELOPER ACCESS</b><button type="button" data-dev-close>×</button></div><p data-dev-status>Не проверено</p><small data-dev-detail></small><button type="button" data-dev-enable>ПОДКЛЮЧИТЬ ЧТЕНИЕ РЕПОЗИТОРИЯ</button></section>
+      <header class="ai-header"><div><span class="ai-eyebrow">FREEzzz PERSONAL INTELLIGENCE</span><h1>FREEzzz <i>AI</i></h1><p>Личный интеллектуальный модуль портала</p></div><div class="ai-header-actions"><button type="button" class="ai-dev-toggle" data-dev-toggle>DEV</button><button type="button" class="ai-agent-toggle" data-agent-toggle>AGENTS</button><button type="button" class="ai-context-toggle" data-context-toggle aria-pressed="${portalContextEnabled}">${portalContextEnabled ? "КОНТЕКСТ ВКЛ" : "КОНТЕКСТ ВЫКЛ"}</button><span class="ai-status" data-ai-status data-state="${statusState}">${statusLabel}</span><button type="button" class="ai-new-chat" data-new-chat>＋</button></div></header>
+      <section class="ai-agent-panel" data-agent-panel hidden><div class="ai-dev-head"><b>FREEzzz AGENT SYSTEM · CLOUD ONLY</b><button type="button" data-agent-close>×</button></div><p data-agent-status>Проверка облачной инфраструктуры…</p><small data-agent-config></small><form class="ai-agent-form" data-agent-form><textarea data-agent-prompt maxlength="6000" rows="2" placeholder="Опиши задачу для команды из пяти агентов…" required></textarea><button type="submit" data-agent-submit>ЗАПУСТИТЬ ЗАДАЧУ</button></form><div class="ai-agent-list-head"><b>ЗАДАЧИ</b><button type="button" data-agent-refresh>ОБНОВИТЬ</button></div><div data-agent-list class="ai-agent-list"><p>Задач пока нет.</p></div><small class="ai-agent-disclaimer">Первая версия: анализ и предложения. Файлы не изменяются, тесты не запускаются, коммиты не создаются.</small></section>\n      <section class="ai-dev-panel" data-dev-panel hidden><div class="ai-dev-head"><b>DEVELOPER ACCESS</b><button type="button" data-dev-close>×</button></div><p data-dev-status>Не проверено</p><small data-dev-detail></small><button type="button" data-dev-enable>ПОДКЛЮЧИТЬ ЧТЕНИЕ РЕПОЗИТОРИЯ</button></section>
       <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
-      <footer class="ai-footer"><span>OWNER-ONLY · OPENAI API</span><span>История локальная · запросы передаются OpenAI</span></footer>
+      <footer class="ai-footer"><span>OWNER-ONLY · CLOUD AGENTS</span><span>Задачи хранятся на сервере · модели работают в облаке</span></footer>
     </section>`;
   const transcriptEl = root!.querySelector<HTMLElement>("[data-ai-transcript]")!;
   const rendered = transcriptEl.querySelectorAll<HTMLElement>(".ai-message");
@@ -66,6 +72,10 @@ function render() {
     void sendMessage();
   });
   root!.querySelector<HTMLButtonElement>("[data-dev-toggle]")!.addEventListener("click", () => { void checkDevStatus(); });
+  root!.querySelector<HTMLButtonElement>("[data-agent-toggle]")!.addEventListener("click", () => { void toggleAgentPanel(); });
+  root!.querySelector<HTMLButtonElement>("[data-agent-close]")!.addEventListener("click", closeAgentPanel);
+  root!.querySelector<HTMLButtonElement>("[data-agent-refresh]")!.addEventListener("click", () => { void refreshAgentPanel(true); });
+  root!.querySelector<HTMLFormElement>("[data-agent-form]")!.addEventListener("submit", event => { event.preventDefault(); void submitAgentTask(); });
   root!.querySelector<HTMLButtonElement>("[data-dev-enable]")!.addEventListener("click", () => { void enableDevMode(); });
   root!.querySelector<HTMLButtonElement>("[data-dev-close]")!.addEventListener("click", () => { const panel = root!.querySelector<HTMLElement>("[data-dev-panel]"); if (panel) panel.hidden = true; });
   root!.querySelector<HTMLButtonElement>("[data-context-toggle]")!.addEventListener("click", () => {
@@ -231,6 +241,106 @@ async function sendMessage() {
   } finally {
     busy = false;
     render();
+  }
+}
+
+
+function escapeAgentText(value: unknown): string {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char] || char);
+}
+function agentHeaders(json = false): HeadersInit {
+  const headers: Record<string, string> = { "X-Telegram-Init-Data": window.Telegram?.WebApp?.initData || "" };
+  if (json) headers["Content-Type"] = "application/json";
+  return headers;
+}
+async function toggleAgentPanel() {
+  const panel = root!.querySelector<HTMLElement>("[data-agent-panel]");
+  if (!panel) return;
+  agentPanelOpen = !agentPanelOpen;
+  panel.hidden = !agentPanelOpen;
+  if (agentPanelOpen) {
+    await refreshAgentPanel(true);
+    if (agentPollTimer === null) agentPollTimer = window.setInterval(() => {
+      if (agentPanelOpen) void refreshAgentPanel(false);
+    }, 7000);
+  } else closeAgentPanel();
+}
+function closeAgentPanel() {
+  agentPanelOpen = false;
+  const panel = root!.querySelector<HTMLElement>("[data-agent-panel]");
+  if (panel) panel.hidden = true;
+  if (agentPollTimer !== null) window.clearInterval(agentPollTimer);
+  agentPollTimer = null;
+}
+function renderAgentTasks() {
+  const list = root!.querySelector<HTMLElement>("[data-agent-list]");
+  if (!list) return;
+  if (!agentTasks.length) { list.innerHTML = "<p>Задач пока нет.</p>"; return; }
+  list.innerHTML = agentTasks.map(task => {
+    const summary = task.result?.summary || task.error || "Выполнение продолжается.";
+    const events = task.events || [];
+    const agents = ["coordinator","researcher","developer","tester","auditor"].map(key => {
+      const event = [...events].reverse().find(item => item.agent === key);
+      const state = event?.status || (task.stage === key ? "running" : "waiting");
+      return '<span class="ai-agent-chip" data-state="' + escapeAgentText(state) + '">' + escapeAgentText(key.toUpperCase()) + '</span>';
+    }).join("");
+    return '<article class="ai-agent-task" data-task-id="' + escapeAgentText(task.id) + '"><div class="ai-agent-task-head"><b>' +
+      escapeAgentText(task.status.toUpperCase()) + '</b><small>' + escapeAgentText(task.stage) + '</small></div><p>' +
+      escapeAgentText(task.prompt) + '</p><div class="ai-agent-chips">' + agents + '</div><div class="ai-agent-summary">' +
+      escapeAgentText(summary) + '</div></article>';
+  }).join("");
+}
+async function refreshAgentPanel(showErrors: boolean) {
+  const status = root!.querySelector<HTMLElement>("[data-agent-status]");
+  const config = root!.querySelector<HTMLElement>("[data-agent-config]");
+  if (!status || !config) return;
+  const initData = window.Telegram?.WebApp?.initData || "";
+  if (!initData) { status.textContent = "Открой FREEzzz Portal внутри Telegram."; return; }
+  try {
+    const response = await fetch(API_BASE + "/api/agents/status", {
+      headers: agentHeaders(), credentials: "omit", cache: "no-store", signal: AbortSignal.timeout(12000)
+    });
+    const data = await response.json() as AgentStatus & { error?: string };
+    if (!response.ok) throw new Error(data.error || "AGENT_STATUS_FAILED");
+    agentStatus = data;
+    agentTasks = data.tasks || [];
+    status.textContent = data.databaseConfigured && data.modelConfigured
+      ? "ОБЛАЧНАЯ СИСТЕМА ГОТОВА · " + (data.roles?.length || 5) + " АГЕНТОВ"
+      : "ТРЕБУЕТСЯ НАСТРОЙКА ОБЛАКА";
+    config.textContent = "DB: " + (data.databaseConfigured ? "OK" : "NOT CONFIGURED") +
+      " · MODEL: " + (data.modelConfigured ? data.model || "OK" : "NOT CONFIGURED") +
+      " · MODE: CLOUD ONLY · WRITE: DISABLED";
+    renderAgentTasks();
+  } catch (error) {
+    if (showErrors) status.textContent = error instanceof Error ? error.message : "AGENT_STATUS_FAILED";
+  }
+}
+async function submitAgentTask() {
+  const input = root!.querySelector<HTMLTextAreaElement>("[data-agent-prompt]");
+  const button = root!.querySelector<HTMLButtonElement>("[data-agent-submit]");
+  const status = root!.querySelector<HTMLElement>("[data-agent-status]");
+  const prompt = input?.value.trim() || "";
+  if (!prompt || !input || !button || !status) return;
+  if (!window.Telegram?.WebApp?.initData) { status.textContent = "Требуется Telegram Mini App."; return; }
+  button.disabled = true;
+  button.textContent = "ОТПРАВКА…";
+  try {
+    const response = await fetch(API_BASE + "/api/agents/tasks", {
+      method: "POST", headers: agentHeaders(true), body: JSON.stringify({ prompt }),
+      credentials: "omit", cache: "no-store", signal: AbortSignal.timeout(15000)
+    });
+    const data = await response.json() as { task?: AgentTask; error?: string };
+    if (!response.ok) throw new Error(data.error || "AGENT_TASK_CREATE_FAILED");
+    input.value = "";
+    status.textContent = "ЗАДАЧА ПОСТАВЛЕНА В ОБЛАЧНУЮ ОЧЕРЕДЬ";
+    await refreshAgentPanel(false);
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : "AGENT_TASK_CREATE_FAILED";
+  } finally {
+    button.disabled = false;
+    button.textContent = "ЗАПУСТИТЬ ЗАДАЧУ";
   }
 }
 
