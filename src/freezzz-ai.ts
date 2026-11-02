@@ -5,7 +5,7 @@ type ChatMessage = { role: ChatRole; content: string };
 type PortalContext = { activeModule: string; language: "RU" | "DE" | "EN"; modules: string[]; build: string };
 type DevStatus = { ok?: boolean; configured?: boolean; repository?: string; defaultBranch?: string; private?: boolean; permissions?: { pull?: boolean; push?: boolean }; error?: string };
 type AgentTask = { id: string; status: string; stage: string; prompt: string; result?: { summary?: string; agents?: Record<string, string>; execution?: { filesChanged?: boolean; testsExecuted?: boolean; commitCreated?: boolean } } | null; error?: string | null; events?: Array<{ agent: string; status: string; content: string; created_at: string }> };
-type AgentStatus = { storageConfigured?: boolean; modelConfigured?: boolean; model?: string; mode?: string; writesEnabled?: boolean; roles?: Array<{ key: string; title: string }>; tasks?: AgentTask[] };
+type AgentStatus = { storageConfigured?: boolean; modelConfigured?: boolean; model?: string; auditorModel?: string; mode?: string; writesEnabled?: boolean; roles?: Array<{ key: string; title: string }>; tasks?: AgentTask[] };
 declare global {
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
@@ -321,7 +321,7 @@ async function refreshAgentPanel(showErrors: boolean) {
       : "ТРЕБУЕТСЯ НАСТРОЙКА ОБЛАКА";
     config.textContent = "KV: " + (data.storageConfigured ? "OK" : "NOT CONFIGURED") +
       " · MODEL: " + (data.modelConfigured ? data.model || "OK" : "NOT CONFIGURED") +
-      " · MODE: CLOUD ONLY · WRITE: DISABLED";
+      " · AUDIT: " + (data.auditorModel || "Gemma 4") + " · CLOUD ONLY · WRITE: DISABLED";
     renderAgentTasks();
   } catch (error) {
     if (showErrors) status.textContent = agentErrorMessage(error instanceof Error ? error.message : "AGENT_STATUS_FAILED");
