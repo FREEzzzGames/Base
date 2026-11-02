@@ -547,7 +547,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { ok: true, ...config, tasks: data.tasks || [] }, responseOrigin);
       }
       if (pathName === "/api/agents/tasks" && req.method === "POST") {
-        const body = await readBody(req, 8 * 1024);
+        const body = await readBody(req, 32 * 1024);
         const data = await agentCloudRequest("/internal/tasks", {
           method: "POST", body: JSON.stringify({ userId: String(user.id), prompt: body.prompt })
         });
@@ -787,10 +787,11 @@ const server = http.createServer(async (req, res) => {
       : code === "PAYLOAD_TOO_LARGE" ? 413
       : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA","MISSING_INIT_DATA"].includes(code) ? 401
       : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
-      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
+      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","INVALID_TASK","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["RATE_LIMITED","AGENT_TASK_LIMIT"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_CLOUD_NOT_CONFIGURED"].includes(code) ? 503
       : ["AGENT_CLOUD_UPSTREAM_ERROR","AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
+      : code === "TASK_NOT_FOUND" ? 404
       : 502;
     console.error("telegram api error", code);
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
