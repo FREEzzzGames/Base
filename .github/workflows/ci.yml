@@ -130,6 +130,10 @@ jobs:
         run: node --test server/telegram-auth.test.mjs
       - name: Telegram gateway syntax check
         run: node --check server/index.mjs
+      - name: Cloud agent worker syntax and configuration check
+        run: |
+          node --check workers/agent-system/src/index.js
+          node -e 'JSON.parse(require("node:fs").readFileSync("workers/agent-system/wrangler.jsonc","utf8")); console.log("AGENT_WORKER_CONFIG_OK")'
       - name: Legacy Telegram adapter typecheck
         run: npm --prefix server/telegram-client install --ignore-scripts && npm --prefix server/telegram-client run typecheck
 
