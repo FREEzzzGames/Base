@@ -7,6 +7,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
+import { createAgentSystem } from "./agent-system.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -477,8 +478,13 @@ async function disconnectTelegram(userId) {
   schedulePersist();
 }
 
+const agentSystem = createAgentSystem({ repoContextLoader: loadDevRepositoryContext });
+
 await loadStoredSessions();
 void logBotIdentity();
+void agentSystem.initialize().then(() => {
+  if (agentSystem.startWorker()) console.log("FREEzzz Agent System cloud worker started.");
+}).catch(error => console.error("FREEzzz Agent System database initialization failed", error?.message || "UNKNOWN"));
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
@@ -509,13 +515,42 @@ const server = http.createServer(async (req, res) => {
       aiConfigured: Boolean(openAiApiKey && aiAllowedTelegramUserId),
       aiApiKeyConfigured: Boolean(openAiApiKey),
       aiUserConfigured: Boolean(aiAllowedTelegramUserId),
-      aiModel: openAiModel
+      aiModel: openAiModel,
+      agentSystem: agentSystem.status()
     }, responseOrigin);
   }
 
   try {
     const url = new URL(req.url || "/", "http://localhost");
     const pathName = url.pathname;
+
+    if (pathName.startsWith("/api/agents/")) {
+      const user = authFromRequest(req);
+      requireAiOwner(user);
+      rateLimit(user.id, req.method === "POST" ? 5 : 2);
+
+      if (pathName === "/api/agents/status" && req.method === "GET") {
+        const config = agentSystem.status();
+        const tasks = config.databaseConfigured ? await agentSystem.listTasks(user.id) : [];
+        return sendJson(res, 200, { ok: true, ...config, tasks }, responseOrigin);
+      }
+      if (pathName === "/api/agents/tasks" && req.method === "POST") {
+        const body = await readBody(req, 8 * 1024);
+        const task = await agentSystem.createTask(user.id, body.prompt);
+        return sendJson(res, 202, { ok: true, task }, responseOrigin);
+      }
+      const taskMatch = pathName.match(/^\\/api\\/agents\\/tasks\\/([0-9a-f-]{36})(?:\\/(cancel))?$/i);
+      if (taskMatch && req.method === "GET" && !taskMatch[2]) {
+        const task = await agentSystem.getTask(user.id, taskMatch[1]);
+        return task ? sendJson(res, 200, { ok: true, task }, responseOrigin)
+          : sendJson(res, 404, { ok: false, error: "AGENT_TASK_NOT_FOUND" }, responseOrigin);
+      }
+      if (taskMatch && req.method === "POST" && taskMatch[2] === "cancel") {
+        const cancelled = await agentSystem.cancelTask(user.id, taskMatch[1]);
+        return sendJson(res, cancelled ? 200 : 409, { ok: cancelled, error: cancelled ? undefined : "AGENT_TASK_NOT_CANCELLABLE" }, responseOrigin);
+      }
+      return sendJson(res, 404, { ok: false, error: "AGENT_ROUTE_NOT_FOUND" }, responseOrigin);
+    }
 
     if (pathName.startsWith("/api/live/")) {
       const liveResponse = await handleLiveRoute(req, res, url, responseOrigin);
@@ -743,9 +778,10 @@ const server = http.createServer(async (req, res) => {
       : code === "PAYLOAD_TOO_LARGE" ? 413
       : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA","MISSING_INIT_DATA"].includes(code) ? 401
       : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
-      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
-      : ["RATE_LIMITED"].includes(code) ? 429
-      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED"].includes(code) ? 503
+      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
+      : ["RATE_LIMITED","AGENT_TASK_LIMIT"].includes(code) ? 429
+      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_DATABASE_NOT_CONFIGURED","AGENT_MODEL_NOT_CONFIGURED"].includes(code) ? 503
+      : ["AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
       : 502;
     console.error("telegram api error", code);
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
