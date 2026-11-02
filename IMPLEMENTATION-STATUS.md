@@ -206,3 +206,12 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added DEV panel to check live credential validity and repository permissions from Telegram.
 - Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
 - Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.
+
+
+## 2026-11-02 FREEzzz Agent System — cloud-only baseline
+
+- Created `AGENT-SYSTEM-CLOUD.md` defining roles, lifecycle, security boundaries, free-tier limits, repository execution and acceptance criteria.
+- User decision: cloud-only; the phone is a lightweight Telegram UI, never an inference or execution host.
+- Planned cloud components: Cloudflare Workers/Workflows/Workers AI and GitHub Actions standard runners for repository execution.
+- No agent runtime, Cloudflare deployment, live UI, code-writing workflow or passing CI has been implemented in this commit. Do not describe the system as operational.
+- The new work is isolated on `feature/freezzz-cloud-agent-system`; `main` is unchanged.
