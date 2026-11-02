@@ -4,7 +4,7 @@ This worker is the durable cloud execution plane for FREEzzz Portal. It is not a
 
 ## Architecture
 
-- Cloudflare Workers AI runs the five specialist roles.
+- Cloudflare Workers AI runs the five specialist roles. GLM-4.7-Flash handles the team; Gemma 4 26B A4B handles the Independent Auditor as a separate model.
 - Cloudflare Workflows persists multi-step execution and continues after the Telegram Mini App closes.
 - Cloudflare KV stores task state and agent event history.
 - The existing Render Node backend remains the Telegram-authenticated gateway. It forwards only owner-authorized requests to this worker.
