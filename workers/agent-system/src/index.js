@@ -137,9 +137,9 @@ async function runAgent(env, role, prompt, context, previous) {
 
 export class AgentWorkflow extends WorkflowEntrypoint {
   async run(event, step) {
-    const { taskId, userId, prompt } = event.payload;
+    const { taskId, userId, prompt, initialTask } = event.payload;
     const key = taskKey(userId, taskId);
-    const task = await readTask(this.env, key);
+    const task = initialTask || await readTask(this.env, key);
     if (!task) throw new Error("AGENT_TASK_NOT_FOUND");
 
     try {
@@ -260,7 +260,7 @@ export default {
       const key = taskKey(userId, taskId);
       await writeTask(env, key, task);
       try {
-        await env.AGENT_WORKFLOW.create({ id: taskId, params: { taskId, userId, prompt } });
+        await env.AGENT_WORKFLOW.create({ id: taskId, params: { taskId, userId, prompt, initialTask: task } });
       } catch (error) {
         task.status = "failed";
         task.stage = "failed";
