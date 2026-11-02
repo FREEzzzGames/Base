@@ -553,7 +553,7 @@ const server = http.createServer(async (req, res) => {
         });
         return sendJson(res, 202, data, responseOrigin);
       }
-      const taskMatch = pathName.match(/^\\/api\\/agents\\/tasks\\/([0-9a-f-]{36})$/i);
+      const taskMatch = pathName.match(/^\/api\/agents\/tasks\/([0-9a-f-]{36})$/i);
       if (taskMatch && req.method === "GET") {
         const data = await agentCloudRequest("/internal/tasks/" + taskMatch[1] + "?userId=" + encodeURIComponent(String(user.id)));
         return sendJson(res, 200, data, responseOrigin);
