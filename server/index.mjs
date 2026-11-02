@@ -7,7 +7,6 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
-import { createAgentSystem } from "./agent-system.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -24,6 +23,8 @@ const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
 const githubToken = process.env.GITHUB_TOKEN || "";
 const devRepoOwner = "FREEzzzGames";
 const devRepoName = "Base";
+const agentCloudUrl = (process.env.AGENT_CLOUD_URL || "").replace(/\\/$/, "");
+const agentBridgeSecret = process.env.AGENT_BRIDGE_SECRET || "";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
 if (!apiId || !apiHash) console.warn("TELEGRAM_API_ID / TELEGRAM_API_HASH are not configured.");
@@ -478,13 +479,24 @@ async function disconnectTelegram(userId) {
   schedulePersist();
 }
 
-const agentSystem = createAgentSystem({ repoContextLoader: loadDevRepositoryContext });
+async function agentCloudRequest(route, options = {}) {
+  if (!agentCloudUrl || !agentBridgeSecret) throw new Error("AGENT_CLOUD_NOT_CONFIGURED");
+  const response = await fetch(agentCloudUrl + route, {
+    method: options.method || "GET",
+    headers: {
+      Authorization: "Bearer " + agentBridgeSecret,
+      ...(options.body ? { "Content-Type": "application/json" } : {})
+    },
+    ...(options.body ? { body: options.body } : {}),
+    signal: AbortSignal.timeout(20000)
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || "AGENT_CLOUD_UPSTREAM_ERROR");
+  return payload;
+}
 
 await loadStoredSessions();
 void logBotIdentity();
-void agentSystem.initialize().then(() => {
-  if (agentSystem.startWorker()) console.log("FREEzzz Agent System cloud worker started.");
-}).catch(error => console.error("FREEzzz Agent System database initialization failed", error?.message || "UNKNOWN"));
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
@@ -516,7 +528,7 @@ const server = http.createServer(async (req, res) => {
       aiApiKeyConfigured: Boolean(openAiApiKey),
       aiUserConfigured: Boolean(aiAllowedTelegramUserId),
       aiModel: openAiModel,
-      agentSystem: agentSystem.status()
+      agentCloudConfigured: Boolean(agentCloudUrl && agentBridgeSecret)
     }, responseOrigin);
   }
 
@@ -530,24 +542,21 @@ const server = http.createServer(async (req, res) => {
       rateLimit(user.id, req.method === "POST" ? 5 : 2);
 
       if (pathName === "/api/agents/status" && req.method === "GET") {
-        const config = agentSystem.status();
-        const tasks = config.databaseConfigured ? await agentSystem.listTasks(user.id) : [];
-        return sendJson(res, 200, { ok: true, ...config, tasks }, responseOrigin);
+        const config = await agentCloudRequest("/internal/status");
+        const data = await agentCloudRequest("/internal/tasks?userId=" + encodeURIComponent(String(user.id)));
+        return sendJson(res, 200, { ok: true, ...config, tasks: data.tasks || [] }, responseOrigin);
       }
       if (pathName === "/api/agents/tasks" && req.method === "POST") {
         const body = await readBody(req, 8 * 1024);
-        const task = await agentSystem.createTask(user.id, body.prompt);
-        return sendJson(res, 202, { ok: true, task }, responseOrigin);
+        const data = await agentCloudRequest("/internal/tasks", {
+          method: "POST", body: JSON.stringify({ userId: String(user.id), prompt: body.prompt })
+        });
+        return sendJson(res, 202, data, responseOrigin);
       }
-      const taskMatch = pathName.match(/^\\/api\\/agents\\/tasks\\/([0-9a-f-]{36})(?:\\/(cancel))?$/i);
-      if (taskMatch && req.method === "GET" && !taskMatch[2]) {
-        const task = await agentSystem.getTask(user.id, taskMatch[1]);
-        return task ? sendJson(res, 200, { ok: true, task }, responseOrigin)
-          : sendJson(res, 404, { ok: false, error: "AGENT_TASK_NOT_FOUND" }, responseOrigin);
-      }
-      if (taskMatch && req.method === "POST" && taskMatch[2] === "cancel") {
-        const cancelled = await agentSystem.cancelTask(user.id, taskMatch[1]);
-        return sendJson(res, cancelled ? 200 : 409, { ok: cancelled, error: cancelled ? undefined : "AGENT_TASK_NOT_CANCELLABLE" }, responseOrigin);
+      const taskMatch = pathName.match(/^\\/api\\/agents\\/tasks\\/([0-9a-f-]{36})$/i);
+      if (taskMatch && req.method === "GET") {
+        const data = await agentCloudRequest("/internal/tasks/" + taskMatch[1] + "?userId=" + encodeURIComponent(String(user.id)));
+        return sendJson(res, 200, data, responseOrigin);
       }
       return sendJson(res, 404, { ok: false, error: "AGENT_ROUTE_NOT_FOUND" }, responseOrigin);
     }
@@ -780,8 +789,8 @@ const server = http.createServer(async (req, res) => {
       : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
       : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
       : ["RATE_LIMITED","AGENT_TASK_LIMIT"].includes(code) ? 429
-      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_DATABASE_NOT_CONFIGURED","AGENT_MODEL_NOT_CONFIGURED"].includes(code) ? 503
-      : ["AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
+      : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_CLOUD_NOT_CONFIGURED"].includes(code) ? 503
+      : ["AGENT_CLOUD_UPSTREAM_ERROR","AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
       : 502;
     console.error("telegram api error", code);
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
