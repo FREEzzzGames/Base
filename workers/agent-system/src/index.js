@@ -122,7 +122,10 @@ async function runAgent(env, role, prompt, context, previous) {
         "\n\nВыполни только свою роль. Отделяй факты от предположений. Укажи ограничения и уверенность."
     }
   ];
-  const result = await env.AI.run(env.AGENT_MODEL || MODEL_DEFAULT, {
+  const model = role.key === "auditor"
+    ? env.AGENT_AUDITOR_MODEL || "@cf/google/gemma-4-26b-a4b-it"
+    : env.AGENT_MODEL || MODEL_DEFAULT;
+  const result = await env.AI.run(model, {
     messages,
     max_tokens: role.key === "developer" ? 1000 : 750,
     temperature: 0.2
@@ -193,6 +196,7 @@ export class AgentWorkflow extends WorkflowEntrypoint {
           summary,
           agents: outputs,
           model: this.env.AGENT_MODEL || MODEL_DEFAULT,
+          auditorModel: this.env.AGENT_AUDITOR_MODEL || "@cf/google/gemma-4-26b-a4b-it",
           execution: { filesChanged: false, testsExecuted: false, commitCreated: false }
         };
         await addEvent(this.env, key, task, "coordinator", "completed", "Сформирован итоговый отчёт.");
@@ -228,7 +232,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health") {
-      return json({ ok: true, service: "freezzz-agent-system", mode: "cloud-only", model: env.AGENT_MODEL || MODEL_DEFAULT });
+      return json({ ok: true, service: "freezzz-agent-system", mode: "cloud-only", model: env.AGENT_MODEL || MODEL_DEFAULT, auditorModel: env.AGENT_AUDITOR_MODEL || "@cf/google/gemma-4-26b-a4b-it" });
     }
     if (!authorized(request, env)) return json({ ok: false, error: "UNAUTHORIZED" }, 401);
 
@@ -248,6 +252,7 @@ export default {
         status: "queued",
         stage: "queued",
         model: env.AGENT_MODEL || MODEL_DEFAULT,
+        auditorModel: env.AGENT_AUDITOR_MODEL || "@cf/google/gemma-4-26b-a4b-it",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         events: [{ agent: "system", status: "queued", content: "Задача поставлена в облачную очередь.", createdAt: new Date().toISOString() }]
