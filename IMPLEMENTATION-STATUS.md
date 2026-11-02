@@ -206,3 +206,18 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added DEV panel to check live credential validity and repository permissions from Telegram.
 - Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
 - Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.
+
+
+## 2026-11-02 FREEzzz Agent System — cloud-only foundation
+
+- Added the FREEzzz Agent System panel to the existing FREEzzz AI module.
+- Added a Cloudflare Worker execution plane in `workers/agent-system` using Workers AI, Workflows, and KV.
+- The workflow coordinates five specialist roles: Coordinator, Researcher, Developer, Tester, and Independent Auditor. A final Coordinator step composes the report.
+- Workflows provide durable multi-step execution; task records and agent event logs are retained in KV for 30 days. Closing the Telegram Mini App does not cancel an already-created Workflow.
+- The existing Render backend remains the authenticated gateway. It validates Telegram initData and the configured owner ID before proxying to the Cloudflare Worker through a shared server-side secret.
+- The worker reads a bounded set of public files from `FREEzzzGames/Base` main. Repository content is untrusted input.
+- **First-release boundary:** analysis, proposed changes, test plans, and independent audit only. No repository writes, commits, CI execution, or deployments are performed by agents yet. The UI states this explicitly.
+- Default model: `@cf/zai-org/glm-4.7-flash`. Cloudflare documents a 10,000-Neuron daily Workers AI free allocation; Workflows are available on Free with finite daily execution/step limits. This is a quota-limited free setup, not unlimited inference.
+- Added a manual GitHub Actions deployment workflow and CI syntax/config validation for the Worker.
+- **Deployment status: NOT DEPLOYED.** Required GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AGENT_BRIDGE_SECRET`. Required Render variables: `AGENT_CLOUD_URL`, `AGENT_BRIDGE_SECRET`. `AI_ALLOWED_TELEGRAM_USER_ID` and Telegram auth configuration must already be present.
+- **Verification status:** source changes are committed to `main`; GitHub Actions validation and Cloudflare deployment still need to be checked. Do not mark the system operational until CI passes, the Cloudflare Workflow is deployed, Render is configured, and an end-to-end task is completed.
