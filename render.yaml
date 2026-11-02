@@ -36,3 +36,9 @@ services:
         value: gpt-6-luna
       - key: AI_ALLOWED_TELEGRAM_USER_ID
         sync: false
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_AI_MODEL
+        value: "@cf/zai-org/glm-4.7-flash"
