@@ -163,7 +163,7 @@ export function createAgentSystem({ env = process.env, repoContextLoader = async
 
   async function callModel(messages, maxTokens = 1200) {
     const url = "https://api.cloudflare.com/client/v4/accounts/" + encodeURIComponent(accountId) +
-      "/ai/run/" + model.split("/").map(encodeURIComponent).join("%2F");
+      "/ai/run/" + model;
     const response = await fetch(url, {
       method: "POST",
       headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
