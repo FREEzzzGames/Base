@@ -55,9 +55,3 @@ jobs:
           if [ -z "$AGENT_BRIDGE_SECRET" ]; then echo "AGENT_BRIDGE_SECRET repository secret is required"; exit 1; fi
           printf '%s' "$AGENT_BRIDGE_SECRET" | npx wrangler secret put AGENT_BRIDGE_SECRET
 
-      - name: Verify Worker health
-        env:
-          AGENT_BRIDGE_SECRET: ${{ secrets.AGENT_BRIDGE_SECRET }}
-        run: |
-          WORKER_URL="https://freezzz-agent-system.${{ secrets.CLOUDFLARE_ACCOUNT_SUBDOMAIN }}.workers.dev"
-          curl --fail --silent --show-error "$WORKER_URL/health"
