@@ -31,10 +31,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx wrangler kv namespace list --json > /tmp/agent-kv-list.json
+          printf '{"name":"agent-bootstrap","compatibility_date":"2026-01-01"}' > /tmp/agent-bootstrap.jsonc
+          npx wrangler kv namespace list --json --config /tmp/agent-bootstrap.jsonc > /tmp/agent-kv-list.json
           KV_ID=$(node -e "const d=require('/tmp/agent-kv-list.json'); const a=Array.isArray(d)?d:(d.result||[]); const n=a.find(x=>x.title==='freezzz-agent-tasks'); console.log(n?.id||'')")
           if [ -z "$KV_ID" ]; then
-            npx wrangler kv namespace create freezzz-agent-tasks --json > /tmp/agent-kv-create.json
+            npx wrangler kv namespace create freezzz-agent-tasks --json --config /tmp/agent-bootstrap.jsonc > /tmp/agent-kv-create.json
             KV_ID=$(node -e "const d=require('/tmp/agent-kv-create.json'); console.log(d.id||d.result?.id||'')")
           fi
           if [ -z "$KV_ID" ]; then echo "Could not resolve KV namespace ID"; exit 1; fi
