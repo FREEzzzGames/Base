@@ -275,7 +275,7 @@ export default {
     if (request.method === "GET" && url.pathname === "/internal/tasks") {
       const userId = url.searchParams.get("userId") || "";
       if (!/^\d{1,24}$/.test(userId)) return json({ ok: false, error: "INVALID_USER" }, 400);
-      const listed = await env.AGENT_TASKS.list({ prefix: "user:" + userId + ":task:", limit: 50 });
+      const listed = await env.AGENT_TASKS.list({ prefix: "user:" + userId + ":task:", limit: 10 });
       const tasks = await Promise.all(listed.keys.map(async item => {
         const raw = await env.AGENT_TASKS.get(item.name);
         return raw ? JSON.parse(raw) : null;
