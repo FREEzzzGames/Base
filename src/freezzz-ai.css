@@ -54,7 +54,7 @@ button{cursor:pointer}
 .ai-agent-panel>p{margin:7px 0;color:#66fcf1;font:10px "Space Mono",monospace}
 .ai-agent-panel>small{display:block;color:#82959e;overflow-wrap:anywhere}
 .ai-agent-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin:10px 0}
-.ai-agent-form textarea{width:100%;min-width:0;min-height:48px;max-height:90px;resize:vertical;padding:9px;border:1px solid rgba(102,252,241,.22);border-radius:8px;background:#080e13;color:#e8f0f4;font:12px inherit}
+.ai-agent-form textarea{width:100%;min-width:0;min-height:48px;max-height:90px;resize:vertical;padding:9px;border:1px solid rgba(102,252,241,.22);border-radius:8px;background:#080e13;color:#e8f0f4;font:inherit;font-size:12px}
 .ai-agent-form button,.ai-agent-list-head button{border:1px solid rgba(102,252,241,.45);border-radius:8px;background:#102326;color:#66fcf1;padding:7px 10px;font:9px "Space Mono",monospace}
 .ai-agent-form button:disabled{opacity:.5}
 .ai-agent-list-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0;color:#ffbf69;font:9px "Space Mono",monospace}
