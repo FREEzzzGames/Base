@@ -23,7 +23,7 @@ const openAiModel = process.env.OPENAI_MODEL || "gpt-6-luna";
 const githubToken = process.env.GITHUB_TOKEN || "";
 const devRepoOwner = "FREEzzzGames";
 const devRepoName = "Base";
-const agentCloudUrl = (process.env.AGENT_CLOUD_URL || "").replace(/\\/$/, "");
+const agentCloudUrl = (process.env.AGENT_CLOUD_URL || "").replace(/\/$/, "");
 const agentBridgeSecret = process.env.AGENT_BRIDGE_SECRET || "";
 
 if (!botToken) console.warn("TELEGRAM_BOT_TOKEN is not configured.");
