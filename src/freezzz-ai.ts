@@ -5,7 +5,7 @@ type ChatMessage = { role: ChatRole; content: string };
 type PortalContext = { activeModule: string; language: "RU" | "DE" | "EN"; modules: string[]; build: string };
 type DevStatus = { ok?: boolean; configured?: boolean; repository?: string; defaultBranch?: string; private?: boolean; permissions?: { pull?: boolean; push?: boolean }; error?: string };
 type AgentTask = { id: string; status: string; stage: string; prompt: string; result?: { summary?: string; agents?: Record<string, string>; execution?: { filesChanged?: boolean; testsExecuted?: boolean; commitCreated?: boolean } } | null; error?: string | null; events?: Array<{ agent: string; status: string; content: string; created_at: string }> };
-type AgentStatus = { databaseConfigured?: boolean; modelConfigured?: boolean; model?: string; mode?: string; writesEnabled?: boolean; roles?: Array<{ key: string; title: string }>; tasks?: AgentTask[] };
+type AgentStatus = { storageConfigured?: boolean; modelConfigured?: boolean; model?: string; mode?: string; writesEnabled?: boolean; roles?: Array<{ key: string; title: string }>; tasks?: AgentTask[] };
 declare global {
   interface Window {
     Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
@@ -57,7 +57,7 @@ function render() {
       <div class="ai-notice" data-ai-notice${noticeMessage ? "" : " hidden"}>${noticeMessage}</div>
       <section class="ai-transcript" aria-label="Диалог с AI" data-ai-transcript>${transcript}</section>
       <form class="ai-composer" data-ai-form><textarea data-ai-input rows="1" maxlength="8000" placeholder="Напиши сообщение…" aria-label="Сообщение" required></textarea><button type="submit" data-ai-send aria-label="Отправить">↗</button></form>
-      <footer class="ai-footer"><span>OWNER-ONLY · CLOUD AGENTS</span><span>Задачи хранятся на сервере · модели работают в облаке</span></footer>
+      <footer class="ai-footer"><span>OWNER-ONLY · CHAT: OPENAI · AGENTS: CLOUDFLARE</span><span>Диалог локально · задачи в облаке</span></footer>
     </section>`;
   const transcriptEl = root!.querySelector<HTMLElement>("[data-ai-transcript]")!;
   const rendered = transcriptEl.querySelectorAll<HTMLElement>(".ai-message");
@@ -305,10 +305,10 @@ async function refreshAgentPanel(showErrors: boolean) {
     if (!response.ok) throw new Error(data.error || "AGENT_STATUS_FAILED");
     agentStatus = data;
     agentTasks = data.tasks || [];
-    status.textContent = data.databaseConfigured && data.modelConfigured
+    status.textContent = data.storageConfigured && data.modelConfigured
       ? "ОБЛАЧНАЯ СИСТЕМА ГОТОВА · " + (data.roles?.length || 5) + " АГЕНТОВ"
       : "ТРЕБУЕТСЯ НАСТРОЙКА ОБЛАКА";
-    config.textContent = "DB: " + (data.databaseConfigured ? "OK" : "NOT CONFIGURED") +
+    config.textContent = "KV: " + (data.storageConfigured ? "OK" : "NOT CONFIGURED") +
       " · MODEL: " + (data.modelConfigured ? data.model || "OK" : "NOT CONFIGURED") +
       " · MODE: CLOUD ONLY · WRITE: DISABLED";
     renderAgentTasks();
