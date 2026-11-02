@@ -27,7 +27,6 @@ let portalContext: PortalContext | null = null;
 let portalContextEnabled = false;
 let devModeEnabled = false;
 let agentPanelOpen = false;
-let agentStatus: AgentStatus | null = null;
 let agentTasks: AgentTask[] = [];
 let agentPollTimer: number | null = null;
 
@@ -245,6 +244,19 @@ async function sendMessage() {
 }
 
 
+function agentErrorMessage(code: string): string {
+  const messages: Record<string, string> = {
+    AGENT_CLOUD_NOT_CONFIGURED: "Облачный Worker ещё не подключён. Настрой AGENT_CLOUD_URL и AGENT_BRIDGE_SECRET в Render.",
+    AGENT_CLOUD_UPSTREAM_ERROR: "Облачный сервис временно недоступен. Проверь развёртывание Cloudflare Worker.",
+    UNAUTHORIZED: "Секрет связи Render ↔ Cloudflare не совпадает.",
+    WORKFLOW_CREATE_FAILED: "Cloudflare не смог создать Workflow. Проверь привязку Workflows.",
+    INVALID_TASK: "Проверь текст задачи: максимум 6000 символов.",
+    AGENT_MODEL_EMPTY_RESPONSE: "Модель вернула пустой ответ.",
+    AGENT_MODEL_UPSTREAM_ERROR: "Workers AI не ответил. Возможно, исчерпан бесплатный дневной лимит.",
+    TASK_NOT_FOUND: "Задача не найдена или срок хранения завершился."
+  };
+  return messages[code] || code;
+}
 function escapeAgentText(value: unknown): string {
   const entities: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   return String(value ?? "").replace(/[&<>"']/g, char => entities[char] || char);
@@ -303,7 +315,6 @@ async function refreshAgentPanel(showErrors: boolean) {
     });
     const data = await response.json() as AgentStatus & { error?: string };
     if (!response.ok) throw new Error(data.error || "AGENT_STATUS_FAILED");
-    agentStatus = data;
     agentTasks = data.tasks || [];
     status.textContent = data.storageConfigured && data.modelConfigured
       ? "ОБЛАЧНАЯ СИСТЕМА ГОТОВА · " + (data.roles?.length || 5) + " АГЕНТОВ"
@@ -313,7 +324,7 @@ async function refreshAgentPanel(showErrors: boolean) {
       " · MODE: CLOUD ONLY · WRITE: DISABLED";
     renderAgentTasks();
   } catch (error) {
-    if (showErrors) status.textContent = error instanceof Error ? error.message : "AGENT_STATUS_FAILED";
+    if (showErrors) status.textContent = agentErrorMessage(error instanceof Error ? error.message : "AGENT_STATUS_FAILED");
   }
 }
 async function submitAgentTask() {
@@ -336,7 +347,7 @@ async function submitAgentTask() {
     status.textContent = "ЗАДАЧА ПОСТАВЛЕНА В ОБЛАЧНУЮ ОЧЕРЕДЬ";
     await refreshAgentPanel(false);
   } catch (error) {
-    status.textContent = error instanceof Error ? error.message : "AGENT_TASK_CREATE_FAILED";
+    status.textContent = agentErrorMessage(error instanceof Error ? error.message : "AGENT_TASK_CREATE_FAILED");
   } finally {
     button.disabled = false;
     button.textContent = "ЗАПУСТИТЬ ЗАДАЧУ";
