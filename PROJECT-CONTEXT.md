@@ -220,3 +220,15 @@ This document is project context, not a replacement for the actual implementatio
 - Added DEV panel to check live credential validity and repository permissions from Telegram.
 - Initial gateway is read-only. Changes, PR creation, CI and deployment approval are not enabled yet.
 - Branch: feature/freezzz-ai-dev-mode. Validation and review required before merge.
+
+
+## 2026-11-02 FREEzzz Agent System architecture decision
+
+- The Agent System is **cloud-only**. No local models, offline execution, or on-device agent processing.
+- Phone/Telegram Mini App is a lightweight control surface only.
+- Durable execution runs in Cloudflare Workflows; inference uses Cloudflare Workers AI; task state and event history use Cloudflare KV.
+- Existing Render backend is the authenticated bridge. Cloudflare Worker endpoints are not called directly by the browser.
+- Five roles are mandatory: Coordinator, Researcher, Developer, Tester, Independent Auditor. The Auditor must independently challenge prior conclusions.
+- Initial release is read-only: agents may analyze and propose patches/test plans, but must not write repository files, commit, run CI, or deploy. Any later write/execute capability must use a separately defined approval and verification gate.
+- Deployment requires GitHub Actions secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AGENT_BRIDGE_SECRET` and Render variables `AGENT_CLOUD_URL`, `AGENT_BRIDGE_SECRET`.
+- Main repository and branch remain `FREEzzzGames/Base` / `main`.
