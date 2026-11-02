@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "freezzz-agent-system",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-02",
+  "observability": { "enabled": true },
+  "vars": {
+    "AGENT_MODEL": "@cf/zai-org/glm-4.7-flash"
+  },
+  "ai": { "binding": "AI" },
+  "kv_namespaces": [
+    { "binding": "AGENT_TASKS", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+  "workflows": [
+    {
+      "name": "freezzz-agent-workflow",
+      "binding": "AGENT_WORKFLOW",
+      "class_name": "AgentWorkflow"
+    }
+  ]
+}
