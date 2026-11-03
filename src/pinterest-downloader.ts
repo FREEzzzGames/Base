@@ -1,10 +1,4 @@
 type PortalLang = "RU" | "DE" | "EN";
-declare global {
-  interface Window {
-    Telegram?: { WebApp?: { initData?: string } };
-  }
-}
-
 const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "https://freezzz-telegram-auth.onrender.com").replace(/\/$/, "");
 
 const COPY: Record<PortalLang, Record<string, string>> = {
