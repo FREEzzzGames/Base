@@ -589,7 +589,8 @@ const server = http.createServer(async (req, res) => {
         const stream = Readable.fromWeb(upstream.body);
         let transferred = 0;
         const sizeGuard = new Transform({
-          transform(chunk, encoding, callback) {
+          transform(chunk, ...args) {
+            const callback = args[1];
             transferred += chunk.length;
             if (transferred > 150 * 1024 * 1024) callback(new Error("VIDEO_TOO_LARGE"));
             else callback(null, chunk);
