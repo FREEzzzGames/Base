@@ -55,22 +55,63 @@ function classifyAi(text) {
   return { classification: "UNKNOWN", evidence: "Доступные метаданные не подтверждают AI-происхождение." };
 }
 
+async function fetchPinterestPage(startUrl) {
+  let current = new URL(startUrl);
+  for (let hop = 0; hop <= 5; hop++) {
+    const response = await fetch(current, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9"
+      },
+      redirect: "manual",
+      signal: AbortSignal.timeout(20000)
+    });
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) throw new Error("PINTEREST_REDIRECT_INVALID");
+      const next = new URL(location, current);
+      if (next.protocol !== "https:" || !isPinterestHost(next.hostname)) throw new Error("PINTEREST_REDIRECT_REJECTED");
+      current = next;
+      continue;
+    }
+    return response;
+  }
+  throw new Error("PINTEREST_REDIRECT_LIMIT");
+}
+
+async function fetchPinimgVideo(startUrl) {
+  let current = new URL(startUrl);
+  for (let hop = 0; hop <= 3; hop++) {
+    const response = await fetch(current, {
+      headers: { "User-Agent": USER_AGENT, "Referer": "https://www.pinterest.com/" },
+      redirect: "manual",
+      signal: AbortSignal.timeout(60000)
+    });
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) throw new Error("VIDEO_REDIRECT_INVALID");
+      const next = new URL(location, current);
+      if (next.protocol !== "https:" || next.hostname !== VIDEO_HOST || !next.pathname.startsWith("/videos/") || !next.pathname.toLowerCase().endsWith(".mp4")) {
+        throw new Error("VIDEO_REDIRECT_REJECTED");
+      }
+      current = next;
+      continue;
+    }
+    return response;
+  }
+  throw new Error("VIDEO_REDIRECT_LIMIT");
+}
+
 export async function resolvePinterestVideo(value) {
   const pageUrl = validatePinterestPageUrl(value);
-  const response = await fetch(pageUrl, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9"
-    },
-    redirect: "follow",
-    signal: AbortSignal.timeout(20000)
-  });
+  const response = await fetchPinterestPage(pageUrl);
 
   if (!response.ok) throw new Error(response.status === 429 ? "PINTEREST_RATE_LIMITED" : "PINTEREST_PAGE_UNAVAILABLE");
-  const finalUrl = new URL(response.url);
-  if (!isPinterestHost(finalUrl.hostname)) throw new Error("PINTEREST_REDIRECT_REJECTED");
 
+
+  const declaredLength = Number(response.headers.get("content-length") || 0);
+  if (declaredLength > 12_000_000) throw new Error("PINTEREST_PAGE_INVALID");
   const html = await response.text();
   if (!html || html.length > 12_000_000) throw new Error("PINTEREST_PAGE_INVALID");
 
@@ -96,19 +137,8 @@ export async function resolvePinterestVideo(value) {
 
 export async function fetchPinterestMp4(value) {
   const videoUrl = validatePinimgVideoUrl(value);
-  const response = await fetch(videoUrl, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      "Referer": "https://www.pinterest.com/"
-    },
-    redirect: "follow",
-    signal: AbortSignal.timeout(60000)
-  });
+  const response = await fetchPinimgVideo(videoUrl);
   if (!response.ok || !response.body) throw new Error("VIDEO_DOWNLOAD_FAILED");
-  const finalUrl = new URL(response.url);
-  if (finalUrl.hostname !== VIDEO_HOST || !finalUrl.pathname.toLowerCase().endsWith(".mp4")) {
-    throw new Error("VIDEO_REDIRECT_REJECTED");
-  }
   const contentType = (response.headers.get("content-type") || "").toLowerCase();
   if (contentType && !contentType.includes("video/") && !contentType.includes("application/octet-stream")) {
     throw new Error("VIDEO_CONTENT_TYPE_INVALID");
