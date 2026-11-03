@@ -7,6 +7,8 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
+import { Readable } from "node:stream";
+import { resolvePinterestVideo, fetchPinterestMp4 } from "./pinterest-video.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -561,6 +563,38 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 404, { ok: false, error: "AGENT_ROUTE_NOT_FOUND" }, responseOrigin);
     }
 
+    if (pathName.startsWith("/api/pinterest/")) {
+      const user = authFromRequest(req);
+      rateLimit(user.id, pathName.endsWith("/download") ? 8 : 4);
+
+      if (pathName === "/api/pinterest/resolve" && req.method === "POST") {
+        const body = await readBody(req, 8 * 1024);
+        if (typeof body.url !== "string" || body.url.length > 2048) throw new Error("INVALID_PINTEREST_URL");
+        const result = await resolvePinterestVideo(body.url);
+        return sendJson(res, 200, result, responseOrigin);
+      }
+
+      if (pathName === "/api/pinterest/download" && req.method === "POST") {
+        const body = await readBody(req, 8 * 1024);
+        if (typeof body.videoUrl !== "string" || body.videoUrl.length > 4096) throw new Error("INVALID_VIDEO_URL");
+        const upstream = await fetchPinterestMp4(body.videoUrl);
+        res.statusCode = 200;
+        res.setHeader("Access-Control-Allow-Origin", responseOrigin);
+        res.setHeader("Vary", "Origin");
+        res.setHeader("Cache-Control", "no-store");
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader("Content-Disposition", 'attachment; filename="pinterest-ai-video.mp4"');
+        const length = upstream.headers.get("content-length");
+        if (length) res.setHeader("Content-Length", length);
+        const stream = Readable.fromWeb(upstream.body);
+        stream.on("error", () => res.destroy());
+        stream.pipe(res);
+        return;
+      }
+
+      return sendJson(res, 404, { ok: false, error: "PINTEREST_ROUTE_NOT_FOUND" }, responseOrigin);
+    }
+
     if (pathName.startsWith("/api/live/")) {
       const liveResponse = await handleLiveRoute(req, res, url, responseOrigin);
       if (liveResponse !== null) return liveResponse;
@@ -635,7 +669,7 @@ const server = http.createServer(async (req, res) => {
       let portalContext = null;
       if (body.portalContext !== undefined) {
         const context = body.portalContext;
-        const allowedModules = new Set(["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI"]);
+        const allowedModules = new Set(["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI", "PINTEREST"]);
         if (!context || typeof context !== "object" ||
             typeof context.activeModule !== "string" || !allowedModules.has(context.activeModule) ||
             !["RU", "DE", "EN"].includes(context.language) ||
@@ -794,6 +828,7 @@ const server = http.createServer(async (req, res) => {
       : code === "TASK_NOT_FOUND" ? 404
       : 502;
     console.error("telegram api error", code);
+    if (res.headersSent) { res.destroy(); return; }
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
   }
 });
