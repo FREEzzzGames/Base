@@ -7,7 +7,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
-import { Readable } from "node:stream";
+import { Readable, Transform } from "node:stream";
 import { resolvePinterestVideo, fetchPinterestMp4 } from "./pinterest-video.mjs";
 
 const port = Number(process.env.PORT || 10000);
@@ -587,8 +587,17 @@ const server = http.createServer(async (req, res) => {
         const length = upstream.headers.get("content-length");
         if (length) res.setHeader("Content-Length", length);
         const stream = Readable.fromWeb(upstream.body);
+        let transferred = 0;
+        const sizeGuard = new Transform({
+          transform(chunk, encoding, callback) {
+            transferred += chunk.length;
+            if (transferred > 150 * 1024 * 1024) callback(new Error("VIDEO_TOO_LARGE"));
+            else callback(null, chunk);
+          }
+        });
         stream.on("error", () => res.destroy());
-        stream.pipe(res);
+        sizeGuard.on("error", () => res.destroy());
+        stream.pipe(sizeGuard).pipe(res);
         return;
       }
 
@@ -818,11 +827,11 @@ const server = http.createServer(async (req, res) => {
   } catch (error) {
     const code = error instanceof Error ? error.message : "SERVER_ERROR";
     const status = error instanceof SyntaxError ? 400
-      : code === "PAYLOAD_TOO_LARGE" ? 413
+      : ["PAYLOAD_TOO_LARGE","VIDEO_TOO_LARGE"].includes(code) ? 413
       : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA","MISSING_INIT_DATA"].includes(code) ? 401
       : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
-      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","INVALID_TASK","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
-      : ["RATE_LIMITED","AGENT_TASK_LIMIT"].includes(code) ? 429
+      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","INVALID_TASK","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY","INVALID_PINTEREST_URL","INVALID_VIDEO_URL"].includes(code) ? 400
+      : ["RATE_LIMITED","AGENT_TASK_LIMIT","PINTEREST_RATE_LIMITED"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_CLOUD_NOT_CONFIGURED"].includes(code) ? 503
       : ["AGENT_CLOUD_UPSTREAM_ERROR","AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
       : code === "TASK_NOT_FOUND" ? 404
