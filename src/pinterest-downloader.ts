@@ -204,8 +204,10 @@ export function bindPinterestDownloader(lang: PortalLang): void {
         window.location.assign(result.downloadUrl);
         setStatus("DOWNLOAD OPENED", t.done, "success");
       }
-    } catch {
-      setStatus("DOWNLOAD FAILED", t.failed, "error");
+    } catch (error) {
+      save.hidden = false;
+      const code = error instanceof Error ? error.message : "DOWNLOAD_FAILED";
+      setStatus("DOWNLOAD FAILED", code === "DOWNLOAD_LINK_EXPIRED" ? "Ссылка на файл истекла. Повтори скачивание." : t.failed, "error");
     } finally {
       save.disabled = false;
     }
