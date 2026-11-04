@@ -1,3 +1,4 @@
+import { getTelegramWebApp } from "./platform-bridge";
 type PortalLang = "RU" | "DE" | "EN";
 const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "https://freezzz-telegram-auth.onrender.com").replace(/\/$/, "");
 
@@ -6,7 +7,7 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Сохраняй доступные видео из Pinterest",
     placeholder: "Вставь ссылку Pinterest…", action: "ПОЛУЧИТЬ ВИДЕО",
     idle: "Вставь ссылку на публичный пин Pinterest.", checking: "Получаю данные пина…",
-    downloading: "Скачиваю видео…", done: "Видео скачано. Файл отправлен в загрузки устройства.",
+    downloading: "Скачиваю видео…", done: "Telegram принял запрос. Дождись завершения скачивания.",
     open: "ОТКРЫТЬ ВИДЕО",
     unknown: "В этом пине не удалось обнаружить прямой видеофайл.",
     missing: "В этом пине не удалось обнаружить прямой видеофайл.",
@@ -18,7 +19,7 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Verfügbare Videos von Pinterest speichern",
     placeholder: "Pinterest-Link einfügen…", action: "VIDEO ABRUFEN",
     idle: "Füge einen Link zu einem öffentlichen Pinterest-Pin ein.", checking: "Pin-Daten werden abgerufen…",
-    downloading: "Video wird heruntergeladen…", done: "Video heruntergeladen. Die Datei wurde an deine Downloads übergeben.",
+    downloading: "Video wird heruntergeladen…", done: "Telegram hat den Download angenommen. Warte, bis er abgeschlossen ist.",
     open: "VIDEO ÖFFNEN",
     unknown: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
     missing: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
@@ -30,7 +31,7 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Save available videos from Pinterest",
     placeholder: "Paste a Pinterest link…", action: "GET VIDEO",
     idle: "Paste a link to a public Pinterest pin.", checking: "Retrieving pin data…",
-    downloading: "Downloading video…", done: "Video downloaded. The file was sent to your device downloads.",
+    downloading: "Downloading video…", done: "Telegram accepted the download request. Wait for the download to finish.",
     open: "OPEN VIDEO",
     unknown: "No direct video file was found for this pin.",
     missing: "No direct video file was found for this pin.",
@@ -65,7 +66,7 @@ export function renderPinterestDownloader(lang: PortalLang): string {
     '<div class="pinterest-tool-download" data-pinterest-download hidden>' +
     '<span class="pinterest-tool-filename" data-pinterest-filename></span>' +
     '<a data-pinterest-open target="_blank" rel="noopener">' + t.open + '</a>' +
-    '<video data-pinterest-preview controls playsinline preload="metadata" hidden></video>' +
+
     '</div></div>' +
     '<footer class="pinterest-tool-foot">' + t.foot + '</footer></section>';
 }
@@ -84,11 +85,11 @@ export function bindPinterestDownloader(lang: PortalLang): void {
   const downloadPanel = root.querySelector<HTMLElement>("[data-pinterest-download]");
   const filenameLabel = root.querySelector<HTMLElement>("[data-pinterest-filename]");
   const openVideo = root.querySelector<HTMLAnchorElement>("[data-pinterest-open]");
-  const preview = root.querySelector<HTMLVideoElement>("[data-pinterest-preview]");
-  if (!form || !input || !submit || !status || !state || !evidence || !save || !downloadPanel || !filenameLabel || !openVideo || !preview) return;
+
+  if (!form || !input || !submit || !status || !state || !evidence || !save || !downloadPanel || !filenameLabel || !openVideo) return;
 
   let resolvedVideoUrl = "";
-  let downloadedObjectUrl = "";
+
   const setStatus = (label: string, message: string, kind: "ready" | "busy" | "error" | "success") => {
     state.textContent = label;
     status.textContent = message;
@@ -108,7 +109,7 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       return;
     }
 
-    const initData = window.Telegram?.WebApp?.initData || "";
+    const initData = getTelegramWebApp()?.initData || "";
     if (!initData) {
       setStatus("TELEGRAM REQUIRED", "Открой портал внутри Telegram Mini App.", "error");
       return;
@@ -117,12 +118,6 @@ export function bindPinterestDownloader(lang: PortalLang): void {
     submit.disabled = true;
     save.hidden = true;
     downloadPanel.hidden = true;
-    if (downloadedObjectUrl) URL.revokeObjectURL(downloadedObjectUrl);
-    downloadedObjectUrl = "";
-    preview.pause();
-    preview.removeAttribute("src");
-    preview.hidden = true;
-    openVideo.removeAttribute("href");
     evidence.textContent = "";
     resolvedVideoUrl = "";
     setStatus("LOADING PIN", t.checking, "busy");
@@ -134,9 +129,9 @@ export function bindPinterestDownloader(lang: PortalLang): void {
         body: JSON.stringify({ url: parsed.toString() }),
         credentials: "omit",
         cache: "no-store",
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(25000)
       });
-      const result = await response.json() as ResolveResult;
+      const result = await response.json().catch(() => ({})) as ResolveResult;
       if (!response.ok) throw new Error(result.error || "RESOLVE_FAILED");
       if (!result.videoUrl) {
         setStatus("VIDEO NOT FOUND", t.missing, "error");
@@ -153,7 +148,12 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       save.hidden = false;
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
-      setStatus("ERROR", code === "INVALID_PINTEREST_URL" ? t.invalid : t.failed, "error");
+      const message = code === "INVALID_PINTEREST_URL" ? t.invalid
+        : code === "PINTEREST_RATE_LIMITED" ? "Pinterest временно ограничил запрос. Попробуй позже."
+        : code === "PINTEREST_PAGE_UNAVAILABLE" ? "Pinterest не отдал страницу пина. Проверь ссылку или попробуй позже."
+        : code === "TimeoutError" || code === "AbortError" ? "Pinterest отвечает слишком долго. Повтори запрос."
+        : t.failed;
+      setStatus("ERROR", message, "error");
     } finally {
       submit.disabled = false;
     }
@@ -165,10 +165,10 @@ export function bindPinterestDownloader(lang: PortalLang): void {
     save.disabled = true;
     setStatus("DOWNLOADING", t.downloading, "busy");
     try {
-      const response = await fetch(API_BASE + "/api/pinterest/download", {
+      const response = await fetch(API_BASE + "/api/pinterest/prepare-download", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Telegram-Init-Data": initData },
-        body: JSON.stringify({ videoUrl: resolvedVideoUrl }),
+        body: JSON.stringify({ videoUrl: resolvedVideoUrl, fileName: "pinterest-video-" + Date.now() + ".mp4" }),
         credentials: "omit",
         cache: "no-store",
         signal: AbortSignal.timeout(90000)
@@ -177,27 +177,37 @@ export function bindPinterestDownloader(lang: PortalLang): void {
         const result = await response.json().catch(() => ({})) as { error?: string };
         throw new Error(result.error || "DOWNLOAD_FAILED");
       }
-      const blob = await response.blob();
-      if (!blob.size || !blob.type.toLowerCase().includes("video")) throw new Error("INVALID_VIDEO_RESPONSE");
-      downloadedObjectUrl = URL.createObjectURL(blob);
+      const result = await response.json() as { downloadUrl?: string };
+      if (!result.downloadUrl) throw new Error("DOWNLOAD_URL_MISSING");
       const filename = "pinterest-video-" + Date.now() + ".mp4";
-      const anchor = document.createElement("a");
-      anchor.href = downloadedObjectUrl;
-      anchor.download = filename;
-      anchor.style.display = "none";
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-
       filenameLabel.textContent = filename;
-      openVideo.href = downloadedObjectUrl;
-      preview.src = downloadedObjectUrl;
-      preview.hidden = false;
+      save.hidden = true;
       downloadPanel.hidden = false;
-      preview.load();
-      setStatus("DOWNLOAD COMPLETE", t.done, "success");
-    } catch {
-      setStatus("DOWNLOAD FAILED", t.failed, "error");
+      openVideo.href = result.downloadUrl;
+      openVideo.textContent = t.save;
+      openVideo.target = "_blank";
+      const telegram = getTelegramWebApp();
+      if (telegram?.downloadFile) {
+        telegram.downloadFile({ url: result.downloadUrl, file_name: filename }, accepted => {
+          if (accepted) {
+            setStatus("DOWNLOAD ACCEPTED", t.done, "success");
+          } else {
+            setStatus("DOWNLOAD CANCELLED", "Загрузка отменена или не разрешена Telegram.", "error");
+            save.hidden = false;
+          }
+        });
+        setStatus("DOWNLOAD REQUESTED", t.done, "busy");
+      } else if (telegram?.openLink) {
+        telegram.openLink(result.downloadUrl, { try_instant_view: false });
+        setStatus("DOWNLOAD OPENED", t.done, "success");
+      } else {
+        window.location.assign(result.downloadUrl);
+        setStatus("DOWNLOAD OPENED", t.done, "success");
+      }
+    } catch (error) {
+      save.hidden = false;
+      const code = error instanceof Error ? error.message : "DOWNLOAD_FAILED";
+      setStatus("DOWNLOAD FAILED", code === "DOWNLOAD_LINK_EXPIRED" ? "Ссылка на файл истекла. Повтори скачивание." : t.failed, "error");
     } finally {
       save.disabled = false;
     }
