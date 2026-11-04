@@ -44,13 +44,89 @@ function readMeta(html) {
   if (title) values.push(decodeHtml(title.replace(/<[^>]*>/g, " ")));
   return values.join(" ").replace(/\s+/g, " ").trim();
 }
+
+function decodeEmbeddedString(value) {
+  let result = value;
+  for (let i = 0; i < 3; i++) {
+    const previous = result;
+    result = result
+      .replace(/\\u002[fF]/g, "/")
+      .replace(/\\u003[aA]/g, ":")
+      .replace(/\\u0026/g, "&")
+      .replace(/\\\//g, "/")
+      .replace(/&amp;/g, "&");
+    try {
+      if (/^https?%3a%2f%2f/i.test(result)) result = decodeURIComponent(result);
+    } catch { /* Keep the original candidate if it is not valid URI encoding. */ }
+    if (result === previous) break;
+  }
+  return result;
+}
+
+function collectJsonStrings(value, output, depth = 0) {
+  if (depth > 40 || value == null) return;
+  if (typeof value === "string") {
+    output.push(decodeEmbeddedString(value));
+    // Pinterest sometimes embeds a JSON object as a string inside another JSON object.
+    const trimmed = value.trim();
+    if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+      try { collectJsonStrings(JSON.parse(trimmed), output, depth + 1); } catch { /* Not a standalone JSON value. */ }
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectJsonStrings(item, output, depth + 1);
+    return;
+  }
+  if (typeof value === "object") {
+    for (const item of Object.values(value)) collectJsonStrings(item, output, depth + 1);
+  }
+}
+
+function parsePinterestJson(html) {
+  const strings = [];
+  for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+    const body = match[1].trim();
+    if (!body) continue;
+    const candidates = [body];
+    const firstBrace = body.indexOf("{");
+    const lastBrace = body.lastIndexOf("}");
+    if (firstBrace >= 0 && lastBrace > firstBrace) candidates.push(body.slice(firstBrace, lastBrace + 1));
+    const firstBracket = body.indexOf("[");
+    const lastBracket = body.lastIndexOf("]");
+    if (firstBracket >= 0 && lastBracket > firstBracket) candidates.push(body.slice(firstBracket, lastBracket + 1));
+    for (const candidate of candidates) {
+      try {
+        collectJsonStrings(JSON.parse(candidate), strings);
+        break;
+      } catch { /* Script may be executable JS rather than a JSON document. */ }
+    }
+  }
+  return strings;
+}
+
+function normalizeVideoCandidate(value) {
+  const decoded = decodeEmbeddedString(value);
+  const match = decoded.match(MP4_PATTERN);
+  if (!match) return null;
+  try {
+    const url = validatePinimgVideoUrl(match[0]);
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
 export function extractPinterestVideoUrl(html) {
-  const normalized = html
-    .replace(/\\u002[fF]/g, "/")
-    .replace(/\\u0026/g, "&")
-    .replace(/\\\//g, "/")
-    .replace(/&amp;/g, "&");
-  return normalized.match(MP4_PATTERN)?.[0] || null;
+  // Pinterest's pin payload stores video variants in nested JSON, commonly
+  // pin.videos.video_list[*].url. Search parsed JSON values first, not only HTML text.
+  const candidates = parsePinterestJson(html);
+  candidates.push(decodeEmbeddedString(html));
+  for (const candidate of candidates) {
+    const videoUrl = normalizeVideoCandidate(candidate);
+    if (videoUrl) return videoUrl;
+  }
+  return null;
 }
 
 export function classifyPinterestAiText(text) {
@@ -117,9 +193,7 @@ async function fetchPinimgVideo(startUrl) {
 export async function resolvePinterestVideo(value) {
   const pageUrl = validatePinterestPageUrl(value);
   const response = await fetchPinterestPage(pageUrl);
-
   if (!response.ok) throw new Error(response.status === 429 ? "PINTEREST_RATE_LIMITED" : "PINTEREST_PAGE_UNAVAILABLE");
-
 
   const declaredLength = Number(response.headers.get("content-length") || 0);
   if (declaredLength > 12_000_000) throw new Error("PINTEREST_PAGE_INVALID");
