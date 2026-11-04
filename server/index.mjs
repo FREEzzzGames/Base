@@ -7,6 +7,8 @@ import { StringSession } from "telegram/sessions/index.js";
 import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
+import { Readable, Transform } from "node:stream";
+import { resolvePinterestVideo, fetchPinterestMp4 } from "./pinterest-video.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -561,6 +563,48 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 404, { ok: false, error: "AGENT_ROUTE_NOT_FOUND" }, responseOrigin);
     }
 
+    if (pathName.startsWith("/api/pinterest/")) {
+      const user = authFromRequest(req);
+      rateLimit(user.id, pathName.endsWith("/download") ? 8 : 4);
+
+      if (pathName === "/api/pinterest/resolve" && req.method === "POST") {
+        const body = await readBody(req, 8 * 1024);
+        if (typeof body.url !== "string" || body.url.length > 2048) throw new Error("INVALID_PINTEREST_URL");
+        const result = await resolvePinterestVideo(body.url);
+        return sendJson(res, 200, result, responseOrigin);
+      }
+
+      if (pathName === "/api/pinterest/download" && req.method === "POST") {
+        const body = await readBody(req, 8 * 1024);
+        if (typeof body.videoUrl !== "string" || body.videoUrl.length > 4096) throw new Error("INVALID_VIDEO_URL");
+        const upstream = await fetchPinterestMp4(body.videoUrl);
+        res.statusCode = 200;
+        res.setHeader("Access-Control-Allow-Origin", responseOrigin);
+        res.setHeader("Vary", "Origin");
+        res.setHeader("Cache-Control", "no-store");
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader("Content-Disposition", 'attachment; filename="pinterest-ai-video.mp4"');
+        const length = upstream.headers.get("content-length");
+        if (length) res.setHeader("Content-Length", length);
+        const stream = Readable.fromWeb(upstream.body);
+        let transferred = 0;
+        const sizeGuard = new Transform({
+          transform(chunk, ...args) {
+            const callback = args[1];
+            transferred += chunk.length;
+            if (transferred > 150 * 1024 * 1024) callback(new Error("VIDEO_TOO_LARGE"));
+            else callback(null, chunk);
+          }
+        });
+        stream.on("error", () => res.destroy());
+        sizeGuard.on("error", () => res.destroy());
+        stream.pipe(sizeGuard).pipe(res);
+        return;
+      }
+
+      return sendJson(res, 404, { ok: false, error: "PINTEREST_ROUTE_NOT_FOUND" }, responseOrigin);
+    }
+
     if (pathName.startsWith("/api/live/")) {
       const liveResponse = await handleLiveRoute(req, res, url, responseOrigin);
       if (liveResponse !== null) return liveResponse;
@@ -635,7 +679,7 @@ const server = http.createServer(async (req, res) => {
       let portalContext = null;
       if (body.portalContext !== undefined) {
         const context = body.portalContext;
-        const allowedModules = new Set(["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI"]);
+        const allowedModules = new Set(["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI", "PINTEREST"]);
         if (!context || typeof context !== "object" ||
             typeof context.activeModule !== "string" || !allowedModules.has(context.activeModule) ||
             !["RU", "DE", "EN"].includes(context.language) ||
@@ -785,15 +829,17 @@ const server = http.createServer(async (req, res) => {
     const code = error instanceof Error ? error.message : "SERVER_ERROR";
     const status = error instanceof SyntaxError ? 400
       : code === "PAYLOAD_TOO_LARGE" ? 413
+      : code === "VIDEO_TOO_LARGE" ? 413
       : ["INVALID_SIGNATURE","INVALID_HASH","INVALID_AUTH_DATE","AUTH_DATE_IN_FUTURE","AUTH_DATA_EXPIRED","INVALID_USER_DATA","MISSING_INIT_DATA"].includes(code) ? 401
       : ["AI_ACCESS_DENIED","ORIGIN_NOT_ALLOWED"].includes(code) ? 403
-      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","INVALID_TASK","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY"].includes(code) ? 400
-      : ["RATE_LIMITED","AGENT_TASK_LIMIT"].includes(code) ? 429
+      : ["INVALID_REPO_PATH","TELEGRAM_USER_REQUIRED","INVALID_PHONE","INVALID_MESSAGE","INVALID_AUTH_VALUE","INVALID_AI_MESSAGES","INVALID_AI_MESSAGE","AI_USER_MESSAGE_REQUIRED","AI_CONTEXT_TOO_LARGE","INVALID_AGENT_PROMPT","INVALID_TASK","NO_PENDING_LOGIN","LOGIN_FLOW_EXPIRED","LOGIN_STEP_NOT_READY","INVALID_PINTEREST_URL","INVALID_VIDEO_URL"].includes(code) ? 400
+      : ["RATE_LIMITED","AGENT_TASK_LIMIT","PINTEREST_RATE_LIMITED"].includes(code) ? 429
       : ["TELEGRAM_AUTH_REQUIRED","AUTH_SERVICE_NOT_CONFIGURED","AI_ACCESS_NOT_CONFIGURED","MT_PROTO_NOT_CONFIGURED","SESSION_SECRET_NOT_CONFIGURED","GITHUB_NOT_CONFIGURED","AGENT_CLOUD_NOT_CONFIGURED"].includes(code) ? 503
       : ["AGENT_CLOUD_UPSTREAM_ERROR","AGENT_MODEL_UPSTREAM_ERROR","AGENT_MODEL_EMPTY_RESPONSE"].includes(code) ? 502
       : code === "TASK_NOT_FOUND" ? 404
       : 502;
     console.error("telegram api error", code);
+    if (res.headersSent) { res.destroy(); return; }
     return sendJson(res, status, { ok: false, error: code }, responseOrigin);
   }
 });

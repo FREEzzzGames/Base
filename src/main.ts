@@ -21,6 +21,7 @@ import { renderLibrary, bindLibraryView, resumeLastPlayedGame, stopLibraryEmulat
 import { renderOpenGamesCatalog, bindOpenGamesCatalog, stopOpenGamesSession } from "./open-games-catalog";
 import { mountRadioMap } from "./radio-map";
 import { renderWorldRadioPanel, bindWorldRadioPanel } from "./world-radio-panel";
+import { renderPinterestDownloader, bindPinterestDownloader } from "./pinterest-downloader";
 
 initTelegramBridge();
 initFreezzzyDroid();
@@ -62,7 +63,7 @@ type View = PortalView;
 type Language="RU"|"DE"|"EN";
 
 const app=document.querySelector<HTMLDivElement>("#app")!;
-const aiPortalModules = ["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI"] as const;
+const aiPortalModules = ["HOME", "LIVE", "CHAT", "GAME", "RADIO", "LIBRARY", "ECHO9", "AI", "PINTEREST"] as const;
 window.addEventListener("message", event => {
   if (event.origin !== window.location.origin || event.data?.type !== "FREEZZ_AI_READY") return;
   const frame = document.querySelector<HTMLIFrameElement>(".freezzz-ai-frame");
@@ -533,6 +534,7 @@ function render(){
               ${homeCard("live")}
               ${homeCard("chat")}
               ${homeCard("ai")}
+              ${homeCard("pinterest")}
               ${homeCard("radio")}
               ${homeCard("library")}
             </div>
@@ -629,6 +631,10 @@ function render(){
     body=`<div class="freezzz-ai-portal"><iframe class="freezzz-ai-frame" src="./freezzz-ai.html?build=${encodeURIComponent(PORTAL_BUILD_ID)}" title="FREEzzz AI — персональный ассистент" loading="eager"></iframe></div>`;
   }
 
+  if(view==="pinterest"){
+    body=safeModuleContent("pinterest",()=>renderPinterestDownloader(lang));
+  }
+
   app.innerHTML=`
     <div class="app-shell">
       <div class="portal-workspace ${view==="home"?"portal-home-workspace":"portal-route-workspace"}${view==="echo9"?" portal-echo9-workspace":""}${view==="ai"?" portal-ai-workspace":""}${hudHidden?" portal-hud-hidden":""}">
@@ -689,7 +695,7 @@ function homeCard(v:Exclude<View,"home">){
     library:portalVideoUrl("library")
   };
   const background=backgrounds[v];
-  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",ai:"FREEzzz AI"};
+  const titles:Record<string,string>={live:"LIVE",chat:"CHAT",game:"GAME",radio:"RADIO",library:"LIBRARY",ai:"FREEzzz AI",pinterest:"AI VIDEO"};
   const title=titles[v];
   return `<div class="card home-card portal-block home-${v}" data-portal-card="${v}" data-portal-block="${v}" data-view="${v}" role="button" tabindex="0" aria-label="${title}">
     ${background?`${persistentBackgroundVideo("card-"+v,background,"home-card-background-video")}`:""}
@@ -861,6 +867,7 @@ moduleManager.registerAdapter("library",{
 });
 moduleManager.registerAdapter("echo9",{});
 moduleManager.registerAdapter("ai",{});
+moduleManager.registerAdapter("pinterest",{});
 portalEvents.on("navigation:changed",payload=>{
   if(payload.view!==view){
     if(view==="game")stopOpenGamesSession();
@@ -971,6 +978,7 @@ function bind(){
   if(view==="radio")bindWorldRadioPanel(()=>{requestAnimationFrame(()=>mountRadioMap());});
   bindUniversalPortalPress();
   if(view==="game")bindOpenGamesCatalog(lang,()=>render());
+  if(view==="pinterest")bindPinterestDownloader(lang);
 
   document.querySelectorAll<HTMLElement>("[data-echo9-launch]").forEach(function(x){
     x.onclick=function(e){
