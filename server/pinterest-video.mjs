@@ -48,7 +48,7 @@ export function extractPinterestVideoUrl(html) {
   const normalized = html
     .replace(/\\u002[fF]/g, "/")
     .replace(/\\u0026/g, "&")
-    .replace(/\\\\\\//g, "/")
+    .replace(/\\\//g, "/")
     .replace(/&amp;/g, "&");
   return normalized.match(MP4_PATTERN)?.[0] || null;
 }
@@ -128,19 +128,11 @@ export async function resolvePinterestVideo(value) {
 
   const metadata = readMeta(html);
   const ai = classifyPinterestAiText(metadata);
-  if (ai.classification === "UNKNOWN") {
-    return { classification: ai.classification, evidence: ai.evidence, title: metadata.slice(0, 180), videoUrl: null };
-  }
-
-  const normalized = html
-    .replace(/\\u002[fF]/g, "/")
-    .replace(/\\u0026/g, "&")
-    .replace(/\\\//g, "/")
-    .replace(/&amp;/g, "&");
-  const videoUrl = normalized.match(MP4_PATTERN)?.[0] || null;
+  // AI classification is informational only; it must never gate video extraction.
+  const videoUrl = extractPinterestVideoUrl(html);
   return {
     classification: ai.classification,
-    evidence: ai.evidence,
+    evidence: ai.classification === "UNKNOWN" ? "" : ai.evidence,
     title: metadata.slice(0, 180),
     videoUrl
   };
