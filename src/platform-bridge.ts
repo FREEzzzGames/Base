@@ -35,7 +35,7 @@ export interface TelegramWebAppBridge{
   ready?:()=>void;
   expand?:()=>void;
   openLink?:(url:string,options?:{try_instant_view?:boolean})=>void;
-  downloadFile?:(params:{url:string;file_name:string},callback?:(result:{status:string})=>void)=>void;
+  downloadFile?:(params:{url:string;file_name:string},callback?:(accepted:boolean)=>void)=>void;
   openTelegramLink?:(url:string)=>void;
   disableVerticalSwipes?:()=>void;
   setHeaderColor?:(color:string)=>void;
