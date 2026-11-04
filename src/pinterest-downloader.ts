@@ -188,10 +188,15 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       openVideo.target = "_blank";
       const telegram = getTelegramWebApp();
       if (telegram?.downloadFile) {
-        telegram.downloadFile({ url: result.downloadUrl, file_name: filename }, downloadResult => {
-          if (downloadResult.status === "cancelled") setStatus("DOWNLOAD CANCELLED", "Загрузка отменена пользователем.", "error");
+        telegram.downloadFile({ url: result.downloadUrl, file_name: filename }, accepted => {
+          if (accepted) {
+            setStatus("DOWNLOAD ACCEPTED", t.done, "success");
+          } else {
+            setStatus("DOWNLOAD CANCELLED", "Загрузка отменена или не разрешена Telegram.", "error");
+            save.hidden = false;
+          }
         });
-        setStatus("DOWNLOAD REQUESTED", t.done, "success");
+        setStatus("DOWNLOAD REQUESTED", t.done, "busy");
       } else if (telegram?.openLink) {
         telegram.openLink(result.downloadUrl, { try_instant_view: false });
         setStatus("DOWNLOAD OPENED", t.done, "success");
