@@ -49,12 +49,12 @@ test("extracts MP4 URLs from escaped Pinterest page data", () => {
 
 
 test("extracts a video URL from Pinterest nested video_list JSON", () => {
-  const html = String.raw\`<script type="application/json">{"pin":{"videos":{"video_list":{"V_720P":{"url":"https:\u002F\u002Fv1.pinimg.com\u002Fvideos\u002Fjson-video.mp4"}}}}}</script>\`;
+  const html = '<script type="application/json">{"pin":{"videos":{"video_list":{"V_720P":{"url":"https:\\u002F\\u002Fv1.pinimg.com\\u002Fvideos\\u002Fjson-video.mp4"}}}}}</script>';
   assert.equal(extractPinterestVideoUrl(html), "https://v1.pinimg.com/videos/json-video.mp4");
 });
 
 test("extracts a video URL from Pinterest executable embedded state JSON", () => {
-  const html = String.raw\`<script>window.__PWS_DATA__ = {"resource_response":{"data":{"videos":{"video_list":{"V_1080P":{"url":"https:\u002F\u002Fv1.pinimg.com\u002Fvideos\u002Fstate-video.mp4"}}}}}};</script>\`;
+  const html = '<script>window.__PWS_DATA__ = {"resource_response":{"data":{"videos":{"video_list":{"V_1080P":{"url":"https:\\u002F\\u002Fv1.pinimg.com\\u002Fvideos\\u002Fstate-video.mp4"}}}}}};</script>';
   assert.equal(extractPinterestVideoUrl(html), "https://v1.pinimg.com/videos/state-video.mp4");
 });
 
