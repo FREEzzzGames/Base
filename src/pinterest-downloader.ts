@@ -1,3 +1,4 @@
+import { getTelegramWebApp } from "./platform-bridge";
 type PortalLang = "RU" | "DE" | "EN";
 const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?: string } }).env?.VITE_TELEGRAM_AUTH_URL) || "https://freezzz-telegram-auth.onrender.com").replace(/\/$/, "");
 
@@ -108,7 +109,7 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       return;
     }
 
-    const initData = window.Telegram?.WebApp?.initData || "";
+    const initData = getTelegramWebApp()?.initData || "";
     if (!initData) {
       setStatus("TELEGRAM REQUIRED", "Открой портал внутри Telegram Mini App.", "error");
       return;
@@ -128,9 +129,9 @@ export function bindPinterestDownloader(lang: PortalLang): void {
         body: JSON.stringify({ url: parsed.toString() }),
         credentials: "omit",
         cache: "no-store",
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(25000)
       });
-      const result = await response.json() as ResolveResult;
+      const result = await response.json().catch(() => ({})) as ResolveResult;
       if (!response.ok) throw new Error(result.error || "RESOLVE_FAILED");
       if (!result.videoUrl) {
         setStatus("VIDEO NOT FOUND", t.missing, "error");
@@ -147,7 +148,12 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       save.hidden = false;
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
-      setStatus("ERROR", code === "INVALID_PINTEREST_URL" ? t.invalid : t.failed, "error");
+      const message = code === "INVALID_PINTEREST_URL" ? t.invalid
+        : code === "PINTEREST_RATE_LIMITED" ? "Pinterest временно ограничил запрос. Попробуй позже."
+        : code === "PINTEREST_PAGE_UNAVAILABLE" ? "Pinterest не отдал страницу пина. Проверь ссылку или попробуй позже."
+        : code === "TimeoutError" || code === "AbortError" ? "Pinterest отвечает слишком долго. Повтори запрос."
+        : t.failed;
+      setStatus("ERROR", message, "error");
     } finally {
       submit.disabled = false;
     }
@@ -180,7 +186,7 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       openVideo.href = result.downloadUrl;
       openVideo.textContent = t.save;
       openVideo.target = "_blank";
-      const telegram = window.Telegram?.WebApp;
+      const telegram = getTelegramWebApp();
       if (telegram?.downloadFile) {
         telegram.downloadFile({ url: result.downloadUrl, file_name: filename }, downloadResult => {
           if (downloadResult.status === "cancelled") setStatus("DOWNLOAD CANCELLED", "Загрузка отменена пользователем.", "error");
