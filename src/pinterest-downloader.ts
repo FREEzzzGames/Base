@@ -6,7 +6,8 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Сохраняй доступные видео из Pinterest",
     placeholder: "Вставь ссылку Pinterest…", action: "ПОЛУЧИТЬ ВИДЕО",
     idle: "Вставь ссылку на публичный пин Pinterest.", checking: "Получаю данные пина…",
-    downloading: "Скачиваю видео…", done: "Загрузка подготовлена. Проверь папку загрузок.",
+    downloading: "Скачиваю видео…", done: "Видео скачано. Файл отправлен в загрузки устройства.",
+    open: "ОТКРЫТЬ ВИДЕО",
     unknown: "В этом пине не удалось обнаружить прямой видеофайл.",
     missing: "В этом пине не удалось обнаружить прямой видеофайл.",
     invalid: "Нужна ссылка Pinterest или pin.it.", failed: "Не удалось обработать ссылку. Попробуй позже.",
@@ -17,7 +18,8 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Verfügbare Videos von Pinterest speichern",
     placeholder: "Pinterest-Link einfügen…", action: "VIDEO ABRUFEN",
     idle: "Füge einen Link zu einem öffentlichen Pinterest-Pin ein.", checking: "Pin-Daten werden abgerufen…",
-    downloading: "Video wird heruntergeladen…", done: "Download vorbereitet. Prüfe deinen Download-Ordner.",
+    downloading: "Video wird heruntergeladen…", done: "Video heruntergeladen. Die Datei wurde an deine Downloads übergeben.",
+    open: "VIDEO ÖFFNEN",
     unknown: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
     missing: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
     invalid: "Ein Pinterest- oder pin.it-Link ist erforderlich.", failed: "Link konnte nicht verarbeitet werden.",
@@ -28,7 +30,8 @@ const COPY: Record<PortalLang, Record<string, string>> = {
     title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Save available videos from Pinterest",
     placeholder: "Paste a Pinterest link…", action: "GET VIDEO",
     idle: "Paste a link to a public Pinterest pin.", checking: "Retrieving pin data…",
-    downloading: "Downloading video…", done: "Download prepared. Check your Downloads folder.",
+    downloading: "Downloading video…", done: "Video downloaded. The file was sent to your device downloads.",
+    open: "OPEN VIDEO",
     unknown: "No direct video file was found for this pin.",
     missing: "No direct video file was found for this pin.",
     invalid: "A Pinterest or pin.it link is required.", failed: "Could not process this link. Try again.",
@@ -58,7 +61,12 @@ export function renderPinterestDownloader(lang: PortalLang): string {
     '<div class="pinterest-tool-result" data-pinterest-result aria-live="polite">' +
     '<span class="pinterest-tool-state" data-pinterest-state>READY</span>' +
     '<p data-pinterest-status>' + t.idle + '</p><small data-pinterest-evidence></small>' +
-    '<button type="button" data-pinterest-save hidden>' + t.save + '</button></div>' +
+    '<button type="button" data-pinterest-save hidden>' + t.save + '</button>' +
+    '<div class="pinterest-tool-download" data-pinterest-download hidden>' +
+    '<span class="pinterest-tool-filename" data-pinterest-filename></span>' +
+    '<a data-pinterest-open target="_blank" rel="noopener">' + t.open + '</a>' +
+    '<video data-pinterest-preview controls playsinline preload="metadata" hidden></video>' +
+    '</div></div>' +
     '<footer class="pinterest-tool-foot">' + t.foot + '</footer></section>';
 }
 
@@ -73,9 +81,14 @@ export function bindPinterestDownloader(lang: PortalLang): void {
   const state = root.querySelector<HTMLElement>("[data-pinterest-state]");
   const evidence = root.querySelector<HTMLElement>("[data-pinterest-evidence]");
   const save = root.querySelector<HTMLButtonElement>("[data-pinterest-save]");
-  if (!form || !input || !submit || !status || !state || !evidence || !save) return;
+  const downloadPanel = root.querySelector<HTMLElement>("[data-pinterest-download]");
+  const filenameLabel = root.querySelector<HTMLElement>("[data-pinterest-filename]");
+  const openVideo = root.querySelector<HTMLAnchorElement>("[data-pinterest-open]");
+  const preview = root.querySelector<HTMLVideoElement>("[data-pinterest-preview]");
+  if (!form || !input || !submit || !status || !state || !evidence || !save || !downloadPanel || !filenameLabel || !openVideo || !preview) return;
 
   let resolvedVideoUrl = "";
+  let downloadedObjectUrl = "";
   const setStatus = (label: string, message: string, kind: "ready" | "busy" | "error" | "success") => {
     state.textContent = label;
     status.textContent = message;
@@ -103,6 +116,13 @@ export function bindPinterestDownloader(lang: PortalLang): void {
 
     submit.disabled = true;
     save.hidden = true;
+    downloadPanel.hidden = true;
+    if (downloadedObjectUrl) URL.revokeObjectURL(downloadedObjectUrl);
+    downloadedObjectUrl = "";
+    preview.pause();
+    preview.removeAttribute("src");
+    preview.hidden = true;
+    openVideo.removeAttribute("href");
     evidence.textContent = "";
     resolvedVideoUrl = "";
     setStatus("LOADING PIN", t.checking, "busy");
@@ -159,16 +179,23 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       }
       const blob = await response.blob();
       if (!blob.size || !blob.type.toLowerCase().includes("video")) throw new Error("INVALID_VIDEO_RESPONSE");
-      const objectUrl = URL.createObjectURL(blob);
+      downloadedObjectUrl = URL.createObjectURL(blob);
+      const filename = "pinterest-video-" + Date.now() + ".mp4";
       const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download = "pinterest-video-" + Date.now() + ".mp4";
+      anchor.href = downloadedObjectUrl;
+      anchor.download = filename;
       anchor.style.display = "none";
       document.body.append(anchor);
       anchor.click();
       anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
-      setStatus("DOWNLOAD READY", t.done, "success");
+
+      filenameLabel.textContent = filename;
+      openVideo.href = downloadedObjectUrl;
+      preview.src = downloadedObjectUrl;
+      preview.hidden = false;
+      downloadPanel.hidden = false;
+      preview.load();
+      setStatus("DOWNLOAD COMPLETE", t.done, "success");
     } catch {
       setStatus("DOWNLOAD FAILED", t.failed, "error");
     } finally {
