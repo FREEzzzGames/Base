@@ -47,8 +47,10 @@ function sendJson(res, status, body, origin = allowedOrigin) {
   res.end(JSON.stringify(body));
 }
 
+const TELEGRAM_WEB_ORIGIN = "https://web.telegram.org";
+
 function isTrustedOrigin(origin) {
-  return !origin || origin === allowedOrigin;
+  return !origin || origin === allowedOrigin || origin === TELEGRAM_WEB_ORIGIN;
 }
 
 async function readBody(req, maxBytes = 64 * 1024) {
@@ -503,7 +505,7 @@ void logBotIdentity();
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
-  const responseOrigin = origin && origin === allowedOrigin ? origin : allowedOrigin;
+  const responseOrigin = origin && isTrustedOrigin(origin) ? origin : allowedOrigin;
 
   if (req.method === "OPTIONS") {
     if (!isTrustedOrigin(origin)) return sendJson(res, 403, { ok: false, error: "ORIGIN_NOT_ALLOWED" }, responseOrigin);
@@ -574,6 +576,8 @@ const server = http.createServer(async (req, res) => {
       const upstream = await fetchPinterestMp4(ticket.videoUrl);
       res.statusCode = 200;
       res.setHeader("Cache-Control", "no-store");
+      res.setHeader("Access-Control-Allow-Origin", responseOrigin);
+      res.setHeader("Vary", "Origin");
       res.setHeader("Content-Type", "video/mp4");
       res.setHeader("Content-Disposition", `attachment; filename="${ticket.fileName}"`);
       res.setHeader("X-Content-Type-Options", "nosniff");
