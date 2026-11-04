@@ -8,7 +8,7 @@ import { validateTelegramInitData } from "./telegram-auth.mjs";
 import { handleLiveRoute, startLiveScheduler } from "./live-rankings.mjs";
 import { handleEconomyRoute, startEconomyScheduler } from "./economy-api.mjs";
 import { Readable, Transform } from "node:stream";
-import { resolvePinterestVideo, fetchPinterestMp4 } from "./pinterest-video.mjs";
+import { resolvePinterestVideo, fetchPinterestMp4, validatePinimgVideoUrl } from "./pinterest-video.mjs";
 
 const port = Number(process.env.PORT || 10000);
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://freezzzgames.github.io";
@@ -36,6 +36,7 @@ const sessions = new Map();
 const pendingAuth = new Map();
 const loginErrors = new Map();
 const rateBuckets = new Map();
+const pinterestDownloadTickets = new Map();
 
 function sendJson(res, status, body, origin = allowedOrigin) {
   res.statusCode = status;
@@ -563,9 +564,40 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 404, { ok: false, error: "AGENT_ROUTE_NOT_FOUND" }, responseOrigin);
     }
 
+    if (pathName === "/api/pinterest/file" && req.method === "GET") {
+      const token = url.searchParams.get("token") || "";
+      const ticket = pinterestDownloadTickets.get(token);
+      pinterestDownloadTickets.delete(token);
+      if (!ticket || ticket.expiresAt < Date.now()) {
+        return sendJson(res, 404, { ok: false, error: "DOWNLOAD_LINK_EXPIRED" }, responseOrigin);
+      }
+      const upstream = await fetchPinterestMp4(ticket.videoUrl);
+      res.statusCode = 200;
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("Content-Type", "video/mp4");
+      res.setHeader("Content-Disposition", `attachment; filename="${ticket.fileName}"`);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      const length = upstream.headers.get("content-length");
+      if (length) res.setHeader("Content-Length", length);
+      const stream = Readable.fromWeb(upstream.body);
+      let transferred = 0;
+      const sizeGuard = new Transform({
+        transform(chunk, ...args) {
+          const callback = args[1];
+          transferred += chunk.length;
+          if (transferred > 150 * 1024 * 1024) callback(new Error("VIDEO_TOO_LARGE"));
+          else callback(null, chunk);
+        }
+      });
+      stream.on("error", () => res.destroy());
+      sizeGuard.on("error", () => res.destroy());
+      stream.pipe(sizeGuard).pipe(res);
+      return;
+    }
+
     if (pathName.startsWith("/api/pinterest/")) {
       const user = authFromRequest(req);
-      rateLimit(user.id, pathName.endsWith("/download") ? 8 : 4);
+      rateLimit(user.id, 8);
 
       if (pathName === "/api/pinterest/resolve" && req.method === "POST") {
         const body = await readBody(req, 8 * 1024);
@@ -574,32 +606,19 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, result, responseOrigin);
       }
 
-      if (pathName === "/api/pinterest/download" && req.method === "POST") {
+      if (pathName === "/api/pinterest/prepare-download" && req.method === "POST") {
         const body = await readBody(req, 8 * 1024);
         if (typeof body.videoUrl !== "string" || body.videoUrl.length > 4096) throw new Error("INVALID_VIDEO_URL");
-        const upstream = await fetchPinterestMp4(body.videoUrl);
-        res.statusCode = 200;
-        res.setHeader("Access-Control-Allow-Origin", responseOrigin);
-        res.setHeader("Vary", "Origin");
-        res.setHeader("Cache-Control", "no-store");
-        res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Content-Disposition", 'attachment; filename="pinterest-ai-video.mp4"');
-        const length = upstream.headers.get("content-length");
-        if (length) res.setHeader("Content-Length", length);
-        const stream = Readable.fromWeb(upstream.body);
-        let transferred = 0;
-        const sizeGuard = new Transform({
-          transform(chunk, ...args) {
-            const callback = args[1];
-            transferred += chunk.length;
-            if (transferred > 150 * 1024 * 1024) callback(new Error("VIDEO_TOO_LARGE"));
-            else callback(null, chunk);
-          }
-        });
-        stream.on("error", () => res.destroy());
-        sizeGuard.on("error", () => res.destroy());
-        stream.pipe(sizeGuard).pipe(res);
-        return;
+        const safeVideoUrl = validatePinimgVideoUrl(body.videoUrl).toString();
+        const token = crypto.randomBytes(32).toString("hex");
+        const now = Date.now();
+        for (const [key, value] of pinterestDownloadTickets) {
+          if (value.expiresAt <= now) pinterestDownloadTickets.delete(key);
+        }
+        const fileName = typeof body.fileName === "string" && /^[a-zA-Z0-9._-]{1,100}$/.test(body.fileName) ? body.fileName : "pinterest-video.mp4";
+        pinterestDownloadTickets.set(token, { videoUrl: safeVideoUrl, fileName, expiresAt: now + 5 * 60 * 1000 });
+        const downloadUrl = `https://freezzz-telegram-auth.onrender.com/api/pinterest/file?token=${token}`;
+        return sendJson(res, 200, { downloadUrl, expiresIn: 300 }, responseOrigin);
       }
 
       return sendJson(res, 404, { ok: false, error: "PINTEREST_ROUTE_NOT_FOUND" }, responseOrigin);
