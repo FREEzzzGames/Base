@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   classifyPinterestAiText,
+  extractPinterestVideoUrl,
   validatePinterestPageUrl,
   validatePinimgVideoUrl
 } from "./pinterest-video.mjs";
@@ -32,4 +33,16 @@ test("classifies AI tools with video context as likely", () => {
 
 test("does not classify ordinary video as AI", () => {
   assert.equal(classifyPinterestAiText("A beautiful travel video from Paris").classification, "UNKNOWN");
+});
+
+test("extracts available MP4 even when AI origin is unconfirmed", () => {
+  const html = '<meta property="og:description" content="Edited with AI">' +
+    '<script>{"contentUrl":"https://v1.pinimg.com/videos/test-video.mp4"}</script>';
+  assert.equal(classifyPinterestAiText("A video from a creator").classification, "UNKNOWN");
+  assert.equal(extractPinterestVideoUrl(html), "https://v1.pinimg.com/videos/test-video.mp4");
+});
+
+test("extracts MP4 URLs from escaped Pinterest page data", () => {
+  const html = String.raw`"url":"https:\/\/v1.pinimg.com\/videos\/escaped.mp4"`;
+  assert.equal(extractPinterestVideoUrl(html), "https://v1.pinimg.com/videos/escaped.mp4");
 });

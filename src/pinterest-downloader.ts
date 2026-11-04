@@ -3,38 +3,37 @@ const API_BASE = (((import.meta as unknown as { env?: { VITE_TELEGRAM_AUTH_URL?:
 
 const COPY: Record<PortalLang, Record<string, string>> = {
   RU: {
-    title: "AI VIDEO DOWNLOADER", subtitle: "Сохраняй AI-видео из Pinterest",
+    title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Сохраняй доступные видео из Pinterest",
     placeholder: "Вставь ссылку Pinterest…", action: "ПОЛУЧИТЬ ВИДЕО",
-    idle: "Вставь ссылку на публичный AI-пин.", checking: "Проверяю пин…",
+    idle: "Вставь ссылку на публичный пин Pinterest.", checking: "Получаю данные пина…",
     downloading: "Скачиваю видео…", done: "Загрузка подготовлена. Проверь папку загрузок.",
-    unknown: "AI-происхождение не подтверждено. Видео не скачано.",
-    missing: "AI-признаки найдены, но прямое видео не удалось получить.",
+    unknown: "В этом пине не удалось обнаружить прямой видеофайл.",
+    missing: "В этом пине не удалось обнаружить прямой видеофайл.",
     invalid: "Нужна ссылка Pinterest или pin.it.", failed: "Не удалось обработать ссылку. Попробуй позже.",
-    save: "СОХРАНИТЬ MP4", verified: "AI ПОДТВЕРЖДЁН", likely: "ПОХОЖЕ НА AI",
-    confirm: "AI-происхождение подтверждено косвенными признаками. Скачать?",
-    foot: "Публичные пины · Только доступные видео"
+    save: "СОХРАНИТЬ MP4", verified: "AI-МЕТКА ОБНАРУЖЕНА", likely: "ВОЗМОЖНА AI-МЕТКА",
+    foot: "Публичные пины · Доступные видеофайлы"
   },
   DE: {
-    title: "AI VIDEO DOWNLOADER", subtitle: "AI-Videos von Pinterest speichern",
+    title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Verfügbare Videos von Pinterest speichern",
     placeholder: "Pinterest-Link einfügen…", action: "VIDEO ABRUFEN",
-    idle: "Füge einen Link zu einem öffentlichen AI-Pin ein.", checking: "Pin wird geprüft…",
+    idle: "Füge einen Link zu einem öffentlichen Pinterest-Pin ein.", checking: "Pin-Daten werden abgerufen…",
     downloading: "Video wird heruntergeladen…", done: "Download vorbereitet. Prüfe deinen Download-Ordner.",
-    unknown: "AI-Ursprung nicht bestätigt. Video wurde nicht heruntergeladen.",
-    missing: "AI-Hinweise gefunden, aber kein direktes Video verfügbar.",
+    unknown: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
+    missing: "Für diesen Pin wurde keine direkte Videodatei gefunden.",
     invalid: "Ein Pinterest- oder pin.it-Link ist erforderlich.", failed: "Link konnte nicht verarbeitet werden.",
-    save: "MP4 SPEICHERN", verified: "AI BESTÄTIGT", likely: "WAHRSCHEINLICH AI",
-    confirm: "Der AI-Ursprung ist nur indirekt belegt. Herunterladen?", foot: "Öffentliche Pins · Nur verfügbare Videos"
+    save: "MP4 SPEICHERN", verified: "AI-MARKIERUNG GEFUNDEN", likely: "MÖGLICHE AI-MARKIERUNG",
+    foot: "Öffentliche Pins · Verfügbare Videodateien"
   },
   EN: {
-    title: "AI VIDEO DOWNLOADER", subtitle: "Save AI videos from Pinterest",
+    title: "PINTEREST VIDEO DOWNLOADER", subtitle: "Save available videos from Pinterest",
     placeholder: "Paste a Pinterest link…", action: "GET VIDEO",
-    idle: "Paste a link to a public AI pin.", checking: "Checking pin…",
+    idle: "Paste a link to a public Pinterest pin.", checking: "Retrieving pin data…",
     downloading: "Downloading video…", done: "Download prepared. Check your Downloads folder.",
-    unknown: "AI origin could not be confirmed. Video was not downloaded.",
-    missing: "AI indicators found, but no direct video is available.",
+    unknown: "No direct video file was found for this pin.",
+    missing: "No direct video file was found for this pin.",
     invalid: "A Pinterest or pin.it link is required.", failed: "Could not process this link. Try again.",
-    save: "SAVE MP4", verified: "AI VERIFIED", likely: "AI LIKELY",
-    confirm: "AI origin is supported by indirect evidence. Download?", foot: "Public pins · Available videos only"
+    save: "SAVE MP4", verified: "AI LABEL DETECTED", likely: "POSSIBLE AI LABEL",
+    foot: "Public pins · Available video files"
   }
 };
 
@@ -106,7 +105,7 @@ export function bindPinterestDownloader(lang: PortalLang): void {
     save.hidden = true;
     evidence.textContent = "";
     resolvedVideoUrl = "";
-    setStatus("ANALYZING", t.checking, "busy");
+    setStatus("LOADING PIN", t.checking, "busy");
 
     try {
       const response = await fetch(API_BASE + "/api/pinterest/resolve", {
@@ -119,26 +118,17 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       });
       const result = await response.json() as ResolveResult;
       if (!response.ok) throw new Error(result.error || "RESOLVE_FAILED");
-
-      if (result.classification === "UNKNOWN") {
-        setStatus("AI NOT CONFIRMED", t.unknown, "error");
-        evidence.textContent = result.evidence || "";
-        return;
-      }
       if (!result.videoUrl) {
         setStatus("VIDEO NOT FOUND", t.missing, "error");
-        evidence.textContent = result.evidence || "";
-        return;
-      }
-      if (result.classification === "AI_LIKELY" && !window.confirm(t.confirm)) {
-        setStatus("CANCELLED", t.unknown, "ready");
         return;
       }
 
+      // AI classification is informational only. It never blocks or confirms a download.
       resolvedVideoUrl = result.videoUrl;
-      state.textContent = result.classification === "AI_VERIFIED" ? t.verified : t.likely;
+      state.textContent = result.classification === "AI_VERIFIED" ? t.verified
+        : result.classification === "AI_LIKELY" ? t.likely : "VIDEO FOUND";
       status.textContent = result.title || t.done;
-      evidence.textContent = result.evidence || "";
+      evidence.textContent = result.classification === "UNKNOWN" ? "" : (result.evidence || "");
       root.dataset.state = "success";
       save.hidden = false;
     } catch (error) {
@@ -172,7 +162,7 @@ export function bindPinterestDownloader(lang: PortalLang): void {
       const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
-      anchor.download = "pinterest-ai-" + Date.now() + ".mp4";
+      anchor.download = "pinterest-video-" + Date.now() + ".mp4";
       anchor.style.display = "none";
       document.body.append(anchor);
       anchor.click();
