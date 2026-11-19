@@ -232,3 +232,12 @@ This document is project context, not a replacement for the actual implementatio
 - Initial release is read-only: agents may analyze and propose patches/test plans, but must not write repository files, commit, run CI, or deploy. Any later write/execute capability must use a separately defined approval and verification gate.
 - Deployment requires GitHub Actions secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AGENT_BRIDGE_SECRET` and Render variables `AGENT_CLOUD_URL`, `AGENT_BRIDGE_SECRET`.
 - Main repository and branch remain `FREEzzzGames/Base` / `main`.
+
+
+## 2026-11-19 Agent Operations Monitor update
+
+- FREEzzz AI opens directly into the chat. Its only top-level action is the agents menu; the menu is read-only and polls the owner-authenticated `/api/agents/status` endpoint while open.
+- The AI chat can call owner-authenticated server tools to start a read-only five-agent Workflow when a multi-step project task warrants it, and to retrieve task status when asked. There is no separate task-launch form.
+- The view shows task counts, role activity, task stages, event history, and last successful update time. It labels disconnected data as stale.
+- Do not present this view as telemetry for local AgentWebUI/OpenCode processes. The separate Cloudflare Worker/Render Agent System must be deployed and configured before live cloud task data can appear.
+- Production check on 2026-11-19: the public Render `/health` endpoint returned HTTP 200 and reported `aiConfigured: true`, `agentCloudConfigured: false`. The backend chat-tool integration in this branch is local only; do not claim automatic agent routing is live until the backend and Cloudflare Worker are deployed/configured and verified in Telegram.
