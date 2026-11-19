@@ -128,17 +128,23 @@ jobs:
 
       - name: Telegram auth unit tests
         run: node --test server/telegram-auth.test.mjs
+      - name: Agent chat tool routing unit tests
+        run: node --test server/agent-chat.test.mjs
       - name: Telegram gateway syntax check
         run: node --check server/index.mjs
       - name: Cloud agent worker syntax and configuration check
         run: |
           node --check workers/agent-system/src/index.js
           node -e 'JSON.parse(require("node:fs").readFileSync("workers/agent-system/wrangler.jsonc","utf8")); console.log("AGENT_WORKER_CONFIG_OK")'
+          node scripts/agent-role-instructions-smoke.mjs
       - name: Legacy Telegram adapter typecheck
         run: npm --prefix server/telegram-client install --ignore-scripts && npm --prefix server/telegram-client run typecheck
 
       - name: FREEzzz Studio syntax and UI integrity smoke
         run: node scripts/freezzz-studio-smoke.mjs
+
+      - name: FREEzzz Agent Operations Monitor smoke
+        run: node scripts/agent-monitor-smoke.mjs
 
       - name: Procedural Studio syntax and audio pipeline smoke
         run: node scripts/procedural-studio-smoke.mjs

@@ -221,3 +221,18 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added a manual GitHub Actions deployment workflow and CI syntax/config validation for the Worker.
 - **Deployment status: NOT DEPLOYED.** Required GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AGENT_BRIDGE_SECRET`. Required Render variables: `AGENT_CLOUD_URL`, `AGENT_BRIDGE_SECRET`. `AI_ALLOWED_TELEGRAM_USER_ID` and Telegram auth configuration must already be present.
 - **Verification status:** source changes are committed to `main`; GitHub Actions validation and Cloudflare deployment still need to be checked. Do not mark the system operational until CI passes, the Cloudflare Workflow is deployed, Render is configured, and an end-to-end task is completed.
+
+
+## 2026-11-19 FREEzzz Agent Operations Monitor
+
+- Added a full-screen monitor mode inside the existing FREEzzz AI module for the five cloud workflow roles: Coordinator, Researcher, Developer, Tester, and Independent Auditor.
+- FREEzzz AI opens into the chat by default. The header has a single agents-menu action; task launch and status requests are handled through AI chat, with no separate task composer or manual refresh control.
+- Added two owner-authenticated OpenAI Responses function tools to the existing chat backend: start a read-only agent workflow for appropriate multi-step project requests, and retrieve task/role status when asked. Tool results are returned to the AI before it replies; the UI confirms a task ID only after successful queueing.
+- Added server unit tests for owner checks, workflow creation, bounded status data, tool handoff, and duplicate-call rejection. CI runs these tests.
+- The screen summarizes queued/running/completed/failed tasks, shows each role's current or last reported activity, and displays a timestamped task event timeline. It refreshes the existing owner-authenticated `/api/agents/status` endpoint every five seconds while open.
+- No backend service, route, or deployment configuration was changed. The monitor explicitly labels stale/offline data and does not invent agent activity.
+- The Cloudflare Agent System deployment and its Render configuration remain unverified/not deployed. Until those existing services are configured, the monitor will show their current unavailable/not-configured state; it is not a monitor for unrelated local AgentWebUI/OpenCode sessions.
+- Added role-specific operational instructions to the prompts sent to all five Worker agents; the final Coordinator synthesis also receives the Coordinator instruction. The existing read-only/cloud-only execution boundary remains enforced in the system prompt.
+- Added a smoke check to CI to ensure all five runtime instructions and the final Coordinator instruction stay connected to their documented roles.
+- Local branch validation passed: typecheck, lint, monitor and role-instruction smoke checks, production build, release smoke, and existing server/runtime checks. Real Telegram WebView display and live cloud task telemetry still require runtime checks; the Worker remains undeployed/unverified.
+- The public Render `/health` endpoint returned HTTP 200 on 2026-11-19 and reported `aiConfigured: true`, `agentCloudConfigured: false`. Backend changes in this branch are not deployed, and cloud agent auto-launch cannot work in production until the Worker and bridge settings are configured and the backend branch is released.

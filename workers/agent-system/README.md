@@ -2,6 +2,8 @@
 
 This worker is the durable cloud execution plane for FREEzzz Portal. It is not a local/offline agent runtime.
 
+See [AGENT-ROLE-INSTRUCTIONS.md](./AGENT-ROLE-INSTRUCTIONS.md) for the Russian role descriptions, responsibilities, handoff format, and current authority boundaries for all five agents.
+
 ## Architecture
 
 - Cloudflare Workers AI runs the five specialist roles. GLM-4.7-Flash handles the team; Gemma 4 26B A4B handles the Independent Auditor as a separate model.
