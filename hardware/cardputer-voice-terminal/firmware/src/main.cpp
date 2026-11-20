@@ -420,7 +420,7 @@ void setup() {
   config.serial_baudrate = 115200;
   M5Cardputer.begin(config, true);
   Serial.begin(115200);
-  M5Cardputer.Display.setRotation(1);
+  M5Cardputer.Display.setRotation(0);
   M5Cardputer.Display.setFont(&kCyrillicFont);
   M5Cardputer.Display.setTextSize(1);
 
