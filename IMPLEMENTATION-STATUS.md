@@ -242,3 +242,13 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Gateway tests and Node syntax check pass on the current revision.
 - PlatformIO firmware compilation is still being checked by GitHub Actions. No verified BIN artifact or physical-device test is available yet. Do not mark this as a released/flash-ready build.
 - The gateway is ready to use a local OpenAI-compatible chat endpoint, but Base does not yet provide a local PC coordinator/agent runtime. `AI_CHAT_URL` must point to the actual local coordinator before Cardputer commands reach the PC agent system.
+
+
+## 2026-11-20 Cardputer gateway startup correction
+
+- Fixed the gateway start command to load the server-local `.env` automatically using Node.js 22+'s built-in `--env-file=.env` support. No new runtime dependency or lockfile is required.
+- Shell/service environment variables retain precedence over values in `.env`. A missing `.env` file fails startup instead of silently running with empty configuration.
+- Clarified that the sample `AI_CHAT_URL` points to an Ollama-compatible endpoint only as an example; it is not the FREEzzz local agent coordinator. A real local coordinator endpoint still must be deployed and configured.
+- Updated Cardputer gateway README with the corrected startup flow and integration boundary.
+- Firmware artifact from run `44724878936` was downloaded and inspected: ESP32-S3 image, 1,370,272 bytes; SHA-256 `629fec947621d81cddca2ff98f37b20b3b6911b3effd0b19926a47424c73370b`. It contains placeholder CI credentials, not the user's Wi-Fi/token.
+- Gateway tests and syntax check must be re-run after this change. Ubuntu-host end-to-end STT/AI/TTS and physical Cardputer testing remain unverified.
