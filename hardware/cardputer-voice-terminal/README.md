@@ -46,6 +46,34 @@ npm start
 
 По умолчанию WebSocket слушает 0.0.0.0:8765/cardputer. Разрешить TCP/8765 только в доверенной домашней сети. Не публиковать gateway в интернет.
 
+### Установка STT/TTS на Ubuntu
+
+Whisper.cpp собирается из официального исходного репозитория; для русского используется модель `small` (около 466 MiB). Piper устанавливается в отдельное Python venv и использует официальный голос `ru_RU-irina-medium`.
+
+```bash
+sudo apt update
+sudo apt install -y git cmake build-essential python3-venv
+
+sudo git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git /opt/whisper.cpp
+sudo cmake -S /opt/whisper.cpp -B /opt/whisper.cpp/build -DCMAKE_BUILD_TYPE=Release
+sudo cmake --build /opt/whisper.cpp/build -j2
+sudo bash /opt/whisper.cpp/models/download-ggml-model.sh small
+
+sudo mkdir -p /opt/piper/voices
+sudo python3 -m venv /opt/piper/venv
+sudo /opt/piper/venv/bin/pip install --upgrade pip
+sudo /opt/piper/venv/bin/pip install piper-tts
+sudo /opt/piper/venv/bin/python -m piper.download_voices ru_RU-irina-medium --data-dir /opt/piper/voices
+```
+
+Установленные пути для `.env`:
+- `WHISPER_CLI=/opt/whisper.cpp/build/bin/whisper-cli`
+- `WHISPER_MODEL=/opt/whisper.cpp/models/ggml-small.bin`
+- `PIPER_BIN=/opt/piper/venv/bin/piper`
+- `PIPER_MODEL=/opt/piper/voices/ru_RU-irina-medium.onnx`
+
+Piper запускается через `-m`, `-f`, `--input-file`; Gateway не зависит от устаревших флагов предыдущих версий CLI.
+
 ## Переменные gateway
 - DEVICE_TOKEN — тот же случайный токен, что в secrets.h.
 - WHISPER_CLI, WHISPER_MODEL — whisper.cpp executable и модель.
