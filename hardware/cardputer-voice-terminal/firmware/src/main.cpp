@@ -353,7 +353,7 @@ String readSetupField(const String& title, bool secret) {
   }
 }
 
-void runSetupWizard() {
+void runSetupWizard(bool firstSetup) {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   const int count = WiFi.scanNetworks();
@@ -367,8 +367,10 @@ void runSetupWizard() {
   delay(1500);
   wifiSsid = readSetupField("Wi-Fi name (SSID):", false);
   wifiPassword = readSetupField("Wi-Fi password:", true);
-  hubHost = readSetupField("PC address running HUB:", false);
-  deviceToken = readSetupField("Device token:", true);
+  if (firstSetup) {
+    hubHost = readSetupField("PC address running HUB:", false);
+    deviceToken = readSetupField("Device token:", true);
+  }
   saveConfig();
 }
 
@@ -415,8 +417,9 @@ void setup() {
 
   lastAssistantText = "Удерживайте ПРОБЕЛ для разговора";
   renderScreen();
+  bool hasConfig = loadSavedConfig();
   bool setupKey = M5Cardputer.Keyboard.isKeyPressed('g');
-  if (setupKey || !loadSavedConfig()) runSetupWizard();
+  if (setupKey || !hasConfig) runSetupWizard(!hasConfig);
   connectWifi();
 }
 
