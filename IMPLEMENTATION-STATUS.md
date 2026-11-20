@@ -231,3 +231,14 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added a dedicated GitHub Actions workflow for gateway tests and PlatformIO compilation.
 - Source implementation commits: `4dba12cc63a83694ff6c684bf626795a9b6747eb`, `ae9b5753d4223abfd993fa3ffce9cd230eb33a6e`, `211f7c40eaed244e69be4ac27125903b7af8bb04`, `e90a392e62350ca9f763c8f8ddc6abd337df3797`, `c332f88b408dd715cea22bdf8ca6e000af901029`.
 - This is an initial source implementation, not a verified firmware release. GitHub Actions must pass; exact board compilation and physical keyboard/audio/LED behavior remain validation gates. The local AI coordinator endpoint and local STT/TTS model paths must be configured on the Ubuntu host.
+
+
+## 2026-11-20 Cardputer ADV implementation verification update
+
+- Firmware source revision: `4a2d0326a5525b00fb0fb02760272d1daed348c0` (Base/main; documentation-only commits followed).
+- Scroll keys are the direct `;` and `.` keys because M5Cardputer library 1.1.1 does not expose dedicated arrow-key constants/state fields.
+- Palette is the seven spectral rainbow colors plus white and black. RGB LED data uses SK6812 on GPIO21; GPIO38 is left untouched because it is shared with the display backlight power rail.
+- Firmware switches the shared audio path between microphone capture and speaker playback.
+- Gateway tests and Node syntax check pass on the current revision.
+- PlatformIO firmware compilation is still being checked by GitHub Actions. No verified BIN artifact or physical-device test is available yet. Do not mark this as a released/flash-ready build.
+- The gateway is ready to use a local OpenAI-compatible chat endpoint, but Base does not yet provide a local PC coordinator/agent runtime. `AI_CHAT_URL` must point to the actual local coordinator before Cardputer commands reach the PC agent system.
