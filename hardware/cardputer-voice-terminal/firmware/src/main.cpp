@@ -334,7 +334,7 @@ String readSetupField(const String& title, bool secret) {
   while (true) {
     M5Cardputer.update();
     auto keys = M5Cardputer.Keyboard.keysState();
-    if (keys.word.length()) {
+    if (keys.word.size()) {
       for (size_t i = 0; i < keys.word.length() && value.length() < 96; ++i) value += keys.word[i];
       renderSetup(title, value, secret);
     }
@@ -428,7 +428,7 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED && millis() - lastWifiRetryAt > 5000) {
     lastWifiRetryAt = millis();
     WiFi.disconnect();
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    WiFi.begin(wifiSsid.c_str(), wifiPassword.c_str());
     connectionState = "Wi-Fi reconnecting";
     renderScreen();
   } else if (WiFi.status() == WL_CONNECTED && !hubStarted) {
