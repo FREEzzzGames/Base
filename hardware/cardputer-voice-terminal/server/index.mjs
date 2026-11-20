@@ -15,6 +15,11 @@ const PIPER_MODEL = process.env.PIPER_MODEL || "";
 const AI_CHAT_URL = process.env.AI_CHAT_URL || "";
 const AI_CHAT_MODEL = process.env.AI_CHAT_MODEL || "";
 const AI_CHAT_API_KEY = process.env.AI_CHAT_API_KEY || "";
+const AGENTWEBUI_URL = (process.env.AGENTWEBUI_URL || "").replace(/\\/$/, "");
+const AGENTWEBUI_PASSWORD = process.env.AGENTWEBUI_PASSWORD || "";
+const AGENTWEBUI_TARGET = process.env.AGENTWEBUI_TARGET || "";
+const AGENTWEBUI_MODEL = process.env.AGENTWEBUI_MODEL || "local/small";
+let agentWebUiCookie = "";
 const MAX_AUDIO_BYTES = 16000 * 2 * 45;
 
 export const THEMES = Object.freeze({
@@ -135,12 +140,108 @@ async function transcribe(pcm, dir) {
     .replace(/^\[[^\]]+\]\s*/, "").trim();
 }
 
+async function agentWebUiRequest(route, options = {}, retry = true) {
+  if (!AGENTWEBUI_URL) throw new Error("AGENTWEBUI_URL is not configured");
+  const headers = { ...(options.headers || {}) };
+  if (agentWebUiCookie) headers.cookie = agentWebUiCookie;
+  const response = await fetch(AGENTWEBUI_URL + route, {
+    ...options, headers, signal: options.signal || AbortSignal.timeout(120000)
+  });
+  if (response.status === 401 && retry && AGENTWEBUI_PASSWORD) {
+    const login = await fetch(AGENTWEBUI_URL + "/api/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ password: AGENTWEBUI_PASSWORD }),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!login.ok) throw new Error("AgentWebUI login failed: HTTP " + login.status);
+    const cookies = typeof login.headers.getSetCookie === "function"
+      ? login.headers.getSetCookie() : [login.headers.get("set-cookie") || ""];
+    agentWebUiCookie = cookies.map(value => value.split(";")[0]).filter(Boolean).join("; ");
+    if (!agentWebUiCookie) throw new Error("AgentWebUI login did not return a session cookie");
+    return agentWebUiRequest(route, options, false);
+  }
+  if (!response.ok) {
+    throw new Error("AgentWebUI HTTP " + response.status + " at " + route + ": " +
+      (await response.text()).slice(0, 500));
+  }
+  return response;
+}
+
+async function agentWebUiJson(route, options) {
+  const response = await agentWebUiRequest(route, options);
+  return response.json();
+}
+
+function extractAssistantText(chat) {
+  const messages = Array.isArray(chat?.messages) ? chat.messages : [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (!["assistant", "agent"].includes(String(message?.role || "").toLowerCase())) continue;
+    const parts = Array.isArray(message.parts) ? message.parts : [];
+    const text = parts.map(part => {
+      if (typeof part === "string") return part;
+      return typeof part?.text === "string" ? part.text : "";
+    }).join("");
+    if (text.trim()) return text.trim();
+    if (typeof message.content === "string" && message.content.trim()) return message.content.trim();
+  }
+  return "";
+}
+
+async function askAgentWebUi(prompt) {
+  if (!AGENTWEBUI_URL) throw new Error("AGENTWEBUI_URL is not configured");
+  if (!AGENTWEBUI_PASSWORD) throw new Error("AGENTWEBUI_PASSWORD is required for AgentWebUI sign-in");
+  let target = AGENTWEBUI_TARGET;
+  if (!target) {
+    const agentsResponse = await agentWebUiJson("/api/agents");
+    const agents = Array.isArray(agentsResponse) ? agentsResponse :
+      (agentsResponse.agents || agentsResponse.items || []);
+    const first = agents.find(agent => agent && (agent.id || agent.agent_id));
+    if (first) target = "agent:" + (first.id || first.agent_id);
+    else target = "model:" + AGENTWEBUI_MODEL;
+  }
+  const created = await agentWebUiJson("/api/chats", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ target })
+  });
+  const chatId = created?.id || created?.chat?.id;
+  if (!chatId) throw new Error("AgentWebUI did not return a chat id");
+  await agentWebUiRequest("/api/chats/" + encodeURIComponent(chatId) + "/messages", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text: prompt })
+  });
+  // The events endpoint is an SSE stream and closes when the current reply finishes.
+  const events = await agentWebUiRequest("/api/chats/" + encodeURIComponent(chatId) + "/events", {
+    headers: { accept: "text/event-stream" },
+    signal: AbortSignal.timeout(120000)
+  });
+  if (events.body) {
+    const reader = events.body.getReader();
+    try {
+      while (true) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  const saved = await agentWebUiJson("/api/chats/" + encodeURIComponent(chatId));
+  const answer = extractAssistantText(saved);
+  if (!answer) throw new Error("AgentWebUI chat finished without an assistant text reply");
+  return answer;
+}
+
 async function askCoordinator(text, history) {
-  if (!AI_CHAT_URL) throw new Error("AI_CHAT_URL is not configured");
+  if (AGENTWEBUI_URL) return askAgentWebUi(text);
+  if (!AI_CHAT_URL) throw new Error("Set AGENTWEBUI_URL to connect the FREEzzz HUB agent system");
   const messages = [
     {
       role: "system",
-      content: "Ты голосовой помощник FREEzzz HUB. Отвечай по-русски, кратко и естественно. Команды управления цветом экрана и громкостью обрабатывает локальный шлюз; не утверждай, что выполнил действие, если оно не было передано устройству. Ты подключён к локальному координатору FREEzzz HUB."
+      content: "Ты голосовой помощник FREEzzz HUB. Отвечай по-русски, кратко и естественно. Команды управления цветом экрана и громкостью обрабатывает локальный шлюз; не утверждай, что выполнил действие, если оно не было передано устройству."
     },
     ...history,
     { role: "user", content: text }
