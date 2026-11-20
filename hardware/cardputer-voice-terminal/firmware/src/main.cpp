@@ -1,0 +1,349 @@
+#include <Arduino.h>
+#include <M5Cardputer.h>
+#include <WebSocketsClient.h>
+#include <ArduinoJson.h>
+#include <FastLED.h>
+#include <U8g2lib.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/stream_buffer.h>
+#include <cstring>
+#include <vector>
+
+#include "secrets.h"
+
+#ifndef WIFI_SSID
+#error "Create include/secrets.h from secrets.h.example"
+#endif
+
+namespace {
+constexpr uint32_t kSampleRate = 16000;
+constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
+constexpr size_t kFrameBytes = kSamplesPerFrame * sizeof(int16_t);
+constexpr uint8_t kLedDataPin = 21;       // WS2812 data; confirm against the exact PCB revision
+constexpr uint8_t kLedPowerPin = 38;      // Cardputer ADV LED/backlight power rail
+
+struct Palette {
+  const char* name;
+  uint16_t background;
+  uint16_t foreground;
+  uint16_t accent;
+  CRGB led;
+};
+
+const Palette kPalettes[] = {
+  {"red",    0x0000, 0xFFFF, 0xF800, CRGB(255, 35, 35)},
+  {"orange", 0x0000, 0xFFFF, 0xFD20, CRGB(255, 125, 0)},
+  {"yellow", 0x0000, 0xFFFF, 0xFFE0, CRGB(255, 220, 0)},
+  {"green",  0x0000, 0xFFFF, 0x07E0, CRGB(0, 255, 80)},
+  {"cyan",   0x0000, 0xFFFF, 0x07FF, CRGB(0, 220, 255)},
+  {"blue",   0x0000, 0xFFFF, 0x249F, CRGB(35, 110, 255)},
+  {"violet", 0x0000, 0xFFFF, 0xA81F, CRGB(175, 70, 255)},
+  {"white",  0xFFFF, 0x0000, 0x0000, CRGB(255, 255, 255)},
+  {"black",  0x0000, 0xFFFF, 0xFFFF, CRGB(235, 235, 235)}
+};
+
+CRGB led[1];
+WebSocketsClient socketClient;
+StreamBufferHandle_t speakerStream = nullptr;
+volatile bool pttActive = false;
+volatile bool replyActive = false;
+volatile bool replyEnded = false;
+volatile uint32_t replySampleRate = kSampleRate;
+volatile bool conversationActive = false;
+bool previousSpace = false;
+uint8_t volumePercent = 72;
+uint8_t paletteIndex = 5;
+uint32_t lastScrollAt = 0;
+int scrollOffset = 0;
+String connectionState = "Wi-Fi connecting";
+String lastUserText;
+String lastAssistantText;
+
+static const lgfx::U8g2font kCyrillicFont(u8g2_font_6x10_t_cyrillic);
+
+const Palette& palette() {
+  return kPalettes[paletteIndex];
+}
+
+void updateLed() {
+  digitalWrite(kLedPowerPin, HIGH);
+  led[0] = conversationActive ? palette().led : CRGB::Black;
+  FastLED.show();
+}
+
+void setPalette(const char* name) {
+  for (uint8_t i = 0; i < sizeof(kPalettes) / sizeof(kPalettes[0]); ++i) {
+    if (strcmp(name, kPalettes[i].name) == 0) {
+      paletteIndex = i;
+      updateLed();
+      return;
+    }
+  }
+}
+
+void drawWrapped(const String& value, int x, int y, int maxWidth, int maxLines, int lineHeight) {
+  if (value.length() == 0) return;
+  std::vector<String> lines;
+  String line;
+  int pos = 0;
+  while (pos < static_cast<int>(value.length())) {
+    int next = value.indexOf(' ', pos);
+    if (next < 0) next = value.length();
+    String word = value.substring(pos, next);
+    String candidate = line.length() == 0 ? word : line + " " + word;
+    if (line.length() > 0 && M5Cardputer.Display.textWidth(candidate) > maxWidth) {
+      lines.push_back(line);
+      line = word;
+    } else {
+      line = candidate;
+    }
+    pos = next + 1;
+  }
+  if (line.length() > 0) lines.push_back(line);
+
+  int first = lines.size() > maxLines ? static_cast<int>(lines.size()) - maxLines : 0;
+  first = max(0, first - scrollOffset);
+  int last = min(static_cast<int>(lines.size()), first + maxLines);
+  for (int i = first; i < last; ++i) {
+    M5Cardputer.Display.drawString(lines[i], x, y);
+    y += lineHeight;
+  }
+}
+
+void renderScreen() {
+  const auto& p = palette();
+  M5Cardputer.Display.fillScreen(p.background);
+  M5Cardputer.Display.setFont(&kCyrillicFont);
+  M5Cardputer.Display.setTextSize(1);
+  M5Cardputer.Display.setTextColor(p.accent, p.background);
+  M5Cardputer.Display.drawString("FREEzzz HUB", 4, 2);
+  M5Cardputer.Display.setTextColor(p.foreground, p.background);
+  M5Cardputer.Display.drawString(connectionState, 150, 2);
+  M5Cardputer.Display.drawFastHLine(4, 15, 232, p.accent);
+
+  M5Cardputer.Display.setTextColor(p.accent, p.background);
+  M5Cardputer.Display.drawString("YOU", 4, 20);
+  M5Cardputer.Display.setTextColor(p.foreground, p.background);
+  drawWrapped(lastUserText, 4, 33, 232, 3, 13);
+
+  M5Cardputer.Display.drawFastHLine(4, 76, 232, p.accent);
+  M5Cardputer.Display.setTextColor(p.accent, p.background);
+  M5Cardputer.Display.drawString("AI", 4, 80);
+  M5Cardputer.Display.setTextColor(p.foreground, p.background);
+  drawWrapped(lastAssistantText, 4, 93, 232, 3, 13);
+}
+
+void sendJson(JsonDocument& doc) {
+  String payload;
+  serializeJson(doc, payload);
+  socketClient.sendTXT(payload);
+}
+
+void sendSimple(const char* type) {
+  JsonDocument doc;
+  doc["type"] = type;
+  sendJson(doc);
+}
+
+void startCapture() {
+  if (!socketClient.isConnected() || replyActive || pttActive) return;
+  if (!M5Cardputer.Mic.begin()) {
+    connectionState = "Mic error";
+    renderScreen();
+    return;
+  }
+  pttActive = true;
+  conversationActive = true;
+  updateLed();
+  connectionState = "Listening";
+  renderScreen();
+  sendSimple("audio.start");
+}
+
+void stopCapture() {
+  if (!pttActive) return;
+  pttActive = false;
+  M5Cardputer.Mic.end();
+  sendSimple("audio.end");
+  connectionState = "Processing";
+  renderScreen();
+}
+
+void handleServerText(uint8_t* payload, size_t length) {
+  JsonDocument doc;
+  if (deserializeJson(doc, payload, length)) return;
+  const char* type = doc["type"] | "";
+  if (strcmp(type, "session.state") == 0) {
+    connectionState = doc["state"] | "Ready";
+  } else if (strcmp(type, "user.text") == 0) {
+    lastUserText = String((const char*)(doc["text"] | ""));
+    scrollOffset = 0;
+  } else if (strcmp(type, "assistant.text") == 0) {
+    lastAssistantText = String((const char*)(doc["text"] | ""));
+    scrollOffset = 0;
+    connectionState = "Speaking";
+    conversationActive = true;
+    updateLed();
+  } else if (strcmp(type, "device.theme") == 0) {
+    setPalette(doc["theme"] | "blue");
+  } else if (strcmp(type, "device.volume") == 0) {
+    volumePercent = constrain(static_cast<int>(doc["volume"] | 72), 0, 100);
+    M5Cardputer.Speaker.setVolume(static_cast<uint8_t>(volumePercent * 255 / 100));
+  } else if (strcmp(type, "audio.reply.begin") == 0) {
+    replySampleRate = doc["sampleRate"] | kSampleRate;
+    replyEnded = false;
+    replyActive = true;
+    if (speakerStream) xStreamBufferReset(speakerStream);
+    M5Cardputer.Mic.end();
+    M5Cardputer.Speaker.begin();
+    M5Cardputer.Speaker.setVolume(static_cast<uint8_t>(volumePercent * 255 / 100));
+    connectionState = "Speaking";
+    conversationActive = true;
+    updateLed();
+  } else if (strcmp(type, "audio.reply.end") == 0) {
+    replyEnded = true;
+  } else if (strcmp(type, "error") == 0) {
+    connectionState = "Server error";
+  }
+  renderScreen();
+}
+
+void onSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
+  switch (type) {
+    case WStype_CONNECTED: {
+      connectionState = "Authenticating";
+      JsonDocument doc;
+      doc["type"] = "auth";
+      doc["token"] = DEVICE_TOKEN;
+      sendJson(doc);
+      renderScreen();
+      break;
+    }
+    case WStype_DISCONNECTED:
+      connectionState = "Disconnected";
+      conversationActive = false;
+      updateLed();
+      renderScreen();
+      break;
+    case WStype_TEXT:
+      handleServerText(payload, length);
+      break;
+    case WStype_BIN:
+      if (replyActive && speakerStream) {
+        xStreamBufferSend(speakerStream, payload, length, 0);
+      }
+      break;
+    case WStype_ERROR:
+      connectionState = "Network error";
+      renderScreen();
+      break;
+    default:
+      break;
+  }
+}
+
+void speakerTask(void*) {
+  int16_t pcm[kSamplesPerFrame];
+  for (;;) {
+    if (!replyActive || !speakerStream) {
+      vTaskDelay(pdMS_TO_TICKS(10));
+      continue;
+    }
+    const size_t bytes = xStreamBufferReceive(
+      speakerStream, reinterpret_cast<uint8_t*>(pcm), sizeof(pcm), pdMS_TO_TICKS(40));
+    if (bytes >= sizeof(int16_t)) {
+      while (M5Cardputer.Speaker.isPlaying()) vTaskDelay(1);
+      M5Cardputer.Speaker.playRaw(pcm, bytes / sizeof(int16_t), replySampleRate, false, 1, 0);
+      continue;
+    }
+    if (replyEnded && !M5Cardputer.Speaker.isPlaying()) {
+      M5Cardputer.Speaker.end();
+      replyActive = false;
+      replyEnded = false;
+      M5Cardputer.Mic.begin();
+      conversationActive = false;
+      updateLed();
+      connectionState = "Ready";
+      renderScreen();
+    }
+    vTaskDelay(pdMS_TO_TICKS(2));
+  }
+}
+
+void connectWifi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  connectionState = "Wi-Fi connecting";
+  renderScreen();
+  const uint32_t started = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - started < 15000) {
+    delay(100);
+    M5Cardputer.update();
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    connectionState = "Connecting HUB";
+    socketClient.begin(HUB_HOST, HUB_PORT, HUB_PATH);
+    socketClient.onEvent(onSocketEvent);
+    socketClient.setReconnectInterval(3000);
+    socketClient.enableHeartbeat(15000, 3000, 2);
+  } else {
+    connectionState = "Wi-Fi unavailable";
+  }
+  renderScreen();
+}
+}  // namespace
+
+void setup() {
+  auto config = M5.config();
+  config.serial_baudrate = 115200;
+  M5Cardputer.begin(config, true);
+  Serial.begin(115200);
+  M5Cardputer.Display.setRotation(1);
+  M5Cardputer.Display.setFont(&kCyrillicFont);
+  M5Cardputer.Display.setTextSize(1);
+
+  pinMode(kLedPowerPin, OUTPUT);
+  digitalWrite(kLedPowerPin, HIGH);
+  FastLED.addLeds<WS2812, kLedDataPin, GRB>(led, 1);
+  FastLED.setBrightness(28);
+  updateLed();
+
+  M5Cardputer.Speaker.setVolume(static_cast<uint8_t>(volumePercent * 255 / 100));
+  speakerStream = xStreamBufferCreate(8192, 1);
+  if (speakerStream) {
+    xTaskCreatePinnedToCore(speakerTask, "voice-speaker", 4096, nullptr, 2, nullptr, 0);
+  }
+
+  lastAssistantText = "Удерживайте ПРОБЕЛ для разговора";
+  renderScreen();
+  connectWifi();
+}
+
+void loop() {
+  M5Cardputer.update();
+  socketClient.loop();
+
+  const bool spaceDown = M5Cardputer.Keyboard.isKeyPressed(' ');
+  if (spaceDown && !previousSpace) startCapture();
+  if (!spaceDown && previousSpace) stopCapture();
+  previousSpace = spaceDown;
+
+  if (pttActive && socketClient.isConnected()) {
+    static int16_t frame[kSamplesPerFrame];
+    if (M5Cardputer.Mic.record(frame, kSamplesPerFrame, kSampleRate)) {
+      socketClient.sendBIN(reinterpret_cast<uint8_t*>(frame), kFrameBytes);
+    }
+  }
+
+  if (M5Cardputer.Keyboard.isKeyPressed(KEY_UP) && millis() - lastScrollAt > 180) {
+    ++scrollOffset;
+    lastScrollAt = millis();
+    renderScreen();
+  } else if (M5Cardputer.Keyboard.isKeyPressed(KEY_DOWN) && millis() - lastScrollAt > 180) {
+    if (scrollOffset > 0) --scrollOffset;
+    lastScrollAt = millis();
+    renderScreen();
+  }
+  delay(1);
+}
