@@ -35,7 +35,7 @@ const Palette kPalettes[] = {
   {"orange", 0x0000, 0xFFFF, 0xFD20, CRGB(255, 125, 0)},
   {"yellow", 0x0000, 0xFFFF, 0xFFE0, CRGB(255, 220, 0)},
   {"green",  0x0000, 0xFFFF, 0x07E0, CRGB(0, 255, 80)},
-  {"cyan",   0x0000, 0xFFFF, 0x07FF, CRGB(0, 220, 255)},
+  {"indigo", 0x0000, 0xFFFF, 0x4810, CRGB(75, 0, 130)},
   {"blue",   0x0000, 0xFFFF, 0x249F, CRGB(35, 110, 255)},
   {"violet", 0x0000, 0xFFFF, 0xA81F, CRGB(175, 70, 255)},
   {"white",  0xFFFF, 0x0000, 0x0000, CRGB(255, 255, 255)},
