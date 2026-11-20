@@ -20,7 +20,7 @@ namespace {
 constexpr uint32_t kSampleRate = 16000;
 constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
 constexpr size_t kFrameBytes = kSamplesPerFrame * sizeof(int16_t);
-constexpr uint8_t kLedDataPin = 21;       // WS2812 data; confirm against the exact PCB revision
+constexpr uint8_t kLedDataPin = 21;       // SK6812 data GPIO21 on Cardputer ADV
 
 struct Palette {
   const char* name;
