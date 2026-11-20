@@ -9,12 +9,7 @@
 #include <freertos/stream_buffer.h>
 #include <cstring>
 #include <vector>
-
-#include "secrets.h"
-
-#ifndef WIFI_SSID
-#error "Create include/secrets.h from secrets.h.example"
-#endif
+#include <Preferences.h>
 
 namespace {
 constexpr uint32_t kSampleRate = 16000;
@@ -44,6 +39,8 @@ const Palette kPalettes[] = {
 
 CRGB led[1];
 WebSocketsClient socketClient;
+Preferences configStore;
+String wifiSsid, wifiPassword, hubHost, deviceToken;
 StreamBufferHandle_t speakerStream = nullptr;
 volatile bool pttActive = false;
 volatile bool replyActive = false;
@@ -227,7 +224,7 @@ void onSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
       connectionState = "Authenticating";
       JsonDocument doc;
       doc["type"] = "auth";
-      doc["token"] = DEVICE_TOKEN;
+      doc["token"] = deviceToken;
       sendJson(doc);
       renderScreen();
       break;
@@ -290,7 +287,7 @@ void speakerTask(void*) {
 
 void startHubSocket() {
   if (hubStarted || WiFi.status() != WL_CONNECTED) return;
-  socketClient.begin(HUB_HOST, HUB_PORT, HUB_PATH);
+  socketClient.begin(hubHost.c_str(), 8765, "/cardputer");
   socketClient.onEvent(onSocketEvent);
   socketClient.setReconnectInterval(3000);
   socketClient.enableHeartbeat(15000, 3000, 2);
@@ -299,10 +296,86 @@ void startHubSocket() {
   renderScreen();
 }
 
+
+bool loadSavedConfig() {
+  configStore.begin("voicecfg", true);
+  wifiSsid = configStore.getString("ssid", "");
+  wifiPassword = configStore.getString("pass", "");
+  hubHost = configStore.getString("hub", "");
+  deviceToken = configStore.getString("token", "");
+  configStore.end();
+  return wifiSsid.length() && hubHost.length() && deviceToken.length();
+}
+
+void saveConfig() {
+  configStore.begin("voicecfg", false);
+  configStore.putString("ssid", wifiSsid);
+  configStore.putString("pass", wifiPassword);
+  configStore.putString("hub", hubHost);
+  configStore.putString("token", deviceToken);
+  configStore.end();
+}
+
+void renderSetup(const String& title, const String& value, bool secret) {
+  M5Cardputer.Display.fillScreen(TFT_BLACK);
+  M5Cardputer.Display.setFont(&kCyrillicFont);
+  M5Cardputer.Display.setTextColor(TFT_CYAN, TFT_BLACK);
+  M5Cardputer.Display.drawString("FREEzzz HUB - SETUP", 4, 4);
+  M5Cardputer.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+  M5Cardputer.Display.drawString(title, 4, 32);
+  M5Cardputer.Display.drawString(secret ? String('*', value.length()) : value, 4, 52);
+  M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
+  M5Cardputer.Display.drawString("Enter: next | Backspace: erase", 4, 112);
+}
+
+String readSetupField(const String& title, bool secret) {
+  String value;
+  renderSetup(title, value, secret);
+  while (true) {
+    M5Cardputer.update();
+    auto keys = M5Cardputer.Keyboard.keysState();
+    if (keys.word.length()) {
+      for (size_t i = 0; i < keys.word.length() && value.length() < 96; ++i) value += keys.word[i];
+      renderSetup(title, value, secret);
+    }
+    bool enter = false, backspace = false;
+    for (auto key : keys.hid_keys) {
+      if (key == 0x28) enter = true;
+      if (key == 0x2A) backspace = true;
+    }
+    if (backspace && value.length()) {
+      value.remove(value.length() - 1);
+      renderSetup(title, value, secret);
+      delay(180);
+    }
+    if (enter && value.length()) return value;
+    delay(15);
+  }
+}
+
+void runSetupWizard() {
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  const int count = WiFi.scanNetworks();
+  M5Cardputer.Display.fillScreen(TFT_BLACK);
+  M5Cardputer.Display.setTextColor(TFT_CYAN, TFT_BLACK);
+  M5Cardputer.Display.drawString("Available Wi-Fi:", 4, 4);
+  M5Cardputer.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+  for (int i = 0; i < count && i < 6; ++i)
+    M5Cardputer.Display.drawString(String(i + 1) + ". " + WiFi.SSID(i), 4, 22 + i * 14);
+  M5Cardputer.Display.drawString("Type network name next", 4, 112);
+  delay(1500);
+  wifiSsid = readSetupField("Wi-Fi name (SSID):", false);
+  wifiPassword = readSetupField("Wi-Fi password:", true);
+  hubHost = readSetupField("PC address running HUB:", false);
+  deviceToken = readSetupField("Device token:", true);
+  saveConfig();
+}
+
 void connectWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(wifiSsid.c_str(), wifiPassword.c_str());
   connectionState = "Wi-Fi connecting";
   renderScreen();
   const uint32_t started = millis();
@@ -342,6 +415,8 @@ void setup() {
 
   lastAssistantText = "Удерживайте ПРОБЕЛ для разговора";
   renderScreen();
+  bool setupKey = M5Cardputer.Keyboard.isKeyPressed('g');
+  if (setupKey || !loadSavedConfig()) runSetupWizard();
   connectWifi();
 }
 
