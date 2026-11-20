@@ -47,9 +47,9 @@ export function parseVoiceControls(text, current = { theme: "blue", volume: 72 }
     result.volume = 0;
   } else if (/(включи|верни)\s*(?:звук|громкост)/i.test(normalized) && current.volume === 0) {
     result.volume = 72;
-  } else if (/(громче|прибавь звук|увеличь громкост)/i.test(normalized)) {
+  } else if (/(громче|погромче|прибавь (?:звук|громкост)|увеличь громкост)/i.test(normalized)) {
     result.volume = Math.min(100, current.volume + 10);
-  } else if (/(тише|убавь (?:звук|громкост)|уменьши громкост)/i.test(normalized)) {
+  } else if (/(тише|потише|убавь (?:звук|громкост)|уменьши громкост)/i.test(normalized)) {
     result.volume = Math.max(0, current.volume - 10);
   }
   return result;
