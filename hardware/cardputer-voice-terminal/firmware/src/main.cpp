@@ -21,7 +21,6 @@ constexpr uint32_t kSampleRate = 16000;
 constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
 constexpr size_t kFrameBytes = kSamplesPerFrame * sizeof(int16_t);
 constexpr uint8_t kLedDataPin = 21;       // WS2812 data; confirm against the exact PCB revision
-constexpr uint8_t kLedPowerPin = 38;      // Cardputer ADV LED/backlight power rail
 
 struct Palette {
   const char* name;
@@ -69,7 +68,6 @@ const Palette& palette() {
 }
 
 void updateLed() {
-  digitalWrite(kLedPowerPin, HIGH);
   led[0] = conversationActive ? palette().led : CRGB::Black;
   FastLED.show();
 }
@@ -322,9 +320,7 @@ void setup() {
   M5Cardputer.Display.setFont(&kCyrillicFont);
   M5Cardputer.Display.setTextSize(1);
 
-  pinMode(kLedPowerPin, OUTPUT);
-  digitalWrite(kLedPowerPin, HIGH);
-  FastLED.addLeds<WS2812, kLedDataPin, GRB>(led, 1);
+  FastLED.addLeds<SK6812, kLedDataPin, GRB>(led, 1);
   FastLED.setBrightness(28);
   updateLed();
 
