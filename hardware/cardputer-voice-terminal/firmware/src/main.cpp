@@ -334,7 +334,7 @@ void drawSetup() {
   M5Cardputer.Display.drawString(String("Field ") + String(setupField + 1) + "/4", 4, 23);
   M5Cardputer.Display.drawString(setupLabels[setupField], 4, 43);
   String shown = setupInput;
-  if (setupField == 1) { shown = ""; for (size_t i = 0; i < setupInput.length(); ++i) shown += '*'; }
+  if (setupField == 1 || setupField == 3) { shown = ""; for (size_t i = 0; i < setupInput.length(); ++i) shown += '*'; }
   if (shown.length() > 30) shown = shown.substring(shown.length() - 30);
   M5Cardputer.Display.drawString(shown + "_", 4, 62);
   M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
