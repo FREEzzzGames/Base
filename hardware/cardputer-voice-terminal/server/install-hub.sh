@@ -5,13 +5,20 @@ if [[ "$(id -u)" -eq 0 ]]; then
   echo "Run as the normal Ubuntu user (monk), not with sudo."
   exit 1
 fi
-for command in sudo curl git cmake node npm python3 openssl ip; do
-  command -v "$command" >/dev/null 2>&1 || { echo "Missing command: $command"; exit 1; }
+command -v sudo >/dev/null 2>&1 || { echo "sudo is required."; exit 1; }
+command -v apt-get >/dev/null 2>&1 || { echo "This installer requires Ubuntu/Debian with apt-get."; exit 1; }
+
+echo "== Install system prerequisites =="
+sudo apt-get update
+sudo apt-get install -y git cmake build-essential python3-venv curl openssl iproute2
+
+for command in curl git cmake node npm python3 openssl ip; do
+  command -v "$command" >/dev/null 2>&1 || { echo "Missing command after package installation: $command"; exit 1; }
 done
 
 NODE_MAJOR="$(node -p 'Number(process.versions.node.split(".")[0])')"
 if (( NODE_MAJOR < 22 )); then
-  echo "Node.js 22+ is required; found $(node --version)."
+  echo "Node.js 22+ is required; found $(node --version). Install Node.js 22+ and rerun."
   exit 1
 fi
 
@@ -36,10 +43,6 @@ echo
 
 DEVICE_TOKEN="$(openssl rand -hex 32)"
 export AGENT_PASSWORD WIFI_SSID WIFI_PASSWORD DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER FIRMWARE WHISPER PIPER
-
-echo "== Install build prerequisites =="
-sudo apt-get update
-sudo apt-get install -y git cmake build-essential python3-venv curl
 
 echo "== Build Whisper.cpp and download Russian speech model =="
 if [[ ! -d "$WHISPER/.git" ]]; then
