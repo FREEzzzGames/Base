@@ -49,7 +49,7 @@ export function parseVoiceControls(text, current = { theme: "blue", volume: 72 }
     result.volume = 72;
   } else if (/(громче|прибавь звук|увеличь громкост)/i.test(normalized)) {
     result.volume = Math.min(100, current.volume + 10);
-  } else if (/(тише|убавь звук|уменьши громкост)/i.test(normalized)) {
+  } else if (/(тише|убавь (?:звук|громкост)|уменьши громкост)/i.test(normalized)) {
     result.volume = Math.max(0, current.volume - 10);
   }
   return result;
