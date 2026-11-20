@@ -26,7 +26,6 @@ RUN_USER="$USER"
 RUN_HOME="$(getent passwd "$RUN_USER" | cut -d: -f6)"
 ROOT="/opt/freezzz-cardputer"
 SERVER="$ROOT/server"
-FIRMWARE="$ROOT/firmware"
 HUB_IP="$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}')"
 [[ -n "$HUB_IP" ]] || { echo "Could not determine HUB LAN IPv4 address."; exit 1; }
 
@@ -37,26 +36,19 @@ echo
 read -r -s -p "Speech API key (STT/TTS): " SPEECH_API_KEY
 echo
 [[ -n "$SPEECH_API_KEY" ]] || { echo "Speech API key is required for voice input/output."; exit 1; }
-read -r -p "2.4 GHz Wi-Fi SSID for Cardputer: " WIFI_SSID
-read -r -s -p "Wi-Fi password: " WIFI_PASSWORD
-echo
-[[ -n "$WIFI_SSID" && -n "$WIFI_PASSWORD" ]] || { echo "Wi-Fi SSID and password are required."; exit 1; }
-
 DEVICE_TOKEN="$(openssl rand -hex 32)"
-export AGENT_PASSWORD SPEECH_API_KEY WIFI_SSID WIFI_PASSWORD DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER FIRMWARE
+export AGENT_PASSWORD SPEECH_API_KEY DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER
 
 echo "== Speech processing will use the configured cloud API; no local speech models are installed =="
 
 echo "== Fetch Cardputer gateway and firmware sources =="
-sudo mkdir -p "$SERVER" "$FIRMWARE/src" "$FIRMWARE/include"
+sudo mkdir -p "$SERVER"
 sudo chown -R "$RUN_USER:$RUN_USER" "$ROOT"
 RAW="https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal"
 for file in index.mjs package.json; do
   curl -fsSL "$RAW/server/$file" -o "$SERVER/$file"
 done
 curl -fsSL "$RAW/server/.env.example" -o "$SERVER/.env.example"
-curl -fsSL "$RAW/firmware/platformio.ini" -o "$FIRMWARE/platformio.ini"
-curl -fsSL "$RAW/firmware/src/main.cpp" -o "$FIRMWARE/src/main.cpp"
 
 echo "== Write private gateway and firmware credentials =="
 python3 - <<'PY'
@@ -92,32 +84,12 @@ for line in template.splitlines():
 (server / ".env").write_text("\n".join(lines) + "\n")
 (server / ".env").chmod(0o600)
 
-firmware = Path(os.environ["FIRMWARE"])
-secrets = (
-    "#pragma once\n"
-    "#define WIFI_SSID " + json.dumps(os.environ["WIFI_SSID"], ensure_ascii=False) + "\n"
-    "#define WIFI_PASSWORD " + json.dumps(os.environ["WIFI_PASSWORD"], ensure_ascii=False) + "\n"
-    "#define HUB_HOST " + json.dumps(os.environ["HUB_IP"]) + "\n"
-    "#define HUB_PORT 8765\n"
-    '#define HUB_PATH "/cardputer"\n'
-    "#define DEVICE_TOKEN " + json.dumps(os.environ["DEVICE_TOKEN"]) + "\n"
-)
-(firmware / "include" / "secrets.h").write_text(secrets)
 PY
 chmod 600 "$FIRMWARE/include/secrets.h"
 
 echo "== Install gateway dependencies =="
 cd "$SERVER"
 npm install --omit=dev
-
-echo "== Install PlatformIO and compile the device firmware =="
-sudo -u "$RUN_USER" python3 -m venv "$ROOT/platformio-venv"
-sudo -u "$RUN_USER" "$ROOT/platformio-venv/bin/pip" install --upgrade platformio
-sudo -u "$RUN_USER" "$ROOT/platformio-venv/bin/pio" run -d "$FIRMWARE"
-BIN="$FIRMWARE/.pio/build/cardputer-adv/firmware.bin"
-test -s "$BIN"
-cp "$BIN" "$RUN_HOME/Cardputer-ADV.bin"
-chown "$RUN_USER:$RUN_USER" "$RUN_HOME/Cardputer-ADV.bin"
 
 echo "== Install and start systemd gateway service =="
 NODE_BIN="$(command -v node)"
@@ -151,6 +123,6 @@ curl -fsS --max-time 5 http://127.0.0.1:8765/health
 echo
 echo "=== INSTALLATION COMPLETE ==="
 echo "Gateway: ws://$HUB_IP:8765/cardputer"
-echo "Firmware: $RUN_HOME/Cardputer-ADV.bin"
-sha256sum "$RUN_HOME/Cardputer-ADV.bin"
+echo "Device token (enter this on Cardputer setup screen): $DEVICE_TOKEN"
+echo "Configure Wi-Fi SSID/password and HUB host $HUB_IP on Cardputer."
 echo "Service logs: sudo journalctl -u freezzz-cardputer-gateway -n 60 --no-pager"
