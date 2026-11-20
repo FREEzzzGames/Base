@@ -27,3 +27,8 @@ local.properties
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Cardputer ADV local credentials and PlatformIO output
+hardware/cardputer-voice-terminal/firmware/include/secrets.h
+hardware/cardputer-voice-terminal/firmware/.pio/
+hardware/cardputer-voice-terminal/server/.env
