@@ -71,10 +71,10 @@ import json, os
 from pathlib import Path
 firmware = Path(os.environ["FIRMWARE"])
 header = (
-    "#pragma once\\n"
-    "#define FREEZZ_HUB_HOST " + json.dumps(os.environ["HUB_IP"]) + "\\n"
-    "#define FREEZZ_HUB_PORT 8765\\n"
-    "#define FREEZZ_DEVICE_TOKEN " + json.dumps(os.environ["DEVICE_TOKEN"]) + "\\n"
+    "#pragma once\n"
+    "#define FREEZZ_HUB_HOST " + json.dumps(os.environ["HUB_IP"]) + "\n"
+    "#define FREEZZ_HUB_PORT 8765\n"
+    "#define FREEZZ_DEVICE_TOKEN " + json.dumps(os.environ["DEVICE_TOKEN"]) + "\n"
 )
 target = firmware / "src" / "device_config.h"
 target.write_text(header)
