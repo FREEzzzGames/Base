@@ -22,7 +22,7 @@ export const THEMES = Object.freeze({
   orange: ["оранж", "orange"],
   yellow: ["желт", "жёлт", "yellow"],
   green: ["зелен", "зелён", "green"],
-  cyan: ["голуб", "бирюз", "циан", "cyan"],
+  indigo: ["индиго", "indigo"],
   blue: ["син", "blue"],
   violet: ["фиолет", "пурпур", "violet", "purple"],
   white: ["бел", "white"],
