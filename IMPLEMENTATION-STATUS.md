@@ -226,7 +226,7 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 ## 2026-11-20 Cardputer ADV voice terminal — initial implementation
 
 - Added `hardware/cardputer-voice-terminal/` as an isolated module in Base/main.
-- Added a minimal Arduino/M5Cardputer firmware target: Space push-to-talk, PCM16 capture, WebSocket transport, two-phrase text UI, Up/Down scroll, nine voice-selectable palettes, speaker volume commands, and conversation-synced RGB LED.
+- Added a minimal Arduino/M5Cardputer firmware target: Space push-to-talk, PCM16 capture, WebSocket transport, two-phrase text UI, `;` / `.` scroll, nine voice-selectable palettes, speaker volume commands, and conversation-synced RGB LED.
 - Added a local Node WebSocket gateway with device-token authentication, PCM WAV conversion, whisper.cpp STT, configurable OpenAI-compatible local coordinator endpoint, Piper TTS, and unit tests for voice commands and WAV parsing.
 - Added a dedicated GitHub Actions workflow for gateway tests and PlatformIO compilation.
 - Source implementation commits: `4dba12cc63a83694ff6c684bf626795a9b6747eb`, `ae9b5753d4223abfd993fa3ffce9cd230eb33a6e`, `211f7c40eaed244e69be4ac27125903b7af8bb04`, `e90a392e62350ca9f763c8f8ddc6abd337df3797`, `c332f88b408dd715cea22bdf8ca6e000af901029`.
