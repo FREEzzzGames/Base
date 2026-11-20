@@ -181,6 +181,7 @@ export function extractAssistantText(chat) {
     const parts = Array.isArray(message.parts) ? message.parts : [];
     const text = parts.map(part => {
       if (typeof part === "string") return part;
+      if (part?.type && part.type !== "text") return "";
       return typeof part?.text === "string" ? part.text : "";
     }).join("");
     if (text.trim()) return text.trim();
