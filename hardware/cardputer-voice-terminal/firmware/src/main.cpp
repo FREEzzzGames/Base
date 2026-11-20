@@ -62,7 +62,7 @@ String connectionState = "Wi-Fi connecting";
 String lastUserText;
 String lastAssistantText;
 
-static const lgfx::U8g2font kCyrillicFont(u8g2_font_6x10_t_cyrillic);
+static const lgfx::U8g2font kCyrillicFont(u8g2_font_6x12_t_cyrillic);
 
 const Palette& palette() {
   return kPalettes[paletteIndex];
