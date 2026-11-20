@@ -355,7 +355,7 @@ void setupWizard() {
     M5Cardputer.update();
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
       auto keys = M5Cardputer.Keyboard.keysState();
-      if (keys.backspace || keys.del) {
+      if (keys.del) {
         if (setupInput.length()) setupInput.remove(setupInput.length() - 1);
       }
       for (char c : keys.word) {
