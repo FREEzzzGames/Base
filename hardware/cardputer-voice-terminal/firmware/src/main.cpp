@@ -323,7 +323,13 @@ void renderSetup(const String& title, const String& value, bool secret) {
   M5Cardputer.Display.drawString("FREEzzz HUB - SETUP", 4, 4);
   M5Cardputer.Display.setTextColor(TFT_WHITE, TFT_BLACK);
   M5Cardputer.Display.drawString(title, 4, 32);
-  M5Cardputer.Display.drawString(secret ? String('*', value.length()) : value, 4, 52);
+  String shown;
+  if (secret) {
+    for (size_t i = 0; i < value.length(); ++i) shown += '*';
+  } else {
+    shown = value;
+  }
+  M5Cardputer.Display.drawString(shown, 4, 52);
   M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
   M5Cardputer.Display.drawString("Enter: next | Backspace: erase", 4, 112);
 }
