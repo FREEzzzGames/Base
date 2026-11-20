@@ -14,9 +14,8 @@
 ## Схема
 ```
 Cardputer ADV -- WebSocket + PCM16 --> FREEzzz HUB gateway
-                                         |-- whisper.cpp (STT)
+                                         |-- облачный STT/TTS API (без локальных моделей)
                                          |-- AgentWebUI API (существующие агенты HUB)
-                                         |-- Piper (TTS)
                                          `-- обратно: текст + PCM16
 ```
 
@@ -32,13 +31,13 @@ pio run -d hardware/cardputer-voice-terminal/firmware
 Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin.
 
 ## Gateway на Ubuntu
-Требуется Node.js 22+, whisper.cpp (whisper-cli + модель), Piper CLI + голосовая модель и работающий AgentWebUI на HUB (в текущей конфигурации `http://192.168.0.207:3000`).
+Требуется Node.js 22+, работающий AgentWebUI на HUB (в текущей конфигурации `http://192.168.0.207:3000`) и ключ совместимого облачного Speech API для распознавания и синтеза речи. Локальные Whisper.cpp, Piper, CMake и модели не устанавливаются.
 
 ```bash
 cd hardware/cardputer-voice-terminal/server
 npm install
 cp .env.example .env
-# заполнить DEVICE_TOKEN, пароль AgentWebUI и пути к моделям
+# заполнить DEVICE_TOKEN, пароль AgentWebUI и SPEECH_API_KEY
 npm start
 ```
 
@@ -46,38 +45,14 @@ npm start
 
 По умолчанию WebSocket слушает 0.0.0.0:8765/cardputer. Разрешить TCP/8765 только в доверенной домашней сети. Не публиковать gateway в интернет.
 
-### Установка STT/TTS на Ubuntu
-
-Whisper.cpp собирается из официального исходного репозитория; для русского используется модель `small` (около 466 MiB). Piper устанавливается в отдельное Python venv и использует официальный голос `ru_RU-irina-medium`.
-
-```bash
-sudo apt update
-sudo apt install -y git cmake build-essential python3-venv
-
-sudo git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git /opt/whisper.cpp
-sudo cmake -S /opt/whisper.cpp -B /opt/whisper.cpp/build -DCMAKE_BUILD_TYPE=Release
-sudo cmake --build /opt/whisper.cpp/build -j2
-sudo bash /opt/whisper.cpp/models/download-ggml-model.sh small
-
-sudo mkdir -p /opt/piper/voices
-sudo python3 -m venv /opt/piper/venv
-sudo /opt/piper/venv/bin/pip install --upgrade pip
-sudo /opt/piper/venv/bin/pip install piper-tts
-sudo /opt/piper/venv/bin/python -m piper.download_voices ru_RU-irina-medium --data-dir /opt/piper/voices
-```
-
-Установленные пути для `.env`:
-- `WHISPER_CLI=/opt/whisper.cpp/build/bin/whisper-cli`
-- `WHISPER_MODEL=/opt/whisper.cpp/models/ggml-small.bin`
-- `PIPER_BIN=/opt/piper/venv/bin/piper`
-- `PIPER_MODEL=/opt/piper/voices/ru_RU-irina-medium.onnx`
-
-Piper запускается через `-m`, `-f`, `--input-file`; Gateway не зависит от устаревших флагов предыдущих версий CLI.
-
 ## Переменные gateway
 - DEVICE_TOKEN — тот же случайный токен, что в secrets.h.
-- WHISPER_CLI, WHISPER_MODEL — whisper.cpp executable и модель.
-- PIPER_BIN, PIPER_MODEL — Piper executable и модель.
+- SPEECH_API_BASE_URL — базовый URL OpenAI-compatible Speech API (по умолчанию `https://api.openai.com/v1`).
+- SPEECH_API_KEY — ключ Speech API; используется только на HUB для STT и TTS.
+- STT_MODEL — модель распознавания (по умолчанию `gpt-4o-mini-transcribe`).
+- TTS_MODEL — модель синтеза (по умолчанию `gpt-4o-mini-tts`).
+- TTS_VOICE — голос синтеза (по умолчанию `alloy`).
+- WHISPER_CLI / WHISPER_MODEL и PIPER_BIN / PIPER_MODEL — необязательный локальный fallback, не требуется для основной схемы.
 - AGENTWEBUI_URL — адрес существующего AgentWebUI; для сервиса на том же Ubuntu PC: `http://127.0.0.1:3000`.
 - AGENTWEBUI_PASSWORD — пароль входа AgentWebUI. Gateway выполняет `POST /api/login` и хранит session cookie в памяти процесса.
 - AGENTWEBUI_TARGET — необязательная цель, например `agent:ID`; если не задана, выбирается первый агент из `/api/agents`.
@@ -95,7 +70,7 @@ Piper запускается через `-m`, `-f`, `--input-file`; Gateway не
 bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal/server/install-hub.sh)
 ```
 
-Скрипт устанавливает Whisper.cpp и Piper (без локальной LLM), скачивает русские модели, подключает Gateway к AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль входа AgentWebUI и SSID/пароль Wi-Fi 2.4 GHz; значения вводятся скрыто и сохраняются только локально на HUB. Готовый файл появится как `~/Cardputer-ADV.bin`.
+Скрипт НЕ устанавливает Whisper.cpp/Piper, НЕ скачивает локальные модели и НЕ требует CMake. Он настраивает облачный STT/TTS, подключает Gateway к существующему AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль AgentWebUI, ключ Speech API и SSID/пароль Wi-Fi 2.4 GHz. Секреты вводятся скрыто и сохраняются только локально на HUB в файлах с ограниченными правами. Готовый файл появится как `~/Cardputer-ADV.bin`.
 
 ## Протокол
 Клиент отправляет auth, audio.start, бинарные PCM16-фреймы и audio.end. Gateway отправляет user.text, assistant.text, device.theme / device.volume, audio.reply.begin, бинарные PCM16-фреймы и audio.reply.end.
@@ -104,6 +79,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardw
 - Wake word намеренно отсутствует.
 - Wi-Fi и токен задаются при сборке в локальном secrets.h; на устройстве нет экрана настройки.
 - Для входа Gateway нужен действующий пароль AgentWebUI в локальном `.env`; сам пароль не может быть автоматически угадан или обойдён. Устройство авторизуется отдельным DEVICE_TOKEN.
+- Для распознавания и озвучивания нужен ключ Speech API с доступом к STT/TTS; он не передаётся Cardputer. Диалоги и ответы ИИ обрабатывает AgentWebUI.
 - CI может проверить host gateway и компиляцию; реальную запись/воспроизведение, LED и качество распознавания нужно проверить на физическом Cardputer ADV.
 
 ## LED hardware note
