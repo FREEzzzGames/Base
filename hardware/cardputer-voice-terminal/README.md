@@ -60,3 +60,8 @@ npm start
 - Wi-Fi и токен задаются при сборке в локальном secrets.h; на устройстве нет экрана настройки.
 - AI endpoint должен быть предоставлен локальным FREEzzz HUB runtime. В текущем Base cloud worker не является локальным агентным runtime.
 - CI может проверить host gateway и компиляцию; реальную запись/воспроизведение, LED и качество распознавания нужно проверить на физическом Cardputer ADV.
+
+
+## LED hardware note
+
+On Cardputer ADV the onboard SK6812 data line is GPIO21. Its power rail is shared with the display backlight on GPIO38; firmware deliberately does not configure or toggle GPIO38, so M5GFX retains control of screen brightness and backlight power.
