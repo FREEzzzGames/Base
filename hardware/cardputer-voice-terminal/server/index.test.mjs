@@ -54,7 +54,7 @@ test("extracts the latest assistant text from an AgentWebUI chat", () => {
       { role: "assistant", parts: [{ type: "thought", text: "internal" }, { type: "text", text: "Здравствуйте!" }] }
     ]
   };
-  assert.equal(extractAssistantText(chat), "internalЗдравствуйте!");
+  assert.equal(extractAssistantText(chat), "Здравствуйте!");
 });
 
 test("returns empty text when AgentWebUI has no assistant response", () => {
