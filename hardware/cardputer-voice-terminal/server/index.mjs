@@ -173,7 +173,7 @@ async function agentWebUiJson(route, options) {
   return response.json();
 }
 
-function extractAssistantText(chat) {
+export function extractAssistantText(chat) {
   const messages = Array.isArray(chat?.messages) ? chat.messages : [];
   for (let i = messages.length - 1; i >= 0; i--) {
     const message = messages[i];
@@ -189,7 +189,7 @@ function extractAssistantText(chat) {
   return "";
 }
 
-async function askAgentWebUi(prompt) {
+async function askAgentWebUi(prompt, session) {
   if (!AGENTWEBUI_URL) throw new Error("AGENTWEBUI_URL is not configured");
   if (!AGENTWEBUI_PASSWORD) throw new Error("AGENTWEBUI_PASSWORD is required for AgentWebUI sign-in");
   let target = AGENTWEBUI_TARGET;
@@ -201,13 +201,16 @@ async function askAgentWebUi(prompt) {
     if (first) target = "agent:" + (first.id || first.agent_id);
     else target = "model:" + AGENTWEBUI_MODEL;
   }
-  const created = await agentWebUiJson("/api/chats", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ target })
-  });
-  const chatId = created?.id || created?.chat?.id;
-  if (!chatId) throw new Error("AgentWebUI did not return a chat id");
+  if (!session.agentChatId) {
+    const created = await agentWebUiJson("/api/chats", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ target })
+    });
+    session.agentChatId = created?.id || created?.chat?.id;
+    if (!session.agentChatId) throw new Error("AgentWebUI did not return a chat id");
+  }
+  const chatId = session.agentChatId;
   await agentWebUiRequest("/api/chats/" + encodeURIComponent(chatId) + "/messages", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -235,8 +238,8 @@ async function askAgentWebUi(prompt) {
   return answer;
 }
 
-async function askCoordinator(text, history) {
-  if (AGENTWEBUI_URL) return askAgentWebUi(text);
+async function askCoordinator(text, history, session) {
+  if (AGENTWEBUI_URL) return askAgentWebUi(text, session);
   if (!AI_CHAT_URL) throw new Error("Set AGENTWEBUI_URL to connect the FREEzzz HUB agent system");
   const messages = [
     {
@@ -290,7 +293,7 @@ function sendError(socket, error) {
 
 function createSession() {
   return {
-    authenticated: false, recording: false, audio: [], audioBytes: 0,
+    authenticated: false, recording: false, audio: [], audioBytes: 0, agentChatId: null,
     theme: "blue", volume: 72, history: [], busy: false
   };
 }
@@ -398,7 +401,7 @@ async function processVoiceRequest(socket, session, pcm) {
       answer = "Готово. " + changes.join(", ") + ".";
     } else {
       await sendJson(socket, "session.state", { state: "Thinking" });
-      answer = await askCoordinator(transcript, session.history);
+      answer = await askCoordinator(transcript, session.history, session);
       session.history.push({ role: "user", content: transcript }, { role: "assistant", content: answer });
       if (session.history.length > 12) session.history.splice(0, session.history.length - 12);
     }
