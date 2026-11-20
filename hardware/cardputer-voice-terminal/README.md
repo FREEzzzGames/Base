@@ -22,13 +22,13 @@ Cardputer ADV -- WebSocket + PCM16 --> FREEzzz HUB gateway
 Gateway — транспортный адаптер. При заданном AGENTWEBUI_URL он входит в существующий AgentWebUI, создаёт диалог с первым доступным агентом (или использует AGENTWEBUI_TARGET), отправляет текст и получает завершённый ответ через SSE. Пароль хранится только в `.env` на HUB и никогда не передаётся Cardputer. Cloudflare worker из workers/agent-system не является локальным audio runtime.
 
 ## Сборка прошивки
-1. Скопировать firmware/include/secrets.h.example в firmware/include/secrets.h.
-2. Указать SSID, пароль Wi-Fi, IP FREEzzz HUB и случайный токен устройства.
-3. Из корня репозитория выполнить:
+Прошивка универсальная: Wi-Fi и параметры HUB не вшиваются в BIN. Из корня репозитория выполнить:
 ```bash
 pio run -d hardware/cardputer-voice-terminal/firmware
 ```
 Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin.
+
+При первом запуске Cardputer автоматически откроет экран настройки. Введи по очереди Wi-Fi SSID, пароль Wi-Fi, IP/hostname HUB и Device Token. Enter подтверждает поле; Backspace удаляет символ. Пароль Wi-Fi на экране маскируется. Настройки сохраняются во внутренней NVS-памяти. Для повторной настройки удерживай верхнюю кнопку G0 при включении устройства.
 
 ## Gateway на Ubuntu
 Требуется Node.js 22+, работающий AgentWebUI на HUB (в текущей конфигурации `http://192.168.0.207:3000`) и ключ совместимого облачного Speech API для распознавания и синтеза речи. Локальные Whisper.cpp, Piper, CMake и модели не устанавливаются.
@@ -70,7 +70,7 @@ npm start
 bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal/server/install-hub.sh)
 ```
 
-Скрипт НЕ устанавливает Whisper.cpp/Piper, НЕ скачивает локальные модели и НЕ требует CMake. Он настраивает облачный STT/TTS, подключает Gateway к существующему AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль AgentWebUI, ключ Speech API и SSID/пароль Wi-Fi 2.4 GHz. Секреты вводятся скрыто и сохраняются только локально на HUB в файлах с ограниченными правами. Готовый файл появится как `~/Cardputer-ADV.bin`.
+Скрипт НЕ устанавливает Whisper.cpp/Piper, НЕ скачивает локальные модели и НЕ требует CMake. Он настраивает облачный STT/TTS, подключает Gateway к существующему AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль AgentWebUI и ключ Speech API. Скрипт создаст DEVICE_TOKEN и сохранит его только в локальном `.env` на HUB с правами 600. После установки он покажет токен в терминале — введи его на Cardputer в поле Device Token. Wi-Fi SSID и пароль вводятся непосредственно на Cardputer. BIN собирается отдельно через GitHub Actions и не содержит персональных секретов.
 
 ## Протокол
 Клиент отправляет auth, audio.start, бинарные PCM16-фреймы и audio.end. Gateway отправляет user.text, assistant.text, device.theme / device.volume, audio.reply.begin, бинарные PCM16-фреймы и audio.reply.end.
