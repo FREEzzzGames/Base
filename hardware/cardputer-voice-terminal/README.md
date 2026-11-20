@@ -22,14 +22,22 @@ Cardputer ADV -- WebSocket + PCM16 --> FREEzzz HUB gateway
 
 Gateway — транспортный адаптер, а не сам ИИ-координатор. Он передаёт распознанную речь на локальный AI endpoint. Cloudflare worker из workers/agent-system не является локальным audio runtime.
 
+## Первоначальная настройка Cardputer ADV
+
+При первом включении прошивка показывает найденные Wi-Fi сети и просит ввести SSID, пароль, адрес ПК с FREEzzz HUB и DEVICE_TOKEN. Данные сохраняются во внутренней памяти Cardputer. При следующих включениях устройство автоматически подключается к сохранённой сети и HUB.
+
+Чтобы подключить другую сеть, например точку доступа телефона, включите Cardputer с удерживаемой клавишей G. Введите SSID и пароль новой сети. Затем устройство автоматически подключится к сохранённому адресу HUB и токену.
+
+Точка доступа телефона подходит, когда ПК с FREEzzz HUB доступен в её сети. Если ПК остаётся в другой сети, нужен VPN или настроенная маршрутизация. Для постоянного адреса ПК задайте DHCP reservation на роутере. Некоторые публичные/гостевые Wi-Fi блокируют связь между устройствами.
+
+Пароль Wi-Fi и токен хранятся во внутренней flash памяти устройства. Не публикуйте их вместе с образом или исходниками.
+
 ## Сборка прошивки
-1. Скопировать firmware/include/secrets.h.example в firmware/include/secrets.h.
-2. Указать SSID, пароль Wi-Fi, IP FREEzzz HUB и случайный токен устройства.
-3. Из корня репозитория выполнить:
+
 ```bash
 pio run -d hardware/cardputer-voice-terminal/firmware
 ```
-Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin.
+Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin. Настройка сети при сборке и локальный secrets.h больше не требуются.
 
 ## Gateway на Ubuntu
 Требуется Node.js 22+, whisper.cpp (whisper-cli + модель), Piper CLI + голосовая модель и локальный FREEzzz AI coordinator с OpenAI-compatible Chat Completions API.
