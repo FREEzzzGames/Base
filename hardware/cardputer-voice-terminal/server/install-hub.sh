@@ -10,7 +10,7 @@ command -v apt-get >/dev/null 2>&1 || { echo "This installer requires Ubuntu/Deb
 
 echo "== Install system prerequisites =="
 sudo apt-get update
-sudo apt-get install -y git python3-venv curl openssl iproute2
+sudo apt-get install -y git curl openssl iproute2
 
 for command in curl git node npm python3 openssl ip; do
   command -v "$command" >/dev/null 2>&1 || { echo "Missing command after package installation: $command"; exit 1; }
@@ -41,7 +41,7 @@ export AGENT_PASSWORD SPEECH_API_KEY DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT 
 
 echo "== Speech processing will use the configured cloud API; no local speech models are installed =="
 
-echo "== Fetch Cardputer gateway and firmware sources =="
+echo "== Fetch Cardputer gateway sources =="
 sudo mkdir -p "$SERVER"
 sudo chown -R "$RUN_USER:$RUN_USER" "$ROOT"
 RAW="https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal"
@@ -50,7 +50,7 @@ for file in index.mjs package.json; do
 done
 curl -fsSL "$RAW/server/.env.example" -o "$SERVER/.env.example"
 
-echo "== Write private gateway and firmware credentials =="
+echo "== Write private gateway credentials =="
 python3 - <<'PY'
 import json, os
 from pathlib import Path
@@ -85,7 +85,6 @@ for line in template.splitlines():
 (server / ".env").chmod(0o600)
 
 PY
-chmod 600 "$FIRMWARE/include/secrets.h"
 
 echo "== Install gateway dependencies =="
 cd "$SERVER"
