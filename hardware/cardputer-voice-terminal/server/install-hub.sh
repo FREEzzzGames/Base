@@ -10,9 +10,9 @@ command -v apt-get >/dev/null 2>&1 || { echo "This installer requires Ubuntu/Deb
 
 echo "== Install system prerequisites =="
 sudo apt-get update
-sudo apt-get install -y git curl openssl iproute2
+sudo apt-get install -y git curl openssl iproute2 pipx
 
-for command in curl git node npm python3 openssl ip; do
+for command in curl git node npm python3 openssl ip pipx; do
   command -v "$command" >/dev/null 2>&1 || { echo "Missing command after package installation: $command"; exit 1; }
 done
 
@@ -38,6 +38,8 @@ echo
 [[ -n "$SPEECH_API_KEY" ]] || { echo "Speech API key is required for voice input/output."; exit 1; }
 DEVICE_TOKEN="$(openssl rand -hex 32)"
 export AGENT_PASSWORD SPEECH_API_KEY DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER
+FIRMWARE="$ROOT/firmware"
+export FIRMWARE
 
 echo "== Speech processing will use the configured cloud API; no local speech models are installed =="
 
@@ -49,6 +51,35 @@ for file in index.mjs package.json; do
   curl -fsSL "$RAW/server/$file" -o "$SERVER/$file"
 done
 curl -fsSL "$RAW/server/.env.example" -o "$SERVER/.env.example"
+
+echo "== Fetch Cardputer firmware sources =="
+sudo mkdir -p "$FIRMWARE/src"
+sudo chown -R "$RUN_USER:$RUN_USER" "$ROOT"
+curl -fsSL "$RAW/firmware/platformio.ini" -o "$FIRMWARE/platformio.ini"
+curl -fsSL "$RAW/firmware/src/main.cpp" -o "$FIRMWARE/src/main.cpp"
+
+echo "== Install PlatformIO if needed =="
+if ! command -v pio >/dev/null 2>&1; then
+  pipx install platformio
+  export PATH="$RUN_HOME/.local/bin:$PATH"
+fi
+command -v pio >/dev/null 2>&1 || { echo "PlatformIO installation failed."; exit 1; }
+
+echo "== Generate private device configuration ==" 
+python3 - <<'PY'
+import json, os
+from pathlib import Path
+firmware = Path(os.environ["FIRMWARE"])
+header = (
+    "#pragma once\\n"
+    "#define FREEZZ_HUB_HOST " + json.dumps(os.environ["HUB_IP"]) + "\\n"
+    "#define FREEZZ_HUB_PORT 8765\\n"
+    "#define FREEZZ_DEVICE_TOKEN " + json.dumps(os.environ["DEVICE_TOKEN"]) + "\\n"
+)
+target = firmware / "src" / "device_config.h"
+target.write_text(header)
+target.chmod(0o600)
+PY
 
 echo "== Write private gateway credentials =="
 python3 - <<'PY'
@@ -85,6 +116,13 @@ for line in template.splitlines():
 (server / ".env").chmod(0o600)
 
 PY
+
+echo "== Build firmware with this HUB address and this device token =="
+cd "$FIRMWARE"
+pio run
+mkdir -p "$ROOT/output"
+cp .pio/build/cardputer-adv/firmware.bin "$ROOT/output/cardputer-adv-firmware.bin"
+chmod 600 "$ROOT/output/cardputer-adv-firmware.bin"
 
 echo "== Install gateway dependencies =="
 cd "$SERVER"
@@ -123,6 +161,7 @@ curl -fsS --max-time 5 http://127.0.0.1:8765/health
 echo
 echo "=== INSTALLATION COMPLETE ==="
 echo "Gateway: ws://$HUB_IP:8765/cardputer"
-echo "Device token (enter this on Cardputer setup screen): $DEVICE_TOKEN"
-echo "Configure Wi-Fi SSID/password and HUB host $HUB_IP on Cardputer."
+echo "Device token is embedded in the private, device-specific firmware."
+echo "Firmware BIN: $ROOT/output/cardputer-adv-firmware.bin"
+echo "On Cardputer, select your 2.4 GHz Wi-Fi network and enter its password."
 echo "Service logs: sudo journalctl -u freezzz-cardputer-gateway -n 60 --no-pager"
