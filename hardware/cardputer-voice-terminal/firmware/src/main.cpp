@@ -400,7 +400,7 @@ void setup() {
   config.serial_baudrate = 115200;
   M5Cardputer.begin(config, true);
   Serial.begin(115200);
-  M5Cardputer.Display.setRotation(1);
+  M5Cardputer.Display.setRotation(0);
   M5Cardputer.Display.setFont(&kCyrillicFont);
   M5Cardputer.Display.setTextSize(1);
 
@@ -415,7 +415,7 @@ void setup() {
     xTaskCreatePinnedToCore(speakerTask, "voice-speaker", 4096, nullptr, 2, nullptr, 0);
   }
 
-  lastAssistantText = "Удерживайте ПРОБЕЛ для разговора";
+  lastAssistantText = "Удерживайте R для разговора";
   renderScreen();
   bool hasConfig = loadSavedConfig();
   bool setupKey = M5Cardputer.Keyboard.isKeyPressed('g');
@@ -436,7 +436,7 @@ void loop() {
   }
   if (hubStarted) socketClient.loop();
 
-  const bool spaceDown = M5Cardputer.Keyboard.isKeyPressed(' ');
+  const bool spaceDown = M5Cardputer.Keyboard.isKeyPressed('r');
   if (spaceDown && !previousSpace) startCapture();
   if (!spaceDown && previousSpace) stopCapture();
   previousSpace = spaceDown;
