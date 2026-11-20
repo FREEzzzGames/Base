@@ -263,3 +263,13 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Added `server/install-hub.sh`: one-shot Ubuntu setup for Whisper.cpp + Russian small model, Piper + `ru_RU-irina-medium`, AgentWebUI gateway service, private device token, Wi-Fi-specific Cardputer secrets, PlatformIO firmware build, and systemd service. It does not install a local LLM.
 - Gateway tests, syntax check, and installer `bash -n` pass in Cardputer workflow run [44748084084](https://github.com/FREEzzzGames/Base/actions/runs/44748084084). Firmware compile in that run was still in progress at the time of this status update.
 - End-to-end operation against the live AgentWebUI, local STT/TTS installation, and physical Cardputer audio/Wi-Fi behavior remain unverified until the HUB installer is run and the device is tested.
+
+## 2026-11-20 Cardputer gateway — existing HUB integration without local speech models
+
+- Updated the gateway to send recognized speech text to the existing AgentWebUI API at `http://192.168.0.207:3000`, using its authenticated chat/session endpoints. The gateway, not Cardputer, holds the AgentWebUI session cookie.
+- Removed Whisper.cpp/Piper as mandatory setup dependencies. STT now supports an OpenAI-compatible `/audio/transcriptions` endpoint; TTS supports `/audio/speech` with WAV output. The Speech API key is stored only in the HUB-side `.env`.
+- Updated `install-hub.sh`: no CMake, local speech model downloads, or local speech runtime installation. It requests AgentWebUI password, Speech API key, and Wi-Fi credentials; creates a device token; builds firmware; and installs the gateway service.
+- Firmware protocol and UI are unchanged. Cardputer continues to connect to HUB on TCP/8765 using its device token.
+- Source changes committed to Base/main: gateway cloud speech adapter, environment template, installer, and README.
+- **Not yet deployed to the Ubuntu HUB.** The gateway is not running with this new configuration until the installer is executed and the AgentWebUI password plus Speech API key are entered locally. No live Cardputer connection or physical-device test is claimed.
+- GitHub Actions validation is running for the latest source commit; record final status after the run completes.
