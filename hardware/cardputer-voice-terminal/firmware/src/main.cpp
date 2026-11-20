@@ -8,6 +8,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/stream_buffer.h>
 #include <cstring>
+#include <algorithm>
 #include <vector>
 #include <Preferences.h>
 #if __has_include("device_config.h")
@@ -394,8 +395,8 @@ void setupWizard() {
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
       auto keys = M5Cardputer.Keyboard.keysState();
       if (setupField == 0) {
-        if (keys.word.indexOf(';') >= 0 && wifiSelection + 1 < (int)wifiNetworks.size()) ++wifiSelection;
-        if (keys.word.indexOf('.') >= 0 && wifiSelection > 0) --wifiSelection;
+        if (std::find(keys.word.begin(), keys.word.end(), ';') != keys.word.end() && wifiSelection + 1 < (int)wifiNetworks.size()) ++wifiSelection;
+        if (std::find(keys.word.begin(), keys.word.end(), '.') != keys.word.end() && wifiSelection > 0) --wifiSelection;
         if (keys.enter && !wifiNetworks.empty() && wifiNetworks[0] != "NO NETWORKS - RESCAN") {
           deviceConfig.wifiSsid = wifiNetworks[wifiSelection];
           setupField = 1;
