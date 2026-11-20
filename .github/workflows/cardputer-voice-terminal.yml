@@ -38,8 +38,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install platformio
-      - name: Prepare CI-only firmware credentials
-        run: cp hardware/cardputer-voice-terminal/firmware/include/secrets.h.example hardware/cardputer-voice-terminal/firmware/include/secrets.h
       - name: Build Cardputer ADV firmware
         run: pio run -d hardware/cardputer-voice-terminal/firmware
       - name: Upload Cardputer ADV firmware
