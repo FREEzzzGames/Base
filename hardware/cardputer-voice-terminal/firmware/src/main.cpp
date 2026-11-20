@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 #include <M5Cardputer.h>
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
@@ -50,6 +51,8 @@ volatile bool replyActive = false;
 volatile bool replyEnded = false;
 volatile uint32_t replySampleRate = kSampleRate;
 volatile bool conversationActive = false;
+bool hubStarted = false;
+uint32_t lastWifiRetryAt = 0;
 bool previousSpace = false;
 uint8_t volumePercent = 72;
 uint8_t paletteIndex = 5;
@@ -204,6 +207,10 @@ void handleServerText(uint8_t* payload, size_t length) {
     replyEnded = true;
   } else if (strcmp(type, "error") == 0) {
     connectionState = "Server error";
+    if (!replyActive) {
+      conversationActive = false;
+      updateLed();
+    }
   }
   renderScreen();
 }
@@ -221,6 +228,10 @@ void onSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
     }
     case WStype_DISCONNECTED:
       connectionState = "Disconnected";
+      if (pttActive) M5Cardputer.Mic.end();
+      pttActive = false;
+      replyActive = false;
+      replyEnded = false;
       conversationActive = false;
       updateLed();
       renderScreen();
@@ -270,6 +281,17 @@ void speakerTask(void*) {
   }
 }
 
+void startHubSocket() {
+  if (hubStarted || WiFi.status() != WL_CONNECTED) return;
+  socketClient.begin(HUB_HOST, HUB_PORT, HUB_PATH);
+  socketClient.onEvent(onSocketEvent);
+  socketClient.setReconnectInterval(3000);
+  socketClient.enableHeartbeat(15000, 3000, 2);
+  hubStarted = true;
+  connectionState = "Connecting HUB";
+  renderScreen();
+}
+
 void connectWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
@@ -282,13 +304,10 @@ void connectWifi() {
     M5Cardputer.update();
   }
   if (WiFi.status() == WL_CONNECTED) {
-    connectionState = "Connecting HUB";
-    socketClient.begin(HUB_HOST, HUB_PORT, HUB_PATH);
-    socketClient.onEvent(onSocketEvent);
-    socketClient.setReconnectInterval(3000);
-    socketClient.enableHeartbeat(15000, 3000, 2);
+    startHubSocket();
   } else {
-    connectionState = "Wi-Fi unavailable";
+    connectionState = "Wi-Fi retrying";
+    lastWifiRetryAt = millis();
   }
   renderScreen();
 }
@@ -322,7 +341,16 @@ void setup() {
 
 void loop() {
   M5Cardputer.update();
-  socketClient.loop();
+  if (WiFi.status() != WL_CONNECTED && millis() - lastWifiRetryAt > 5000) {
+    lastWifiRetryAt = millis();
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    connectionState = "Wi-Fi reconnecting";
+    renderScreen();
+  } else if (WiFi.status() == WL_CONNECTED && !hubStarted) {
+    startHubSocket();
+  }
+  if (hubStarted) socketClient.loop();
 
   const bool spaceDown = M5Cardputer.Keyboard.isKeyPressed(' ');
   if (spaceDown && !previousSpace) startCapture();
