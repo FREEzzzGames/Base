@@ -87,6 +87,16 @@ Piper запускается через `-m`, `-f`, `--input-file`; Gateway не
 
 В `.env.example` приоритетно настроен AgentWebUI. Установите `AGENTWEBUI_PASSWORD` в локальном `.env` на пароль входа AgentWebUI. Не помещайте пароль в `secrets.h` и не отправляйте его в прошивку. Если AgentWebUI запущен в другом контейнере/на другом хосте, укажите адрес, доступный с Ubuntu-хоста.
 
+### Автоматическая установка на FREEzzz HUB
+
+На Ubuntu-хосте из Termux/SSH запустить одной командой:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal/server/install-hub.sh)
+```
+
+Скрипт устанавливает Whisper.cpp и Piper (без локальной LLM), скачивает русские модели, подключает Gateway к AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль входа AgentWebUI и SSID/пароль Wi-Fi 2.4 GHz; значения вводятся скрыто и сохраняются только локально на HUB. Готовый файл появится как `~/Cardputer-ADV.bin`.
+
 ## Протокол
 Клиент отправляет auth, audio.start, бинарные PCM16-фреймы и audio.end. Gateway отправляет user.text, assistant.text, device.theme / device.volume, audio.reply.begin, бинарные PCM16-фреймы и audio.reply.end.
 
