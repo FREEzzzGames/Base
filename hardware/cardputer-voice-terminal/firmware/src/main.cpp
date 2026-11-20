@@ -86,11 +86,14 @@ void drawWrapped(const String& value, int x, int y, int maxWidth, int maxLines, 
   if (value.length() == 0) return;
   std::vector<String> lines;
   String line;
+  String normalized = value;
+  normalized.replace('\n', ' ');
+  normalized.replace('\r', ' ');
   int pos = 0;
-  while (pos < static_cast<int>(value.length())) {
-    int next = value.indexOf(' ', pos);
-    if (next < 0) next = value.length();
-    String word = value.substring(pos, next);
+  while (pos < static_cast<int>(normalized.length())) {
+    int next = normalized.indexOf(' ', pos);
+    if (next < 0) next = normalized.length();
+    String word = normalized.substring(pos, next);
     String candidate = line.length() == 0 ? word : line + " " + word;
     if (line.length() > 0 && M5Cardputer.Display.textWidth(candidate) > maxWidth) {
       lines.push_back(line);
@@ -269,7 +272,7 @@ void speakerTask(void*) {
       M5Cardputer.Speaker.end();
       replyActive = false;
       replyEnded = false;
-      M5Cardputer.Mic.begin();
+      M5Cardputer.Mic.end();
       conversationActive = false;
       updateLed();
       connectionState = "Ready";
