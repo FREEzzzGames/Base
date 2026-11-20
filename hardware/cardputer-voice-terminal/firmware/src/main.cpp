@@ -10,6 +10,9 @@
 #include <cstring>
 #include <vector>
 #include <Preferences.h>
+#if __has_include("device_config.h")
+#include "device_config.h"
+#endif
 
 namespace {
 #ifndef FREEZZ_HUB_HOST
@@ -391,8 +394,8 @@ void setupWizard() {
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
       auto keys = M5Cardputer.Keyboard.keysState();
       if (setupField == 0) {
-        if (keys.word.find(';') != std::string::npos && wifiSelection + 1 < (int)wifiNetworks.size()) ++wifiSelection;
-        if (keys.word.find('.') != std::string::npos && wifiSelection > 0) --wifiSelection;
+        if (keys.word.indexOf(';') >= 0 && wifiSelection + 1 < (int)wifiNetworks.size()) ++wifiSelection;
+        if (keys.word.indexOf('.') >= 0 && wifiSelection > 0) --wifiSelection;
         if (keys.enter && !wifiNetworks.empty() && wifiNetworks[0] != "NO NETWORKS - RESCAN") {
           deviceConfig.wifiSsid = wifiNetworks[wifiSelection];
           setupField = 1;
