@@ -1,0 +1,42 @@
+name: FREEzzz Cardputer Voice Terminal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "hardware/cardputer-voice-terminal/**"
+      - ".github/workflows/cardputer-voice-terminal.yml"
+  pull_request:
+    paths:
+      - "hardware/cardputer-voice-terminal/**"
+      - ".github/workflows/cardputer-voice-terminal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gateway:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hardware/cardputer-voice-terminal/server
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: npm install
+      - run: npm test
+      - run: npm run check
+
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install platformio
+      - name: Build Cardputer ADV firmware
+        run: pio run -d hardware/cardputer-voice-terminal/firmware
