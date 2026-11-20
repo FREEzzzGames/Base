@@ -24,6 +24,8 @@ test("parses absolute and relative volume commands", () => {
   assert.equal(parseVoiceControls("выключи звук").volume, 0);
   assert.equal(parseVoiceControls("сделай громче", { volume: 40 }).volume, 50);
   assert.equal(parseVoiceControls("убавь громкость", { volume: 40 }).volume, 30);
+  assert.equal(parseVoiceControls("сделай потише", { volume: 40 }).volume, 30);
+  assert.equal(parseVoiceControls("прибавь громкость", { volume: 40 }).volume, 50);
 });
 
 test("wraps mono PCM16 in a valid WAV header and reads it back", () => {
