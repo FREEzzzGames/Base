@@ -268,7 +268,7 @@ async function askCoordinator(text, history, session) {
 async function synthesize(text, dir) {
   if (!PIPER_MODEL) throw new Error("PIPER_MODEL is not configured");
   const wavPath = path.join(dir, "reply.wav");
-  await run(PIPER_BIN, ["--model", PIPER_MODEL, "--output_file", wavPath], text);
+  await run(PIPER_BIN, ["-m", PIPER_MODEL, "-f", wavPath], text);
   return parsePcmWav(await readFile(wavPath));
 }
 
