@@ -27,6 +27,7 @@ namespace {
 #endif
 
 struct DeviceConfig {
+  String wifiSsid;  // Temporary selection while provisioning a new network.
   String hubHost = FREEZZ_HUB_HOST;
   uint16_t hubPort = FREEZZ_HUB_PORT;
   String deviceToken = FREEZZ_DEVICE_TOKEN;
