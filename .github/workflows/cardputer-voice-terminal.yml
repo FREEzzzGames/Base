@@ -40,3 +40,10 @@ jobs:
       - run: pip install platformio
       - name: Build Cardputer ADV firmware
         run: pio run -d hardware/cardputer-voice-terminal/firmware
+      - name: Upload Cardputer ADV firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardputer-adv-firmware
+          path: hardware/cardputer-voice-terminal/firmware/.pio/build/cardputer-adv/firmware.bin
+          if-no-files-found: error
+          retention-days: 7
