@@ -12,19 +12,30 @@
 #include <Preferences.h>
 
 namespace {
+#ifndef FREEZZ_HUB_HOST
+#define FREEZZ_HUB_HOST ""
+#endif
+#ifndef FREEZZ_HUB_PORT
+#define FREEZZ_HUB_PORT 8765
+#endif
+#ifndef FREEZZ_DEVICE_TOKEN
+#define FREEZZ_DEVICE_TOKEN ""
+#endif
+
 struct DeviceConfig {
   String wifiSsid;
   String wifiPassword;
-  String hubHost;
-  uint16_t hubPort = 8765;
-  String deviceToken;
+  String hubHost = FREEZZ_HUB_HOST;
+  uint16_t hubPort = FREEZZ_HUB_PORT;
+  String deviceToken = FREEZZ_DEVICE_TOKEN;
 };
 DeviceConfig deviceConfig;
 Preferences preferences;
 bool setupMode = false;
 uint8_t setupField = 0;
 String setupInput;
-const char* setupLabels[] = {"Wi-Fi SSID", "Wi-Fi password", "HUB IPv4 / host", "Gateway TCP port", "Device token"};
+std::vector<String> wifiNetworks;
+int wifiSelection = 0;
 
 constexpr uint32_t kSampleRate = 16000;
 constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
@@ -312,9 +323,9 @@ void loadConfig() {
   preferences.begin("freezzz", true);
   deviceConfig.wifiSsid = preferences.getString("ssid", "");
   deviceConfig.wifiPassword = preferences.getString("pass", "");
-  deviceConfig.hubHost = preferences.getString("hub", "");
-  deviceConfig.hubPort = preferences.getUShort("port", 8765);
-  deviceConfig.deviceToken = preferences.getString("token", "");
+  if (deviceConfig.hubHost.isEmpty()) deviceConfig.hubHost = preferences.getString("hub", "");
+  deviceConfig.hubPort = preferences.getUShort("port", FREEZZ_HUB_PORT);
+  if (deviceConfig.deviceToken.isEmpty()) deviceConfig.deviceToken = preferences.getString("token", "");
   preferences.end();
 }
 
@@ -322,70 +333,82 @@ void saveConfig() {
   preferences.begin("freezzz", false);
   preferences.putString("ssid", deviceConfig.wifiSsid);
   preferences.putString("pass", deviceConfig.wifiPassword);
-  preferences.putString("hub", deviceConfig.hubHost);
-  preferences.putUShort("port", deviceConfig.hubPort);
-  preferences.putString("token", deviceConfig.deviceToken);
+
   preferences.end();
+}
+
+void scanWifiNetworks() {
+  wifiNetworks.clear();
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  const int count = WiFi.scanNetworks(false, true);
+  for (int i = 0; i < count; ++i) {
+    if (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) continue;
+    wifiNetworks.push_back(WiFi.SSID(i));
+  }
+  WiFi.scanDelete();
+  if (wifiNetworks.empty()) {
+    wifiNetworks.push_back("NO NETWORKS - RESCAN");
+  }
+  wifiSelection = 0;
 }
 
 void drawSetup() {
   M5Cardputer.Display.fillScreen(TFT_BLACK);
   M5Cardputer.Display.setFont(&kCyrillicFont);
   M5Cardputer.Display.setTextColor(TFT_CYAN, TFT_BLACK);
-  M5Cardputer.Display.drawString("FREEzzz HUB / SETUP", 4, 4);
+  M5Cardputer.Display.drawString("FREEzzz HUB / WIFI", 4, 3);
   M5Cardputer.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5Cardputer.Display.drawString(String("Field ") + String(setupField + 1) + "/5", 4, 23);
-  M5Cardputer.Display.drawString(setupLabels[setupField], 4, 43);
-  String shown = setupInput;
-  if (setupField == 1 || setupField == 4) { shown = ""; for (size_t i = 0; i < setupInput.length(); ++i) shown += '*'; }
-  if (shown.length() > 30) shown = shown.substring(shown.length() - 30);
-  M5Cardputer.Display.drawString(shown + "_", 4, 62);
-  M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
-  M5Cardputer.Display.drawString("Type value, ENTER=next", 4, 99);
-  M5Cardputer.Display.drawString("BACKSPACE=delete", 4, 116);
+  if (setupField == 0) {
+    M5Cardputer.Display.drawString("Select network:", 4, 20);
+    const int first = max(0, min(wifiSelection - 2, (int)wifiNetworks.size() - 5));
+    for (int i = first; i < min((int)wifiNetworks.size(), first + 5); ++i) {
+      M5Cardputer.Display.setTextColor(i == wifiSelection ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
+      M5Cardputer.Display.drawString(String(i == wifiSelection ? "> " : "  ") + wifiNetworks[i], 4, 39 + (i - first) * 15);
+    }
+    M5Cardputer.Display.setTextColor(TFT_CYAN, TFT_BLACK);
+    M5Cardputer.Display.drawString("; / . move   ENTER select", 4, 116);
+  } else {
+    M5Cardputer.Display.drawString("Network: " + deviceConfig.wifiSsid, 4, 24);
+    M5Cardputer.Display.drawString("Wi-Fi password:", 4, 45);
+    String masked;
+    for (size_t i = 0; i < setupInput.length(); ++i) masked += '*';
+    M5Cardputer.Display.drawString(masked + "_", 4, 66);
+    M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
+    M5Cardputer.Display.drawString("ENTER connect  DEL erase", 4, 116);
+  }
 }
 
 void setupWizard() {
   setupMode = true;
   setupField = 0;
   setupInput = "";
-  connectionState = "Setup";
+  connectionState = "Wi-Fi setup";
+  scanWifiNetworks();
   drawSetup();
   while (setupMode) {
     M5Cardputer.update();
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
       auto keys = M5Cardputer.Keyboard.keysState();
-      if (keys.del) {
-        if (setupInput.length()) setupInput.remove(setupInput.length() - 1);
-      }
-      for (char c : keys.word) {
-        if (c >= 32 && c <= 126 && setupInput.length() < 96) setupInput += c;
-      }
-      if (keys.enter) {
-        if (setupInput.length()) {
-          switch (setupField) {
-            case 0: deviceConfig.wifiSsid = setupInput; break;
-            case 1: deviceConfig.wifiPassword = setupInput; break;
-            case 2: deviceConfig.hubHost = setupInput; break;
-            case 3: {
-              const long port = setupInput.toInt();
-              if (port < 1 || port > 65535 || setupInput != String(port)) {
-                connectionState = "Invalid port";
-                setupInput = "";
-                drawSetup();
-                continue;
-              }
-              deviceConfig.hubPort = static_cast<uint16_t>(port);
-              break;
-            }
-            case 4: deviceConfig.deviceToken = setupInput; break;
-          }
-          setupInput = "";
-          if (++setupField >= 5) {
-            saveConfig();
-            setupMode = false;
-            break;
-          }
+      if (setupField == 0) {
+        if (keys.word.find(';') != std::string::npos && wifiSelection + 1 < (int)wifiNetworks.size()) ++wifiSelection;
+        if (keys.word.find('.') != std::string::npos && wifiSelection > 0) --wifiSelection;
+        if (keys.enter && !wifiNetworks.empty() && wifiNetworks[0] != "NO NETWORKS - RESCAN") {
+          deviceConfig.wifiSsid = wifiNetworks[wifiSelection];
+          setupField = 1;
+        } else if (keys.enter) {
+          scanWifiNetworks();
+        }
+      } else {
+        if (keys.del && setupInput.length()) setupInput.remove(setupInput.length() - 1);
+        for (char ch : keys.word) {
+          if (ch >= 32 && ch <= 126 && setupInput.length() < 63) setupInput += ch;
+        }
+        if (keys.enter && setupInput.length()) {
+          deviceConfig.wifiPassword = setupInput;
+          saveConfig();
+          setupMode = false;
+          break;
         }
       }
       drawSetup();
