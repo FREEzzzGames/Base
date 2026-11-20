@@ -370,11 +370,11 @@ void loop() {
     }
   }
 
-  if (M5Cardputer.Keyboard.isKeyPressed(KEY_UP) && millis() - lastScrollAt > 180) {
+  if (M5Cardputer.Keyboard.keysState().up && millis() - lastScrollAt > 180) {
     ++scrollOffset;
     lastScrollAt = millis();
     renderScreen();
-  } else if (M5Cardputer.Keyboard.isKeyPressed(KEY_DOWN) && millis() - lastScrollAt > 180) {
+  } else if (M5Cardputer.Keyboard.keysState().down && millis() - lastScrollAt > 180) {
     if (scrollOffset > 0) --scrollOffset;
     lastScrollAt = millis();
     renderScreen();
