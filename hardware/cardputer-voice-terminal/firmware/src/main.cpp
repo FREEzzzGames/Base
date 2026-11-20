@@ -341,7 +341,7 @@ String readSetupField(const String& title, bool secret) {
     M5Cardputer.update();
     auto keys = M5Cardputer.Keyboard.keysState();
     if (keys.word.size()) {
-      for (size_t i = 0; i < keys.word.length() && value.length() < 96; ++i) value += keys.word[i];
+      for (size_t i = 0; i < keys.word.size() && value.length() < 96; ++i) value += keys.word[i];
       renderSetup(title, value, secret);
     }
     bool enter = false, backspace = false;
