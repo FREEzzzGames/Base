@@ -10,9 +10,9 @@ command -v apt-get >/dev/null 2>&1 || { echo "This installer requires Ubuntu/Deb
 
 echo "== Install system prerequisites =="
 sudo apt-get update
-sudo apt-get install -y git cmake build-essential python3-venv curl openssl iproute2
+sudo apt-get install -y git python3-venv curl openssl iproute2
 
-for command in curl git cmake node npm python3 openssl ip; do
+for command in curl git node npm python3 openssl ip; do
   command -v "$command" >/dev/null 2>&1 || { echo "Missing command after package installation: $command"; exit 1; }
 done
 
@@ -27,8 +27,6 @@ RUN_HOME="$(getent passwd "$RUN_USER" | cut -d: -f6)"
 ROOT="/opt/freezzz-cardputer"
 SERVER="$ROOT/server"
 FIRMWARE="$ROOT/firmware"
-WHISPER="/opt/whisper.cpp"
-PIPER="/opt/piper"
 HUB_IP="$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}')"
 [[ -n "$HUB_IP" ]] || { echo "Could not determine HUB LAN IPv4 address."; exit 1; }
 
@@ -36,38 +34,18 @@ echo "HUB LAN address: $HUB_IP"
 read -r -s -p "AgentWebUI login password: " AGENT_PASSWORD
 echo
 [[ -n "$AGENT_PASSWORD" ]] || { echo "AgentWebUI password is required."; exit 1; }
+read -r -s -p "Speech API key (STT/TTS): " SPEECH_API_KEY
+echo
+[[ -n "$SPEECH_API_KEY" ]] || { echo "Speech API key is required for voice input/output."; exit 1; }
 read -r -p "2.4 GHz Wi-Fi SSID for Cardputer: " WIFI_SSID
 read -r -s -p "Wi-Fi password: " WIFI_PASSWORD
 echo
 [[ -n "$WIFI_SSID" && -n "$WIFI_PASSWORD" ]] || { echo "Wi-Fi SSID and password are required."; exit 1; }
 
 DEVICE_TOKEN="$(openssl rand -hex 32)"
-export AGENT_PASSWORD WIFI_SSID WIFI_PASSWORD DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER FIRMWARE WHISPER PIPER
+export AGENT_PASSWORD SPEECH_API_KEY WIFI_SSID WIFI_PASSWORD DEVICE_TOKEN HUB_IP RUN_USER RUN_HOME ROOT SERVER FIRMWARE
 
-echo "== Build Whisper.cpp and download Russian speech model =="
-if [[ ! -d "$WHISPER/.git" ]]; then
-  sudo git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git "$WHISPER"
-fi
-sudo cmake -S "$WHISPER" -B "$WHISPER/build" -DCMAKE_BUILD_TYPE=Release
-sudo cmake --build "$WHISPER/build" -j2
-if [[ ! -s "$WHISPER/models/ggml-small.bin" ]]; then
-  (cd "$WHISPER" && sudo bash models/download-ggml-model.sh small)
-fi
-test -x "$WHISPER/build/bin/whisper-cli"
-test -s "$WHISPER/models/ggml-small.bin"
-
-echo "== Install Piper TTS and Russian voice =="
-sudo mkdir -p "$PIPER/voices"
-if [[ ! -x "$PIPER/venv/bin/piper" ]]; then
-  sudo python3 -m venv "$PIPER/venv"
-  sudo "$PIPER/venv/bin/pip" install --upgrade pip
-  sudo "$PIPER/venv/bin/pip" install piper-tts
-fi
-if [[ ! -s "$PIPER/voices/ru_RU-irina-medium.onnx" ]]; then
-  sudo "$PIPER/venv/bin/python" -m piper.download_voices ru_RU-irina-medium --data-dir "$PIPER/voices"
-fi
-test -x "$PIPER/venv/bin/piper"
-test -s "$PIPER/voices/ru_RU-irina-medium.onnx"
+echo "== Speech processing will use the configured cloud API; no local speech models are installed =="
 
 echo "== Fetch Cardputer gateway and firmware sources =="
 sudo mkdir -p "$SERVER" "$FIRMWARE/src" "$FIRMWARE/include"
@@ -91,10 +69,11 @@ values = {
     "HOST": "0.0.0.0",
     "PORT": "8765",
     "DEVICE_TOKEN": os.environ["DEVICE_TOKEN"],
-    "WHISPER_CLI": os.environ["WHISPER"] + "/build/bin/whisper-cli",
-    "WHISPER_MODEL": os.environ["WHISPER"] + "/models/ggml-small.bin",
-    "PIPER_BIN": os.environ["PIPER"] + "/venv/bin/piper",
-    "PIPER_MODEL": os.environ["PIPER"] + "/voices/ru_RU-irina-medium.onnx",
+    "SPEECH_API_BASE_URL": "https://api.openai.com/v1",
+    "SPEECH_API_KEY": os.environ["SPEECH_API_KEY"],
+    "STT_MODEL": "gpt-4o-mini-transcribe",
+    "TTS_MODEL": "gpt-4o-mini-tts",
+    "TTS_VOICE": "alloy",
     "AGENTWEBUI_URL": "http://" + os.environ["HUB_IP"] + ":3000",
     "AGENTWEBUI_PASSWORD": os.environ["AGENT_PASSWORD"],
     "AGENTWEBUI_TARGET": "",
