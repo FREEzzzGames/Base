@@ -152,6 +152,7 @@ void sendSimple(const char* type) {
 
 void startCapture() {
   if (!socketClient.isConnected() || !hubAuthenticated || replyActive || pttActive) return;
+  M5Cardputer.Speaker.end();  // Cardputer ADV shares the audio path between mic and speaker.
   if (!M5Cardputer.Mic.begin()) {
     connectionState = "Mic error";
     renderScreen();
@@ -333,6 +334,7 @@ void setup() {
   updateLed();
 
   M5Cardputer.Speaker.setVolume(static_cast<uint8_t>(volumePercent * 255 / 100));
+  M5Cardputer.Speaker.end();
   speakerStream = xStreamBufferCreate(8192, 1);
   if (speakerStream) {
     xTaskCreatePinnedToCore(speakerTask, "voice-speaker", 4096, nullptr, 2, nullptr, 0);
