@@ -32,7 +32,7 @@ pio run -d hardware/cardputer-voice-terminal/firmware
 Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin.
 
 ## Gateway на Ubuntu
-Требуется Node.js 22+, whisper.cpp (whisper-cli + модель), Piper CLI + голосовая модель и работающий AgentWebUI на HUB (в текущей конфигурации `http://127.0.0.1:3000`).
+Требуется Node.js 22+, whisper.cpp (whisper-cli + модель), Piper CLI + голосовая модель и работающий AgentWebUI на HUB (в текущей конфигурации `http://192.168.0.207:3000`).
 
 ```bash
 cd hardware/cardputer-voice-terminal/server
