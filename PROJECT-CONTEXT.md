@@ -232,3 +232,12 @@ This document is project context, not a replacement for the actual implementatio
 - Initial release is read-only: agents may analyze and propose patches/test plans, but must not write repository files, commit, run CI, or deploy. Any later write/execute capability must use a separately defined approval and verification gate.
 - Deployment requires GitHub Actions secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AGENT_BRIDGE_SECRET` and Render variables `AGENT_CLOUD_URL`, `AGENT_BRIDGE_SECRET`.
 - Main repository and branch remain `FREEzzzGames/Base` / `main`.
+
+
+## 2026-11-20 Cardputer ADV voice terminal
+
+- Added a separate hardware module at `hardware/cardputer-voice-terminal/`; it does not alter the Telegram Mini App routes or portal runtime.
+- Target interaction: hold keyboard Space for push-to-talk; no wake word and no on-device settings menu. The display is text-only, retaining the latest user/assistant phrases with Up/Down scrolling. Voice commands can change one of nine palettes and speaker volume; the RGB LED follows the active palette while a conversation is active.
+- The local Node gateway accepts PCM16 over WebSocket and is designed to use whisper.cpp for STT, a local OpenAI-compatible FREEzzz coordinator endpoint for agent responses, and Piper for TTS.
+- The existing Cloudflare `workers/agent-system` is a cloud repository-analysis worker, not the local audio/agent runtime. Do not claim end-to-end local AI integration until `AI_CHAT_URL` is connected to a real local coordinator.
+- Wi-Fi credentials and device token are build-time secrets in ignored `firmware/include/secrets.h`; there is no on-device setup UI. Physical audio, display, RGB LED, and keyboard verification remains required on the exact Cardputer ADV revision.
