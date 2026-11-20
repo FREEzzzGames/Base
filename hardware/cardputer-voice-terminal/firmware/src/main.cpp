@@ -51,6 +51,7 @@ volatile bool replyEnded = false;
 volatile uint32_t replySampleRate = kSampleRate;
 volatile bool conversationActive = false;
 bool hubStarted = false;
+bool hubAuthenticated = false;
 uint32_t lastWifiRetryAt = 0;
 bool previousSpace = false;
 uint8_t volumePercent = 72;
@@ -150,7 +151,7 @@ void sendSimple(const char* type) {
 }
 
 void startCapture() {
-  if (!socketClient.isConnected() || replyActive || pttActive) return;
+  if (!socketClient.isConnected() || !hubAuthenticated || replyActive || pttActive) return;
   if (!M5Cardputer.Mic.begin()) {
     connectionState = "Mic error";
     renderScreen();
@@ -178,7 +179,9 @@ void handleServerText(uint8_t* payload, size_t length) {
   if (deserializeJson(doc, payload, length)) return;
   const char* type = doc["type"] | "";
   if (strcmp(type, "session.state") == 0) {
-    connectionState = doc["state"] | "Ready";
+    const char* state = doc["state"] | "Ready";
+    if (strcmp(state, "Ready") == 0) hubAuthenticated = true;
+    connectionState = state;
   } else if (strcmp(type, "user.text") == 0) {
     lastUserText = String((const char*)(doc["text"] | ""));
     scrollOffset = 0;
@@ -219,6 +222,7 @@ void handleServerText(uint8_t* payload, size_t length) {
 void onSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_CONNECTED: {
+      hubAuthenticated = false;
       connectionState = "Authenticating";
       JsonDocument doc;
       doc["type"] = "auth";
@@ -228,6 +232,7 @@ void onSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
       break;
     }
     case WStype_DISCONNECTED:
+      hubAuthenticated = false;
       connectionState = "Disconnected";
       if (pttActive) M5Cardputer.Mic.end();
       pttActive = false;
