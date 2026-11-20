@@ -252,3 +252,14 @@ Source of truth: `FREEzzzGames/Base`, `main`.
 - Updated Cardputer gateway README with the corrected startup flow and integration boundary.
 - Firmware artifact from run `44724878936` was downloaded and inspected: ESP32-S3 image, 1,370,272 bytes; SHA-256 `629fec947621d81cddca2ff98f37b20b3b6911b3effd0b19926a47424c73370b`. It contains placeholder CI credentials, not the user's Wi-Fi/token.
 - Gateway tests and syntax check must be re-run after this change. Ubuntu-host end-to-end STT/AI/TTS and physical Cardputer testing remain unverified.
+
+
+## 2026-11-20 Cardputer → AgentWebUI integration
+
+- Replaced the required separate LLM endpoint path with a preferred authenticated AgentWebUI adapter in `hardware/cardputer-voice-terminal/server/index.mjs`.
+- Gateway signs in through `POST /api/login`, retains the session cookie server-side, selects the first available agent from `GET /api/agents` (or uses `AGENTWEBUI_TARGET`), creates one chat per Cardputer WebSocket session, posts recognized text, follows the SSE events route, and reads the saved assistant text.
+- AgentWebUI password remains in the HUB-side `.env`; it is never sent to firmware. The configured example address is the observed HUB bind address `192.168.0.207:3000`.
+- Updated Piper invocation for current Piper CLI using `-m`, `-f`, and `--input-file`; this avoids relying on the older `--model/--output_file` flags.
+- Added `server/install-hub.sh`: one-shot Ubuntu setup for Whisper.cpp + Russian small model, Piper + `ru_RU-irina-medium`, AgentWebUI gateway service, private device token, Wi-Fi-specific Cardputer secrets, PlatformIO firmware build, and systemd service. It does not install a local LLM.
+- Gateway tests, syntax check, and installer `bash -n` pass in Cardputer workflow run [44748084084](https://github.com/FREEzzzGames/Base/actions/runs/44748084084). Firmware compile in that run was still in progress at the time of this status update.
+- End-to-end operation against the live AgentWebUI, local STT/TTS installation, and physical Cardputer audio/Wi-Fi behavior remain unverified until the HUB installer is run and the device is tested.
