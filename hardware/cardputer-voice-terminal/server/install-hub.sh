@@ -116,6 +116,7 @@ UNIT
 sudo ufw allow from 192.168.0.0/24 to any port 8765 proto tcp >/dev/null 2>&1 || true
 sudo systemctl daemon-reload
 sudo systemctl enable --now freezzz-cardputer-gateway.service
+sudo systemctl restart freezzz-cardputer-gateway.service
 sleep 2
 curl -fsS --max-time 5 http://127.0.0.1:8765/health
 
