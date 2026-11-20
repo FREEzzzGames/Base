@@ -25,8 +25,6 @@ uint8_t setupField = 0;
 String setupInput;
 const char* setupLabels[] = {"Wi-Fi SSID", "Wi-Fi password", "HUB IPv4 / host", "Device token"};
 
-
-namespace {
 constexpr uint32_t kSampleRate = 16000;
 constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
 constexpr size_t kFrameBytes = kSamplesPerFrame * sizeof(int16_t);
