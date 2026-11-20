@@ -16,6 +16,7 @@ struct DeviceConfig {
   String wifiSsid;
   String wifiPassword;
   String hubHost;
+  uint16_t hubPort = 8765;
   String deviceToken;
 };
 DeviceConfig deviceConfig;
@@ -23,7 +24,7 @@ Preferences preferences;
 bool setupMode = false;
 uint8_t setupField = 0;
 String setupInput;
-const char* setupLabels[] = {"Wi-Fi SSID", "Wi-Fi password", "HUB IPv4 / host", "Device token"};
+const char* setupLabels[] = {"Wi-Fi SSID", "Wi-Fi password", "HUB IPv4 / host", "Gateway TCP port", "Device token"};
 
 constexpr uint32_t kSampleRate = 16000;
 constexpr size_t kSamplesPerFrame = 320;  // 20 ms mono PCM16
@@ -298,7 +299,7 @@ void speakerTask(void*) {
 
 void startHubSocket() {
   if (hubStarted || WiFi.status() != WL_CONNECTED) return;
-  socketClient.begin(deviceConfig.hubHost.c_str(), 8765, "/cardputer");
+  socketClient.begin(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer");
   socketClient.onEvent(onSocketEvent);
   socketClient.setReconnectInterval(3000);
   socketClient.enableHeartbeat(15000, 3000, 2);
@@ -312,6 +313,7 @@ void loadConfig() {
   deviceConfig.wifiSsid = preferences.getString("ssid", "");
   deviceConfig.wifiPassword = preferences.getString("pass", "");
   deviceConfig.hubHost = preferences.getString("hub", "");
+  deviceConfig.hubPort = preferences.getUShort("port", 8765);
   deviceConfig.deviceToken = preferences.getString("token", "");
   preferences.end();
 }
@@ -321,6 +323,7 @@ void saveConfig() {
   preferences.putString("ssid", deviceConfig.wifiSsid);
   preferences.putString("pass", deviceConfig.wifiPassword);
   preferences.putString("hub", deviceConfig.hubHost);
+  preferences.putUShort("port", deviceConfig.hubPort);
   preferences.putString("token", deviceConfig.deviceToken);
   preferences.end();
 }
@@ -331,10 +334,10 @@ void drawSetup() {
   M5Cardputer.Display.setTextColor(TFT_CYAN, TFT_BLACK);
   M5Cardputer.Display.drawString("FREEzzz HUB / SETUP", 4, 4);
   M5Cardputer.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5Cardputer.Display.drawString(String("Field ") + String(setupField + 1) + "/4", 4, 23);
+  M5Cardputer.Display.drawString(String("Field ") + String(setupField + 1) + "/5", 4, 23);
   M5Cardputer.Display.drawString(setupLabels[setupField], 4, 43);
   String shown = setupInput;
-  if (setupField == 1 || setupField == 3) { shown = ""; for (size_t i = 0; i < setupInput.length(); ++i) shown += '*'; }
+  if (setupField == 1 || setupField == 4) { shown = ""; for (size_t i = 0; i < setupInput.length(); ++i) shown += '*'; }
   if (shown.length() > 30) shown = shown.substring(shown.length() - 30);
   M5Cardputer.Display.drawString(shown + "_", 4, 62);
   M5Cardputer.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
@@ -364,10 +367,21 @@ void setupWizard() {
             case 0: deviceConfig.wifiSsid = setupInput; break;
             case 1: deviceConfig.wifiPassword = setupInput; break;
             case 2: deviceConfig.hubHost = setupInput; break;
-            case 3: deviceConfig.deviceToken = setupInput; break;
+            case 3: {
+              const long port = setupInput.toInt();
+              if (port < 1 || port > 65535 || setupInput != String(port)) {
+                connectionState = "Invalid port";
+                setupInput = "";
+                drawSetup();
+                continue;
+              }
+              deviceConfig.hubPort = static_cast<uint16_t>(port);
+              break;
+            }
+            case 4: deviceConfig.deviceToken = setupInput; break;
           }
           setupInput = "";
-          if (++setupField >= 4) {
+          if (++setupField >= 5) {
             saveConfig();
             setupMode = false;
             break;
@@ -418,7 +432,7 @@ void setup() {
   M5Cardputer.Speaker.end();
   loadConfig();
   M5Cardputer.update();
-  if (deviceConfig.wifiSsid.isEmpty() || deviceConfig.hubHost.isEmpty() || deviceConfig.deviceToken.isEmpty() ||
+  if (deviceConfig.wifiSsid.isEmpty() || deviceConfig.hubHost.isEmpty() || deviceConfig.deviceToken.isEmpty() || deviceConfig.hubPort == 0 ||
       M5Cardputer.BtnA.isPressed()) {
     setupWizard();
   }
