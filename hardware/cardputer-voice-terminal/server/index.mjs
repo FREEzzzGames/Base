@@ -12,6 +12,11 @@ const WHISPER_CLI = process.env.WHISPER_CLI || "whisper-cli";
 const WHISPER_MODEL = process.env.WHISPER_MODEL || "";
 const PIPER_BIN = process.env.PIPER_BIN || "piper";
 const PIPER_MODEL = process.env.PIPER_MODEL || "";
+const SPEECH_API_BASE_URL = (process.env.SPEECH_API_BASE_URL || "https://api.openai.com/v1").replace(/\\/$/, "");
+const SPEECH_API_KEY = process.env.SPEECH_API_KEY || "";
+const STT_MODEL = process.env.STT_MODEL || "gpt-4o-mini-transcribe";
+const TTS_MODEL = process.env.TTS_MODEL || "gpt-4o-mini-tts";
+const TTS_VOICE = process.env.TTS_VOICE || "alloy";
 const AI_CHAT_URL = process.env.AI_CHAT_URL || "";
 const AI_CHAT_MODEL = process.env.AI_CHAT_MODEL || "";
 const AI_CHAT_API_KEY = process.env.AI_CHAT_API_KEY || "";
@@ -132,9 +137,26 @@ function run(command, args, input, timeoutMs = 120000) {
 }
 
 async function transcribe(pcm, dir) {
-  if (!WHISPER_MODEL) throw new Error("WHISPER_MODEL is not configured");
+  const wav = pcmToWav(pcm, 16000);
+  if (SPEECH_API_KEY) {
+    const form = new FormData();
+    form.append("model", STT_MODEL);
+    form.append("language", "ru");
+    form.append("response_format", "json");
+    form.append("file", new Blob([wav], { type: "audio/wav" }), "cardputer.wav");
+    const response = await fetch(SPEECH_API_BASE_URL + "/audio/transcriptions", {
+      method: "POST",
+      headers: { authorization: "Bearer " + SPEECH_API_KEY },
+      body: form,
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!response.ok) throw new Error("Speech STT HTTP " + response.status + ": " + (await response.text()).slice(0, 500));
+    const result = await response.json();
+    return String(result.text || "").trim();
+  }
+  if (!WHISPER_MODEL) throw new Error("Set SPEECH_API_KEY for cloud speech or configure WHISPER_MODEL for local STT");
   const wavPath = path.join(dir, "request.wav");
-  await writeFile(wavPath, pcmToWav(pcm, 16000));
+  await writeFile(wavPath, wav);
   const result = await run(WHISPER_CLI, ["-m", WHISPER_MODEL, "-f", wavPath, "-nt", "-l", "auto"]);
   return result.stdout.toString("utf8").split(/\r?\n/).map(line => line.trim()).filter(Boolean).join(" ")
     .replace(/^\[[^\]]+\]\s*/, "").trim();
@@ -266,7 +288,25 @@ async function askCoordinator(text, history, session) {
 }
 
 async function synthesize(text, dir) {
-  if (!PIPER_MODEL) throw new Error("PIPER_MODEL is not configured");
+  if (SPEECH_API_KEY) {
+    const response = await fetch(SPEECH_API_BASE_URL + "/audio/speech", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer " + SPEECH_API_KEY,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: TTS_MODEL,
+        voice: TTS_VOICE,
+        input: text,
+        response_format: "wav"
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!response.ok) throw new Error("Speech TTS HTTP " + response.status + ": " + (await response.text()).slice(0, 500));
+    return parsePcmWav(Buffer.from(await response.arrayBuffer()));
+  }
+  if (!PIPER_MODEL) throw new Error("Set SPEECH_API_KEY for cloud speech or configure PIPER_MODEL for local TTS");
   const wavPath = path.join(dir, "reply.wav");
   const textPath = path.join(dir, "reply.txt");
   await writeFile(textPath, text, "utf8");
