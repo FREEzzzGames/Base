@@ -5,7 +5,7 @@ if [[ "$(id -u)" -eq 0 ]]; then
   echo "Run as the normal Ubuntu user (monk), not with sudo."
   exit 1
 fi
-for command in sudo curl node npm python3 openssl tailscale; do
+for command in sudo curl node npm python3 openssl tailscale readlink; do
   command -v "$command" >/dev/null 2>&1 || { echo "Missing required command: $command"; exit 1; }
 done
 
@@ -34,11 +34,13 @@ fi
 echo "== Stop the old service and check for orphaned listeners =="
 sudo systemctl stop freezzz-cardputer-gateway.service 2>/dev/null || true
 sleep 1
+command -v fuser >/dev/null 2>&1 || sudo apt-get install -y psmisc
 PIDS="$(sudo fuser -n tcp 8765 2>/dev/null || true)"
 if [[ -n "$PIDS" ]]; then
   for pid in $PIDS; do
     CMD="$(ps -p "$pid" -o args= 2>/dev/null || true)"
-    if [[ "$CMD" == *"$SERVER/index.mjs"* ]]; then
+    CWD="$(sudo readlink -f "/proc/$pid/cwd" 2>/dev/null || true)"
+    if [[ "$CWD" == "$SERVER" && "$CMD" == *"index.mjs"* ]]; then
       echo "Stopping orphaned old Gateway process PID $pid"
       sudo kill "$pid"
     else
