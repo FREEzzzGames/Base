@@ -14,6 +14,12 @@
 #if __has_include("device_config.h")
 #include "device_config.h"
 #endif
+#if __has_include("tls_ca.h")
+#include "tls_ca.h"
+#define FREEZZ_HAS_TLS_CA 1
+#else
+#define FREEZZ_HAS_TLS_CA 0
+#endif
 
 namespace {
 #ifndef FREEZZ_HUB_HOST
@@ -24,6 +30,9 @@ namespace {
 #endif
 #ifndef FREEZZ_DEVICE_TOKEN
 #define FREEZZ_DEVICE_TOKEN ""
+#endif
+#ifndef FREEZZ_HUB_TLS
+#define FREEZZ_HUB_TLS 0
 #endif
 
 struct DeviceConfig {
@@ -241,6 +250,9 @@ void handleServerText(uint8_t* payload, size_t length) {
   } else if (strcmp(type, "audio.reply.end") == 0) {
     replyEnded = true;
   } else if (strcmp(type, "error") == 0) {
+    const char* detail = doc["message"] | "Unknown gateway error";
+    lastAssistantText = String("Ошибка: ") + detail;
+    scrollOffset = 0;
     connectionState = "Server error";
     if (!replyActive) {
       conversationActive = false;
@@ -320,8 +332,18 @@ void speakerTask(void*) {
 
 void startHubSocket() {
   if (hubStarted || WiFi.status() != WL_CONNECTED) return;
-  socketClient.begin(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer");
   socketClient.onEvent(onSocketEvent);
+#if FREEZZ_HUB_TLS
+#if FREEZZ_HAS_TLS_CA
+  socketClient.beginSslWithCA(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer", FREEZZ_TLS_CA_CERT);
+#else
+  connectionState = "TLS CA missing";
+  renderScreen();
+  return;
+#endif
+#else
+  socketClient.begin(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer");
+#endif
   socketClient.setReconnectInterval(3000);
   socketClient.enableHeartbeat(15000, 3000, 2);
   hubStarted = true;
