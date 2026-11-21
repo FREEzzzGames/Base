@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseVoiceControls, pcmToWav, parsePcmWav, extractAssistantText, createGatewayServer } from "./index.mjs";
+import { parseVoiceControls, pcmToWav, parsePcmWav, createGatewayServer } from "./index.mjs";
 
 test("recognizes all nine screen palettes", () => {
   const cases = [
@@ -44,21 +44,6 @@ test("rejects non-mono TTS WAV output", () => {
   const wav = pcmToWav(Buffer.alloc(16), 22050);
   wav.writeUInt16LE(2, 22);
   assert.throws(() => parsePcmWav(wav), /mono PCM16/);
-});
-
-
-test("extracts the latest assistant text from an AgentWebUI chat", () => {
-  const chat = {
-    messages: [
-      { role: "user", parts: [{ type: "text", text: "Привет" }] },
-      { role: "assistant", parts: [{ type: "thought", text: "internal" }, { type: "text", text: "Здравствуйте!" }] }
-    ]
-  };
-  assert.equal(extractAssistantText(chat), "Здравствуйте!");
-});
-
-test("returns empty text when AgentWebUI has no assistant response", () => {
-  assert.equal(extractAssistantText({ messages: [{ role: "user", parts: [{ type: "text", text: "Привет" }] }] }), "");
 });
 
 
