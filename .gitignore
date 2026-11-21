@@ -32,3 +32,8 @@ Thumbs.db
 hardware/cardputer-voice-terminal/firmware/include/secrets.h
 hardware/cardputer-voice-terminal/firmware/.pio/
 hardware/cardputer-voice-terminal/server/.env
+
+# Cardputer ADV per-device host/token and generated TLS trust anchor
+hardware/cardputer-voice-terminal/firmware/src/device_config.h
+hardware/cardputer-voice-terminal/firmware/src/tls_ca.h
+hardware/cardputer-voice-terminal/firmware/src/isrgrootx1.pem
