@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <vector>
 #include <Preferences.h>
+#include <time.h>
 #if __has_include("device_config.h")
 #include "device_config.h"
 #endif
@@ -92,6 +93,7 @@ volatile bool conversationActive = false;
 bool hubStarted = false;
 bool hubAuthenticated = false;
 uint32_t lastWifiRetryAt = 0;
+uint32_t lastHubRetryAt = 0;
 bool previousSpace = false;
 uint8_t volumePercent = 72;
 uint8_t paletteIndex = 5;
@@ -330,8 +332,31 @@ void speakerTask(void*) {
   }
 }
 
+bool syncClockForTls() {
+#if FREEZZ_HUB_TLS
+  if (time(nullptr) > 1760000000) return true;
+  connectionState = "Syncing clock";
+  renderScreen();
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com", "time.google.com");
+  for (uint8_t attempt = 0; attempt < 20; ++attempt) {
+    if (time(nullptr) > 1760000000) return true;
+    M5Cardputer.update();
+    delay(500);
+  }
+  return false;
+#else
+  return true;
+#endif
+}
+
 void startHubSocket() {
   if (hubStarted || WiFi.status() != WL_CONNECTED) return;
+  if (!syncClockForTls()) {
+    connectionState = "Clock sync failed";
+    lastHubRetryAt = millis();
+    renderScreen();
+    return;
+  }
   socketClient.onEvent(onSocketEvent);
 #if FREEZZ_HUB_TLS
 #if FREEZZ_HAS_TLS_CA
@@ -584,7 +609,8 @@ void loop() {
       connectionState = "Wi-Fi connected";
       renderScreen();
     }
-  } else if (WiFi.status() == WL_CONNECTED && !hubStarted) {
+  } else if (WiFi.status() == WL_CONNECTED && !hubStarted && millis() - lastHubRetryAt > 15000) {
+    lastHubRetryAt = millis();
     startHubSocket();
   }
   if (hubStarted) socketClient.loop();
