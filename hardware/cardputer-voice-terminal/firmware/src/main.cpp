@@ -11,8 +11,15 @@
 #include <algorithm>
 #include <vector>
 #include <Preferences.h>
+#include <time.h>
 #if __has_include("device_config.h")
 #include "device_config.h"
+#endif
+#if __has_include("tls_ca.h")
+#include "tls_ca.h"
+#define FREEZZ_HAS_TLS_CA 1
+#else
+#define FREEZZ_HAS_TLS_CA 0
 #endif
 
 namespace {
@@ -24,6 +31,9 @@ namespace {
 #endif
 #ifndef FREEZZ_DEVICE_TOKEN
 #define FREEZZ_DEVICE_TOKEN ""
+#endif
+#ifndef FREEZZ_HUB_TLS
+#define FREEZZ_HUB_TLS 0
 #endif
 
 struct DeviceConfig {
@@ -83,6 +93,7 @@ volatile bool conversationActive = false;
 bool hubStarted = false;
 bool hubAuthenticated = false;
 uint32_t lastWifiRetryAt = 0;
+uint32_t lastHubRetryAt = 0;
 bool previousSpace = false;
 uint8_t volumePercent = 72;
 uint8_t paletteIndex = 5;
@@ -241,6 +252,9 @@ void handleServerText(uint8_t* payload, size_t length) {
   } else if (strcmp(type, "audio.reply.end") == 0) {
     replyEnded = true;
   } else if (strcmp(type, "error") == 0) {
+    const char* detail = doc["message"] | "Unknown gateway error";
+    lastAssistantText = String("Ошибка: ") + detail;
+    scrollOffset = 0;
     connectionState = "Server error";
     if (!replyActive) {
       conversationActive = false;
@@ -318,10 +332,43 @@ void speakerTask(void*) {
   }
 }
 
+bool syncClockForTls() {
+#if FREEZZ_HUB_TLS
+  if (time(nullptr) > 1760000000) return true;
+  connectionState = "Syncing clock";
+  renderScreen();
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com", "time.google.com");
+  for (uint8_t attempt = 0; attempt < 20; ++attempt) {
+    if (time(nullptr) > 1760000000) return true;
+    M5Cardputer.update();
+    delay(500);
+  }
+  return false;
+#else
+  return true;
+#endif
+}
+
 void startHubSocket() {
   if (hubStarted || WiFi.status() != WL_CONNECTED) return;
-  socketClient.begin(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer");
+  if (!syncClockForTls()) {
+    connectionState = "Clock sync failed";
+    lastHubRetryAt = millis();
+    renderScreen();
+    return;
+  }
   socketClient.onEvent(onSocketEvent);
+#if FREEZZ_HUB_TLS
+#if FREEZZ_HAS_TLS_CA
+  socketClient.beginSslWithCA(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer", FREEZZ_TLS_CA_CERT);
+#else
+  connectionState = "TLS CA missing";
+  renderScreen();
+  return;
+#endif
+#else
+  socketClient.begin(deviceConfig.hubHost.c_str(), deviceConfig.hubPort, "/cardputer");
+#endif
   socketClient.setReconnectInterval(3000);
   socketClient.enableHeartbeat(15000, 3000, 2);
   hubStarted = true;
@@ -331,8 +378,13 @@ void startHubSocket() {
 
 void loadConfig() {
   preferences.begin("freezzz", true);
-  if (deviceConfig.hubHost.isEmpty()) deviceConfig.hubHost = preferences.getString("hub", "");
-  deviceConfig.hubPort = preferences.getUShort("port", FREEZZ_HUB_PORT);
+  if (deviceConfig.hubHost.isEmpty()) {
+    deviceConfig.hubHost = preferences.getString("hub", "");
+    deviceConfig.hubPort = preferences.getUShort("port", FREEZZ_HUB_PORT);
+  } else {
+    // The newly compiled public WSS endpoint must override any stale LAN port in NVS.
+    deviceConfig.hubPort = FREEZZ_HUB_PORT;
+  }
   if (deviceConfig.deviceToken.isEmpty()) deviceConfig.deviceToken = preferences.getString("token", "");
   const uint8_t count = preferences.getUChar("wifiCount", 0);
   for (uint8_t i = 0; i < count && i < kMaxKnownNetworks; ++i) {
@@ -562,7 +614,8 @@ void loop() {
       connectionState = "Wi-Fi connected";
       renderScreen();
     }
-  } else if (WiFi.status() == WL_CONNECTED && !hubStarted) {
+  } else if (WiFi.status() == WL_CONNECTED && !hubStarted && millis() - lastHubRetryAt > 15000) {
+    lastHubRetryAt = millis();
     startHubSocket();
   }
   if (hubStarted) socketClient.loop();

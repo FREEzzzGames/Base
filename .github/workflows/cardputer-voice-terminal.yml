@@ -39,8 +39,30 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install platformio
-      - name: Build Cardputer ADV firmware
+      - name: Prepare temporary verified WSS configuration
+        run: |
+          curl -fsSL https://letsencrypt.org/certs/isrgrootx1.pem -o hardware/cardputer-voice-terminal/firmware/src/isrgrootx1.pem
+          python - <<'PY'
+          from pathlib import Path
+          pem = Path("hardware/cardputer-voice-terminal/firmware/src/isrgrootx1.pem").read_text().strip()
+          Path("hardware/cardputer-voice-terminal/firmware/src/tls_ca.h").write_text(
+              "#pragma once\nstatic const char FREEZZ_TLS_CA_CERT[] PROGMEM = R\"FREEZZ_CA(\n"
+              + pem + "\n)FREEZZ_CA\";\n"
+          )
+          Path("hardware/cardputer-voice-terminal/firmware/src/device_config.h").write_text(
+              '#pragma once\n#define FREEZZ_HUB_HOST "test.tailnet.ts.net"\n'
+              '#define FREEZZ_HUB_PORT 443\n#define FREEZZ_HUB_TLS 1\n'
+              '#define FREEZZ_DEVICE_TOKEN "' + ("a" * 64) + '"\n'
+          )
+          PY
+      - name: Compile verified WSS firmware path
         run: pio run -d hardware/cardputer-voice-terminal/firmware
+      - name: Remove test credentials and build generic firmware
+        run: |
+          rm -f hardware/cardputer-voice-terminal/firmware/src/device_config.h
+          rm -f hardware/cardputer-voice-terminal/firmware/src/tls_ca.h
+          rm -f hardware/cardputer-voice-terminal/firmware/src/isrgrootx1.pem
+          pio run -d hardware/cardputer-voice-terminal/firmware
       - name: Upload Cardputer ADV firmware
         uses: actions/upload-artifact@v4
         with:

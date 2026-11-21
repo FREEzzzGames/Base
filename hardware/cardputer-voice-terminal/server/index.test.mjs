@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseVoiceControls, pcmToWav, parsePcmWav, extractAssistantText } from "./index.mjs";
+import { parseVoiceControls, pcmToWav, parsePcmWav, createGatewayServer } from "./index.mjs";
 
 test("recognizes all nine screen palettes", () => {
   const cases = [
@@ -47,16 +47,22 @@ test("rejects non-mono TTS WAV output", () => {
 });
 
 
-test("extracts the latest assistant text from an AgentWebUI chat", () => {
-  const chat = {
-    messages: [
-      { role: "user", parts: [{ type: "text", text: "Привет" }] },
-      { role: "assistant", parts: [{ type: "thought", text: "internal" }, { type: "text", text: "Здравствуйте!" }] }
-    ]
-  };
-  assert.equal(extractAssistantText(chat), "Здравствуйте!");
-});
-
-test("returns empty text when AgentWebUI has no assistant response", () => {
-  assert.equal(extractAssistantText({ messages: [{ role: "user", parts: [{ type: "text", text: "Привет" }] }] }), "");
+test("health endpoint reports the active local Ollama target without secrets", async t => {
+  const { server, wss } = createGatewayServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  t.after(async () => {
+    await new Promise(resolve => wss.close(() => server.close(resolve)));
+  });
+  const address = server.address();
+  const response = await fetch("http://127.0.0.1:" + address.port + "/health");
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.service, "freezzz-cardputer-gateway");
+  assert.equal(typeof body.model, "string");
+  assert.equal("token" in body, false);
+  assert.equal("apiKey" in body, false);
 });
