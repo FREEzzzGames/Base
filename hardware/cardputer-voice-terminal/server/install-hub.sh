@@ -70,7 +70,7 @@ for line in lines:
     values[k.strip()] = v.strip().strip('"').strip("'")
 
 token = values.get("DEVICE_TOKEN", "")
-if len(token) < 32:
+if len(token) < 32 or token.startswith("REPLACE"):
     token = secrets.token_hex(32)
 
 defaults = {
@@ -140,19 +140,24 @@ curl -fsS --max-time 5 http://127.0.0.1:8765/health
 echo
 
 echo "== Configure public TLS WebSocket through Tailscale Funnel =="
-FUNNEL_OUTPUT="$(sudo tailscale funnel --bg --https=443 127.0.0.1:8765 2>&1 || true)"
+FUNNEL_OUTPUT="$(tailscale funnel --bg --https=443 127.0.0.1:8765 2>&1 || true)"
 printf '%s\n' "$FUNNEL_OUTPUT"
 FUNNEL_HOST="$(printf '%s\n' "$FUNNEL_OUTPUT" | grep -Eo '[A-Za-z0-9.-]+\.ts\.net' | head -1 || true)"
 if [[ -z "$FUNNEL_HOST" ]]; then
-  FUNNEL_HOST="$(sudo tailscale status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("Self",{}).get("DNSName","") or "").rstrip("."))')"
+  FUNNEL_HOST="$(tailscale status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("Self",{}).get("DNSName","") or "").rstrip("."))')"
 fi
 [[ "$FUNNEL_HOST" == *.ts.net ]] || {
   echo "Could not obtain the public Tailscale DNS name."
   echo "If Tailscale printed an approval URL, open it on the phone, approve Funnel, then rerun this script."
-  sudo tailscale funnel status || true
+  tailscale funnel status || true
   exit 1
 }
-sudo tailscale funnel status
+FUNNEL_STATUS="$(tailscale funnel status 2>&1 || true)"
+echo "$FUNNEL_STATUS"
+echo "$FUNNEL_STATUS" | grep -q "127.0.0.1:8765" || {
+  echo "Tailscale Funnel is not forwarding HTTPS traffic to the Gateway. Check Funnel policy, MagicDNS and HTTPS in the Tailscale admin console."
+  exit 1
+}
 
 echo "== Fetch the official Let's Encrypt root certificate for verified TLS =="
 curl -fsSL https://letsencrypt.org/certs/isrgrootx1.pem -o "$FIRMWARE/src/isrgrootx1.pem"
