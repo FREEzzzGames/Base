@@ -378,8 +378,13 @@ void startHubSocket() {
 
 void loadConfig() {
   preferences.begin("freezzz", true);
-  if (deviceConfig.hubHost.isEmpty()) deviceConfig.hubHost = preferences.getString("hub", "");
-  deviceConfig.hubPort = preferences.getUShort("port", FREEZZ_HUB_PORT);
+  if (deviceConfig.hubHost.isEmpty()) {
+    deviceConfig.hubHost = preferences.getString("hub", "");
+    deviceConfig.hubPort = preferences.getUShort("port", FREEZZ_HUB_PORT);
+  } else {
+    // The newly compiled public WSS endpoint must override any stale LAN port in NVS.
+    deviceConfig.hubPort = FREEZZ_HUB_PORT;
+  }
   if (deviceConfig.deviceToken.isEmpty()) deviceConfig.deviceToken = preferences.getString("token", "");
   const uint8_t count = preferences.getUChar("wifiCount", 0);
   for (uint8_t i = 0; i < count && i < kMaxKnownNetworks; ++i) {
