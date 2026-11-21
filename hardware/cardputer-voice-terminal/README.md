@@ -1,87 +1,86 @@
 # FREEzzz Voice Terminal — Cardputer ADV
 
-Минимальный голосовой клиент для M5Stack Cardputer ADV. Экран не содержит меню и графики: только последние две реплики, прокрутка и цветовая палитра. Единственная клавиша начала записи — удержание Space.
+Голосовой клиент для M5Stack Cardputer ADV. Устройство подключается к FREEzzz HUB через защищённый WebSocket независимо от того, к какой Wi-Fi сети оно подключено.
 
-## Функции
-- Space down: захват PCM 16 kHz / mono / 16-bit.
-- Space up: завершить запись и отправить аудио на FREEzzz HUB.
-- Голосовой ответ возвращается потоком PCM и воспроизводится через ES8311.
-- Экран показывает последние реплики пользователя и помощника; клавиши `;` и `.` прокручивают текст вверх и вниз.
-- Голосовые команды меняют палитру (red, orange, yellow, green, blue, indigo, violet, white, black) и громкость.
-- RGB LED включён во время активного разговора и следует акцентному цвету палитры.
-- Нет wake word и файлового менеджера; начальная сеть настраивается с клавиатуры Cardputer.
+## Возможности
+- Удержание Space — запись голоса; отпускание — отправка на HUB.
+- PCM 16 kHz / mono / 16-bit.
+- Ответ ИИ отображается на экране и возвращается как PCM audio.
+- Голосовые команды меняют цветовую палитру и громкость.
+- RGB LED показывает активность разговора.
+- До 8 сохранённых Wi-Fi сетей 2,4 GHz; устройство автоматически выбирает доступную сеть.
+- Адрес HUB — публичное DNS-имя Tailscale Funnel, а не частный IP вида 192.168.x.x.
+- WSS/TLS с проверкой цепочки сертификата ISRG Root X1; секрет DEVICE_TOKEN остаётся на устройстве и HUB.
 
-## Схема
+## Архитектура
+
+```text
+Cardputer ADV
+  |  любой Wi-Fi с доступом в интернет
+  |  WSS :443 /cardputer + DEVICE_TOKEN
+  v
+Tailscale Funnel (публичный TLS endpoint)
+  |
+  v
+FREEzzz HUB Gateway (127.0.0.1:8765)
+  |-- локальный Ollama: qwen3.5:4b
+  |-- STT: Speech API или локальный Whisper.cpp
+  `-- TTS: Speech API или локальный Piper
 ```
-Cardputer ADV -- WebSocket + PCM16 --> FREEzzz HUB gateway
-                                         |-- облачный STT/TTS API (без локальных моделей)
-                                         |-- AgentWebUI API (существующие агенты HUB)
-                                         `-- обратно: текст + PCM16
+
+Funnel публикует только Gateway на локальном порту 8765. Сам Gateway привязан к loopback 127.0.0.1; Ollama на порт 11434 наружу не публикуется. На роутере не требуется пробрасывать порты. Cardputer не должен устанавливать Tailscale.
+
+## Развёртывание на Ubuntu
+
+Запускать от обычного пользователя Ubuntu (например, monk), не от root:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/feat/cardputer-global-wss-gateway/hardware/cardputer-voice-terminal/server/install-hub.sh)
 ```
 
-Gateway — транспортный адаптер. При заданном AGENTWEBUI_URL он входит в существующий AgentWebUI, создаёт диалог с первым доступным агентом (или использует AGENTWEBUI_TARGET), отправляет текст и получает завершённый ответ через SSE. Пароль хранится только в `.env` на HUB и никогда не передаётся Cardputer. Cloudflare worker из workers/agent-system не является локальным audio runtime.
+Скрипт выполняет миграцию существующей установки:
+1. Сохраняет резервную копию .env и прежний DEVICE_TOKEN.
+2. Останавливает старый systemd Gateway и проверяет, не остался ли отдельный процесс на порту 8765.
+3. Заменяет Gateway новым исходником.
+4. Оставляет текущие параметры Ollama, а если их нет — задаёт http://127.0.0.1:11434/v1/chat/completions и qwen3.5:4b.
+5. Привязывает Gateway к 127.0.0.1:8765 и устанавливает один systemd-процесс.
+6. Настраивает Tailscale Funnel на HTTPS 443 и получает DNS-имя *.ts.net.
+7. Загружает официальный корневой сертификат ISRG Root X1, генерирует приватную конфигурацию и собирает BIN для Cardputer ADV.
+8. Сохраняет BIN в /opt/freezzz-cardputer/output/cardputer-adv-global-wss.bin.
 
-## Сборка прошивки
-Прошивка универсальная: Wi-Fi и параметры HUB не вшиваются в BIN. Из корня репозитория выполнить:
+Если Tailscale попросит разрешить Funnel, открой ссылку авторизации, которую покажет терминал, подтверди включение и повтори команду. Tailscale Funnel должен быть разрешён для tailnet, MagicDNS и HTTPS должны быть включены.
+
+## Речь (STT/TTS)
+
+Gateway не подменяет отсутствующие речевые движки и не отправляет запросы к Ollama для распознавания аудио. Для полноценного голосового цикла необходимо настроить:
+- STT: SPEECH_API_KEY с доступом к Speech API либо локальный WHISPER_MODEL и whisper-cli.
+- TTS: тот же SPEECH_API_KEY с доступом к TTS либо локальный PIPER_MODEL и piper.
+
+Текущие значения .env сохраняются при обновлении. Если STT или TTS не настроены, Gateway явно сообщит об этом; ошибка будет видна на экране Cardputer и в journalctl.
+
+## Проверка
+
+```bash
+curl -fsS http://127.0.0.1:8765/health
+sudo systemctl status freezzz-cardputer-gateway --no-pager
+sudo tailscale funnel status
+sudo journalctl -u freezzz-cardputer-gateway -n 80 --no-pager
+```
+
+Ожидаемый публичный адрес: wss://<имя-устройства>.<tailnet>.ts.net/cardputer.
+
+## Сборка вручную
+
 ```bash
 pio run -d hardware/cardputer-voice-terminal/firmware
 ```
-Образ после успешной сборки: firmware/.pio/build/cardputer-adv/firmware.bin.
 
-При установке Gateway на HUB создаётся отдельный случайный Device Token и локально собирается персональная прошивка. Адрес HUB, порт 8765 и токен вшиваются в этот BIN; секреты не попадают в GitHub Actions и репозиторий. На Cardputer при первом запуске остаётся только выбор сети из найденных защищённых Wi-Fi сетей (клавиши `;` / `.`, Enter) и ввод пароля. Настройки Wi-Fi сохраняются во внутренней NVS-памяти. Подключение рассчитано на сети 2,4 ГГц; 5 ГГц не поддерживается. Для повторной настройки удерживай верхнюю кнопку G0 при включении устройства.
+Для WSS требуется приватный firmware/src/device_config.h с FREEZZ_HUB_HOST, FREEZZ_HUB_PORT=443, FREEZZ_HUB_TLS=1, FREEZZ_DEVICE_TOKEN, а также firmware/src/tls_ca.h с PEM ISRG Root X1. Их генерирует установочный скрипт; они не коммитятся.
 
-## Gateway на Ubuntu
-Требуется Node.js 22+, работающий AgentWebUI на HUB (в текущей конфигурации `http://192.168.0.207:3000`) и ключ совместимого облачного Speech API для распознавания и синтеза речи. Локальные Whisper.cpp, Piper, CMake и модели не устанавливаются.
+Сохранённые Wi-Fi сети находятся во внутренней NVS-памяти Cardputer и не стираются перепрошивкой. Поддерживаются сети 2,4 GHz; 5 GHz не поддерживается.
 
-```bash
-cd hardware/cardputer-voice-terminal/server
-npm install
-cp .env.example .env
-# заполнить DEVICE_TOKEN, пароль AgentWebUI и SPEECH_API_KEY
-npm start
-```
-
-Команда `npm start` автоматически загружает переменные из файла `.env` средствами Node.js 22+ (`--env-file`). Переменные, уже заданные в окружении процесса, имеют приоритет над значениями из файла. Если `.env` отсутствует, Node завершит запуск с понятной ошибкой; сначала скопируйте `.env.example`.
-
-По умолчанию WebSocket слушает 0.0.0.0:8765/cardputer. Разрешить TCP/8765 только в доверенной домашней сети. Не публиковать gateway в интернет.
-
-## Переменные gateway
-- DEVICE_TOKEN — тот же случайный токен, что в secrets.h.
-- SPEECH_API_BASE_URL — базовый URL OpenAI-compatible Speech API (по умолчанию `https://api.openai.com/v1`).
-- SPEECH_API_KEY — ключ Speech API; используется только на HUB для STT и TTS.
-- STT_MODEL — модель распознавания (по умолчанию `gpt-4o-mini-transcribe`).
-- TTS_MODEL — модель синтеза (по умолчанию `gpt-4o-mini-tts`).
-- TTS_VOICE — голос синтеза (по умолчанию `alloy`).
-- WHISPER_CLI / WHISPER_MODEL и PIPER_BIN / PIPER_MODEL — необязательный локальный fallback, не требуется для основной схемы.
-- AGENTWEBUI_URL — адрес существующего AgentWebUI; для сервиса на том же Ubuntu PC: `http://127.0.0.1:3000`.
-- AGENTWEBUI_PASSWORD — пароль входа AgentWebUI. Gateway выполняет `POST /api/login` и хранит session cookie в памяти процесса.
-- AGENTWEBUI_TARGET — необязательная цель, например `agent:ID`; если не задана, выбирается первый агент из `/api/agents`.
-- AGENTWEBUI_MODEL — запасная модель, если список агентов пуст (по умолчанию `local/small`).
-- AI_CHAT_URL / AI_CHAT_MODEL / AI_CHAT_API_KEY — необязательный запасной OpenAI-compatible endpoint; используется только если AGENTWEBUI_URL не задан.
-- PORT — TCP порт, по умолчанию 8765.
-
-В `.env.example` приоритетно настроен AgentWebUI. Установите `AGENTWEBUI_PASSWORD` в локальном `.env` на пароль входа AgentWebUI. Не помещайте пароль в `secrets.h` и не отправляйте его в прошивку. Если AgentWebUI запущен в другом контейнере/на другом хосте, укажите адрес, доступный с Ubuntu-хоста.
-
-### Автоматическая установка на FREEzzz HUB
-
-На Ubuntu-хосте из Termux/SSH запустить одной командой:
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/FREEzzzGames/Base/main/hardware/cardputer-voice-terminal/server/install-hub.sh)
-```
-
-Скрипт НЕ устанавливает Whisper.cpp/Piper, НЕ скачивает локальные модели и НЕ требует CMake. Он настраивает облачный STT/TTS, подключает Gateway к существующему AgentWebUI, создаёт случайный DEVICE_TOKEN, собирает BIN с введёнными Wi-Fi credentials и устанавливает systemd-сервис. При запуске нужно ввести пароль AgentWebUI и ключ Speech API. Скрипт создаст DEVICE_TOKEN и сохранит его только в локальном `.env` на HUB с правами 600. После установки он покажет токен в терминале — введи его на Cardputer в поле Device Token. Wi-Fi SSID и пароль вводятся непосредственно на Cardputer. BIN собирается отдельно через GitHub Actions и не содержит персональных секретов.
-
-## Протокол
-Клиент отправляет auth, audio.start, бинарные PCM16-фреймы и audio.end. Gateway отправляет user.text, assistant.text, device.theme / device.volume, audio.reply.begin, бинарные PCM16-фреймы и audio.reply.end.
-
-## Ограничения первой версии
-- Wake word намеренно отсутствует.
-- Wi-Fi SSID, пароль, адрес HUB, порт Gateway и Device Token задаются на Cardputer при первом запуске и сохраняются в NVS.
-- Для входа Gateway нужен действующий пароль AgentWebUI в локальном `.env`; сам пароль не может быть автоматически угадан или обойдён. Устройство авторизуется отдельным DEVICE_TOKEN.
-- Для распознавания и озвучивания нужен ключ Speech API с доступом к STT/TTS; он не передаётся Cardputer. Диалоги и ответы ИИ обрабатывает AgentWebUI.
-- CI может проверить host gateway и компиляцию; реальную запись/воспроизведение, LED и качество распознавания нужно проверить на физическом Cardputer ADV.
-
-## LED hardware note
-
-On Cardputer ADV the onboard SK6812 data line is GPIO21. Its power rail is shared with the display backlight on GPIO38; firmware deliberately does not configure or toggle GPIO38, so M5GFX retains control of screen brightness and backlight power.
+## Безопасность
+- Не публиковать порт 8765 напрямую.
+- Не публиковать Ollama 11434.
+- Не добавлять .env, device_config.h или tls_ca.h в Git.
+- Не использовать beginSSL() без CA-проверки: для публичного WSS применяется beginSslWithCA().
