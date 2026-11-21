@@ -256,7 +256,7 @@ export function createGatewayServer() {
           const pcm = Buffer.concat(session.audio, session.audioBytes);
           session.audio = []; session.audioBytes = 0;
           processVoiceRequest(socket, session, pcm)
-            .catch(error => sendError(socket, error, "voice"))
+            .catch(error => sendError(socket, error, error.stage || "voice"))
             .finally(() => { session.busy = false; });
         }
       })().catch(error => sendError(socket, error, "protocol"));
@@ -276,7 +276,7 @@ async function processVoiceRequest(socket, session, pcm) {
     sendJson(socket, "session.state", { state: "Transcribing" });
     let transcript;
     try { transcript = await transcribe(pcm, dir); }
-    catch (error) { sendError(socket, error, "stt"); throw error; }
+    catch (error) { error.stage = "stt"; throw error; }
     if (!transcript) throw new Error("Speech was not recognized");
     sendJson(socket, "user.text", { text: transcript });
     const controls = parseVoiceControls(transcript, session);
